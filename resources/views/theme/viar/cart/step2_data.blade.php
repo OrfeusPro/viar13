@@ -1,7 +1,7 @@
 <div class="vz-art cart-page-global">
 	<div class="section-frame">
 
-		@include(env('THEME_RESOURCES') . '.cart.bread', ['step' => 2])
+		@include(config('theme.resource') . 'cart.bread', ['step' => 2])
 
 		<div class="cart-page-global__wrapper">
 			<div class="cart-page-global__content">
@@ -289,7 +289,7 @@
 				</div>
 			</div>
 
-			@include(env('THEME_RESOURCES') . '.cart.sidebar', [
+			@include(config('theme.resource') . 'cart.sidebar', [
 			    'basket' => $basket,
 			    'btn' => trans('cart_new.step_2_go_to_delivery'),
 			    'btn_class' => 'cart_send_userdata',
@@ -357,8 +357,8 @@
 </style>
 
 {{-- Modal windows for cart step 2 --}}
-@include(env('THEME_RESOURCES') . '.cart.modals.alternative_size_modal')
-@include(env('THEME_RESOURCES') . '.cart.modals.recommendation_modal')
+@include(config('theme.resource') . 'cart.modals.alternative_size_modal')
+@include(config('theme.resource') . 'cart.modals.recommendation_modal')
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {

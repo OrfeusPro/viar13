@@ -61,7 +61,7 @@ class BasketController extends Controller
         $this->imageSaverService = $imageSaverService;
         $this->basketRepository = resolve(BasketRepository::class);
         //стартовый шаблон
-        $this->template = env('THEME_RESOURCES') . '.index';
+        $this->template = config('theme.resource') . 'index';
     }
 
     public function save_base64_image2(){
@@ -703,7 +703,7 @@ class BasketController extends Controller
 
         $recommendedItems = $this->basketRepository->getRecommendedItems($basket, 3, $contry_mult);
 
-        $content = view(env('THEME_RESOURCES') . '.cart.sidebar')
+        $content = view(config('theme.resource') . 'cart.sidebar')
             ->with('basket', $basket)
             ->with('btn', trans("cart_new.general_checkout"))
             ->with('btn_class', 'cart_send_products')
@@ -745,21 +745,31 @@ class BasketController extends Controller
                         $translated =
                             $galleryItem->translate(App::getLocale());
                         $item['name'] = $translated->name;
-                        if (isset($item["decor_id"]) && $item["decor_id"] > 0) {
+                        $decorationId = filter_var(
+                            $item['decor_id'] ?? null,
+                            FILTER_VALIDATE_INT,
+                            ['options' => ['min_range' => 1]]
+                        );
+
+                        if ($decorationId !== false) {
                             $decorations =
                                 GalleryDecoration::withTranslation(App::getLocale(),
                                     false)
                                     ->where('id',
-                                        $item["decor_id"])
+                                        $decorationId)
                                     ->first();
-                            $decoration =
-                                $decorations->translate(App::getLocale());
-                            $item['hud_of'] =
-                                $decoration->name;
+
+                            if ($decorations) {
+                                $decoration = $decorations->translate(App::getLocale());
+
+                                if ($decoration) {
+                                    $item['hud_of'] = $decoration->name;
+                                }
+                            }
                         }
                     }
 
-                    if (isset($item['pack'])) {
+                    if (! empty($item['pack']) && ! in_array($item['pack'], ['null', 'undefined'], true)) {
                         $box = GalleryBox::where('name', $item['pack'])->orWhereHas('translations', function ($query) use ($item) {
                             $query->where('table_name', 'gallery_boxes')
                                 ->where('column_name', 'name')
@@ -869,7 +879,7 @@ class BasketController extends Controller
 
         $recommendedItems = $this->basketRepository->getRecommendedItems($basket, 3, $contry_mult);
 
-        $content = view(env('THEME_RESOURCES') . '.cart.step1')
+        $content = view(config('theme.resource') . 'cart.step1')
             ->with('basket', $basket)
             ->with('data', $data)
             ->with('friend_sale_count', $friend_sale_count)
@@ -879,7 +889,7 @@ class BasketController extends Controller
             ->with('recommendedItems', $recommendedItems)
             ->render();
 
-        $cart_popup = view(env('THEME_RESOURCES') . '.cart.cart_popup')
+        $cart_popup = view(config('theme.resource') . 'cart.cart_popup')
             ->render();
 
         $cart_popup = null;
@@ -1005,7 +1015,7 @@ class BasketController extends Controller
             }
         }
 
-        $content = view(env('THEME_RESOURCES') . '.cart.step2_data')
+        $content = view(config('theme.resource') . 'cart.step2_data')
             ->with('basket', $basket)
             ->with('data', $data)
             ->with('friend_sale_count', $friend_sale_count)
@@ -1076,7 +1086,7 @@ class BasketController extends Controller
  //       $citys=  $this->get_citys('LT');
 
 
-        $content = view(env('THEME_RESOURCES') . '.cart.step3_delivery')
+        $content = view(config('theme.resource') . 'cart.step3_delivery')
            ->with('citys', $this->get_citys(strtolower($user['country'])))
 //            ->with('citys', $citys)
             ->with('warehouses', $this->get_warehouse(strtolower($user['country'])))
@@ -1118,6 +1128,10 @@ class BasketController extends Controller
 
         $cart_delivery = request()->session()->get('cart_delivery');
 
+        if (! is_array($cart_delivery) || empty($cart_delivery['country'])) {
+            return redirect()->route('cart.step3');
+        }
+
 
         $stocks = Stock::first()->select('facebook_sale', 'friend_sale', 'date_1_sale', 'date_2_sale')
             ->get()->translate(App::getLocale(), 'ru')[0];
@@ -1129,7 +1143,7 @@ class BasketController extends Controller
 
 
 
-        $content = view(env('THEME_RESOURCES') . '.cart.step4_payment')
+        $content = view(config('theme.resource') . 'cart.step4_payment')
 
             ->with('basket', $basket)
             ->with('data', $data)

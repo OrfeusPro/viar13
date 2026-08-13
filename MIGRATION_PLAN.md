@@ -170,12 +170,16 @@
 - [ ] После frontend UAT физически удалить orphan-шаблоны `canvas.blade.php`,
   `canvas_new.blade.php`, `graph_portrait.blade.php` и их недостижимые partials
   после контрольного поиска динамических вызовов.
+- [x] Исправить gallery item add: не отправлять `image=null`, очищать legacy
+  sentinel-значения `undefined` и не падать на отсутствующем decoration.
+- [x] Убрать runtime `env('THEME_RESOURCES')` из checkout views и защищать
+  прямой переход на payment без сохранённого шага delivery.
 
 ## Текущая задача
 
-- [~] Провести browser UAT основного frontend-контура; initial page-load smoke
-  завершён, следующая точка — интерактивное добавление canvas/gallery item в
-  корзину и переходы checkout без создания реального заказа.
+- [~] Провести browser UAT основного frontend-контура; gallery item → cart,
+  data и delivery проверены, следующая точка — интерактивный canvas upload и
+  заполненный delivery → payment без создания реального заказа.
 
 ## Browser smoke
 
@@ -183,6 +187,9 @@
   cart, login и register на `viar13.loc`.
 - [x] Исправить найденные 500 legacy basket/cart layouts.
 - [x] Устранить JS crash `InteriorGenerator` на module item card без canvas.
-- [ ] Пройти интерактивные canvas/gallery → basket/cart сценарии.
+- [x] Пройти интерактивный gallery item → cart сценарий с проверкой сессии.
+- [ ] Пройти интерактивный canvas → cart сценарий с реальным тестовым файлом.
+- [~] Проверить checkout: data/delivery и защита payment готовы; полноценный
+  payment view проверить после сохранения валидной доставки.
 - [ ] Проверить основные страницы в mobile viewport.
 - [ ] После frontend interaction UAT вернуться к mutating GET/ANY basket routes.

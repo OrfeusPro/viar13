@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Entity\BasketType;
+use App\Http\Controllers\BasketController;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Requests\PortraitBasketRequest;
 use App\Http\Requests\FutureArtRequest;
 use App\Http\Requests\ConstructBasketRequest;
 use App\Repositories\BasketRepository;
+use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Database\Schema\Blueprint;
@@ -19,6 +21,32 @@ use Tests\TestCase;
 
 class PublicBasketSessionContractTest extends TestCase
 {
+    public function test_payment_step_redirects_to_delivery_without_delivery_session(): void
+    {
+        $basket = [[
+            'count' => 1,
+            'price' => 50.0,
+            'sumPrice' => 50.0,
+        ]];
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('normalizeBasket')->twice()->andReturn($basket);
+        $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+        $repository->shouldReceive('getBasketProperties')->once()->andReturn($basket);
+
+        $user = new User();
+        $user->id = 1001;
+
+        $this->actingAs($user);
+        $request = Request::create('/cart/payment', 'GET');
+        $request->setLaravelSession($this->app['session.store']);
+        $request->session()->put('basket', $basket);
+        $this->app->instance('request', $request);
+
+        $response = app(BasketController::class)->cart_step4();
+
+        $this->assertTrue($response->isRedirect(route('cart.step3')));
+    }
+
     public function test_basket_and_cart_mutations_are_not_excluded_from_csrf_verification(): void
     {
         $middleware = new class($this->app, $this->app['encrypter']) extends VerifyCsrfToken
@@ -491,6 +519,48 @@ class PublicBasketSessionContractTest extends TestCase
             'image' => 'data:image/png;base64,not-valid***',
         ])->assertUnprocessable()
             ->assertJsonValidationErrors('image');
+    }
+
+    public function test_gallery_item_payload_without_generated_image_uses_catalog_image(): void
+    {
+        Schema::dropIfExists('gallery_items');
+        Schema::create('gallery_items', function (Blueprint $table): void {
+            $table->id();
+            $table->text('images')->nullable();
+        });
+        DB::table('gallery_items')->insert([
+            'id' => 31,
+            'images' => json_encode(['/catalog/module.jpg']),
+        ]);
+
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('normalizeBasket')->once()->andReturn([]);
+        $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+        $this->post('/basket/add/portrait', [
+            'pid' => 31,
+            'price' => 50,
+            'name' => 'Module gallery item',
+            'is_gall_with_img' => 0,
+            'size' => '90x60',
+            'pack' => 'undefined',
+            'forma_id' => 'undefined',
+            'users_count' => 'undefined',
+            'type' => 'undefined',
+            'holst_id' => 2,
+            'decor_id' => 'undefined',
+            'compl_id' => 'undefined',
+        ])->assertOk()
+            ->assertJsonPath('count', 1)
+            ->assertSessionHas('basket.0.pid', 31)
+            ->assertSessionHas('basket.0.activeImage', '/catalog/module.jpg')
+            ->assertSessionHas('basket.0.price', 50);
+
+        $basketItem = session('basket.0');
+
+        $this->assertNull($basketItem['decor_id'] ?? null);
+        $this->assertNull($basketItem['pack'] ?? null);
+        $this->assertNull($basketItem['type'] ?? null);
     }
 
     public function test_current_portrait_wizard_payload_preserves_style_fields_and_original(): void

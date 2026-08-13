@@ -1,7 +1,7 @@
 <div class="vz-art cart-page-global">
 	<div class="section-frame">
 
-		@include(env('THEME_RESOURCES') . '.cart.bread', ['step' => 1])
+		@include(config('theme.resource') . 'cart.bread', ['step' => 1])
 
 		@if (!empty($basket))
 			@php $total_item_counts = 0; @endphp
@@ -41,11 +41,11 @@
 												</div>
 											@endif
 											<div class="cart-page-item__photo">
-												@include(env('THEME_RESOURCES') . '.cart.cart_item_image')
+												@include(config('theme.resource') . 'cart.cart_item_image')
 											</div>
 										</div>
 										<div class="cart-page-item__left--content">
-											@include(env('THEME_RESOURCES') . '.cart.cart_items')
+											@include(config('theme.resource') . 'cart.cart_items')
 										</div>
 									</div>
 									<div class="cart-page-item__pricing">
@@ -124,7 +124,7 @@
 					</div>
 				</div>
 
-				@include(env('THEME_RESOURCES') . '.cart.sidebar', [
+				@include(config('theme.resource') . 'cart.sidebar', [
 				    'basket' => $basket,
 				    'btn' => trans('cart_new.general_checkout'),
 					'btn_class' => 'cart_send_products',

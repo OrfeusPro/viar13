@@ -1,7 +1,7 @@
 <div class="vz-art cart-page-global">
     <div class="section-frame">
 
-        @include(env('THEME_RESOURCES') . '.cart.bread', ['step' => 3])
+        @include(config('theme.resource') . 'cart.bread', ['step' => 3])
 
         <div class="cart-page-global__wrapper">
             <div class="cart-page-global__content">
@@ -347,7 +347,7 @@
                                                                             <div class="select__options"
                                                                                 data-simplebar="">
 
-                                                                                @include(env('THEME_RESOURCES') . '.cart.citys', ['citys' => $citys])
+                                                                                @include(config('theme.resource') . 'cart.citys', ['citys' => $citys])
 
                                                                             </div>
                                                                         </div>
@@ -371,7 +371,7 @@
                                                     <div class="cart-delivery-point__pickup-point--wrapper"
                                                         data-simplebar="">
 
-                                                        @include(env('THEME_RESOURCES') . '.cart.warehouses', ['warehouses' => $warehouses])
+                                                        @include(config('theme.resource') . 'cart.warehouses', ['warehouses' => $warehouses])
 
                                                     </div>
                                                     <a href="#" class="wind-open">@lang('cart_new.step_3_expand')</a>
@@ -530,7 +530,7 @@
                 @endif
             </div>
 
-            @include(env('THEME_RESOURCES') . '.cart.sidebar', [
+            @include(config('theme.resource') . 'cart.sidebar', [
                 'basket' => $basket,
                 'btn' => trans('cart_new.step_3_go_to_the_payment'),
                 'btn_class' => 'cart_send_delivery',

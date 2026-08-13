@@ -1,7 +1,7 @@
 <div class="vz-art cart-page-global">
 	<div class="section-frame">
 
-		@include(env('THEME_RESOURCES') . '.cart.bread', ['step' => 4])
+		@include(config('theme.resource') . 'cart.bread', ['step' => 4])
 
 		<div class="cart-page-global__wrapper">
 			<div class="cart-page-global__content">
@@ -129,7 +129,7 @@
 				@php $total_item_counts = 0; @endphp
 			@endif
 
-			@include(env('THEME_RESOURCES') . '.cart.sidebar', [
+			@include(config('theme.resource') . 'cart.sidebar', [
 			    'basket' => $basket,
 			    'btn' => trans('cart_new.step_4_pay'),
 			    'btn_class' => 'cart_send_pay',

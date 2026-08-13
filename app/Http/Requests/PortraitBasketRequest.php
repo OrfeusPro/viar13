@@ -13,6 +13,35 @@ class PortraitBasketRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $optionalFields = [
+            'pack',
+            'forma_id',
+            'users_count',
+            'type',
+            'holst_id',
+            'hud_of',
+            'decor_id',
+            'ram_id',
+            'compl_id',
+            'terms',
+        ];
+        $normalized = [];
+
+        foreach ($optionalFields as $field) {
+            $value = $this->input($field);
+
+            if (is_string($value) && in_array(strtolower(trim($value)), ['', 'null', 'undefined'], true)) {
+                $normalized[$field] = null;
+            }
+        }
+
+        if ($normalized !== []) {
+            $this->merge($normalized);
+        }
+    }
+
     public function rules(): array
     {
         return [

@@ -165,7 +165,7 @@
                                                                             <div class="select__options"
                                                                                 data-simplebar="">
 
-                                                                                @include(env('THEME_RESOURCES') . '.cart.citys', ['citys' => $citys])
+                                                                                @include(config('theme.resource') . 'cart.citys', ['citys' => $citys])
 
                                                                             </div>
                                                                         </div>
@@ -182,7 +182,7 @@
                                                         <span class="city-text" data-default='@lang('cart_new.step_3_all_city')'>@lang('cart_new.step_3_all_city')</span> (<span class="pickup-text">{{ count($warehouses) }}</span> @lang('cart_new.step_3_points'))
                                                     </div>
                                                     <div class="cart-delivery-point__pickup-point--wrapper"data-simplebar="">
-{{--                                                        @include(env('THEME_RESOURCES') . '.cart.warehouses', ['warehouses' => $warehouses])--}}
+{{--                                                        @include(config('theme.resource') . 'cart.warehouses', ['warehouses' => $warehouses])--}}
                                                     </div>
                                                     <a href="#" class="wind-open">@lang('cart_new.step_3_expand')</a>
                                                 </div>

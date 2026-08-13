@@ -48,3 +48,43 @@ Locale middleware канонизирует URL и переносит исход�
 2. Добавить реальный gallery item и проверить basket/cart state.
 3. Пройти переходы корзина → данные → доставка → оплата без создания заказа.
 4. Проверить mobile viewport основных страниц.
+
+## Интерактивный gallery item → cart (2026-08-13)
+
+Первичная попытка была ошибочно оценена по статическому тексту popup. Реальная
+проверка HTTP/session выявила последовательность из двух дефектов:
+
+1. `module.js` добавлял в `FormData` значение `image=null`; браузер отправлял
+   строку `"null"`, и `/basket/add/portrait` отвечал JSON 422.
+2. После исправления POST товар сохранялся, но `/cart` отвечал 500:
+   frontend передавал optional IDs строкой `"undefined"`, а controller вызывал
+   `translate()` у отсутствующего `GalleryDecoration`.
+
+Исправления:
+
+- пустое generated image больше не добавляется в payload;
+- validation error `/basket/add/portrait` показывается пользователю;
+- `PortraitBasketRequest` превращает пустые `null|undefined` sentinel-строки в
+  `null` до сохранения;
+- чтение старых session baskets допускает только положительный integer
+  `decor_id` и проверяет найденную модель перед переводом.
+
+Повторный Chrome smoke подтверждён фактическим состоянием: success popup
+появился, `/cart` показал `Ваш заказ: 2 Шт.`, два товара по 50 €, а project
+console errors с источником `viar13.loc` отсутствовали.
+
+## Checkout smoke (2026-08-13)
+
+- `/cart/data`: HTTP/DOM успешно, сохранённые данные пользователя и сумма
+  100 € отображаются.
+- `/cart/delivery`: первоначально 500 `View [.cart.step3_delivery] not found`;
+  следующая ветка также выявила 500 `View [.cart.citys] not found`. После замены
+  runtime `env()` на theme config в controller и всех cart partial includes
+  страница рендерится и показывает способы доставки.
+- прямой `/cart/payment` без `cart_delivery`: первоначально 500 `Trying to
+  access array offset on null`; теперь выполняется redirect на `/cart/delivery`.
+- реальный заказ и платёж не создавались.
+
+Следующий точный шаг: загрузить тестовое изображение через canvas builder,
+добавить canvas в корзину, затем сохранить валидный вариант доставки и открыть
+payment view без отправки заказа.

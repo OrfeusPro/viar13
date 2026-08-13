@@ -396,3 +396,28 @@ scope; Filament 5 будет рассматриваться отдельным �
   `docs/frontend-browser-smoke.md`;
 - следующий точный шаг: интерактивный canvas/gallery → cart smoke без создания
   заказа.
+
+### 2026-08-13 — interactive gallery/cart и checkout error audit
+
+- прежняя browser-оценка исправлена: скрытый текст popup больше не считается
+  доказательством успешного POST; проверяются response outcome, Laravel error,
+  итоговый URL и фактическое содержимое корзины;
+- найден реальный JSON 422: gallery item JS отправлял `image` как строку
+  `"null"`; пустое generated image теперь исключается из FormData, а validation
+  error показывается пользователю;
+- найден следующий 500 после успешного POST: optional `decor_id=undefined`
+  приводил к `translate()` на `null`; request очищает legacy sentinel-строки,
+  а cart reader проверяет положительный integer ID и наличие decoration;
+- повторный Chrome smoke: success popup видим, `/cart` показывает два реальных
+  товара по 50 €, project console errors от `viar13.loc` отсутствуют;
+- `/cart/data` успешно отображает пользователя и сумму; на `/cart/delivery`
+  отдельно обнаружены отсутствующие view и вложенный `cart.citys` partial;
+  runtime env заменён на theme config во всём controller/cart Blade контуре;
+- прямой `/cart/payment` без delivery session больше не падает и возвращает на
+  `/cart/delivery`; добавлен regression test;
+- frontend regression: 58 tests / 292 assertions PASS; `view:cache`, JS/PHP
+  syntax и `git diff --check` PASS;
+- внешняя локальная ошибка CookieYes и предупреждения browser extensions не
+  классифицируются как project JS errors;
+- следующий точный шаг: canvas upload → cart, затем валидный delivery → payment
+  без отправки заказа.
