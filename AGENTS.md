@@ -1,7 +1,20 @@
 # AGENTS.md
 
 ## Цель
-Правила для работы AI-агента в проекте `viar` (Laravel 6 + Voyager).
+Правила для миграции этого проекта `viar` с Laravel 6 на Laravel 13.
+
+## Текущий приоритет миграции
+1. Главная цель текущего этапа — поднять публичный frontend на Laravel 13 с
+   функциональной и визуальной совместимостью с текущим приложением.
+2. Единственная рабочая основа миграции — этот репозиторий:
+   `G:\OSPanel\home\viar13`.
+3. `G:\OSPanel\home\viar_filament` не использовать, не изменять и не считать
+   источником кода или статуса.
+4. Админ-панель не входит в текущий scope: Voyager из нового runtime
+   исключается, Filament 5 будет отдельным последующим этапом.
+5. Сначала переносить и проверять публичные routes/controllers/Blade/assets,
+   затем формы, auth/account, корзину, checkout и публичные интеграции.
+6. Текущий краткий статус вести в `MIGRATION_PROGRESS.md` этого репозитория.
 
 ## Базовые принципы
 1. Не ломать существующую бизнес-логику `orders` и текущие админ-чаты.
@@ -102,32 +115,26 @@
    - при наличии следующих шагов они оформлены списком.
 
 ## Operational Memory (Do Not Lose Context)
-1. Keep source-of-truth notes for CRM<->SA in:
-   - `docs/crm_sa_implementation_plan.md` (main running log)
-   - `docs/crm-sa/09_real_sources_audit.md` (real DB/code sources)
-   - `docs/upgrade-laravel13-filament5/64-migration-task-control-center.md` (migration status, active/next task and cross-branch resume point)
-   - `docs/upgrade-laravel13-filament5/65-migration-executable-task-catalog.md` (normalized full migration backlog and task dependencies)
-   - `docs/upgrade-laravel13-filament5/66-full-document-task-traceability-audit.md` (coverage proof and legacy-ID/evidence classification)
-   - `G:\OSPanel\home\viar_filament` (canonical Laravel 13 / Filament 5 Git working tree; read its `STAGE0.md` before target work)
-2. Before replacing any static mapping/data, verify existing DB/code source first.
-3. Current confirmed real sources (2026-03-02):
+1. Source-of-truth notes:
+   - Laravel 13 frontend migration: `MIGRATION_PROGRESS.md`;
+   - CRM<->SA: `docs/crm_sa_implementation_plan.md`;
+   - real DB/code sources: `docs/crm-sa/09_real_sources_audit.md`.
+2. Каталог `docs/upgrade-laravel13-filament5` — исторический архив старого
+   направления. Не использовать его control center как активный план.
+3. Before replacing any static mapping/data, verify existing DB/code source first.
+4. Current confirmed real sources (2026-03-02):
    - lead id: `orders.id`
    - client chat stream: `order_user_comments`
    - service catalog base: `newhome_services` + `translations`
    - status domain: `orders.status` (`new`, `watching`, `pegging`, `in_production`, `sended`, `send_lubanas`, `completed`)
-4. `sa_service_catalog*` and `sa_stage_mappings` are NOT existing tables in current DB snapshot.
-5. After each meaningful implementation step, update `docs/crm_sa_implementation_plan.md` with:
+5. `sa_service_catalog*` and `sa_stage_mappings` are NOT existing tables in current DB snapshot.
+6. После каждого заметного шага миграции обновлять `MIGRATION_PROGRESS.md`:
+   - что изменено;
+   - какие проверки прошли/не прошли;
+   - риски и следующий точный шаг.
+7. After each meaningful CRM/SA implementation step, update `docs/crm_sa_implementation_plan.md` with:
    - what changed,
    - what is still static,
    - next exact action.
-6. Before starting or resuming any Laravel/Filament migration task in any branch:
-   - read `64-migration-task-control-center.md` from the latest `main`;
-   - verify the selected task, status and dependencies in `65-migration-executable-task-catalog.md`;
-   - use `66-full-document-task-traceability-audit.md` when an older document, risk, gate or alternate task ID must be traced;
-   - continue `ACTIVE_TASK` or explicitly claim `NEXT_TASK`;
-   - update the task card, control center and running log after every meaningful step;
-   - never mark a task `DONE` without an evidence link and verified Definition of Done.
-7. Laravel 13 / Filament 5 target location (2026-07-21):
-   - canonical Git working tree: `G:\OSPanel\home\viar_filament`;
-   - old `C:\OSPanel\domains\asoft\viar-next` was removed after verified relocation;
-   - verified S0-02B archive remains in `C:\OSPanel\domains\asoft\viar-next-artifacts`.
+8. Не считать миграцию или этап `DONE` без выполненного Definition of Done и
+   записанных evidence/проверок.

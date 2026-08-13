@@ -329,7 +329,7 @@ class GalleryItem extends Model implements HasMedia
         return $this->belongsTo(GalleryType::class, 'id_type', 'id');
     }
 
-    public function getSlugOptions()
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')

@@ -62,7 +62,7 @@ class GalleryCategory extends Model
         return $page_url . '/' . $cat_url;
     }
 
-    public function getSlugOptions()
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')

@@ -1,70 +1,56 @@
 {
-    "name": "laravel/laravel",
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "viarcanvas/viar",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "ViarCanvas public application on Laravel 13.",
     "keywords": [
-        "framework",
-        "laravel"
+        "laravel",
+        "viarcanvas"
     ],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
-        "php": "^7.3",
+        "php": "^8.3",
         "ext-json": "*",
-        "arrilot/laravel-widgets": "^3.13",
-        "barryvdh/laravel-dompdf": "^0.8.6",
-        "barryvdh/laravel-translation-manager": "^0.5.10",
-        "bensampo/laravel-enum": "^1.38",
-        "davejamesmiller/laravel-breadcrumbs": "^5.3",
-        "fideloper/proxy": "^4.0",
-        "guzzlehttp/guzzle": "^7.3",
-        "laravel/framework": "^6.2.0",
-        "laravel/socialite": "^5.5",
-        "laravel/tinker": "^2.0",
-        "laravel/ui": "^1.2",
-        "mcamara/laravel-localization": "^1.6",
-        "monstrex/voyager-extension": "^0.95.2",
-        "nesbot/carbon": "^2.36",
-        "paypal/paypal-checkout-sdk": "^1.0",
-        "predis/predis": "^1.1.1",
+        "arrilot/laravel-widgets": "^3.15",
+        "barryvdh/laravel-dompdf": "^3.1.2",
+        "bensampo/laravel-enum": "^6.14",
+        "diglactic/laravel-breadcrumbs": "^10.1",
+        "guzzlehttp/guzzle": "^7.10",
+        "laravel/framework": "^13.20",
+        "laravel/socialite": "^5.29",
+        "laravel/tinker": "^3.0",
+        "mcamara/laravel-localization": "^2.4.1",
+        "nesbot/carbon": "^3.10",
+        "paypal/paypal-checkout-sdk": "^1.0.2",
+        "predis/predis": "^3.5",
         "socialiteproviders/facebook": "^4.1",
-        "spatie/laravel-sluggable": "^2.2",
-        "stevebauman/location": "^6.2",
-        "tcg/voyager": "^1.4"
+        "spatie/laravel-medialibrary": "^11.23.5",
+        "spatie/laravel-sluggable": "^4.0.3",
+        "stevebauman/location": "^7.6.3"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.6",
-        "barryvdh/laravel-ide-helper": "^2.7",
-        "facade/ignition": "^1.4",
-        "friendsofphp/php-cs-fixer": "^3.2",
-        "fzaninotto/faker": "^1.9.1",
-        "mockery/mockery": "^1.0",
-        "nunomaduro/collision": "^3.0",
-        "phpunit/phpunit": "^8.0",
-        "squizlabs/php_codesniffer": "^3.6"
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.27",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^12.5.12"
     },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true
-    },
-    "extra": {
-        "laravel": {
-        }
-      },
     "autoload": {
         "exclude-from-classmap": [
-            "vendor\\tcg\\voyager\\src\\Http\\Controllers\\ContentTypes\\Image.php"
+            "app/Http/Controllers/ContentTypes/Image.php",
+            "app/Http/Controllers/vendor/voyager/Traits/Translatable.php"
         ],
         "files": [
-            "app/Helpers/functions.php",
-            "app/Http/Controllers/ContentTypes/Image.php"
+            "app/Helpers/functions.php"
         ],
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/",
+            "TCG\\Voyager\\": "app/Compatibility/TCG/Voyager/"
         },
         "classmap": [
-            "database/seeds",
-            "database/factories"
+            "database/seeds"
         ]
     },
     "autoload-dev": {
@@ -72,8 +58,6 @@
             "Tests\\": "tests/"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -82,17 +66,30 @@
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi"
+        "test": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test"
         ],
         "format": [
-            "vendor/bin/php-cs-fixer fix"
-        ],
-        "test": [
-            "vendor/bin/phpunit"
+            "pint"
         ]
     },
-    "repositories": {
-
-    }
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "mcamara/laravel-localization"
+            ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        },
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

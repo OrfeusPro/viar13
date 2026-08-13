@@ -4,6 +4,13 @@
 
 ## Основные разделы
 
+### Laravel 13 — публичный frontend
+
+- [`../MIGRATION_PROGRESS.md`](../MIGRATION_PROGRESS.md) — единственный
+  актуальный краткий план и журнал миграции текущего репозитория.
+- `upgrade-laravel13-filament5/` — архив прежнего направления; использовать
+  только как справочные аудиты, не как активный план.
+
 ### CRM <-> SA
 
 - [crm_sa_implementation_plan.md](./crm_sa_implementation_plan.md) - основной план работ и журнал статуса.

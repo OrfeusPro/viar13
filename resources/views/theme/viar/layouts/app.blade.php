@@ -89,7 +89,7 @@
     @if(Route::currentRouteName() == 'home')
     <script type="application/ld+json">
         {
-        "@context": "https://schema.org",
+        "@@context": "https://schema.org",
         "@type": "WebSite",
         "name": "@lang('settings.site_name')",
         "alternateName": @lang('settings.site_alternateName'),
@@ -107,7 +107,7 @@
     @else
         <script type="application/ld+json">
             {
-                "@context": "https://schema.org",
+                "@@context": "https://schema.org",
                 "@type": "WebPage",
                 "name": "{{ $plain_title }}",
                 "description": "{{ $plain_meta_desc }}",

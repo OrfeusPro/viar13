@@ -36,13 +36,30 @@ use App\Http\Controllers\Pages\PagePortraitOilController;
 use App\Http\Controllers\Pages\PagePortraitRoyalController;
 use App\Http\Controllers\Account\AccountController as NewAccountController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\ConfirmPasswordController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\VerificationController;
 use Illuminate\Support\Facades\Storage;
 //Route::get('/err_sizes', function () {
 //    return view('errors.err_sizes');
 //});
 
-/** admin routes */
-Auth::routes();
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
+Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+Route::get('/password/confirm', [ConfirmPasswordController::class, 'showConfirmForm'])->name('password.confirm');
+Route::post('/password/confirm', [ConfirmPasswordController::class, 'confirm']);
+Route::get('/email/verify', [VerificationController::class, 'show'])->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])->middleware('signed')->name('verification.verify');
+Route::post('/email/resend', [VerificationController::class, 'resend'])->middleware('throttle:6,1')->name('verification.resend');
 
 $localizedPasswordResetLocales = array_diff(
     array_keys(config('laravellocalization.supportedLocales', [])),
@@ -57,7 +74,9 @@ Route::post('/{locale}/password/reset', [ResetPasswordController::class, 'resetL
     ->where('locale', $localizedPasswordResetLocalePattern)
     ->name('password.update.localized');
 
-require_once __DIR__ . '/admin.php';
+if (config('app.admin_enabled', false)) {
+    require_once __DIR__ . '/admin.php';
+}
 require_once __DIR__ . '/redirect.php';
 
 Route::get('/storage/{path}', function ($path) {

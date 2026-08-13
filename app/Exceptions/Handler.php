@@ -2,8 +2,11 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\PostTooLargeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -56,7 +59,7 @@ class Handler extends ExceptionHandler
      * @return void
 
      */
-    public function report(Exception $exception)
+    public function report(Throwable $exception): void
     {
         parent::report($exception);
     }
@@ -80,7 +83,7 @@ class Handler extends ExceptionHandler
      * @return \Symfony\Component\HttpFoundation\Response
 
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e)
     {
         if ($this->isHttpException($e)) {
             $statusCode = $e->getStatusCode();

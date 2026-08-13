@@ -1081,3 +1081,24 @@ if (!function_exists('translated_value')) {
         return $value !== null && $value !== '' ? $value : $fallback;
     }
 }
+
+if (! function_exists('setting')) {
+    function setting(string $key, mixed $default = null): mixed
+    {
+        return \TCG\Voyager\Facades\Voyager::setting($key, $default);
+    }
+}
+
+if (! function_exists('menu')) {
+    function menu(string $name, ?string $type = null, array $options = []): mixed
+    {
+        return \App\Models\Menu::display($name, $type, $options);
+    }
+}
+
+if (! function_exists('voyager_asset')) {
+    function voyager_asset(string $path): string
+    {
+        return asset('vendor/tcg/voyager/assets/'.ltrim($path, '/'));
+    }
+}

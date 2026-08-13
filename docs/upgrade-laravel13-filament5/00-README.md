@@ -1,4 +1,10 @@
-# Аудит и план миграции VIAR: Laravel 6 / Voyager → Laravel 13 / Filament 5
+# Архив: аудит и старый план Laravel 6 / Voyager → Laravel 13 / Filament 5
+
+> **Исторический архив с 2026-08-13.** Направление с отдельным target отменено.
+> Актуальная миграция выполняется непосредственно на основе репозитория
+> `G:\OSPanel\home\viar13`, сначала публичный frontend, без админки. Рабочий
+> статус находится в корневом `MIGRATION_PROGRESS.md`. Материалы ниже можно
+> использовать только как технические аудиты и evidence, не как активный план.
 
 Дата среза: 17.07.2026. Статус: аудит завершён; S0-01 evidence/dependency freeze выполнен с `CONDITIONAL GO` только на provisioning isolated staging; application implementation не начата.
 
