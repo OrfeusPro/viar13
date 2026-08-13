@@ -12,6 +12,8 @@
   работ и evidence.
 - [`frontend-mutating-routes-audit.md`](frontend-mutating-routes-audit.md) —
   аудит публичных POST/AJAX/ANY routes.
+- [`basket-add-payload-audit.md`](basket-add-payload-audit.md) — матрица
+  basket add-endpoints, JS/Blade payloads и статусов проверки.
 - `upgrade-laravel13-filament5/` — архив прежнего направления; использовать
   только как справочные аудиты, не как активный план.
 

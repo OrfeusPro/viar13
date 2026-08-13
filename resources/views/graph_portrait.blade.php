@@ -161,23 +161,10 @@
             form_data.append('tel', $(this).find('.js_phone').val());
             form_data.append('email', $(this).find('.js_email').val());
 
-            var is_return = 0;
             let TotalImages = $('#js_file_images')[0].files.length;
             let images = $('#js_file_images')[0];
             for (let i = 0; i < TotalImages; i++) {
-
-                var file_size = images.files[i].size / 1024 / 1024;
-                if (file_size > 20) {
-                    $('.popup-inv-size').addClass('active');
-                    is_return = 1;
-                    break;
-                }
-
                 form_data.append('images[]', images.files[i]);
-            }
-
-            if (is_return == 1) {
-                return;
             }
 
             form_data.append('TotalImages', TotalImages);

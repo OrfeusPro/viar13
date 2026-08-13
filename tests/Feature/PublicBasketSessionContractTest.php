@@ -2,11 +2,276 @@
 
 namespace Tests\Feature;
 
+use App\Entity\BasketType;
+use App\Http\Requests\PortraitBasketRequest;
+use App\Http\Requests\FutureArtRequest;
+use App\Http\Requests\ConstructBasketRequest;
 use App\Repositories\BasketRepository;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class PublicBasketSessionContractTest extends TestCase
 {
+    public function test_canvas_add_rejects_an_incomplete_payload_as_json(): void
+    {
+        $this->post('/basket/add', [
+            'basketType' => BasketType::CANVAS_TYPE,
+            'price' => 20,
+        ])->assertUnprocessable()
+            ->assertJsonPath('success', false)
+            ->assertJsonValidationErrors([
+                'userImage',
+                'formId',
+                'sizeId',
+                'executionId',
+                'canvasId',
+            ]);
+    }
+
+    public function test_canvas_add_accepts_a_100_mb_source_without_an_application_size_limit(): void
+    {
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('addToBasket')->once()->andReturn(1);
+
+        $this->post('/basket/add', [
+            'basketType' => BasketType::CANVAS_TYPE,
+            'price' => 20,
+            'userImage' => UploadedFile::fake()->image('print-source.jpg')->size(102400),
+            'formId' => 1,
+            'sizeId' => '60x40',
+            'executionId' => 1,
+            'canvasId' => 1,
+        ])->assertOk()
+            ->assertJson([
+                'success' => true,
+                'count' => 1,
+            ]);
+    }
+
+    public function test_portrait_upload_rules_accept_a_100_mb_source(): void
+    {
+        $validator = Validator::make([
+            'price' => 40,
+            'orig_images' => [
+                UploadedFile::fake()->create('portrait.psd', 102400, 'image/vnd.adobe.photoshop'),
+            ],
+        ], (new PortraitBasketRequest())->rules());
+
+        $this->assertTrue($validator->passes(), $validator->errors()->toJson());
+    }
+
+    public function test_future_art_rules_accept_a_100_mb_print_source(): void
+    {
+        $validator = Validator::make([
+            'name' => 'Print customer',
+            'tel' => '+37120123456',
+            'email' => 'customer@example.test',
+            'images' => [
+                UploadedFile::fake()->image('print-source.jpg')->size(102400),
+            ],
+        ], (new FutureArtRequest())->rules());
+
+        $this->assertTrue($validator->passes(), $validator->errors()->toJson());
+    }
+
+    public function test_future_art_rejects_missing_contact_and_media_as_json(): void
+    {
+        $this->post('/basket/add/future_art')
+            ->assertUnprocessable()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Invalid file count or format.')
+            ->assertJsonValidationErrors(['name', 'tel', 'email', 'images']);
+    }
+
+    public function test_construct_original_file_rules_accept_a_100_mb_source(): void
+    {
+        $validator = Validator::make([
+            'name' => 'Modular pictures',
+            'price' => 80,
+            'size' => '120x80',
+            'is_orig_file' => 1,
+            'image' => UploadedFile::fake()->image('modular-source.jpg')->size(102400),
+            'collageSvgImage_hash' => md5('modular-source'),
+        ], (new ConstructBasketRequest())->rules());
+
+        $this->assertTrue($validator->passes(), $validator->errors()->toJson());
+    }
+
+    public function test_construct_rejects_a_payload_without_a_real_image_source(): void
+    {
+        $this->post('/basket/add/construct', [
+            'name' => 'Collage',
+            'price' => 50,
+            'size' => '60x40',
+            'image_offset' => 'not-base64',
+        ])->assertUnprocessable()
+            ->assertJsonPath('success', false)
+            ->assertJsonValidationErrors(['image_offset']);
+
+        $this->post('/basket/add/construct', [
+            'name' => 'Modular pictures',
+            'price' => 80,
+            'size' => '120x80',
+            'is_orig_file' => 1,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['image', 'collageSvgImage_hash']);
+    }
+
+    public function test_construct_base64_family_stores_generated_image_and_session_state(): void
+    {
+        Storage::fake('uploads');
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('normalizeBasket')->once()->andReturn([]);
+        $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+        $this->post('/basket/add/construct', [
+            'name' => 'Family collage',
+            'price' => 50,
+            'size' => '60x40',
+            'image_offset' => base64_encode('valid-image-payload'),
+        ])->assertOk()
+            ->assertJsonPath('count', 1);
+
+        $activeImage = session('basket.0.activeImage');
+
+        $this->assertIsString($activeImage);
+        Storage::disk('uploads')->assertExists(ltrim($activeImage, '/'));
+    }
+
+    public function test_modular_add_normalizes_frontend_image_and_accepts_a_100_mb_source(): void
+    {
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('addToBasket')->once()->andReturn(1);
+
+        $this->post('/basket/add', [
+            'basketType' => BasketType::MODULAR_PICTURES_TYPE,
+            'price' => 60,
+            'size' => '90x60',
+            'executionId' => 1,
+            'image' => UploadedFile::fake()->image('modular-source.jpg')->size(102400),
+        ])->assertOk()
+            ->assertJson([
+                'success' => true,
+                'count' => 1,
+            ]);
+    }
+
+    public function test_active_oil_portrait_payload_stores_original_once_and_uses_it_as_active_image(): void
+    {
+        Storage::fake('uploads');
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('normalizeBasket')->once()->andReturn([]);
+        $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+        $this->post('/basket/add/portrait', [
+            'pid' => 'undefined',
+            'price' => 40,
+            'name' => 'Oil portrait',
+            'size' => '60x40',
+            'orig_images' => [
+                UploadedFile::fake()->image('portrait.jpg')->size(102400),
+            ],
+        ])->assertOk()
+            ->assertJsonPath('count', 1)
+            ->assertSessionHas('basket.0.is_oil_portrait', 1)
+            ->assertSessionHas('basket.0.activeImage', function ($value): bool {
+                return is_string($value) && str_contains($value, '/uploads/');
+            });
+
+        $this->assertCount(1, Storage::disk('uploads')->allFiles('uploads'));
+    }
+
+    public function test_oil_portrait_requires_an_original_or_generated_image(): void
+    {
+        $this->post('/basket/add/portrait', [
+            'pid' => 'undefined',
+            'price' => 40,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('orig_images');
+    }
+
+    public function test_simple_generated_portrait_payload_stores_a_valid_data_image(): void
+    {
+        Storage::fake('uploads');
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('normalizeBasket')->once()->andReturn([]);
+        $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+        $this->post('/basket/add/portrait', [
+            'pid' => 15,
+            'price' => 40,
+            'name' => 'Generated portrait',
+            'is_gall_with_img' => 1,
+            'image' => 'data:image/png;base64,'.base64_encode('valid-image-data'),
+            'size' => '60x40',
+        ])->assertOk()
+            ->assertSessionHas('basket.0.is_gall_with_img', 1)
+            ->assertSessionHas('basket.0.activeImage', function ($value): bool {
+                return is_string($value) && str_ends_with($value, '.png');
+            });
+
+        $this->assertCount(1, Storage::disk('uploads')->allFiles('uploads'));
+    }
+
+    public function test_generated_portrait_rejects_malformed_base64(): void
+    {
+        $this->post('/basket/add/portrait', [
+            'pid' => 15,
+            'price' => 40,
+            'is_gall_with_img' => 1,
+            'image' => 'data:image/png;base64,not-valid***',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('image');
+    }
+
+    public function test_current_portrait_wizard_payload_preserves_style_fields_and_original(): void
+    {
+        Schema::dropIfExists('gallery_items');
+        Schema::create('gallery_items', function (Blueprint $table): void {
+            $table->id();
+            $table->text('images')->nullable();
+        });
+        DB::table('gallery_items')->insert([
+            'id' => 15,
+            'images' => json_encode(['/catalog/portrait.jpg']),
+        ]);
+
+        Storage::fake('uploads');
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('normalizeBasket')->once()->andReturn([]);
+        $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+        $this->post('/basket/add/portrait', [
+            'pid' => 15,
+            'price' => 55,
+            'terms_price' => 5,
+            'name' => 'Simpsons portrait',
+            'image' => 'undefined',
+            'is_gall_with_img' => 'undefined',
+            'size' => '60x40',
+            'full_size' => '60x40',
+            'users_count' => 2,
+            'fon' => 'city',
+            'obraz' => 'classic',
+            'obraz_title' => 'Classic',
+            'orig_images' => [
+                UploadedFile::fake()->image('family.jpg')->size(102400),
+            ],
+        ])->assertOk()
+            ->assertSessionHas('basket.0.activeImage', '/catalog/portrait.jpg')
+            ->assertSessionHas('basket.0.price', 50.0)
+            ->assertSessionHas('basket.0.fon', 'city')
+            ->assertSessionHas('basket.0.obraz', 'classic')
+            ->assertSessionHas('basket.0.obraz_title', 'Classic');
+
+        $this->assertCount(1, Storage::disk('uploads')->allFiles('uploads'));
+    }
+
     public function test_remove_requires_a_valid_basket_index_without_mutating_session(): void
     {
         $basket = [['name' => 'Canvas', 'price' => 20, 'count' => 1]];

@@ -6,6 +6,8 @@
 
 Рабочая инвентаризация POST/PUT/PATCH/DELETE/ANY routes для frontend-миграции
 на Laravel 13. Общий план и статусы находятся в `MIGRATION_PLAN.md`.
+Детальная матрица восьми basket add-endpoints и их JS/Blade payloads ведётся в
+`docs/basket-add-payload-audit.md`.
 
 ## Снимок route inventory
 
@@ -76,6 +78,11 @@
   корректного session state;
 - отдельно выявлены изменяющие состояние GET/ANY basket routes и необходимость
   типизированной валидации разных `basket/add/*` payloads.
+- `/basket/add` теперь использует JSON-aware `BasketStoreRequest`;
+- canvas, portrait и modular validation contracts принимают исходники 100 MiB
+  без Laravel size limit;
+- modular `image`/`activeImage` mismatch исправлен на уровне нормализации
+  запроса.
 
 ## Следующие проверки
 

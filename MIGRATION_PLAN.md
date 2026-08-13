@@ -134,7 +134,30 @@
   frontend-вызовов: `submitbonuses`, `clear_coupon`, `coupon_use`, gift card.
 - [ ] Добавить validation contracts для каждой группы `basket/add/*` payloads
   перед success-path тестами загрузок и session state.
+- [x] Подключить существующий `BasketStoreRequest` к `/basket/add` и вернуть
+  JSON 422 для неверного canvas payload.
+- [x] Добавить validation contract portrait uploads без size limit.
+- [x] Исправить modular payload mismatch: frontend отправляет файл `image`,
+  repository проверяет и читает `activeImage`.
+- [ ] Исключить доверие к переданной frontend-цене: пересчитывать basket price
+  по серверным данным для каждого типа товара.
+- [x] Создать матрицу восьми basket add-endpoints и известных JS/Blade payload
+  families в `docs/basket-add-payload-audit.md`.
+- [ ] Классифицировать reachability legacy `graph_portrait.blade.php`: он
+  отправляет `/basket/add` без `price`, но прямой render/include пока не найден.
+- [ ] Отдельно проверить legacy canvas и canvas-new inline FormData builders,
+  включая фактически подключённые global/inline скрипты.
+- [x] Покрыть simple legacy и current wizard portrait payload families.
+- [x] Исправить active graphic/oil crash-path: `pid=undefined` с
+  `orig_images[]`, но без base64 `image` приводил к `strpos(null)`.
+- [~] Добавить отдельные contracts для `add/inter`, `add/module`,
+  `add/construct`, `add/future_art` и двух recommendation endpoints:
+  future-art и construct готовы, остальные остаются в работе.
+- [x] Убрать frontend-лимит 20 MiB в future-art для печатных исходников.
+- [ ] Сузить basket/cart CSRF exceptions после проверки всех callers; сейчас
+  `basket/add`, `*/basket/*` и `/cart/*` исключены глобально.
 
 ## Текущая задача
 
-- [~] Проверить корзину и сохранение session state.
+- [~] Провести полный аудит и стабилизацию всех восьми basket add-endpoints;
+  следующая точка — recommendation endpoints и серверный источник цены.

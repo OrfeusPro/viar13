@@ -12,7 +12,6 @@ use Mail;
 use Cookie;
 use Session;
 use Storage;
-use Validator;
 use App\Models\User;
 use App\Models\Stock;
 use App\Models\Locale;
@@ -34,11 +33,14 @@ use App\Models\GalleryDecoration;
 use App\Services\ImageSaverService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use App\Repositories\BasketRepository;
 use App\Http\Requests\RemoveBasketItemRequest;
 use App\Http\Requests\UpdateBasketCountRequest;
+use App\Http\Requests\BasketStoreRequest;
+use App\Http\Requests\PortraitBasketRequest;
+use App\Http\Requests\FutureArtRequest;
+use App\Http\Requests\ConstructBasketRequest;
 use App\Models\DeliveryPickupAtViarWorkshop;
 
 class BasketController extends Controller
@@ -1398,7 +1400,7 @@ class BasketController extends Controller
 
     }
 
-    public function addToBasket()
+    public function addToBasket(BasketStoreRequest $request)
     {
         Log::info('BasketController@addToBasket: начало вызова', [
             'user_id' => auth()->id(),
@@ -1748,21 +1750,9 @@ class BasketController extends Controller
         return null;
     }
 
-    public function addToBasketArt(Request $request)
+    public function addToBasketArt(FutureArtRequest $request)
     {
         $files = $request->images;
-
-        $validator = Validator::make($request->all(), [
-            'images' => 'max:15',
-            'images.*' => 'image|mimes:png,bmp,jpg,jpeg,heic,heif',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid filesize or extension.',
-                'errors' => $validator,
-            ]);
-        }
 
         if ($files && !empty($files)) {
             $data['name'] = $request->input('name');
@@ -2019,7 +2009,7 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
-    public function addToBasketConstruct(Request $request)
+    public function addToBasketConstruct(ConstructBasketRequest $request)
     {
         ini_set('memory_limit', '512M');
 
@@ -2028,10 +2018,6 @@ class BasketController extends Controller
 
             $data['image_uploads'] = 1;
 
-            $data['activeImage'] = $img_name;
-        } elseif (!$request->has('is_orig_file')) {
-            $img = $request->input('image');
-            $img_name = $this->save_base64_image($request->input('image_offset'));
             $data['activeImage'] = $img_name;
         } else {
             // modular-pictures
@@ -2134,17 +2120,6 @@ class BasketController extends Controller
             request()->session()->forget('recommendation_discount_' . $data['pid']);
         }
 
-        $validator = Validator::make($request->all(), [
-            'orig_images.*' => 'image',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid filesize or extension.',
-                'errors' => $validator,
-            ]);
-        }
-
         $files = $request->orig_images;
 
         if ($files && !empty($files)) {
@@ -2170,70 +2145,47 @@ class BasketController extends Controller
 
 
 
-    private function save_base64_image($image)
+    private function save_base64_image(string $image): string
     {
-        $path = public_path() . '/uploads';
-
-        if (!is_dir($path)) {
-            File::makeDirectory($path, 0777, true, true);
-        }
-
-        $rand_name = Str::random(12);
         $image = str_replace(' ', '+', $image);
+        $extension = str_contains($image, 'data:image/jpeg') ? 'jpeg' : 'png';
+        $payload = preg_replace('#^data:image/(?:jpeg|jpg|png);base64,#i', '', $image);
+        $decoded = base64_decode(preg_replace('/\s+/', '', $payload), true);
 
-        if (strpos($image, 'jpeg;') !== false) {
-            $image = str_replace('data:image/jpeg;base64,', '', $image);
-            $imageName = $rand_name . '.' . 'jpeg';
-        } else {
-            $image = str_replace('data:image/png;base64,', '', $image);
-            $imageName = $rand_name . '.' . 'png';
+        if ($decoded === false) {
+            throw new \InvalidArgumentException('Invalid base64 image.');
         }
 
-        file_put_contents(public_path() . '/uploads/' . $imageName, base64_decode($image));
+        $path = 'uploads/' . (string) Str::uuid() . '.' . $extension;
+        Storage::disk('uploads')->put($path, $decoded);
 
-        return '/uploads/' . $imageName;
+        return '/' . $path;
     }
 
-    public function addToBasketPortrait(Request $request)
+    public function addToBasketPortrait(PortraitBasketRequest $request)
     {
         $data = [];
         $data['is_port_product'] = 1;
         $data['is_gall_with_img'] = 0;
         $data['pid'] = $request->input('pid');
 
+        $originalImages = [];
+        foreach ((array) $request->file('orig_images', []) as $file) {
+            $fileName = Storage::disk('uploads')->put('uploads', $file);
+            $originalImages[] = URL::to('/') . '/' . $fileName;
+        }
+
+        if ($originalImages !== []) {
+            $data['orig_images'] = $originalImages;
+        }
+
         if ($request->input('is_gall_with_img') == 1) {
             $data['is_gall_with_img'] = 1;
-            $img_base = $request->input('image');
-
-            if (strpos($img_base, 'image/png') !== false) {
-                $img_n = str_replace('data:image/png;base64,', '', $img_base);
-                $ext = '.png';
-            } else {
-                $img_n = str_replace('data:image/jpeg;base64,', '', $img_base);
-                $ext = '.jpeg';
-            }
-
-            $img = str_replace(' ', '+', $img_n);
-            $img_data = base64_decode($img);
-            $rand_name = Str::random(12);
-            file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
-
-            $data['activeImage'] = '/uploads/' . $rand_name . $ext;
+            $data['activeImage'] = $this->storePortraitDataImage($request->input('image'));
         } elseif ($data['pid'] != 'undefined' && $data['pid'] != '') {
             if ($request->input('is_uploaded_img')) {
                 $data['is_gall_with_img'] = 1;
-                $img_base = $request->input('image');
-                if ($request->has('is_png_base')) {
-                    $ext = '.png';
-                } else {
-                    $ext = '.jpeg';
-                }
-
-                $img = str_replace(' ', '+', $img_base);
-                $img_data = base64_decode($img);
-                $rand_name = Str::random(12);
-                file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
-                $data['activeImage'] = '/uploads/' . $rand_name . $ext;
+                $data['activeImage'] = $this->storePortraitDataImage($request->input('image'));
             } else {
                 $images = DB::table('gallery_items')->where('id', $data['pid'])->pluck('images')->first();
 
@@ -2245,32 +2197,12 @@ class BasketController extends Controller
             // is oil portrait
             $img_base = $request->input('image');
 
-            if (strpos($img_base, 'image/png') !== false) {
-                $img = str_replace('data:image/png;base64,', '', $img_base);
-                $ext = '.png';
+            if (is_string($img_base) && ! in_array($img_base, ['', 'undefined'], true)) {
+                $data['activeImage'] = $this->storePortraitDataImage($img_base);
             } else {
-                $img = str_replace('data:image/jpeg;base64,', '', $img_base);
-                $ext = '.jpeg';
+                $data['activeImage'] = $originalImages[0];
             }
-
-            $img = str_replace(' ', '+', $img);
-            $img_data = base64_decode($img);
-            $rand_name = Str::random(12);
-            file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
-            $data['activeImage'] = '/uploads/' . $rand_name . $ext;
             $data['is_oil_portrait'] = 1;
-        }
-
-        $files = $request->orig_images;
-        if ($files) {
-            $data['orig_images'] = [];
-            $i = -1;
-
-            foreach ($files as $file) {
-                $i++;
-                $file_name = Storage::disk('uploads')->put('uploads', $file);
-                $data['orig_images'][$i] = URL::to('/') . '/' . $file_name;
-            }
         }
 
         if (request()->hasFile('photo_ex')) {
@@ -2382,6 +2314,19 @@ class BasketController extends Controller
         $response['success'] = __('basket.succ_add');
 
         return json_encode($response);
+    }
+
+    private function storePortraitDataImage(string $dataImage): string
+    {
+        preg_match('#^data:image/(jpeg|png);base64,(.+)$#s', $dataImage, $matches);
+
+        $extension = $matches[1] === 'png' ? 'png' : 'jpeg';
+        $contents = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
+        $path = 'uploads/'.Str::uuid().'.'.$extension;
+
+        Storage::disk('uploads')->put($path, $contents);
+
+        return '/'.$path;
     }
 
     public function send_gift_card(Request $request)

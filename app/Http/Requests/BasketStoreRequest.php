@@ -3,7 +3,10 @@
 namespace App\Http\Requests;
 
 use App\Entity\BasketType;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class BasketStoreRequest extends FormRequest
 {
@@ -12,12 +15,30 @@ class BasketStoreRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $activeImage = $this->files->get('activeImage');
+        $frontendImage = $this->files->get('image');
+
+        if (
+            (int) $this->input('basketType') === BasketType::MODULAR_PICTURES_TYPE
+            && ! $activeImage
+            && $frontendImage
+        ) {
+            $this->files->set('activeImage', $frontendImage);
+        }
+    }
+
     public function rules(): array
     {
         $rules = [
-
-            'basketType' => 'required',
-
+            'basketType' => ['required', 'integer', Rule::in([
+                BasketType::CANVAS_TYPE,
+                BasketType::MODULAR_PICTURES_TYPE,
+                BasketType::COLLAGE_TYPE,
+                BasketType::GIFT_CARD,
+            ])],
+            'price' => ['required', 'numeric', 'min:0'],
         ];
 
         if (!($this->request->get('basketType'))) {
@@ -30,7 +51,9 @@ class BasketStoreRequest extends FormRequest
 
                 $rules = [
 
-                    'basketType' => 'required',
+                    'basketType' => $rules['basketType'],
+
+                    'price' => $rules['price'],
 
                     'userImage' => 'required|image',
 
@@ -52,13 +75,19 @@ class BasketStoreRequest extends FormRequest
 
                 $rules = [
 
-                    'basketType' => 'required',
+                    'basketType' => $rules['basketType'],
+
+                    'price' => $rules['price'],
 
                     'size' => 'required',
 
-                    'executionId' => 'required',
+                    'activeImage' => [
+                        'required',
+                        'file',
+                        'mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,psd,heic,heif',
+                    ],
 
-                    'canvasId' => 'required',
+                    'executionId' => 'required',
 
                 ];
 
@@ -68,7 +97,9 @@ class BasketStoreRequest extends FormRequest
 
                 $rules = [
 
-                    'basketType' => 'required',
+                    'basketType' => $rules['basketType'],
+
+                    'price' => $rules['price'],
 
                     'allImages' => 'required',
 
@@ -89,5 +120,13 @@ class BasketStoreRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422));
     }
 }

@@ -63,13 +63,14 @@ scope; Filament 5 будет рассматриваться отдельным �
 
 ## В работе
 
-- проверка корзины и сохранения session state.
+- полный аудит восьми basket add-endpoints; active и legacy portrait payload
+  families.
 
 ## Следующие действия
 
-1. Инвентаризировать basket/cart endpoint contracts и frontend payloads.
-2. Покрыть добавление, изменение и очистку корзины session-тестами.
-3. Затем переходить к checkout.
+1. Покрыть active graphic portrait payload и simple legacy portrait family.
+2. Проверить legacy/current canvas и reachability orphan-шаблонов.
+3. Затем пройти inter/module/construct/future-art/recommendations.
 
 ## Риски и открытые вопросы
 
@@ -226,3 +227,73 @@ scope; Filament 5 будет рассматриваться отдельным �
   полный `view:cache` и `git diff --check` также PASS;
 - найдены отдельные задачи: state-changing GET/ANY basket routes и отсутствие
   общих validation contracts у `basket/add/*`.
+
+### 2026-08-13 — basket add: canvas, portrait и modular
+
+- ранее неиспользуемый `BasketStoreRequest` подключён к `/basket/add`;
+- неполный canvas payload возвращает единый JSON 422 вместо попадания в
+  repository с частичными данными;
+- canvas contract проверяет тип корзины, цену, исходник и обязательные
+  параметры конфигурации без ограничения размера файла;
+- добавлен `PortraitBasketRequest` для цены, комментария, `orig_images` и
+  `photo_ex`; MIME проверяется, size limit отсутствует;
+- исправлен реальный modular mismatch: frontend-поле `image` нормализуется в
+  ожидаемое repository-поле `activeImage`;
+- тестовые canvas, portrait и modular файлы по 100 MiB проходят validation;
+- targeted basket result: 8 tests / 39 assertions PASS;
+- текущая совместная regression: 41 tests / 186 assertions PASS; `route:list`,
+  полный `view:cache`, JS syntax и `git diff --check` PASS;
+- следующий точный шаг: collage payload и storage success paths.
+
+### 2026-08-13 — полный JS/Blade-аудит basket add
+
+- подтверждено, что прежнее утверждение о проверке всех вариантов было бы
+  неверным: опубликовано 8 отдельных basket add-endpoints;
+- создан `docs/basket-add-payload-audit.md` с endpoint/source/status matrix;
+- `/basket/add/portrait` вызывается минимум шестью JS-семействами и имеет как
+  минимум simple legacy и current wizard payload families;
+- общий `/basket/add` собирается global JS и несколькими inline Blade-копиями,
+  которые отличаются по выбору полей и обработке JSON;
+- `add/inter`, `add/module`, `add/construct`, `add/future_art` и recommendation
+  endpoints пока не имеют полного Form Request/test coverage;
+- найден legacy `graph_portrait.blade.php` без поля `price`, но активные
+  `/graphic-portrait*` используют другой Blade и portrait endpoint; legacy-файл
+  помечен как вероятный orphan до reachability-аудита;
+- найдено глобальное отключение CSRF для `basket/add`, `*/basket/*` и
+  `/cart/*`; изменение отложено до проверки всех callers;
+- найден frontend-лимит future-art 20 MiB, противоречащий принятому контракту
+  больших печатных исходников;
+- текущий порядок изменён: сначала полная совместимость всех payload families,
+  затем storage/checkout.
+
+### 2026-08-13 — portrait families и future-art contract
+
+- для portrait endpoint проверены simple generated, active oil и current
+  wizard payload families;
+- oil payload с `pid=undefined`, `orig_images[]` и без base64 preview больше
+  не падает на `strpos(null)`: первый сохранённый оригинал становится active;
+- загрузка оригинала portrait больше не дублируется, generated data URL
+  проходит строгую проверку и сохраняется через uploads disk;
+- добавлен `FutureArtRequest`: обязательные и нормализованные контакты, от 1
+  до 15 изображений, явные MIME, JSON 422 и отсутствие size limit;
+- удалена legacy frontend-проверка future-art `> 20 MiB`; активный footer
+  такого лимита уже не содержал;
+- исправлено вводящее в заблуждение серверное сообщение `Invalid filesize`:
+  `max:15` ограничивал количество элементов массива, а не размер;
+- targeted basket result: 15 tests / 76 assertions PASS;
+- следующий точный шаг: аудит file/base64 веток `/basket/add/construct`.
+
+### 2026-08-13 — construct payload families
+
+- подтверждены collage/family base64 и modular original-file payload families;
+- добавлен `ConstructBasketRequest` с условным требованием `image_offset` либо
+  пары original `image` + безопасный `collageSvgImage_hash`;
+- MIME для `image`, `photo_ex`, `fon[]`, `orig_images[]` проверяется без
+  application-level size limit; original-файл 100 MiB проходит правила;
+- устранена ветка, повторно сохранявшая отсутствующий `image_offset`;
+- generated base64 строго декодируется и сохраняется через uploads disk;
+- session/storage success и оба invalid-source режима покрыты тестами;
+- targeted basket result: 18 tests / 91 assertions PASS;
+- frontend regression: 45 tests / 227 assertions PASS;
+- `route:list --path=basket/add`, `view:cache` и `git diff --check` PASS;
+- следующий точный шаг: recommendation endpoints и серверный источник цены.
