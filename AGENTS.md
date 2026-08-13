@@ -14,7 +14,8 @@
    исключается, Filament 5 будет отдельным последующим этапом.
 5. Сначала переносить и проверять публичные routes/controllers/Blade/assets,
    затем формы, auth/account, корзину, checkout и публичные интеграции.
-6. Текущий краткий статус вести в `MIGRATION_PROGRESS.md` этого репозитория.
+6. План, backlog и найденные задачи вести в `MIGRATION_PLAN.md`.
+7. Выполненные работы и результаты проверок вести в `MIGRATION_PROGRESS.md`.
 
 ## Базовые принципы
 1. Не ломать существующую бизнес-логику `orders` и текущие админ-чаты.
@@ -116,7 +117,8 @@
 
 ## Operational Memory (Do Not Lose Context)
 1. Source-of-truth notes:
-   - Laravel 13 frontend migration: `MIGRATION_PROGRESS.md`;
+   - Laravel 13 migration plan/backlog: `MIGRATION_PLAN.md`;
+   - Laravel 13 completed work/evidence: `MIGRATION_PROGRESS.md`;
    - CRM<->SA: `docs/crm_sa_implementation_plan.md`;
    - real DB/code sources: `docs/crm-sa/09_real_sources_audit.md`.
 2. Каталог `docs/upgrade-laravel13-filament5` — исторический архив старого
@@ -128,13 +130,16 @@
    - service catalog base: `newhome_services` + `translations`
    - status domain: `orders.status` (`new`, `watching`, `pegging`, `in_production`, `sended`, `send_lubanas`, `completed`)
 5. `sa_service_catalog*` and `sa_stage_mappings` are NOT existing tables in current DB snapshot.
-6. После каждого заметного шага миграции обновлять `MIGRATION_PROGRESS.md`:
-   - что изменено;
-   - какие проверки прошли/не прошли;
-   - риски и следующий точный шаг.
-7. After each meaningful CRM/SA implementation step, update `docs/crm_sa_implementation_plan.md` with:
+6. Каждую найденную задачу миграции сразу добавлять в `MIGRATION_PLAN.md`.
+7. После каждого заметного шага обновлять `MIGRATION_PLAN.md` и
+   `MIGRATION_PROGRESS.md`:
+   - отметить статус задачи (`TODO`, `IN PROGRESS`, `DONE`, `BLOCKED`);
+   - записать, что изменено;
+   - записать, какие проверки прошли/не прошли;
+   - зафиксировать риски и следующий точный шаг.
+8. After each meaningful CRM/SA implementation step, update `docs/crm_sa_implementation_plan.md` with:
    - what changed,
    - what is still static,
    - next exact action.
-8. Не считать миграцию или этап `DONE` без выполненного Definition of Done и
+9. Не считать миграцию или этап `DONE` без выполненного Definition of Done и
    записанных evidence/проверок.

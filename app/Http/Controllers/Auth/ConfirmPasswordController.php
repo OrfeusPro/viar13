@@ -22,7 +22,7 @@ class ConfirmPasswordController extends Controller
     public function confirm(Request $request)
     {
         $request->validate(['password' => ['required', 'string']]);
-        if (! Hash::check($request->string('password'), $request->user()->password)) {
+        if (! Hash::check((string) $request->string('password'), $request->user()->password)) {
             throw ValidationException::withMessages(['password' => [trans('auth.password')]]);
         }
         $request->session()->passwordConfirmed();

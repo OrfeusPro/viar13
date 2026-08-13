@@ -8,6 +8,9 @@
 Первый приоритет — полностью поднять публичный frontend. Админка временно вне
 scope; Filament 5 будет рассматриваться отдельным этапом.
 
+Подробный backlog, статусы этапов и все найденные задачи ведутся в
+`MIGRATION_PLAN.md`. Этот файл хранит выполненные изменения и evidence.
+
 ## Принятые решения
 
 - миграция выполняется на основе текущего проекта, без использования
@@ -60,17 +63,14 @@ scope; Filament 5 будет рассматриваться отдельным �
 
 ## В работе
 
-- стабилизация первого frontend slice и автоматических тестов под PHPUnit 12;
-- проверка остальных публичных страниц и locale aliases.
+- проверка основных страниц личного кабинета и их зависимостей.
 
 ## Следующие действия
 
-1. Добавить Laravel 13-native public auth controllers без `laravel/ui` traits.
-2. Прогнать public route/view compile smoke и исправить следующий набор
-   несовместимостей.
-3. Добавить автоматический smoke-тест Laravel 13 boot/route contract.
-4. Последовательно проверить locale homepage, FAQ, About, Contacts и catalog.
-5. Затем переходить к формам, account, корзине и checkout.
+1. Проверить основные страницы account/new account с авторизованным
+   пользователем.
+2. Инвентаризировать публичные формы и POST/AJAX endpoints.
+3. Затем переходить к корзине и checkout.
 
 ## Риски и открытые вопросы
 
@@ -98,3 +98,36 @@ scope; Filament 5 будет рассматриваться отдельным �
 - главная страница текущего проекта отвечает HTTP 200 на локальном PHP 8.3;
 - БД-схема и production/test не изменялись;
 - следующий точный шаг: public auth compatibility и автоматический smoke.
+
+### 2026-08-13 — основные страницы и первый каталог-срез
+
+- создан `MIGRATION_PLAN.md`: этапы, чек-листы, найденные задачи и текущий
+  статус теперь ведутся отдельно от этого журнала evidence;
+- `AGENTS.md` требует сразу добавлять найденные задачи в план и обновлять оба
+  migration-файла после заметного шага;
+- восстановлен legacy frontend-helper `str_trans()` с поддержкой форматов
+  `{{en}}...` и `[[en]]...`; контракт подтверждён unit-тестами;
+- compatibility translator фильтрует пустые имена атрибутов, из-за которых
+  Laravel 13 падал при переводе `GalleryPage`;
+- HTTP smoke: FAQ возвращает `200` для `lv`, `lt`, `de`, `en`, `ee`; `ru`
+  возвращает ожидаемый redirect на URL без locale, `pl` — на отдельный домен;
+- HTTP smoke: `/about` и `/page/contacts` возвращают `200`;
+- HTTP smoke: `/new/gallery`, `/en/new/gallery`, module/photo/reproduction,
+  их репрезентативные категории, portrait card и `/en/new/canvas` возвращают
+  `200`;
+- неизвестная страница, locale, gallery category и portrait slug возвращают
+  `404`, без runtime exception;
+- regression после исправлений: 6 tests / 14 assertions PASS;
+- auth forms `/login`, `/register`, `/password/reset` возвращают `200`, а
+  `/account` и `/new/account` для гостя сохраняют legacy redirect на `/`;
+- email verification routes отключены: старый `Auth::routes()` не включал
+  verify, а фактическая User model не реализует этот контракт;
+- `ConfirmPasswordController` передаёт в `Hash::check()` обычную строку вместо
+  Laravel `Stringable`;
+- добавлены изолированные SQLite feature-тесты auth: доступность форм,
+  валидация, guest redirects, успешные login/logout и регистрация без отправки
+  реальной почты, password reset token flow и password confirmation;
+- итоговая targeted regression текущего шага: 17 tests / 72 assertions PASS;
+- после auth-изменений повторно прошли `route:list`, полный `view:cache` и
+  `git diff --check`;
+- следующий точный шаг: authenticated account pages и их data dependencies.

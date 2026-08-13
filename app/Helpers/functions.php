@@ -2,6 +2,35 @@
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\Storage;
 
+if (!function_exists('str_trans')) {
+    /**
+     * Read a locale-specific fragment from legacy Voyager Extension strings.
+     *
+     * Supported formats:
+     *   {{en}}English{{ru}}Русский
+     *   [[en]]English[[ru]]Русский
+     */
+    function str_trans(?string $string, ?string $locale = null): string
+    {
+        if ($string === null || $string === '') {
+            return '';
+        }
+
+        $locale = $locale ?: app()->getLocale();
+        $openBracket = str_contains($string, '[[') ? '[[' : '{{';
+        $closeBracket = $openBracket === '[[' ? ']]' : '}}';
+        $fragments = explode($openBracket, $string);
+
+        foreach ($fragments as $fragment) {
+            if (str_starts_with($fragment, $locale . $closeBracket)) {
+                return substr($fragment, strlen($locale . $closeBracket));
+            }
+        }
+
+        return $fragments[0] ?? $string;
+    }
+}
+
 if (!function_exists('ver_asset')) {
     function ver_asset($path, $secure = null): string
     {

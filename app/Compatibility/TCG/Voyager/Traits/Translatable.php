@@ -46,9 +46,14 @@ trait Translatable
 
     public function getTranslatableAttributes(): array
     {
-        return property_exists($this, 'translatable') && is_array($this->translatable)
-            ? $this->translatable
-            : [];
+        if (! property_exists($this, 'translatable') || ! is_array($this->translatable)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $this->translatable,
+            static fn (mixed $attribute): bool => is_string($attribute) && $attribute !== ''
+        ));
     }
 
     public function scopeWithTranslation(Builder $query, ?string $locale = null, string|bool $fallback = true): Builder
