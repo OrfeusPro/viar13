@@ -3,11 +3,13 @@
 namespace Tests\Feature;
 
 use App\Entity\BasketType;
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Requests\PortraitBasketRequest;
 use App\Http\Requests\FutureArtRequest;
 use App\Http\Requests\ConstructBasketRequest;
 use App\Repositories\BasketRepository;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Http\Request;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +19,35 @@ use Tests\TestCase;
 
 class PublicBasketSessionContractTest extends TestCase
 {
+    public function test_basket_and_cart_mutations_are_not_excluded_from_csrf_verification(): void
+    {
+        $middleware = new class($this->app, $this->app['encrypter']) extends VerifyCsrfToken
+        {
+            public function excludes(Request $request): bool
+            {
+                return $this->inExceptArray($request);
+            }
+        };
+
+        foreach ([
+            '/basket/add',
+            '/lv/basket/add/portrait',
+            '/basket/update/count',
+            '/ru/basket/remove',
+            '/cart/add-recommended',
+            '/uk/cart/set_email',
+        ] as $path) {
+            $this->assertFalse(
+                $middleware->excludes(Request::create($path, 'POST')),
+                "CSRF verification must be enabled for [{$path}]."
+            );
+        }
+
+        $this->assertTrue(
+            $middleware->excludes(Request::create('/admin/upload/tinyimage', 'POST'))
+        );
+    }
+
     public function test_canvas_add_rejects_an_incomplete_payload_as_json(): void
     {
         $this->post('/basket/add', [

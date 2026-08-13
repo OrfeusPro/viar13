@@ -150,20 +150,22 @@ HTTP 410, `code=legacy_endpoint_retired` и URL актуальной замен�
 
 ## Общие риски
 
-1. `VerifyCsrfToken::$except` исключает `basket/add`, `*/basket/*`, `/cart/*`
-   и фактически отключает CSRF для basket/cart mutations.
-2. Цена для нескольких endpoints принимается из frontend request; необходим
+1. Цена для нескольких endpoints принимается из frontend request; необходим
    серверный пересчёт по каталогу/конфигурации.
-3. Есть исходник и min-копия активного JS; одинаковая обработка validation
+2. Есть исходник и min-копия активного JS; одинаковая обработка validation
    error синхронизирована. Отличающиеся inline Blade-копии недостижимы.
-4. Реальный web-server/PHP должен быть настроен выше ожидаемого размера всего
+3. Реальный web-server/PHP должен быть настроен выше ожидаемого размера всего
    multipart-запроса; Laravel намеренно не задаёт собственный size limit.
-5. Base64-ветки пишут файлы через `file_put_contents()` без единого строгого
+4. Base64-ветки пишут файлы через `file_put_contents()` без единого строгого
    decode/MIME/storage contract.
+
+Широкие CSRF exceptions `basket/add`, `*/basket/*`, `/cart/*` и их варианты
+удалены после source-аудита callers. Активные AJAX builders передают
+`X-CSRF-TOKEN`, canvas recommendation передаёт `_token`, обычная форма
+`cart/set_email` содержит `@csrf`. Структурный тест подтверждает, что обычные и
+локализованные basket/cart URL больше не входят в `$except`.
 
 ## Следующие действия
 
-1. Проверить точный охват basket/cart CSRF exceptions и безопасно сузить их для
-   подтверждённых callers.
-2. Спроектировать общий server-side pricing для конфигурируемых товаров.
-3. После frontend UAT удалить orphan Blade/builders и старые controller methods.
+1. Спроектировать общий server-side pricing для конфигурируемых товаров.
+2. После frontend UAT удалить orphan Blade/builders и старые controller methods.

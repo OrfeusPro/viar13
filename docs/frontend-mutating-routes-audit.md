@@ -83,9 +83,17 @@
   без Laravel size limit;
 - modular `image`/`activeImage` mismatch исправлен на уровне нормализации
   запроса.
+- удалены широкие CSRF exceptions для `basket/*`, локализованных
+  `*/basket/*`, `cart/*` и `*/cart/*`;
+- active AJAX callers basket/cart отправляют `X-CSRF-TOKEN`, FormData canvas
+  recommendation — `_token`, а обычная `cart/set_email` form — `@csrf`;
+- структурный тест подтверждает CSRF-защиту обычных и locale-prefixed mutation
+  URL; независимое исключение `/admin/upload/tinyimage` не менялось.
 
 ## Следующие проверки
 
-1. Cart/basket validation и session state.
-2. Route-level и controller-level authorization для `orders/*`.
-3. Назначение и защита admin-controller routes в публичной группе.
+1. Заменить изменяющие состояние GET/ANY basket routes подтверждёнными POST
+   contracts.
+2. Cart/basket validation и session state за пределами add/remove/count.
+3. Route-level и controller-level authorization для `orders/*`.
+4. Назначение и защита admin-controller routes в публичной группе.

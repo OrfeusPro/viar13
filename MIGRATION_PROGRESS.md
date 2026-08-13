@@ -359,3 +359,18 @@ scope; Filament 5 будет рассматриваться отдельным �
   обоих JS-файлов и список восьми basket add routes также PASS;
 - физическое удаление orphan Blade/partials оставлено после frontend UAT;
 - следующий точный шаг: аудит и безопасное сужение basket/cart CSRF exceptions.
+
+### 2026-08-13 — basket/cart CSRF protection
+
+- проверены активные basket/cart AJAX, FormData и обычные form callers;
+- AJAX передают `X-CSRF-TOKEN`, canvas recommendation — `_token`, форма
+  `cart/set_email` содержит `@csrf`;
+- из `VerifyCsrfToken::$except` удалены `basket/add`, `*/basket/*`, cart root и
+  все широкие `cart/*`/`*/cart/*` patterns;
+- независимое исключение `/admin/upload/tinyimage` оставлено без изменений;
+- добавлен structural contract для обычных и locale-prefixed basket/cart URL;
+- targeted basket result: 27 tests / 137 assertions PASS;
+- frontend regression: 54 tests / 273 assertions PASS; `view:cache`, PHP syntax
+  и inventory basket/cart routes также PASS;
+- следующий точный шаг: удалить mutating GET/ANY варианты basket routes после
+  проверки callers и сохранить только POST contracts.

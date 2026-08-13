@@ -156,8 +156,9 @@
   `add/construct`, `add/future_art` и двух recommendation endpoints:
   active endpoints готовы; orphan inter/module явно retired с JSON 410.
 - [x] Убрать frontend-лимит 20 MiB в future-art для печатных исходников.
-- [ ] Сузить basket/cart CSRF exceptions после проверки всех callers; сейчас
-  `basket/add`, `*/basket/*` и `/cart/*` исключены глобально.
+- [x] Сузить basket/cart CSRF exceptions после проверки callers: активные AJAX
+  передают `X-CSRF-TOKEN`, формы — `_token`; широкие basket/cart patterns
+  удалены, оставлено независимое исключение TinyMCE upload.
 - [x] Защитить три recommendation add-endpoints: серверная цена, session offer
   для gallery и обязательный базовый товар для canvas.
 - [ ] Исправить recommendation item-card contract: текущий отдельный endpoint
@@ -172,6 +173,6 @@
 
 ## Текущая задача
 
-- [~] Провести полный аудит и стабилизацию всех восьми basket add-endpoints;
-  payload/reachability contracts классифицированы, следующая точка — аудит и
-  безопасное сужение basket/cart CSRF exceptions для подтверждённых callers.
+- [~] Устранить небезопасные mutating GET/ANY basket routes: начать с
+  `submitbonuses`, `clear_coupon`, `coupon_use` и `send_gift_card`, сохранив
+  только подтверждённые POST callers и совместимый frontend contract.
