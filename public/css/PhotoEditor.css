@@ -1,0 +1,531 @@
+.collage-shapes img
+{
+	height: 100% !important;	
+	object-fit: cover;
+}
+
+.product-download {
+	margin: -6px 0 0;
+}
+.product-download .img-item {
+	position: relative;
+	display: block;
+	border: 1px solid #8c535b;
+	border-radius: 10px;
+	background: url(../img/download-icon.png) center no-repeat;
+	overflow: hidden;
+	width: calc(33.33% - 10px);
+	height: 80px;
+	margin: 8px 0;
+	touch-action: none;
+	-ms-touch-action: none;
+}
+.product-download .img-item img {
+	opacity: 0;
+	width: 101%;
+	height: 100%;
+	display: block;
+	object-fit: cover;
+}
+
+.product-download .img-item .delete 
+{
+	display: none;
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	background: url("/img/delete-img.png") center no-repeat;
+	background-size: 100%;
+	border: none;
+	height: 10px;
+	width: 10px;	
+}
+
+.product-download .img-item.isLoad .delete 
+{
+	display: block;
+}
+
+
+.product-download .img-item.isLoad img
+{
+	opacity: 1;	
+}
+
+
+.DragAndDrop
+{
+	position: fixed;
+	margin-left: -60px;
+	margin-top: -60px;
+	height: 120px;
+	width: 120px;
+	pointer-events: none;
+	object-fit: cover;
+	opacity: .7;
+	border-radius: 5px;
+	z-index: 106;
+	animation: DragAndDrop .3s cubic-bezier(0.7, -1, 0.4, 1.22);
+}
+
+@keyframes DragAndDrop {
+	0% {
+		transform: scale(.3);
+		opacity: 0;
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.PhotoEditor{
+	user-select: none;	
+	width: 100%;
+	display: flex;
+	pointer-events: none;
+	
+}
+
+
+.PhotoEditor .tools
+{
+	display: inline-table; 
+	height: auto;
+	width: 80px;	
+	pointer-events: all;
+}
+
+.PhotoEditor .tool
+{   
+	position: relative;
+	display: table;
+	cursor: pointer;
+	height: 31px;
+	width: 31px;
+	margin: 3px;	
+	float: left;
+	font-size: 28px;
+	color: #FF9118;
+	text-align: center;
+}
+.PhotoEditor .wrapper
+{
+	width: calc(100% - 80px);
+	height: 100%;	
+	display: flex;
+	flex-direction: column;
+}
+
+.PhotoEditor .wrapper .settings
+{
+	position: relative;	
+	display: flex;	
+	align-items: flex-end; 
+	justify-content: flex-end; 
+	height: 50px;
+	width: 100%;	
+	pointer-events: all;
+}
+.PhotoEditor .wrapper .settings .cur_text
+{
+	display: flex;
+}
+
+.PhotoEditor .wrapper .settings .cur_text div
+{
+	position: relative;
+	margin: 2px;
+	
+}
+
+.PhotoEditor .wrapper .settings .cur_text input[type="color"]
+{
+	-webkit-appearance: none;
+	border: none;
+	background: #fff;
+	width: 30px;
+	height: 30px;
+	overflow: hidden;
+	outline: none;
+	cursor: inherit;	
+
+}
+
+.PhotoEditor .wrapper .settings .cur_text div::after {
+	content: attr(data-tooltip); 
+	position: absolute;
+	bottom: 100%;
+	left: 0px;
+	color: #FF9118;
+	font-size: 15px;
+	padding: 5px;
+	border-radius: 3px; 
+	background: #fbf4f2;
+	border: 1px solid #000000;
+	z-index: 100;
+	opacity: 0;
+	transition: 1s; 
+	pointer-events: none;
+}
+
+
+
+.PhotoEditor .wrapper .settings .cur_text div:hover::after{
+	opacity: 1;
+}
+
+.PhotoEditor .wrapper .settings .cur_text select
+{
+	width: 50px;
+	height: 30px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background: none;
+	border: none;
+	text-overflow: ellipsis; 
+	color: #000000;
+}
+
+
+.PhotoEditor .wrapper .settings .range
+{
+	position: relative;
+	float: left;	
+	display: block;	
+	width: 150px;
+	text-align: center;	
+	margin: 3px;
+}
+
+.PhotoEditor .wrapper .settings .range .slider
+{
+	width: 95%;	
+	-webkit-appearance: none;
+	height: 4px;
+	background: #FFEDDE;
+	outline: none;
+	opacity: 0.7;
+	transition: opacity .2s;
+	border-radius: 3px;
+}
+
+
+.PhotoEditor .wrapper .settings .range .slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 10px;
+	height: 15px;
+	background: #cac7bf;
+	border: 1px solid #2b2b2b;
+	cursor: pointer;
+	border-radius: 3px;
+}
+
+.PhotoEditor .wrapper .settings .range .slider::-moz-range-thumb {
+	width: 10px;
+	height: 15px;
+	background: #cac7bf;
+	border: 1px solid #2b2b2b;
+	cursor: pointer;
+	border-radius: 3px;
+}
+
+
+.PhotoEditor .wrapper .settings .range .caption
+{
+	font-size: 13px;
+	margin: 0;
+}
+	
+.PhotoEditor .wrapper .canvas_container canvas
+{
+	pointer-events: all;	
+	touch-action: none;
+	-ms-touch-action: none;
+}
+
+.PhotoEditor .tool:before
+{
+	display: table-cell;
+	vertical-align: middle;	
+}
+
+.PhotoEditor .tool.disable
+{
+	opacity: .2;
+	pointer-events: none;
+}
+
+.PhotoEditor .tool:focus-within
+{
+	z-index: 1;	
+	color: #8c535b;			
+}
+
+.PhotoEditor .tools .tool[data-tooltip]::after {
+	content: attr(data-tooltip); 
+	position: absolute;
+	top: 35px;
+	left: -30px;
+	color: #FF9118;
+	font-size: 15px;
+	padding: 5px;
+	border-radius: 3px; 
+	background: #fbf4f2;
+	border: 1px solid #000000;
+	z-index: 100;
+	opacity: 0;
+	transition: 1s; 
+	pointer-events: none;
+}
+
+
+
+.PhotoEditor .tools .tool[data-tooltip]:hover::after {
+	opacity: 1;
+}
+
+
+.PhotoEditor .tools .tool[data-tooltip]:focus-within::after {
+	opacity: 0;
+}
+
+.PhotoEditor .tool .window
+{
+	position: fixed;
+	visibility: hidden;
+	opacity: 0;
+	display: table;
+	overflow: hidden;
+	top: 0px;
+	left: 0px;
+	width: 300px;
+	background: #ffffff;	
+	border: 1px solid #8c535b;
+	border-radius: 5px;
+	-webkit-box-shadow: 2px 0px 13px -1px rgba(255,160,83,1);
+	-moz-box-shadow: 2px 0px 13px -1px rgba(255,160,83,1);
+	box-shadow: 2px 0px 13px -1px rgba(255,160,83,1);
+	cursor: default;
+}
+
+.PhotoEditor .tool:focus-within .window
+{
+	visibility: visible;
+	opacity: 1;
+}
+
+.PhotoEditor .tool .window .smiles{
+	width: 100%;
+	height: 350px;	
+}
+
+.PhotoEditor .tool .window .smiles .accordion{
+	height: 100%;
+	width: 100%;
+}
+
+.PhotoEditor .tool .window .smiles .accordion .accordion_header {
+	background-color: #FFEDDE;
+	color: #000000;
+	cursor: pointer;
+	padding: 16px;
+	width: 100%;
+	border-bottom: 1px solid #8c535b;
+	text-align: left;
+	outline: none;
+	font-size: 18px;
+	transition: 0.5s;
+}
+
+.PhotoEditor .tool .window .smiles .accordion .accordion_header:after {
+	content: '\002B';
+	color: #000000;
+	font-size: 23px;
+	float: right;
+	margin-left: 5px;
+	font-weight: bold;
+}
+
+.PhotoEditor .tool .window .smiles .accordion .accordion_active:after {
+	content: "\2212";
+}
+
+.PhotoEditor .tool .window .smiles .accordion .accordion_body {
+	--scrollHeight: 0;
+	display: block;
+	height: 0px;
+	overflow: hidden;
+	transition: height 0.2s ease-out;
+}
+
+
+.PhotoEditor .tool .window .smiles .accordion .accordion_active + .accordion_body
+{
+	height: var(--scrollHeight);
+	overflow-y: auto;
+}
+
+
+
+
+.PhotoEditor .tool .window .smiles .item {
+	position: relative;
+	display: block;
+	float: left;
+	overflow: hidden;
+	width: 50px;
+	height: 50px;
+	margin: 4px;
+	text-align: center;
+	background: url("../img/smile_add.png") no-repeat;
+	touch-action: none;
+	-ms-touch-action: none;
+	
+}
+
+.PhotoEditor .tool .window .smiles .item img 
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	opacity: 0;
+	width: 50px;
+	height: 50px;
+	display: block;
+	background: #ffffff; 
+}
+
+.PhotoEditor .wrapper .canvas_container
+{
+	width: 100%;
+	text-align: right;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;   
+	-khtml-user-select: none;    
+	-moz-user-select: none;      
+	-ms-user-select: none;       
+	user-select: none;   
+}
+
+.fullscreen
+{
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 105;	
+}
+
+.fullscreen .wrap
+{
+	display: block;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	overflow: auto;
+	background-color: rgba(0, 0, 0, 0.7);
+	padding: 14px;	
+	pointer-events: all;
+}
+
+.fullscreen .PhotoEditor
+{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+.fullscreen .PhotoEditor .canvas_container
+{
+	text-align: center;
+}
+
+.fullscreen .tools
+{
+	width: 40px;	
+}
+
+.fullscreen .tools .tool
+{
+	color: #ffffff;
+}
+
+.fullscreen .tools .tool .window
+{
+	left: -260px;
+}
+
+
+
+.fullscreen .PhotoEditor .wrapper .settings .range .caption
+{
+	color: #ffffff;
+}
+
+
+.fullscreen .PhotoEditor .wrapper .settings .range .slider
+{
+	background: #ffffff;
+}
+
+
+.fullscreen .PhotoEditor .wrapper .settings .cur_text div:hover::after{
+	color: #000000; 
+}
+
+.fullscreen .tools .tool[data-tooltip]::after { 
+	color: #000000;
+}
+
+
+.fullscreen .PhotoEditor .tool .window
+{
+	border: 1px solid #5b6059;
+	-webkit-box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.75);
+	-moz-box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.75);
+	box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.75);
+}
+
+
+.fullscreen .PhotoEditor .wrapper .settings .cur_text select
+{
+	color: #ffffff;
+}
+
+
+.fullscreen .PhotoEditor .wrapper .settings .cur_text select option
+{
+	color: #000000;
+}
+
+.Animation_smilemoved{
+	position: fixed;
+	margin-left: -60px;
+	margin-top: -60px;
+	height: 120px;
+	width: 120px;
+	border-radius: 5px;
+	z-index: 100006;
+	background-size: 100%;
+	animation: Animation_smilemoved var(--time);
+}
+
+
+@keyframes Animation_smilemoved {
+	0% {
+		
+		top: var(--start_y);	
+		left: var(--start_x);		
+		transform: scale(1);
+	}
+	100% {
+		top: var(--end_y);	
+		left: var(--end_x);	
+		transform: scale(0.4);
+	}
+}

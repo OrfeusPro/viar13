@@ -1,0 +1,37 @@
+<?php
+
+return array (
+  'header_col1_name' => 'PORTREE',
+  'header_col2_name' => 'FOTOLÕUEND',
+  'header_col3_name' => 'KOLLAAŽ',
+  'header_col4_name' => 'Ideed',
+  'footer_col1_name' => 'Portree stiilid',
+  'footer_col2_name' => 'Portree tüübid',
+  'footer_col3_name' => 'Teave',
+  'we_in_socs' => 'Oleme sotsiaalvõrgustikes:',
+  'footer_addr1' => 'Turu tn 34, Tartu  51004',
+  'footer_addr2' => 'Lubānas 65, Rīga LV-1073',
+  'footer_phone' => '+372 55553615',
+  'footer_phone2' => '+371 25444744',
+  'footer_addr2_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d:0c400f!5.17d:0c400f 5148344',
+  'footer_email' => 'viarstudia@gmail.com',
+  'footer_addr1_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d:0c400f!5.17d:0c400f 5148344',
+  'footer_copyright' => 'ViarStudia OÜ 2021.gada 31.marta noslēdza ar LIAA līgumu Nr. SKV-L-2021/63 par atbalsta saņemšanu pasākuma “Starptautiskās konkurētspējas veicināšana” ietvaros, ko līdzfinansē Eiropas Reģionālās attīstības fonds.',
+  'footer_copyright2' => 'D-Art-Solutions, SIA, 40203366048,  Jēkabpils nov., Jēkabpils, Slimnīcas iela 3 - 27, +37127044470, orders@viarcanvas.com',
+  'contacts' => 'KONTAKTID',
+  'terms_and_conditions' => 'Privaatsuspoliitika, Üldtingimused',
+  'prices' => 'Hinnad',
+  'stocks' => 'SOODUSTUS',
+  'header' => 
+  array (
+    'top_sale' => 'Suve allahindlus 2026 <span>kuni -65%</span>',
+  ),
+  'footer_paysera' => 'ViarStudia OÜ pakub funktsioone saidi arendamiseks ja reklaamimiseks. graafika arendus',
+  'footer_phone_new' => '+371 27044470',
+  'footer_phone_clean2' => '+371 25444744',
+  'footer_phone_clean' => '+371 27044470',
+  'footer_org_addressCountry' => 'LV',
+  'footer_org_addressLocality' => 'Rīga',
+  'footer_org_postalCode' => 'LV-1073',
+  'footer_org_streetAddress' => 'Lubānas 65',
+);

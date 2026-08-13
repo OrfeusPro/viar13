@@ -1,0 +1,37 @@
+<?php
+
+return array (
+  'header_col1_name' => 'ПОРТРЕТЫ',
+  'header_col2_name' => 'ФОТО НА ХОЛСТЕ',
+  'header_col3_name' => 'ФОТО КОЛЛАЖ',
+  'header_col4_name' => 'Идеи',
+  'footer_col1_name' => 'Стили портрета',
+  'footer_col2_name' => 'Виды портрета',
+  'footer_col3_name' => 'Информация',
+  'we_in_socs' => 'Мы в соцсетях:',
+  'footer_addr1' => 'Rīga, Lubānas 65, LV-1073',
+  'footer_addr2' => 'Daugavpils, Muitas iela 3, LV-5401',
+  'footer_phone' => '+371 27044470',
+  'footer_phone2' => '+371 25444744',
+  'footer_addr2_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d:0x400f37c7743e684a!8m2!3d55.8811515!4d26.5148344',
+  'footer_email' => 'orders@viarcanvas.com',
+  'footer_addr1_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d:0x400f37c7743e684a!8m2!3d55.8811515!4d26.5148344',
+  'footer_copyright' => 'ViarStudia SIA  2021.gada 31.marta noslēdza ar LIAA līgumu Nr. SKV-L-2021/63 par atbalsta saņemšanu pasākuma “Starptautiskās konkurētspējas veicināšana” ietvaros, ko līdzfinansē Eiropas Reģionālās attīstības fonds.',
+  'footer_copyright2' => 'D-Art-Solutions, SIA, 40203366048,  Jēkabpils nov., Jēkabpils, Slimnīcas iela 3 - 27, +37127044470, orders@viarcanvas.com',
+  'contacts' => 'КОНТАКТЫ',
+  'terms_and_conditions' => 'Политика конфиденциальности, Общие положения и условия',
+  'prices' => 'ЦЕНЫ',
+  'stocks' => 'АКЦИИ',
+  'header' => 
+  array (
+    'top_sale' => 'Распродажа Лето 2026 <span>до -65%</span>',
+  ),
+  'footer_paysera' => 'ViarStudia SIA предоставляет функциональные возможности по разработке и продвижению сайта. разработка графики',
+  'footer_phone_new' => '+37127044470',
+  'footer_phone_clean' => '+37127044470',
+  'footer_phone_clean2' => '+37125444744',
+  'footer_org_streetAddress' => 'Muitas iela 3',
+  'footer_org_addressLocality' => 'Daugavpils',
+  'footer_org_addressCountry' => 'LV',
+  'footer_org_postalCode' => 'LV-5401',
+);

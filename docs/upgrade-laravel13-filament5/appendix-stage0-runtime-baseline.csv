@@ -1,0 +1,19 @@
+environment,component,observed_version_or_state,evidence_date,status,migration_rule
+local_legacy,PHP CLI,7.4.30 ZTS,2026-07-17,confirmed,always invoke explicit C:/OSPanel/modules/php/PHP_7.4/php.exe for legacy diagnostics
+local_legacy,PHP intl,absent from PHP 7.4 modules,2026-07-17,confirmed,do not change legacy solely for Filament
+local_default,PHP CLI,8.3.30 NTS,2026-07-17,confirmed,not the legacy runtime
+local_default,PHP intl,absent from C:/dev/php/php8.3/php.ini,2026-07-17,blocking,install on isolated target CLI and FPM before S0-02
+local_tooling,Composer,2.9.5 running on PHP 8.3.30,2026-07-17,confirmed,allowed only for isolated target solver
+local_tooling,Node,24.13.0,2026-07-17,confirmed,target panel only; not a legacy Mix rebuild baseline
+local_tooling,npm,11.6.2,2026-07-17,confirmed,target panel only
+local_legacy,MariaDB,10.6.9-MariaDB-log,2026-07-17,confirmed,read-only audit connection succeeded
+local_legacy,Redis,5.0.14.1 standalone,2026-07-17,confirmed,direct no-password PING succeeded; current app env password is mismatched locally
+production,PHP FPM,7.4.33 NTS,2026-07-16,confirmed_from_production_evidence,legacy only
+production,MariaDB,10.11.16-MariaDB-ubu2404-log,2026-07-16,confirmed_from_production_evidence,initial target keeps same engine/version family
+production,Redis,7.0.15,2026-07-16,confirmed_from_production_evidence,initial target keeps same service
+production,Nginx vhost,viarcanvas.com to dedicated PHP 7.4 FPM socket,2026-07-16,confirmed_from_production_evidence,do not switch during Stage 0
+target_staging,PHP CLI/FPM,8.3.30 CLI/FPM with 41 matching conf links,2026-07-17,confirmed_on_server,dedicated dev pool and socket exist; keep exact 8.3.30 for initial Stage 0
+target_staging,ext-intl,enabled in CLI and FPM,2026-07-17,pass,repeat composer check-platform-reqs without ignore flags after target files are deployed
+target_staging,MariaDB,10.11.16 initial baseline,2026-07-17,decision,do not combine DB major upgrade with Filament cutover
+target_staging,Redis,7.0.15 initial baseline,2026-07-17,decision,use isolated DB/prefix/queues and no production workers
+target_staging,Nginx/FPM,dedicated PHP 8.3 pool exists but dev vhost is suspended,2026-07-17,partial,Nginx root remains Hestia suspend template; do not install app until active mapping and isolation pass

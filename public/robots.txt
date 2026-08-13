@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/ 
+Disallow: /*login
+Disallow: /*?
+Disallow: *?search=*
+Disallow: *?color=*
+Disallow: *?order=*
+Disallow: *?size=*
+
+Host: viarcanvas.com
+Sitemap: https://viarcanvas.com/sitemap.xml

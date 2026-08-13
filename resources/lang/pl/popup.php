@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'target-box_0_title' => 'Wybierz <span>odpowiednią dla siebie opcję zamówienia</span> !',
+  'target-box_1_text1' => 'W szybkim zamówieniu możesz wybrać:',
+  'target-box_1_text2' => 'Rozmiar',
+  'target-box_1_text3' => 'Konsultacja',
+  'target-box_1_text4' => 'Załaduj zdjęcie',
+  'target-box_1_text5' => 'Zamów w 1 minutę',
+  'target-box_1_btn' => 'Szybkie zamówienie',
+  'target-box_2_text1' => 'W szczegółach możesz wybrać:',
+  'target-box_2_text2' => '<strong>kształt</strong>',
+  'target-box_2_text3' => '3 opcje <strong>obróbki zdjęć</strong>',
+  'target-box_2_text4' => '<strong>Widok</strong> układu / we wnętrzu',
+  'target-box_2_text5' => '<strong>dekoracje</strong>',
+  'target-box_2_text6' => 'Dodaj <strong>komentarz, życzenia, ulubiony przykład</strong>',
+  'target-box_2_btn' => 'Szczegółowa kolejność',
+  'target-box_3_btn' => 'Skontaktuj się z nami teraz',
+  'popup-why_z0_none' => '-------------------',
+  'popup-why_0_none' => '-------------',
+  'popup-callback_0_none' => '-------------',
+  'popup-why_title' => 'Dlaczego wyjeżdżasz?',
+  'popup-why_subtitle' => 'Wybierz powód, a my dołożymy wszelkich starań, aby Ci pomóc!',
+  'popup-callback_title' => 'Jak mogę się z tobą skontaktować?',
+  'popup-callback_subtitle' => 'Postaramy się rozwiązać Twój problem!',
+  'popup-callback_content_phone' => 'Wpisz swój numer telefonu, a my pomożemy Ci to wszystko rozgryźć!',
+  'please_enter_email' => 'Chcesz rabat? Podaj swój e-mail, aby go otrzymać.',
+);

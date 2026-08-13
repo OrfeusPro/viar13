@@ -1,0 +1,260 @@
+/* ыаыаываыва */
+
+
+
+.popup .popup-content .p__mod__title {
+    font-weight: 700;
+    font-size: 19px;
+    line-height: initial;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    font-family: Inter,sans-serif;
+    position: relative;
+    text-align: center;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+}
+
+.n-p-title {
+    font-family: Trajan;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 30px;
+    line-height: 36px;
+    text-align: center;
+    letter-spacing: -0.03em;
+    color: #000000;
+}
+
+.title-thank {
+    color: #1E2533;
+    margin-bottom: 10px;
+}
+.n-p-icon {
+    flex: 0 0 179px;
+    background: url(https://viarcanvas.com/images/thank-bg.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    width: 179px;
+    height: 173px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: 14px;
+    line-height: 17px;
+    text-align: center;
+    color: #1E2533;
+}
+
+.n-p-icon img {
+    width: 40%;
+    height: auto;
+}
+.n-p-icon p {
+    margin-top: 5px;
+    max-width: 70%;
+}
+.n-p--content {
+    margin: 50px 0 35px;
+    display: flex;
+}
+.n-p--content ul {
+    flex: 1;
+}
+.n-p--content li {
+    display: flex;
+    align-items: start;
+    font-size: 20px;
+    line-height: 125.02%;
+}
+.n-p--content li:not(:last-child) {
+    margin-bottom: 30px;
+}
+.n-p--content li strong {
+    color: #FA7846;
+}
+.n-p--content li svg {
+    margin-top: 5px;
+    margin-right: 13px;
+}
+
+.n-p-whatsapp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    margin-right: auto;
+    margin-left: auto;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 18px;    
+    color: #000000;
+}
+.n-p-whatsapp img {
+    margin-bottom: 10px;
+}
+.n-p-btn-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    max-width: 355px;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(90deg, #FC8C5F 0%, #FC8C5F 100%);
+    box-shadow: 0px 20px 50px -5px rgba(250, 120, 70, 0.25), 0px 3px 0px #E87145;
+    border-radius: 8px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.p__mod__title  span{
+    margin-left: 6px;
+}
+
+.webp .popup .popup-content {
+    background: #fff url(/img/popup-bg.webp) no-repeat 50% 50%;
+    background-size: cover;
+}
+
+.green__text {
+    color: #1cb53f!important;
+}
+
+.popup .popup-content{
+    max-width: 660px;
+    top: 50%;
+    left: 50%;
+    width: 90%;
+    z-index: 3;
+    padding: 8px;
+    position: absolute;
+    border-radius: 10px;
+    transform: translate(-50%, -50%);
+    background: #FBF2EA;
+}
+
+.popup-content__inner {
+    padding: 60px 25px 40px;
+    border: 1.5px solid #fff;
+    border-radius: 10px;
+}
+
+
+
+
+
+.icon-icon4:before {
+    content: '\e803';
+}
+
+.popup .popup-content .p__mod__title::after {
+    content: '';
+    left: 50%;
+    bottom: 0;
+    height: 2px;
+    width: 200px;
+    position: absolute;
+    background: url(../img/popup-after.png) no-repeat 50% 50%;
+    background-size: cover;
+    transform: translate(-50%,0);
+}
+
+.popup{
+    top:0;
+    left:0;
+    z-index:99;
+    width:100%;
+    height:100vh;
+    position:fixed;
+    background:rgba(255,255,255,.5);
+    transform:translate(0,-120%);
+    transition:all .8s
+}
+.popup .close-popup{
+    top:0;
+    left:0;
+    z-index:1;
+    width:100%;
+    height:100%;
+    position:absolute
+}
+
+
+
+
+
+.close-content--html{
+    position: absolute;
+    top: 34px;
+    right: 23px;
+
+}
+
+
+.popup.active{
+    transform:translate(0,0);
+    opacity:1!important;
+    pointer-events: all;
+}
+
+@media (max-width: 600px) {
+    .n-p-icon {
+        flex: 0 0 130px;
+        height: 130px;
+        font-size: 9px;
+        line-height: 10px;
+    }
+    .n-p--content li {
+        font-size: 14px;
+        line-height: 115.02%;
+    }
+    .n-p--content li:not(:last-child) {
+        margin-bottom: 15px;
+    }
+}
+@media (max-width: 425px) {
+    .n-p--content li svg {
+        margin-top: 2px;
+        margin-right: 8px;
+        width: 22px;
+        height: auto;
+    }
+    .n-p-title {
+        font-size: 24px;
+        line-height: 29px;
+    }
+    .n-p--content {
+        margin: 28px 0 17px;
+    }
+    .n-p-whatsapp img {
+        width: 30px;
+        height: auto;
+    }
+    .n-p-whatsapp {
+        font-size: 11px;
+        line-height: 15px;
+    }
+    .popup-content__inner {
+        padding: 57px 17px 24px;
+        border: 1px solid #fff;
+    }
+    .close-content--html {
+        top: 20px;
+        right: 20px;
+    }
+    .close-content--html svg {
+        width: 20px;
+        height: auto;
+    }
+    .n-p-icon {
+        flex: 0 0 95px;
+        height: 94px;
+        font-size: 9px;
+        line-height: 10px;
+    }
+}

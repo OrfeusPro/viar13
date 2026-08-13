@@ -1,0 +1,12 @@
+<?php echo '
+<?xml version="1.0" encoding="UTF-8"?>'; ?>
+
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+    http://www.w3.org/1999/xhtml http://www.w3.org/2002/08/xhtml/xhtml1-strict.xsd"
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    @foreach ($langs as $lang)
+    <url>
+        <loc>{{ \URL::to('/') }}/sitemap_{{ $lang }}.xml</loc>
+        <xhtml:link rel="alternate" hreflang="{{ $lang }}" href="{{ \URL::to('/') }}/sitemap_{{ $lang }}.xml" />
+        <xhtml:link rel="alternate" hreflang="{{ $lang }}" href="{{ \URL::to('/') }}/sitemap_{{ $lang }}.xml" />
+    </url @endforeach </urlset>

@@ -1,0 +1,178 @@
+<?php
+
+return array (
+  'settings' => 
+  array (
+    'meta_title' => 'Mani iestatījumi',
+    'bread' => 'Mani iestatījumi',
+    'meta_desc' => 'Mani iestatījumi',
+    'title_text' => 'Paroles maiņa, pastāvīgas adreses ievadīšana, piegāde,<br> kontaktinformācijas vadība.',
+    'change_pass' => 'Mainīt paroli',
+    'contact_details' => 'Kontakta detaļas',
+    'old_pass' => 'Vecā parole',
+    'new_pass' => 'jauna parole',
+    'retry_pass' => 'atkārtojiet paroli',
+    'surname' => 'Uzvārds',
+    'name' => 'Vārds',
+    'phone' => 'Tālrunis',
+    'permanent_address' => 'Jūsu pastāvīgā adrese',
+    'delivery_address' => 'Piegādes adrese',
+  ),
+  'main' => 
+  array (
+    'meta_title' => 'Personīgā zona',
+    'meta_desc' => 'Personīgā zona',
+    'bread' => 'Personīgā zona',
+    'title' => 'Mani dati',
+    'title_text' => 'Jūs esat pieteicies kā:',
+    'fio' => 'Jūsu vārds un uzvārds:',
+    'email' => 'Tavs e-pasts:',
+    'address' => 'Jūsu adrese:',
+    'phone' => 'Jūsu kontakttālruņa numurs:',
+  ),
+  'orders' => 
+  array (
+    'bread' => 'Mani pasūtījumi',
+    'meta_title' => 'Mani pasūtījumi',
+    'meta_desc' => 'Mani pasūtījumi',
+    'total_amount_of_purchases' => 'Kopējais pirkumu apjoms:',
+    'chat_with_viarcanvas' => 'Tērzējiet ar <span class="activeSpan">ViarCanvas</span> :',
+    'chat' => 
+    array (
+      'admin' => 'Administrators:',
+      'you' => 'Jūs:',
+      'add_comment' => 'Pievieno komentāru',
+      'placeholder' => 'Uzrakstiet komentāru !',
+      'add_comment_placeholder' => 'Rakstiet, ja ir kādas papildus vēlmes',
+      'client' => 'Klients:',
+      'painter' => 'Mākslinieks:',
+    ),
+    'photocomments' => 'Foto komentāri',
+    'add_your_files' => 'Pievienojiet savus failus:',
+    'upload_file' => 'Augšupielādēt failu',
+    'click_to_add_file' => 'Noklikšķiniet, lai pievienotu failu',
+    'downloaded_files_from_viarcanvas' => 'Lejupielādētie faili no <span class="activeSpan">ViarCanvas</span> :',
+    'title' => 'Jūs vienmēr būsiet informēts par to, kādi pasūtījumi tika veikti un kad!',
+    'you_images' => '<span class="activeSpan">Jūsu</span> augšupielādētie faili:',
+    'user_status' => 
+    array (
+      'watching' => 'Jūsu pasūtījumu <span>izskata mākslinieks</span> , ja mums nepieciešama papildu informācija, gaidiet ziņu uz jūsu e-pastu!',
+      'pegging' => 'Jūsu pasūtījums <span>tiek apstrādāts</span> , drīzumā mākslinieks nosūtīs skices apstiprināšanai vai pārskatīšanai',
+      'picture' => 'Ja jums viss patīk, noklikšķiniet uz pogas "Pieņemt" un mēs pārcelsim to uz pēdējo ražošanas posmu!',
+      'sketch' => 'Uzzīmēto skici var pabeigt vai nosūtīt uzreiz uz nākamo posmu! Čatā varat pievienot savus komentārus par skici!',
+      'print_text' => 'Jūsu pasūtījums ir nosūtīts uz <span>pēdējo ražošanas posmu!</span><br> Mēs jums paziņosim, kad glezna būs gatava nosūtīšanai!',
+      'print' => 'Ronis',
+    ),
+    'execute_to' => 'Skrien līdz',
+    'sketch_title' => '<span class="activeSpan">Skices</span> :',
+    'picture_title' => '<span class="activeSpan">Zīmējums</span> :',
+    'chat_with_admin' => 'Tērzējiet ar administratoru',
+    'chat_with_admin_small_notif' => '*čats ir redzams tikai tev un administratoram!',
+    'add_client_files' => 'Augšupielādētie <span class="activeSpan">klienta</span> faili:',
+    'count_paid_title' => 'Veikto pasūtījumu skaits',
+    'count_massage' => 'Jums ir <b class="activeSpan">### jauns ziņojums no administratora</b>',
+    'count_massages' => 'Jums ir <b class="activeSpan">### jauns ziņojums no administratora</b>',
+    'sended' => 'Nosūtīts',
+    'client_comments' => 'Papildu komentāri:',
+    'add_your_sketch' => 'Augšupielādēt <span class="activeSpan">skici</span> :',
+    'add_your_picture' => 'Augšupielādēt <span class="activeSpan">attēlu</span> :',
+    'you_images_for_load' => '<span class="activeSpan">Jūsu</span> augšupielādējamie faili:',
+    'in_production' => 'Ražošanā',
+    'fashion' => 'Veidne / Paraugs',
+    'chat_with_client' => 'Tērzējiet ar klientu',
+    'chat_with_client_small_notif' => 'Jūs varat rakstīt klientam viņa valodā tikai tad, ja nepieciešama ātra atbilde.',
+    'client_lang' => 'klienta valoda:',
+  ),
+  'stocks' => 
+  array (
+    'bread' => 'Mani bonusi',
+    'meta_title' => 'Mani bonusi',
+    'meta_desc' => 'Mani bonusi',
+    'title' => '<span>Iespējas</span> saņemt papildu atlaides un bonusus:',
+    'bonuses' => 'Bonusi:',
+    'bonus' => 
+    array (
+      'title' => 'Izmantojiet uzkrātos bonusus<br> turpmākiem pirkumiem.',
+    ),
+    'p1' => 'Veicot pirkumu, uzmanieties no bonusiem.<br> Izmantojiet uzkrātos bonusus turpmākiem pirkumiem.',
+  ),
+  'btn' => 
+  array (
+    'logout' => 'IZIET',
+    'change' => 'mainīt',
+    'save' => 'Saglabāt',
+    'save_settings' => 'SAGLABĀT IESTATĪJUMUS',
+    'send' => 'SŪTĪT',
+    'send_for_development' => 'Labot',
+    'accept' => 'Аpstiprināt',
+  ),
+  'menu' => 
+  array (
+    'my_account' => 'Mani dati',
+    'my_orders' => 'Mani pasūtījumi',
+    'my_bonuses' => 'Mani bonusi',
+    'my_settings' => 'Mani iestatījumi',
+    'unpaid' => 'Neapmaksāti pasūtījumi',
+    'paid' => 'Apmaksāti pasūtījumi',
+    'orders_success' => 'Pabeigti pasūtījumi',
+  ),
+  'special_offers' => 
+  array (
+    'title' => 'Īpašie piedāvājumi <span>no ViarCanvas</span>',
+  ),
+  'unpaid' => 
+  array (
+    'title' => 'Neapmaksāti pasūtījumi',
+    'bread' => 'Neapmaksāti pasūtījumi',
+    'meta_title' => 'Neapmaksāti pasūtījumi',
+    'meta_desc' => 'Mani neapmaksātie pasūtījumi',
+  ),
+  'paid' => 
+  array (
+    'title' => 'Apmaksāti pasūtījumi',
+    'bread' => 'Apmaksāti pasūtījumi',
+    'meta_title' => 'Apmaksāti pasūtījumi',
+    'meta_desc' => 'Mani apmaksātie pasūtījumi',
+  ),
+  'orders_success' => 
+  array (
+    'title' => 'Pabeigti pasūtījumi',
+    'bread' => 'Pabeigti pasūtījumi',
+    'meta_title' => 'Pabeigti pasūtījumi',
+    'meta_desc' => 'Mani izpildītie pasūtījumi',
+    'count' => 'Izpildīto pasūtījumu skaits:',
+  ),
+  'comments' => 
+  array (
+    'title' => 'Papildu komentāri par jūsu pasūtījumu:',
+  ),
+  'chat' => 
+  array (
+    'picture' => 'glezna',
+    'sketch' => 'skice',
+  ),
+  'picture_sub_title' => 'Tērzējiet ar attēlu:',
+  'sketch_sub_title' => 'Tērzēt, lai uzskicētu:',
+  'payment_status' => 'Apmaksas statuss:',
+  'payment_status_paid' => 'Apmaksāts',
+  'payment_status_unpaid' => 'Nav apmaksāts',
+  'payment_status_prepayment' => 'Priekšapmaksa',
+  'tracking_number' => 'Sūtījuma numurs:',
+  'pay_now' => 'Apmaksāt',
+  'pay_order_title' => 'Pasūtījuma apmaksa',
+  'pay_order_meta_title' => 'Pasūtījuma apmaksa',
+  'pay_order_meta_desc' => 'Pasūtījuma tiešsaistes apmaksa klienta kabinetā',
+  'pay_order_hint' => 'Izvēlieties ērtāko tiešsaistes maksājumu sistēmu šim pasūtījumam.',
+  'back_to_orders' => 'Atpakaļ uz pasūtījumiem',
+  'payment_request_amount' => 'Apmaksas summa',
+  'payment_request_cancelled_message' => 'Maksājums tika atcelts. Jūs varat vēlreiz izvēlēties maksājuma veidu.',
+  'payment_request_hint' => 'Izvēlieties ērtāko tiešsaistes maksājumu sistēmu šīs saites apmaksai.',
+  'payment_request_invalid_message' => 'Neizdevās apstiprināt maksājumu. Mēģiniet vēlreiz vai izvēlieties citu veidu.',
+  'payment_request_number' => 'Pieprasījuma numurs:',
+  'payment_request_order_number' => 'Pasūtījuma numurs:',
+  'payment_request_purpose' => 'Maksājuma mērķis:',
+  'payment_request_status_paid' => 'Apmaksāts',
+  'payment_request_status_pending' => 'Gaida apmaksu',
+  'payment_request_success_message' => 'Maksājums veiksmīgi saņemts. Paldies!',
+  'payment_request_title' => 'Apmaksa pēc saites',
+);

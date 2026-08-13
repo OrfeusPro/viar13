@@ -1,0 +1,37 @@
+<?php
+
+return array (
+  'header_col1_name' => 'Porträt',
+  'header_col2_name' => 'Fotomalerei',
+  'header_col3_name' => 'Collage',
+  'header_col4_name' => 'Ideen',
+  'footer_col1_name' => 'Porträtstile',
+  'footer_col2_name' => 'Porträttypen',
+  'footer_col3_name' => 'Information',
+  'we_in_socs' => 'Wir sind in sozialen Netzwerken:',
+  'footer_addr1' => 'Riga, Lubanas 65, LV-1073',
+  'footer_addr2' => 'Rīga, Lubānas 65, LV-1073',
+  'footer_phone' => '+371 27044470',
+  'footer_phone2' => '+37125444744',
+  'footer_addr2_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d:0x400f37c7743e684a!8m2!3d55.8811515!4d 5148344',
+  'footer_email' => 'viarstudia@gmail.com',
+  'footer_addr1_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d:0x400f37c7743e684a!8m2!3d55.8811515!4d 5148344',
+  'footer_copyright' => 'ViarStudia DE 2021.gada 31.marta noslēdza ar LIAA līgumu Nr. SKV-L-2021/63 par atbalsta saņemšanu pasākuma “Starptautiskās konkurētspējas veicināšana” ietvaros, ko līdzfinansē Eiropas Reģionālās attīstības fonds.',
+  'footer_copyright2' => 'D-Art-Solutions, SIA, 40203366048,  Jēkabpils nov., Jēkabpils, Slimnīcas iela 3 - 27, +37127044470, orders@viarcanvas.com',
+  'contacts' => 'Kontakte',
+  'terms_and_conditions' => 'Datenschutzerklärung, Allgemeine Geschäftsbedingungen',
+  'prices' => 'Preise',
+  'stocks' => 'Rabatte',
+  'header' => 
+  array (
+    'top_sale' => 'Sommer Sale 2026 <span>bis zu -65%</span>',
+  ),
+  'footer_paysera' => 'ViarStudia DE bietet Funktionen für die Entwicklung und Werbung der Website. Grafikentwicklung',
+  'footer_phone_new' => '+37127044470',
+  'footer_phone_clean2' => '+37125444744',
+  'footer_phone_clean' => '+37127044470',
+  'footer_org_addressCountry' => 'LV',
+  'footer_org_addressLocality' => 'Rīga',
+  'footer_org_postalCode' => 'LV-1073',
+  'footer_org_streetAddress' => 'Lubānas 65',
+);

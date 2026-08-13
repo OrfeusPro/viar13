@@ -1,0 +1,125 @@
+path,format,role,mapped_catalog_tasks,review_result,note
+00-README.md,MD,INDEX,64;65;66,PASS,Навигация и правила источников истины
+01-current-project-audit.md,MD,BASELINE,AUD-003;PHP-001;FE-002,PASS,Исходный технический baseline
+02-dependency-compatibility.md,MD,TASK_SOURCE,PHP-001;PHP-002;L13-001;FE-001;FE-002,PASS,Совместимость платформы и assets
+03-laravel-upgrade-path.md,MD,TASK_SOURCE,L7-001…L13-001,PASS,Последовательные labs отменены; используется clean Laravel 13 skeleton
+04-voyager-inventory.md,MD,TASK_SOURCE,VOY-001…VOY-010,PASS,Инвентарь Voyager
+05-filament-architecture.md,MD,ARCHITECTURE,FIL-001…FIL-005;VOY-007,PASS,Целевая архитектура
+06-application-code-migration.md,MD,TASK_SOURCE,APP-001…APP-005,PASS,Общий application/file/PDF перенос
+07-integrations-migration.md,MD,TASK_SOURCE,INT-001…INT-007;RBK-002,PASS,Интеграции и rollback
+08-database-migration-plan.md,MD,TASK_SOURCE,DB-002…DB-011;CUT-001…CUT-012;L3-002,PASS,"Данные, delta и reconciliation"
+09-testing-strategy.md,MD,TASK_SOURCE,TST-001…TST-011;DEP-002,PASS,Автоматические и differential tests
+10-deployment-and-rollback.md,MD,TASK_SOURCE,DEP-001…DEP-004;RBK-001…RBK-003,PASS,Deployment/cutover/rollback
+11-step-by-step-roadmap.md,MD,TASK_SOURCE,см. crosswalk в 66,PASS,43 старых ID полностью нормализованы
+12-risk-register.md,MD,RISK_SOURCE,все профильные; SEC-001;SEC-002;OPS-001…OPS-004,PASS,163 риска сопоставлены по области; шесть скрытых P0/OPS работ выделены
+13-manual-checklist.md,MD,ACCEPTANCE,DEP-002;S0-09;TST-*,PASS,"103 пункта являются критериями приёмки, не отдельными backlog items"
+14-open-questions.md,MD,GATE_SOURCE,профильные задачи; GOV-001,PASS,Ответы клиента закрыты DEC-01…68; технические gates остаются зависимостями
+15-task-checklist.md,MD,TASK_SOURCE,65,PASS,Исторический backlog нормализован в каталоге
+16-traceability-audit-plan.md,MD,AUDIT_METHOD,AUD-005,PASS,Методика traceability
+17-route-inventory.md,MD,EVIDENCE,AUD-002;AUD-005;SEO-007,PASS,Route evidence
+18-function-inventory.md,MD,EVIDENCE,AUD-005,PASS,Function evidence
+19-critical-flow-traces.md,MD,EVIDENCE,TST-001;TST-002;TST-005,PASS,Critical flow evidence
+20-pre-migration-function-audit.md,MD,TASK_SOURCE,AUD-003…AUD-011,PASS,Функциональные audit work packages
+21-admin-acl-static-audit.md,MD,TASK_SOURCE,AUD-006;TST-004;VOY-004,PASS,ACL gaps и runtime matrix
+22-basket-order-static-audit.md,MD,TASK_SOURCE,TST-001;TST-005;FIL-004,PASS,Order invariants
+23-payment-static-audit.md,MD,TASK_SOURCE,SEC-001;INT-002;INT-003;CUT-004,PASS,Payment risks/contracts
+24-files-pdf-static-audit.md,MD,TASK_SOURCE,AUD-008;TST-006;APP-001…APP-003,PASS,File/PDF contracts
+25-venipak-delivery-static-audit.md,MD,TASK_SOURCE,AUD-009;TST-007;INT-006,PASS,Delivery contracts
+26-auth-account-chat-static-audit.md,MD,TASK_SOURCE,AUD-012;AUTH-001;AUTH-002;CHAT-001;CHAT-002;SEC-009;INT-005,PASS,Auth/account/chat contracts
+27-mail-queue-scheduler-static-audit.md,MD,TASK_SOURCE,AUD-010;QUE-001;CRON-001;MAIL-001;MAIL-002;SEC-010;OPS-002,PASS,Mail/queue/scheduler contracts
+28-public-catalog-generators-static-audit.md,MD,TASK_SOURCE,AUD-011;SEC-011;CAT-001;CAT-002;TST-011,PASS,Catalogue/generator contracts
+29-voyager-bread-custom-admin-static-audit.md,MD,TASK_SOURCE,VOY-001…VOY-010;FIL-002;FIL-003;FIL-005,PASS,Voyager/Filament parity
+30-seo-redirect-preview-auxiliary-static-audit.md,MD,TASK_SOURCE,SEO-001…SEO-011;CUT-011,PASS,SEO/redirect/feed contracts
+31-p0-auxiliary-containment.md,MD,TASK_SOURCE,SEO-001;SEC-010;SEC-011;SEC-002,PASS,Public auxiliary containment
+32-p0-review-submission-security.md,MD,TASK_SOURCE,SEO-006,PASS,Review submission security
+33-production-readiness-audit.md,MD,TASK_SOURCE,L3-001…L3-004;SEC-002;OPS-001…OPS-004;DEP-001…DEP-004,PASS,Production evidence and operational remediation
+34-l3g06-write-owner-delta-cutover.md,MD,TASK_SOURCE,AUD-004;CUT-001…CUT-006,PASS,Live write ownership
+35-l3g06-catalog-content-translations-cutover.md,MD,TASK_SOURCE,CUT-007…CUT-012;DB-011,PASS,Content/translation cutover
+36-l3g06-reconciliation-specification.md,MD,TASK_SOURCE,CUT-002;DB-002…DB-005;DB-011,PASS,Canonical reconciliation
+37-l3g06-production-baseline-command-pack.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+38-l3g06-production-r1-r2-evidence-and-r3.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+39-l3g06-r3-analysis-and-r4.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+40-l3g06-r4-analysis-and-r5-manifest.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+41-l3g06-r5-exact-language-delta-and-r6-ltm.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+42-l3g06-r6-analysis-and-r7-ltm-locale.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+43-l3g06-r7-analysis-and-r8-ltm-group.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+44-l3g06-r8-analysis-and-r9-header-footer-locale.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+45-l3g06-r9-analysis-and-r10-opaque-key.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+46-l3g06-r10-analysis-and-r11-final-row-proof.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+47-l3g06-r11-final-proof-and-r12-php-array.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+48-l3g06-r12-analysis-and-r13-targeted-files.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+49-l3g06-r13-analysis-and-final-r14.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+50-l3g06-r14-final-translation-reconciliation.md,MD,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R1–R14 translation evidence; завершённые промежуточные шаги не дублируются
+51-l3g06-translation-owner-decision-and-staging-uat.md,MD,TASK_SOURCE,ACL-001;CUT-008;S0-05,PASS,Owner decisions and staging UAT
+52-client-decisions-register.md,MD,DECISION_SOURCE,все профильные; GOV-001;DOC-001;S0-02L,PASS,68 исходных решений и последующее DEC-STG-69 включены как scope/DoD/constraints
+53-filament-implementation-blueprint.md,MD,TASK_SOURCE,S0-02A…S0-09;FIL-001…FIL-005;VOY-004…VOY-007,PASS,FIL-SPK-01…08 сопоставлены со Stage 0
+54-filament-stage0-execution-pack.md,MD,TASK_SOURCE,S0-01…S0-09,PASS,Stage 0 authoritative pack
+55-filament-stage0-s01-evidence-freeze.md,MD,EVIDENCE,S0-01,PASS,S0-01 closure evidence
+56-filament-stage0-s02-provisioning-preflight.md,MD,PROCEDURE,S0-02B;S0-02C;S0-02D,PASS,Provisioning preflight
+57-filament-stage0-s02-preflight-result.md,MD,EVIDENCE,S0-02B;S0-02C;S0-02D,PASS,Preflight result
+58-filament-stage0-s02-d-result-and-e.md,MD,EVIDENCE,S0-02B;S0-02C;S0-02D,PASS,S02-D/E evidence
+59-filament-stage0-test-disposable-preflight.md,MD,PROCEDURE,S0-02B;S0-02D,PASS,Test quarantine procedure
+60-filament-stage0-test-preflight-result-and-quarantine.md,MD,EVIDENCE,S0-02B;S0-02D,PASS,Test quarantine evidence
+61-filament-stage0-test-clean-root-and-php83.md,MD,PROCEDURE,S0-02B;S0-02D,PASS,Clean root/PHP 8.3 procedure
+62-filament-stage0-offline-target-build-result.md,MD,EVIDENCE,S0-02A;L13-001,PASS,Offline build evidence
+63-filament-stage0-offline-server-release-install.md,MD,PROCEDURE,S0-02B,PASS,Current server release command pack
+64-migration-task-control-center.md,MD,CONTROL,65;S0-02B,PASS,Current/next task and resume point
+65-migration-executable-task-catalog.md,MD,CONTROL,130 normalized tasks,PASS,Authoritative executable backlog
+appendix-admin-acl-routes.csv,CSV,EVIDENCE,AUD-006;TST-004;VOY-004,PASS,58-route ACL matrix
+appendix-application-routes.csv,CSV,EVIDENCE,AUD-002;AUD-005;SEO-007,PASS,Route registry
+appendix-auth-account-chat-contracts.csv,CSV,EVIDENCE,AUD-012;AUTH-001;AUTH-002;CHAT-001;CHAT-002;SEC-009,PASS,56 contracts
+appendix-basket-order-contracts.csv,CSV,EVIDENCE,TST-001;TST-005;FIL-004,PASS,30 order contracts
+appendix-filament-custom-route-map.csv,CSV,SPECIFICATION,S0-04;VOY-004;VOY-007,PASS,58 custom route dispositions
+appendix-filament-custom-view-map.csv,CSV,SPECIFICATION,VOY-002;VOY-007,PASS,40 custom view dispositions
+appendix-filament-field-map.csv,CSV,SPECIFICATION,VOY-002;VOY-007;APP-004,PASS,1 997 field mappings
+appendix-filament-navigation-map.csv,CSV,SPECIFICATION,S0-04;VOY-006,PASS,138 navigation mappings
+appendix-filament-permission-map.csv,CSV,SPECIFICATION,S0-04;FIL-002;VOY-004,PASS,675 permission mappings
+appendix-filament-resource-map.csv,CSV,SPECIFICATION,VOY-002;VOY-010;VOY-007,PASS,133 resource mappings
+appendix-filament-role-map.csv,CSV,SPECIFICATION,S0-04;FIL-002,PASS,8 role mappings
+appendix-file-pdf-contracts.csv,CSV,EVIDENCE,AUD-008;TST-006;APP-001…APP-003,PASS,40 file/PDF contracts
+appendix-fn13-route-contracts.csv,CSV,SPECIFICATION,SEO-001;SEO-006;SEO-007,PASS,47 FN-13 route actions
+appendix-functions.csv,CSV,EVIDENCE,AUD-005,PASS,1 770 function inventory rows
+appendix-l3g06-content-write-owner-matrix.csv,CSV,SPECIFICATION,AUD-004;CUT-007…CUT-012,PASS,22 content ownership rows
+appendix-l3g06-reconciliation-datasets.csv,CSV,SPECIFICATION,CUT-002;DB-002…DB-005;DB-011,PASS,22 canonical datasets
+appendix-l3g06-write-owner-matrix.csv,CSV,SPECIFICATION,AUD-004;CUT-001…CUT-006,PASS,15 write-owner rows
+appendix-language-account-local-extra-analysis-r12.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-file-delta-r5.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-header-opaque-key-baseline-r13.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-header-opaque-key-delta-r13.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-owner-decisions-r14.csv,CSV,DECISION_SOURCE,ACL-001;CUT-008;S0-05,PASS,27 owner decisions
+appendix-language-owner-disposition-matrix-r14.csv,CSV,SPECIFICATION,ACL-001;CUT-007;CUT-008;S0-05,PASS,27 disposition rows
+appendix-language-owner-uat-protocol-after-r14.csv,CSV,ACCEPTANCE,S0-05;CUT-008,PASS,14 UAT cases
+appendix-language-php-array-baseline-r12.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-php-array-delta-r12.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-ru-account-group-baseline-r13.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-ru-account-group-delta-r13.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-ru-account-orders-leaf-baseline-r14.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-language-ru-account-orders-leaf-delta-r14.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-group-baseline-r8.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-group-delta-r8.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-header-footer-locale-baseline-r9.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-header-footer-locale-delta-r9.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-header-footer-opaque-key-baseline-r10.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-header-footer-opaque-key-delta-r10.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-header-top-sale-locale-baseline-r11.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-header-top-sale-locale-delta-r11.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-locale-baseline-r7.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-ltm-locale-delta-r7.csv,CSV,EVIDENCE,AUD-007;CUT-007;S0-05,PASS,R5–R14 translation hash/delta evidence
+appendix-mail-queue-scheduler-contracts.csv,CSV,EVIDENCE,AUD-010;QUE-001;CRON-001;MAIL-001;MAIL-002;OPS-002,PASS,78 contracts
+appendix-payment-contracts.csv,CSV,EVIDENCE,SEC-001;INT-002;INT-003;CUT-004,PASS,30 payment contracts
+appendix-production-evidence-request.csv,CSV,GATE_SOURCE,L3-001…L3-004;SEC-002;OPS-001…OPS-004,PASS,22 evidence gates
+appendix-public-catalog-generator-contracts.csv,CSV,EVIDENCE,AUD-011;SEC-011;CAT-001;CAT-002;TST-011,PASS,72 contracts
+appendix-routes.csv,CSV,EVIDENCE,AUD-002;AUD-005;SEO-007,PASS,Route registry
+appendix-seo-redirect-map.csv,CSV,EVIDENCE,SEO-002…SEO-004;CUT-011,PASS,256 redirect rules
+appendix-stage0-legacy-lock-hashes.csv,CSV,EVIDENCE,S0-01;FE-002,PASS,Legacy lock hashes
+appendix-stage0-offline-target-build.json,JSON,EVIDENCE,S0-02A;L13-001,PASS,Offline build manifest
+appendix-stage0-plugin-decisions.csv,CSV,DECISION_SOURCE,S0-01;S0-02A,PASS,8 plugin decisions
+appendix-stage0-public-asset-hashes.csv,CSV,EVIDENCE,S0-01;FE-002,PASS,12 frozen public assets
+appendix-stage0-runtime-baseline.csv,CSV,EVIDENCE,S0-01;PHP-001;PHP-002,PASS,18 runtime facts
+appendix-stage0-s02-preflight-evidence-request.csv,CSV,GATE_SOURCE,S0-02B;S0-02C;S0-02D,PASS,17 S02 evidence gates
+appendix-stage0-test-disposable-evidence.csv,CSV,EVIDENCE,S0-02B;S0-02D,PASS,12 test isolation checks
+appendix-venipak-delivery-contracts.csv,CSV,EVIDENCE,AUD-009;TST-007;INT-006,PASS,40 delivery contracts
+appendix-voyager-bread-modules.csv,CSV,EVIDENCE,VOY-001;VOY-002;VOY-009;VOY-010,PASS,133 BREAD rows
+stage0-target-versions.json,JSON,DECISION_SOURCE,S0-01;S0-02A,PASS,Exact target versions
+tasks/S0-02B-server-offline-release.md,MD,TASK_CARD,S0-02B,PASS,Current READY task card
+tasks/TEMPLATE.md,MD,TEMPLATE,future task cards,PASS,Template; placeholders are not incomplete migration work

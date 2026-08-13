@@ -1,0 +1,20 @@
+@font-face {
+	font-family: 'fontello';
+	src: url("../fonts/fontello.eot?96771493");
+	src: url("../fonts/fontello.eot?96771493#iefix") format("embedded-opentype"),
+	url("../fonts/fontello.woff?96771493") format("woff"),
+	url("../fonts/fontello.ttf?96771493") format("truetype");
+	font-display: swap;
+	font-weight: normal;
+	font-style: normal
+}
+
+@font-face {
+	font-family: 'Conv_MrDafoe-Regular';
+	src: url("../fonts/MrDafoe-Regular.eot");
+	src: local("☺"), url("../fonts/MrDafoe-Regular.woff") format("woff"),
+	 url("../fonts/MrDafoe-Regular.ttf") format("truetype");
+	 font-display: swap;
+	font-weight: normal;
+	font-style: normal
+}

@@ -1,0 +1,178 @@
+<?php
+
+return array (
+  'settings' => 
+  array (
+    'meta_title' => 'Minu seaded',
+    'bread' => 'Minu seaded',
+    'meta_desc' => 'Minu seaded',
+    'title_text' => 'Parooli muutmine, alalise aadressi sisestamine, kohaletoimetamine,<br> kontaktandmete haldamine.',
+    'change_pass' => 'Muuda salasõna',
+    'contact_details' => 'Kontaktandmed',
+    'old_pass' => 'vana parool',
+    'new_pass' => 'uus salasõna',
+    'retry_pass' => 'Korda salasõna',
+    'surname' => 'Perekonnanimi',
+    'name' => 'Nimi',
+    'phone' => 'Telefon',
+    'permanent_address' => 'Teie alaline aadress',
+    'delivery_address' => 'Saaja aadress',
+  ),
+  'main' => 
+  array (
+    'meta_title' => 'Isiklik ala',
+    'meta_desc' => 'Isiklik ala',
+    'bread' => 'Isiklik ala',
+    'title' => 'Minu andmed',
+    'title_text' => 'Olete sisse logitud kui:',
+    'fio' => 'Teie ees- ja perekonnanimi:',
+    'email' => 'Sinu email:',
+    'address' => 'Teie aadress:',
+    'phone' => 'Teie kontakttelefon:',
+  ),
+  'orders' => 
+  array (
+    'bread' => 'Minu tellimused',
+    'meta_title' => 'Minu tellimused',
+    'meta_desc' => 'Minu tellimused',
+    'total_amount_of_purchases' => 'Ostude kogusumma:',
+    'chat_with_viarcanvas' => 'Vestelge <span class="activeSpan">ViarCanvasega</span> :',
+    'chat' => 
+    array (
+      'admin' => 'Administraator:',
+      'you' => 'Sina:',
+      'add_comment' => 'Lisa kommentaar',
+      'placeholder' => 'Kirjuta kommentaar',
+      'add_comment_placeholder' => 'Lisasoovide korral kirjutage',
+      'client' => 'Klient:',
+      'painter' => 'Kunstnik:',
+    ),
+    'photocomments' => 'Foto kommentaarid',
+    'add_your_files' => 'Lisage oma failid:',
+    'upload_file' => 'Faili üles laadima',
+    'click_to_add_file' => 'Klõpsake faili lisamiseks',
+    'downloaded_files_from_viarcanvas' => '<span class="activeSpan">ViarCanvasest</span> alla laaditud failid:',
+    'title' => 'Olete alati kursis, millised tellimused ja millal tehti!',
+    'you_images' => '<span class="activeSpan">Teie</span> üleslaaditud failid:',
+    'user_status' => 
+    array (
+      'watching' => '<span>Kunstnik vaatab teie tellimust üle</span> , kui vajame lisateavet, oodake sõnumit teie meilile!',
+      'pegging' => 'Teie tellimus <span>on pooleli</span> , peagi saadab kunstnik visandid kinnitamiseks või ülevaatamiseks',
+      'picture' => 'Kui teile meeldib kõik , klõpsake nuppu "Nõustun" ja me viime selle tootmise lõppfaasi - trükki!',
+      'sketch' => 'Joonistatud eskiisi saab lõplikult vormistada või otse järgmisse etappi saata! Vestlusringis saate lisada eskiisi kohta oma kommentaare!',
+      'print_text' => 'Teie tellimus on saadetud <span>tootmise viimasesse etappi!</span><br> Anname teile teada, kui maal  saatmiseks valmis!',
+      'print' => 'Tihend',
+    ),
+    'execute_to' => 'Jookse kuni',
+    'sketch_title' => '<span class="activeSpan">Visandid</span> :',
+    'picture_title' => '<span class="activeSpan">Joonistamine</span> :',
+    'chat_with_admin' => 'Vestle administraatoriga',
+    'chat_with_admin_small_notif' => '*vestlus on nähtav ainult teile ja administraatorile!',
+    'add_client_files' => 'Üleslaaditud <span class="activeSpan">kliendifailid</span> :',
+    'count_paid_title' => 'Tehtud tellimuste arv',
+    'count_massage' => 'Teil on <b class="activeSpan">### uus sõnum administraatorilt</b>',
+    'count_massages' => 'Teil on <b class="activeSpan">### uus sõnum administraatorilt</b>',
+    'sended' => 'Saadetud',
+    'client_comments' => 'Lisamärkused:',
+    'add_your_sketch' => 'Laadi <span class="activeSpan">sketš</span> üles:',
+    'add_your_picture' => 'Laadi <span class="activeSpan">pilt</span> üles:',
+    'you_images_for_load' => '<span class="activeSpan">Teie</span> failid, mida üles laadida:',
+    'in_production' => 'Tootmises',
+    'fashion' => 'Mall / Näidis',
+    'chat_with_client' => 'Vestle kliendiga',
+    'chat_with_client_small_notif' => 'Kliendile tema emakeeles saab kirjutada ainult siis, kui on vaja kiiret vastust.',
+    'client_lang' => 'kliendi keel:',
+  ),
+  'stocks' => 
+  array (
+    'bread' => 'Minu boonused',
+    'meta_title' => 'Minu boonused',
+    'meta_desc' => 'Minu boonused',
+    'title' => '<span>Võimalused</span> saada rohkem allahindlusi ja boonuseid:',
+    'bonuses' => 'Boonused:',
+    'bonus' => 
+    array (
+      'title' => 'Kasutage kogutud boonuseid<br> edasiste ostude jaoks.',
+    ),
+    'p1' => 'Ostu sooritamisel jälgige boonuseid.<br> Kasutage kogunenud boonuseid edasisteks ostudeks.',
+  ),
+  'btn' => 
+  array (
+    'logout' => 'Mine Välja',
+    'change' => 'muuta',
+    'save' => 'Salvesta',
+    'save_settings' => 'SALVESTA SÄTTED',
+    'send' => 'SAADA',
+    'send_for_development' => 'SAADA ARENDAMISEKS',
+    'accept' => 'NÕUSTU',
+  ),
+  'menu' => 
+  array (
+    'my_account' => 'Minu andmed',
+    'my_orders' => 'Minu tellimused',
+    'my_bonuses' => 'Minu boonused',
+    'my_settings' => 'Minu seaded',
+    'unpaid' => 'Tasumata tellimused',
+    'paid' => 'Täidetud tellimused',
+    'orders_success' => 'Täidetud tellimused',
+  ),
+  'special_offers' => 
+  array (
+    'title' => '<span>ViarCanvase</span> eripakkumised',
+  ),
+  'unpaid' => 
+  array (
+    'title' => 'Tasumata tellimused',
+    'bread' => 'Tasumata tellimused',
+    'meta_title' => 'Tasumata tellimused',
+    'meta_desc' => 'Minu maksmata tellimused',
+  ),
+  'paid' => 
+  array (
+    'title' => 'Tasulised tellimused',
+    'bread' => 'Tasulised tellimused',
+    'meta_title' => 'Tasulised tellimused',
+    'meta_desc' => 'Minu tasulised tellimused',
+  ),
+  'orders_success' => 
+  array (
+    'title' => 'Täidetud tellimused',
+    'bread' => 'Täidetud tellimused',
+    'meta_title' => 'Täidetud tellimused',
+    'meta_desc' => 'Minu täidetud tellimused',
+    'count' => 'Täidetud tellimuste arv:',
+  ),
+  'comments' => 
+  array (
+    'title' => 'Täiendavad kommentaarid teie tellimuse kohta:',
+  ),
+  'chat' => 
+  array (
+    'picture' => 'maalimine',
+    'sketch' => 'eskiis',
+  ),
+  'picture_sub_title' => 'Vestelge pildiga:',
+  'sketch_sub_title' => 'Vestelge visandi tegemiseks:',
+  'payment_status' => 'Makse staatus:',
+  'payment_status_paid' => 'Tasuline',
+  'payment_status_unpaid' => 'Maksmata',
+  'payment_status_prepayment' => 'Ettemaks',
+  'tracking_number' => 'Saadetise number:',
+  'pay_now' => 'Maksa',
+  'pay_order_title' => 'Tellimuse maksmine',
+  'pay_order_meta_title' => 'Tellimuse maksmine',
+  'pay_order_meta_desc' => 'Tellimuse online-makse kliendikontol',
+  'pay_order_hint' => 'Valige sellele tellimusele sobiv online-maksesüsteem.',
+  'back_to_orders' => 'Tagasi tellimuste juurde',
+  'payment_request_title' => 'Makse lingi kaudu',
+  'payment_request_amount' => 'Tasumisele kuuluv summa',
+  'payment_request_cancelled_message' => 'Makse tühistati. Saate uuesti valida makseviisi.',
+  'payment_request_hint' => 'Valige sellele makselingile sobiv online-makseviis.',
+  'payment_request_invalid_message' => 'Makse kinnitamine ebaõnnestus. Proovige uuesti või valige teine meetod.',
+  'payment_request_number' => 'Taotluse number:',
+  'payment_request_order_number' => 'Tellimuse number:',
+  'payment_request_purpose' => 'Makse eesmärk:',
+  'payment_request_status_paid' => 'Makstud',
+  'payment_request_status_pending' => 'Ootab tasumist',
+  'payment_request_success_message' => 'Makse on edukalt laekunud. Aitäh!',
+);

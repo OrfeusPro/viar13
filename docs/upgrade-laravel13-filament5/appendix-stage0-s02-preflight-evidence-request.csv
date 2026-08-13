@@ -1,0 +1,18 @@
+evidence_id,area,command_block,required_result,stop_condition,status,evidence_date,observed_result
+S02-E01,OS and host,S02-A,Ubuntu release and host identity captured,unknown or unsupported host,pass,2026-07-17,Ubuntu 24.04.4 LTS x86-64 Hetzner KVM
+S02-E02,PHP CLI,S02-A,PHP 8.3 or 8.4 CLI exact version and ini captured,target binary absent,pass,2026-07-17,PHP 8.3.30 CLI /etc/php/8.3/cli/php.ini
+S02-E03,PHP FPM,S02-A,dedicated target FPM service active and enabled,FPM absent or only shared generic pool,pass,2026-07-17,php8.3-fpm active enabled and dedicated dev pool exists
+S02-E04,PHP extensions,S02-A,all required extensions including intl present in CLI and FPM,missing required extension or ignore flag needed,pass,2026-07-17,required modules present; intl enabled; CLI and FPM each have 41 conf links
+S02-E05,PHP packages,S02-A,installed and candidate package versions recorded,no candidate for required package,pass,2026-07-17,8.3.30 packages installed; 8.3.32 and 8.4.23 candidates recorded; no upgrade selected
+S02-E06,Hestia domain,S02-B,dev.viarcanvas.com active and owned by admin,suspended or absent domain,blocked,2026-07-17,Hestia SUSPENDED yes
+S02-E07,Nginx root,S02-B,dedicated dev public root,production or suspend root,blocked,2026-07-17,HTTP and HTTPS root /usr/local/hestia/data/templates/web/suspend
+S02-E08,FPM socket mapping,S02-B,dev vhost maps to dedicated PHP 8.3/8.4 socket,production socket or generic shared pool,partial,2026-07-17,dedicated socket exists but suspended Nginx config has no fastcgi mapping
+S02-E09,filesystem ownership,S02-B,staging tree writable only by intended owner,production tree sharing or unsafe permissions,partial,2026-07-17,root admin:www-data mode 0751; application runtime directories absent
+S02-E10,storage link,S02-B,staging storage resolves inside staging tree,link resolves to production,blocked,2026-07-17,staging storage and public/storage link absent
+S02-E11,HTTPS routing,S02-B/S02-D,local resolve reaches expected dev vhost,suspended page wrong redirect or production response,partial,2026-07-17,assigned IP SNI request returns HTTP/2 200 Nginx suspend page; origin listener works
+S02-E12,APP isolation,S02-C,APP_KEY/cookie/domain do not collide,APP_KEY or cookie SAME,blocked,2026-07-17,staging .env absent; production-only values are not a collision proof
+S02-E13,database isolation,S02-C,separate sanitized DB and user,production database or credentials reused,blocked,2026-07-17,staging .env and database configuration absent
+S02-E14,Redis isolation,S02-C,separate DB/prefix/cache/queue namespace,production namespace collision,blocked,2026-07-17,staging Redis configuration absent
+S02-E15,provider isolation,S02-C,sandbox disabled or sink credentials,production outbound credentials active,partial,2026-07-17,no staging provider values because .env is absent; final disabled or sandbox contract pending
+S02-E16,production safety,all blocks,no writes restarts installs or secret output,any production mutation or secret exposure,pass,2026-07-17,S02-A B C were read-only and secret values were not printed
+S02-E17,public DNS,S02-D/external DNS,A or CNAME resolves dev domain to intended origin,NXDOMAIN or wrong DNS owner,blocked,2026-07-17,public A and AAAA are NXDOMAIN; authoritative DNS is Cloudflare

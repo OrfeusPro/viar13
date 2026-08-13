@@ -1,0 +1,178 @@
+<?php
+
+return array (
+  'settings' => 
+  array (
+    'meta_title' => 'My settings',
+    'bread' => 'My settings',
+    'meta_desc' => 'My settings',
+    'title_text' => 'Changing the password, entering a permanent address, delivery,<br> contact information management.',
+    'change_pass' => 'Change Password',
+    'contact_details' => 'Contact details',
+    'old_pass' => 'Old Password',
+    'new_pass' => 'New Password',
+    'retry_pass' => 'Repeat password',
+    'surname' => 'Surname',
+    'name' => 'Name',
+    'phone' => 'Telephone',
+    'permanent_address' => 'Your permanent address',
+    'delivery_address' => 'Delivery address',
+  ),
+  'main' => 
+  array (
+    'meta_title' => 'Personal Area',
+    'meta_desc' => 'Personal Area',
+    'bread' => 'Personal Area',
+    'title' => 'Personal Area',
+    'title_text' => 'You are logged in as:',
+    'fio' => 'Your First and Last Name:',
+    'email' => 'Your email:',
+    'address' => 'Your address:',
+    'phone' => 'Your contact phone number:',
+  ),
+  'orders' => 
+  array (
+    'bread' => 'My orders',
+    'meta_title' => 'My orders',
+    'meta_desc' => 'My orders',
+    'total_amount_of_purchases' => 'Total amount of purchases:',
+    'chat_with_viarcanvas' => 'Chat with <span class="activeSpan">ViarCanvas</span> :',
+    'chat' => 
+    array (
+      'admin' => 'Administrator:',
+      'you' => 'You:',
+      'add_comment' => 'Add a comment',
+      'placeholder' => 'Write a comment',
+      'add_comment_placeholder' => 'Write if you have any additional wishes',
+      'client' => 'Client:',
+      'painter' => 'Artist:',
+    ),
+    'photocomments' => 'Photo comments',
+    'add_your_files' => 'Add your files:',
+    'upload_file' => 'Upload file',
+    'click_to_add_file' => 'Click to add file',
+    'downloaded_files_from_viarcanvas' => 'Downloaded files from <span class="activeSpan">ViarCanvas</span> :',
+    'title' => 'You will always be aware of what orders were placed and when!',
+    'you_images' => '<span class="activeSpan">Your</span> uploaded files:',
+    'user_status' => 
+    array (
+      'watching' => 'Your order <span>is being reviewed by the artist</span> , if we need additional information, wait for a message to your email!',
+      'pegging' => 'Your order <span>is in progress</span> , soon the artist will send sketches for confirmation or revision',
+      'picture' => 'If you like everything , click on the “Accept” button and we will move it to the final stage of production!',
+      'sketch' => 'The drawn sketch can be finalized or sent straight to the next stage! In the chat you can add your comments on the sketch!',
+      'print_text' => 'Your order has been sent to <span>the final stage of production!</span><br> We will notify you when the painting ready to ship!',
+      'print' => 'Seal',
+    ),
+    'execute_to' => 'Run until',
+    'sketch_title' => '<span class="activeSpan">Sketches</span> :',
+    'picture_title' => 'Artist\'s <span class="activeSpan">Drawing</span> :',
+    'chat_with_admin' => 'Chat with administrator',
+    'chat_with_admin_small_notif' => '*chat is visible only to you and the administrator!',
+    'add_client_files' => 'Uploaded <span class="activeSpan">client</span> files:',
+    'count_paid_title' => 'Number of orders made',
+    'count_massage' => 'You have <b class="activeSpan">### new message from the Administrator</b>',
+    'count_massages' => 'You have <b class="activeSpan">### new message from the Administrator</b>',
+    'sended' => 'Sent',
+    'client_comments' => 'Additional comments:',
+    'add_your_sketch' => 'Upload <span class="activeSpan">sketch</span> :',
+    'add_your_picture' => 'Upload <span class="activeSpan">picture</span> :',
+    'you_images_for_load' => '<span class="activeSpan">Your</span> files to upload:',
+    'in_production' => 'In production',
+    'fashion' => 'Template / Sample',
+    'chat_with_client' => 'Chat with the client',
+    'chat_with_client_small_notif' => 'You can only write to a client in their language if a quick response is needed.',
+    'client_lang' => 'client language:',
+  ),
+  'stocks' => 
+  array (
+    'bread' => 'My bonuses',
+    'meta_title' => 'My Bonuses',
+    'meta_desc' => 'My Bonuses',
+    'title' => '<span>Options</span> to get more discounts and bonuses:',
+    'bonuses' => 'Bonuses:',
+    'bonus' => 
+    array (
+      'title' => 'Use accumulated bonuses<br> for further purchases.',
+    ),
+    'p1' => 'Watch out for bonuses when you make a purchase.<br> Use accumulated bonuses for further purchases.',
+  ),
+  'btn' => 
+  array (
+    'logout' => 'Go Out',
+    'change' => 'change',
+    'save' => 'Save',
+    'save_settings' => 'SAVE SETTINGS',
+    'send' => 'SEND',
+    'send_for_development' => 'SEND FOR DEVELOPMENT',
+    'accept' => 'ACCEPT',
+  ),
+  'menu' => 
+  array (
+    'my_account' => 'My office',
+    'my_orders' => 'My orders',
+    'my_bonuses' => 'My bonuses',
+    'my_settings' => 'My settings',
+    'unpaid' => 'Unpaid orders',
+    'paid' => 'Paid orders',
+    'orders_success' => 'Completed orders',
+  ),
+  'special_offers' => 
+  array (
+    'title' => 'Special offers <span>from ViarCanvas</span>',
+  ),
+  'unpaid' => 
+  array (
+    'title' => 'Unpaid orders',
+    'bread' => 'Unpaid orders',
+    'meta_title' => 'Unpaid orders',
+    'meta_desc' => 'My unpaid orders',
+  ),
+  'paid' => 
+  array (
+    'title' => 'Paid orders',
+    'bread' => 'Paid orders',
+    'meta_title' => 'Paid orders',
+    'meta_desc' => 'My paid orders',
+  ),
+  'orders_success' => 
+  array (
+    'title' => 'Completed orders',
+    'bread' => 'Completed orders',
+    'meta_title' => 'Completed orders',
+    'meta_desc' => 'My completed orders',
+    'count' => 'Number of completed orders:',
+  ),
+  'comments' => 
+  array (
+    'title' => 'Additional comments about your order:',
+  ),
+  'chat' => 
+  array (
+    'picture' => 'painting',
+    'sketch' => 'sketch',
+  ),
+  'picture_sub_title' => 'Chat to the picture:',
+  'sketch_sub_title' => 'Chat to sketch:',
+  'payment_status' => 'Payment status:',
+  'payment_status_paid' => 'Paid',
+  'payment_status_unpaid' => 'Not paid',
+  'payment_status_prepayment' => 'Prepayment',
+  'tracking_number' => 'Tracking number:',
+  'pay_now' => 'Pay now',
+  'pay_order_title' => 'Order payment',
+  'pay_order_meta_title' => 'Order payment',
+  'pay_order_meta_desc' => 'Online payment for an order in the client account',
+  'pay_order_hint' => 'Choose a convenient online payment system for this order.',
+  'back_to_orders' => 'Back to orders',
+  'payment_request_amount' => 'Amount to pay',
+  'payment_request_cancelled_message' => 'The payment was cancelled. You can choose a payment method again.',
+  'payment_request_hint' => 'Choose a convenient online payment system for this payment link.',
+  'payment_request_invalid_message' => 'We could not confirm the payment. Please try again or choose another method.',
+  'payment_request_number' => 'Payment request number:',
+  'payment_request_order_number' => 'Order number:',
+  'payment_request_purpose' => 'Payment purpose:',
+  'payment_request_status_paid' => 'Paid',
+  'payment_request_status_pending' => 'Awaiting payment',
+  'payment_request_success_message' => 'Payment completed successfully. Thank you!',
+  'payment_request_title' => 'Payment by link',
+);

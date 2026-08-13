@@ -1,0 +1,188 @@
+/* new */
+/* .td-4 {
+    display: none;
+} */
+
+td.td-4 {
+    width: 12%;
+}
+
+td.td-0 {
+    width: 9%;
+}
+
+.td-5 {
+    width: 10%;
+}
+
+td.td-2 {
+    width: 14%;
+}
+
+.tr__r {
+    display: flex;
+    justify-content: space-between;
+    max-width: 600px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.js__close {
+    display: inline;
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.d-mr-inputs input {
+    margin-right: 5px;
+}
+
+.f_print {
+}
+
+.js__close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 30px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e90b0b94;
+    color: #fff;
+}
+
+.form__label__cover {
+    padding: 15px;
+    background: #eee;
+    position: relative;
+}
+
+.w-100p {
+    width: 100% !important;
+}
+
+.order__courier {
+    display: inline-block;
+    padding: 30px;
+    background: #eee;
+    position: relative;
+}
+
+.flex_child_td_50 > td {
+    width: 50%;
+    flex-basis: 50%;
+}
+
+.table__full {
+    width: 100%;
+}
+
+/* endnew */
+
+.in_btn {
+    margin: 0 5px;
+}
+
+.btn_orders {
+    margin-left: 5px;
+    background-color: green !important;
+}
+
+#dataTable td {
+    border: 1px solid #f1f1f1;
+}
+
+#dataTable .eticet__tr tbody tr {
+    background-color: transparent;
+}
+#dataTable .eticet__tr tbody td {
+    padding: 0;
+    border: 0;
+}
+
+.pickup_data_loader {
+    justify-content: center;
+}
+
+.warehousesSelectLoader {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+    border: 5px solid #fa7846;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.eticet-create-btn {
+    color: black;
+    margin-top: 5px;
+}
+
+.eticet-create-btn img {
+    max-width: 100px;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.eticet-create-btn:hover img {
+    border-color: blue;
+}
+
+.eticet-create-btn span {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    margin: 5px;
+}
+
+.eticet-create-btn:hover {
+    color: blue;
+}
+
+.curier-call-btn {
+    color: black;
+    cursor: pointer;
+}
+
+.curier-call-btn:hover {
+    color: blue;
+}
+
+.curier-call-btn img {
+    border: 1px solid black;
+}
+
+.curier-call-btn:hover img {
+    border-color: blue;
+}
+
+.fonas {
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    padding: 15px;
+}
+
+.curier {
+    font-size: 25px;
+    font-weight: bold;
+    margin: 10px;
+}

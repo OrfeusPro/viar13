@@ -1,0 +1,13 @@
+logical_path,manifest_value,resolved_path,bytes,sha256,classification,change_policy
+/css/home_combine.css,/css/home_combine.css?id=241922474359a24aaecd,public/css/home_combine.css,77312,e8a225576284ec72b54878e677e4d834c53cfd43e6e4d97bac42575c060e2042,legacy_public_css,byte-identical
+/css/combine.css,/css/combine.css?id=a8784b7f83f45e930c7d,public/css/combine.css,137224,ebe84dccc6dec9cbf58a55ba46d419f11df55f95c75d0c1a1be9c9f8f4625999,legacy_public_css,byte-identical
+/js/combine.js,/js/combine.js?id=de5aa69e82a33eaa2188,public/js/combine.js,149108,a739c7cec35697e90093ff5a131bc20d217aa7e2bb44a296a721f08602010267,legacy_public_js,byte-identical
+/css/combine_canvas.css,/css/combine_canvas.css?id=2d760ffb3c7c3a3108c6,public/css/combine_canvas.css,232318,0888cccaacab330aab48461377ad1b773b55f035368ed1d0c0971f68e21635d5,legacy_public_css,byte-identical
+/js/combine_canvas.js,/js/combine_canvas.js?id=a163379f9214acbdcdf0,public/js/combine_canvas.js,186703,4cddb8b514d005084819bd6dad53728b6fe4f378f853664464070d6f2506d8c1,legacy_public_js,byte-identical
+/js/collage_combine.js,/js/collage_combine.js?id=1120780507eea3619e23,public/js/collage_combine.js,581101,df6d7ee926409909a16b852544b83b8f41cd56bd81764a0909770599946d1ff9,legacy_public_js,byte-identical
+/css/collage_combine.css,/css/collage_combine.css?id=2d599df412956456ea65,public/css/collage_combine.css,101532,9929ee843733605654aef74f2707d96333a4368eb7b850a46ae9f3ff8901b7d2,legacy_public_css,byte-identical
+/js/family_combine.js,/js/family_combine.js?id=f3d6666bc68ec50b1aa7,public/js/family_combine.js,647711,03a1db2d1f6162e938b7649f529a8428340967993c0e256a5a51a7a805e88a83,legacy_public_js,byte-identical
+/js/gallery_combine.js,/js/gallery_combine.js?id=2b71b2034ba3606013eb,public/js/gallery_combine.js,79989,7cad360a28e5c0bb4db56a6716c376578e72d18251cb8bff92afbabc23c96328,legacy_public_js,byte-identical
+/js/graph_combine.js,/js/graph_combine.js?id=b555949dee65b3191112,public/js/graph_combine.js,191630,917fe4931c28f699f85febc925216d0ee61f9365a37f092a5faa9ad7843992bb,legacy_public_js,byte-identical
+/js/graph_child_combine.js,/js/graph_child_combine.js?id=e2852f3c502ee887df2f,public/js/graph_child_combine.js,177455,3864890bc2b20f40dcabb49e679575cc2bd2ad68c5009d294e04be5d1d119a01,legacy_public_js,byte-identical
+/js/modular_combine.js,/js/modular_combine.js?id=cadb39a4606fcec6e500,public/js/modular_combine.js,483647,69728b3c5a409e0072f5af0f8baf919742f43b59ba0e74baa52eba5d666c151f,legacy_public_js,byte-identical

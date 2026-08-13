@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'target-box_0_title' => 'Valige <span>endale sobiv tellimisvõimalus</span> !',
+  'target-box_1_text1' => 'Kiirtellimus:',
+  'target-box_1_text2' => 'Hind ja suurus',
+  'target-box_1_text3' => 'Konsultatsioon',
+  'target-box_1_text4' => 'Lae pilt',
+  'target-box_1_text5' => 'Tellimus ühe minutiga',
+  'target-box_1_btn' => 'Kiirtellimus',
+  'target-box_2_text1' => 'Detailne tellimus:',
+  'target-box_2_text2' => '<strong>Hind ja suurus</strong>',
+  'target-box_2_text3' => '<strong> Maketi </strong> eelvaade / interjööris',
+  'target-box_2_text4' => 'Lisa <strong> saatmisaadress </strong>',
+  'target-box_2_text5' => 'Kohaletoimetamise <strong>kellaaeg ja kuupäev</strong>',
+  'target-box_2_text6' => 'Lisada <strong>kommentaare, erisoove, meeldinud näidis </strong>',
+  'target-box_2_btn' => 'Detailne tellimus:',
+  'target-box_3_btn' => 'Võta meiega kohe ühendust',
+  'popup-why_z0_none' => '-------------',
+  'popup-why_0_none' => '-------------',
+  'popup-callback_0_none' => '-------------',
+  'popup-why_title' => 'Miks te lahkute?',
+  'popup-why_subtitle' => 'Valige põhjus ja me proovime leida lahenduse, et teid aidata!',
+  'popup-callback_title' => 'Kuidas me saaksime Teiega ühendust?',
+  'popup-callback_subtitle' => 'Me teeme endast kõik, et teie mure saaks lahendatud!',
+  'popup-callback_content_phone' => 'Sisestage enda telefoni number ja me aitame teil kõiges selgusele saada!',
+  'please_enter_email' => 'Tahad soodustust? Sisesta oma e-post, et see saada.',
+);

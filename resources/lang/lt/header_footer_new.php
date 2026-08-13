@@ -1,0 +1,37 @@
+<?php
+
+return array (
+  'header_col1_name' => 'PORTRETAS',
+  'header_col2_name' => 'FOTODROBĖS',
+  'header_col3_name' => 'KOLIAŽAS',
+  'header_col4_name' => 'Idėjos',
+  'footer_col1_name' => 'Portretų stiliai',
+  'footer_col2_name' => 'Portreto tipai',
+  'footer_col3_name' => 'Informacija',
+  'we_in_socs' => 'Esame socialiniuose tinkluose:',
+  'footer_addr1' => 'Kęstučio g. 122 Kaunas, 44320',
+  'footer_addr2' => 'Rīga, Lubānas 65, LV-1073',
+  'footer_phone' => '+370 64749413',
+  'footer_phone2' => '+371 27044470',
+  'footer_addr2_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d ☎x647443443',
+  'footer_email' => 'viarstudia@gmail.com',
+  'footer_addr1_link' => 'https://www.google.com/maps/dir//Kęstučio+g.+122,+Kaunas,+44296+Kauno+m.+sav.,+Литва/@54.896153,23.9040914,219m/data=!3m1!1e3!4m8!4m7!1m0!1m5!1m1!1s0x46e7220cc92892bb:0x526af14ad8029e14!2m2!1d23.9043952!2d54.8962811?entry=ttu',
+  'footer_copyright' => 'ViarStudia UAB 2021.gada 31.marta noslēdza ar LIAA līgumu Nr. SKV-L-2021/63 par atbalsta saņemšanu pasākuma “Starptautiskās konkurētspējas veicināšana” ietvaros, ko līdzfinansē Eiropas Reģionālās attīstības fonds.',
+  'footer_copyright2' => 'D-Art-Solutions, SIA, 40203366048,  Jēkabpils nov., Jēkabpils, Slimnīcas iela 3 - 27, +37127044470, orders@viarcanvas.com',
+  'contacts' => 'Kontaktai',
+  'terms_and_conditions' => 'Privatumo politika, Bendrosios sąlygos',
+  'prices' => 'KAINOS',
+  'stocks' => 'NUOLAIDOS',
+  'header' => 
+  array (
+    'top_sale' => 'Vasaros išpardavimas 2026 <span>iki -65%</span>',
+  ),
+  'footer_paysera' => 'ViarStudia UAB  suteikia svetainės kūrimo ir reklamavimo funkcionalumą. grafikos kūrimas',
+  'footer_phone_new' => '+371 27044470',
+  'footer_phone_clean2' => '+371 25444744',
+  'footer_phone_clean' => '+371 27044470',
+  'footer_org_addressCountry' => 'LV',
+  'footer_org_addressLocality' => 'Rīga',
+  'footer_org_postalCode' => 'LV-1073',
+  'footer_org_streetAddress' => 'Lubānas 65',
+);

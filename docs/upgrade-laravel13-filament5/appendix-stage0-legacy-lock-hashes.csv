@@ -1,0 +1,12 @@
+artifact,scope,path,bytes,sha256,purpose,change_policy
+composer_json,legacy,composer.json,2927,a727127e1459262c728313b2e24e0968e1ee134660a5a1a2e951d8c2e336fe34,legacy PHP dependency declaration,immutable during Stage 0
+composer_lock,legacy,composer.lock,446153,43d5329c8b20b845e60179eb0b1e331d2a3607b0f327c3f3ae5abc60bed3d461,legacy PHP dependency lock,immutable and rollback evidence
+package_json,legacy,package.json,1136,7cfd67514cea3bbe668411c4f45a880117ec78d9eb830ffa6722bbaa6b18e6f8,legacy frontend dependency declaration,do not use for normal migration build
+package_lock,legacy,package-lock.json,475420,696f290dbb414f7c762680604e3522cd3eba920383f6fe5ef9c607422bb4a31a,legacy frontend dependency lock,immutable and rollback evidence
+webpack_mix_config,legacy,webpack.mix.js,5289,c0d976def33b0f064ab734a945d21b2ff391087a63c1484ad8eed410b87c2214,legacy concatenation order,immutable unless separately approved
+mix_manifest,legacy,public/mix-manifest.json,953,6d6778d507972a65729b2ba6c88661ed08fb92b5763ec21449057fb74404bf08,public asset URL/version map,byte-identical migration gate
+core_solver_json,target,docs/upgrade-laravel13-filament5/.audit-tmp/stage0-solver/composer.json,533,63e7fb6a660c36f3dd9fc1582c1df8826755a44e36edce5d0a8f453bae9a2a1c,isolated Laravel 13 Filament 5 Livewire 4 solver,never loaded by legacy app
+core_solver_lock,target,docs/upgrade-laravel13-filament5/.audit-tmp/stage0-solver/composer.lock,302319,02419848c492981859a3edf7e11658734abbdeab66d1e53feb730297915f5ae7,exact 108-package target core graph,requires ext-intl on staging
+frontend_solver_json,target,docs/upgrade-laravel13-filament5/.audit-tmp/stage0-solver/package.json,326,c321167ef48d4acc5b69078f45f2a232a18094fe4a68333f1ea2981c773435d1,isolated Laravel 13 Filament theme toolchain,never scans legacy public assets
+frontend_solver_lock,target,docs/upgrade-laravel13-filament5/.audit-tmp/stage0-solver/package-lock.json,63575,0b3d51ed86bcc6cd833de9492cd8fff012a0096d811f373eca70995ea7904400,exact 101-package target frontend graph,target panel only
+public_asset_canonical_root,legacy,public/mix-manifest.json+12 resolved files,3045730,e6b47e10bc8da6080b377dee23c4b78e1c5f25146e3a8f07903e0d2f084ee80d,canonical logical-path and file-hash root,must remain identical through Stage 0

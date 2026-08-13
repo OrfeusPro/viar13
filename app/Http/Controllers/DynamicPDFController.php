@@ -1,0 +1,713 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App;
+use App\Models\OrderString;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use URL;
+
+class DynamicPDFController extends Controller
+{
+    public function getPDFFromOrder($order, $order_vr_id = null, $form_data = null)
+    {
+        $orderDataHtml = $this->getOrderDataInHtml($order, $order_vr_id, $form_data);
+        $pdf = App::make('dompdf.wrapper');
+        $pdf->loadHTML($orderDataHtml);
+        $filePath = public_path() . '/storage/pdf/' . $order['id'] . '.pdf';
+        $pdf->setPaper('a4', 'portrait')->setWarnings(false)->save($filePath);
+        $home_url = URL::to('/');
+
+        return $home_url . '/storage/pdf/' . $order['id'] . '.pdf';
+    }
+
+    public function getOrderDataInHtml($order, $order_vr_id, $form_data)
+    {
+        if (isset($order['sale_eur']) && $order['sale_eur'] != '' && $order['sale_eur'] != null && $order['sale_eur'] != 0) {
+            $order['sale_price'] = (float)$order['sale_price'] - (float)$order['sale_eur'];
+        }
+        if ($order['sale_percent'] != '' && $order['sale_percent'] != null && $order['sale_percent'] != 0) {
+            $sp = (float)$order['sale_price'] * (floatval($order['sale_percent']) / 100);
+            $order['sale_price'] = (float)$order['sale_price'] - $sp;
+        }
+
+        $salesumm=(float)$order['price']-(float)$order['sale_price'];
+        // BAW => viar
+        // vr00 => viarstudia
+        // $cur_date = date("d.m.Y");
+
+        if ($order['approved_date'] != 'null' && $order['approved_date'] != '') {
+            $cur_date = $order['approved_date'];
+        } else {
+            $cur_date = date('d.m.Y');
+        }
+
+        $user_order = User::where('id', $order['user_id'])->get()->first();
+        if (!$user_order) {
+            $email = App\Models\Orders::getFieldPortraitCalc($order, 'Email');
+
+            if ($email) {
+                $user_order = User::where('email', $email)->get()->first();
+
+                if (!$user_order) {
+                    $random_pass = Str::random(8);
+                    $user_order = new User();
+                    $user_order->first_name = '';
+                    $user_order->last_name = '';
+                    $user_order->email = $email;
+                    $user_order->phone = '';
+                    $user_order->address = 'LV';
+                    $user_order->postal_index = '';
+                    $user_order->country = '';
+                    $user_order->client_data = 'NO';
+                    $user_order->news = 'YES';
+                    $user_order->role_id = 2;
+                    $user_order->avatar = 'users/default.png';
+                    $user_order->active_coupon = null;
+                    $user_order->password = Hash::make($random_pass);
+                    $settings = $user_order->settings;
+                    $settings['locale'] = '';
+                    $user_order->settings = $settings;
+                    $user_order->save();
+                }
+
+                App\Models\Orders::where('id', $order['id'])->update([
+                    'user_id' => $user_order->id
+                ]);
+            }
+        }
+
+        $ord_strings = OrderString::where('id', 1)->get()->translate($user_order->preferredLocale(), 'ru')[0];
+
+        $ord_strings['bank_code'] = $ord_strings['bank_code_place'];
+        $is_from_formadata_var2 = 0;
+
+        $user_loc = $user_order->preferredLocale();
+        $pdf_locale = $user_order->DPFLocale();
+        if($pdf_locale) $user_loc = $pdf_locale;
+
+         if($user_order->preferredLocale() == 'ee'){
+             $user_loc = 'et';
+         }
+
+         if($user_order->preferredLocale() == null || $user_order->preferredLocale() == '' || $user_order->preferredLocale() == []){
+             $user_loc = 'en';
+         }
+
+         // translated strings
+         $ord_strings['invoice'] = trans('cart_new.invoice', [], $user_loc);
+         $ord_strings['acc_num_place'] = trans('ord_strings.acc_num_place', [], $user_loc);
+         $ord_strings['req_num_place'] = trans('ord_strings.req_num_place', [], $user_loc);
+         $ord_strings['addr_place'] = trans('ord_strings.addr_place', [], $user_loc);
+         $ord_strings['admin_name'] = trans('ord_strings.admin_name', [], $user_loc);
+         $ord_strings['bank_name_place'] = trans('ord_strings.bank_name_place', [], $user_loc);
+         $ord_strings['bank_name_place2'] = trans('ord_strings.bank_name_place2', [], $user_loc);
+         $ord_strings['cel-platezha'] = trans('ord_strings.cel-platezha', [], $user_loc);
+         $ord_strings['code_place'] = trans('ord_strings.code_place', [], $user_loc);
+         $ord_strings['consignor_place'] = trans('ord_strings.consignor_place', [], $user_loc);
+         $ord_strings['customer_place'] = trans('ord_strings.customer_place', [], $user_loc);
+         $ord_strings['deliv_addr_place'] = trans('ord_strings.deliv_addr_place', [], $user_loc);
+         $ord_strings['legal_addr_place'] = trans('ord_strings.legal_addr_place', [], $user_loc);
+         $ord_strings['office_addr_place'] = trans('ord_strings.office_addr_place', [], $user_loc);
+         $ord_strings['persons_bot_left'] = trans('ord_strings.persons_bot_left', [], $user_loc);
+         $ord_strings['persons_bot_left_name'] = trans('ord_strings.persons_bot_left_name', [], $user_loc);
+         $ord_strings['persons_bot_right'] = trans('ord_strings.persons_bot_right', [], $user_loc);
+         $ord_strings['persons_bot_right_name'] = trans('ord_strings.persons_bot_right_name', [], $user_loc);
+         $ord_strings['prod_am_place'] = trans('ord_strings.prod_am_place', [], $user_loc);
+         $ord_strings['prod_name_place'] = trans('ord_strings.prod_name_place', [], $user_loc);
+         $ord_strings['prod_nr_place'] = trans('ord_strings.prod_nr_place', [], $user_loc);
+         $ord_strings['prod_price_place'] = trans('ord_strings.prod_price_place', [], $user_loc);
+         $ord_strings['prod_qty_place'] = trans('ord_strings.prod_qty_place', [], $user_loc);
+         $ord_strings['prod_unit_place'] = trans('ord_strings.prod_unit_place', [], $user_loc);
+         $ord_strings['pvn_place'] = trans('ord_strings.pvn_place', [], $user_loc);
+         $ord_strings['reg_num_place'] = trans('ord_strings.reg_num_place', [], $user_loc);
+         $ord_strings['sign_place'] = trans('ord_strings.sign_place', [], $user_loc);
+         $ord_strings['total_am_place'] = trans('ord_strings.total_am_place', [], $user_loc);
+         $ord_strings['sale_price_text'] = trans('ord_strings.sale_price_text', [], $user_loc);
+         $ord_strings['swift'] = trans('ord_strings.swift', [], $user_loc);
+
+        if ($order_vr_id && $order_vr_id != null) {
+            if (strpos($order_vr_id, 'BAW') !== false) { //Viar
+                $is_from_formadata_var2 = 1;
+                $ord_strings['consignor_text'] = $ord_strings['consignor_text_vrv']; //change ViarArt SIA
+                $ord_strings['req_num_text'] = $ord_strings['req_num_text_vrv'];
+                $ord_strings['addr_text'] = $ord_strings['addr_text_vrv'];
+                $ord_strings['pvn_text'] = $ord_strings['pvn_text_vrv'];
+                $ord_strings['bank_name_text'] = $ord_strings['bank_name_text_vrv'];
+                $ord_strings['office_addr_text'] = $ord_strings['addr2_text_vrv'];
+                $ord_strings['acc_num_text'] = $ord_strings['acc_num_text_vrv'];
+                $ord_strings['is_pvn_vrv'] = $ord_strings['is_pvn_vrv'];
+                $ord_strings['bank_code'] = $ord_strings['bank_code_place_vrv'];
+            }
+
+            if (strpos($order_vr_id, 'VRR') !== false) {
+                $ord_strings['consignor_text'] = $ord_strings['consignor_text_vrr'];
+                $ord_strings['req_num_text'] = $ord_strings['req_num_text_vrr'];
+                $ord_strings['addr_text'] = $ord_strings['addr_text_vrr'];
+                $ord_strings['pvn_text'] = $ord_strings['pvn_text_vrr'];
+                $ord_strings['office_addr_text'] = $ord_strings['office_addr_text_vrr'];
+                $ord_strings['acc_num_text'] = $ord_strings['acc_num_text_vrr'];
+                $ord_strings['bank_name_text'] = $ord_strings['bank_name_text_vrr'];
+                $ord_strings['is_pvn_vrr'] = $ord_strings['is_pvn_vrr'];
+                $ord_strings['bank_code'] = $ord_strings['bank_code_place_vrr'];
+            }
+
+            if (strpos($order_vr_id, 'DS020') !== false) {
+                $ord_strings['consignor_text'] = $ord_strings['consignor_text_vra'];
+                $ord_strings['req_num_text'] = $ord_strings['req_num_text_vra'];
+                $ord_strings['addr_text'] = $ord_strings['addr_text_vra'];
+                $ord_strings['pvn_text'] = $ord_strings['pvn_text_vra'];
+                $ord_strings['office_addr_text'] = $ord_strings['addr2_text_vra'];
+                $ord_strings['acc_num_text'] = $ord_strings['acc_num_text_vra'];
+                $ord_strings['bank_name_text'] = $ord_strings['bank_name_text_vra'];
+                $ord_strings['is_pvn_vra'] = $ord_strings['is_pvn_vra'];
+                $ord_strings['bank_code'] = $ord_strings['bank_code_place_vra'];
+            }
+
+        }
+
+        if ($form_data && $form_data != null) {
+            $ord_strings['consignor_text'] = $form_data['name']; // 1
+            $ord_strings['req_num_text'] = $form_data['reg_num']; // 2
+            $ord_strings['addr_text'] = $form_data['addr']; // 3
+            $ord_strings['pvn_text'] = $form_data['vat_num']; // 4
+            $ord_strings['bank_name_text'] = $form_data['bank']; //5
+            $ord_strings['bank_code'] = $form_data['bank_code']; //6
+            $ord_strings['office_addr_text'] = $form_data['office_addr']; // 7
+            $ord_strings['acc_num_text'] = $form_data['acc_num']; // 8
+        }
+
+//        $ord_strings['order_vr'] = '';
+//        if ($order_vr_id != null) {
+//            $order_id = $order_vr_id;
+//        } else {
+//            $order_id = $order['id'];
+//        }
+
+        $ur_name = $order['ur_name'];
+        $ur_name_l = $order['ur_name_l'];
+        $ur_reg_num = $order['ur_reg_num'];
+        $ur_addr = $order['ur_legal_addr'];
+        $ur_pnr_nr = $order['ur_pnr_nr'];
+        $ur_bank_name = $order['ur_bank_name'];
+        $ur_bank_code = $order['ur_bank_code'];
+        $ur_bank_acc_code = $order['ur_bank_acc_code'];
+
+        if ($ur_reg_num == '') {
+            $ord_strings['reg_num_place'] = '';
+        }
+
+        if ($ur_name_l == '') {
+            $ord_strings['ur_name_l'] = '';
+        }
+
+        if ($ur_addr == '') {
+            $ord_strings['legal_addr_place'] = '';
+        }
+
+        if ($ur_bank_name == '') {
+            $ord_strings['bank_name_place2'] = '';
+        }
+
+        if ($ur_pnr_nr == '') {
+            $ord_strings['prn_nr_place'] = '';
+        }
+
+        if ($ur_bank_code == '') {
+            $ord_strings['bank_code2'] = '';
+        }
+
+        if ($ur_bank_acc_code == '') {
+            $ord_strings['code_place'] = '';
+        }
+
+        if($ur_name == "")
+        {
+            $ord_strings['reg_num_place'] = '';
+            $ord_strings['ur_name_l'] = '';
+            $ord_strings['legal_addr_place'] = '';
+            $ord_strings['bank_name_place2'] = '';
+            $ord_strings['prn_nr_place'] = '';
+            $ord_strings['bank_code2'] = '';
+            $ord_strings['code_place'] = '';
+
+            $ur_reg_num = '';
+            $ur_name_l = '';
+            $ur_addr = '';
+            $ur_bank_name = '';
+            $ur_pnr_nr = '';
+            $ur_bank_code = '';
+            $ur_bank_acc_code = '';
+        }
+
+        $del_addr = $order['delivery']['address'] ?? '';
+
+        if(isset($order['items']['total_terms_price']) && (float)$order['items']['total_terms_price'])
+        {
+            $price = str_replace(' €', '', $order['price']);
+            $price = (float)$price + (float)$order['items']['total_terms_price'];
+           // $order['sale_price'] = $price;
+           // $order['price'] = $price . ' €';
+
+        }
+        else
+        {
+            $price = str_replace(' €', '', $order['price']);
+        }
+
+        if ($price != $order['sale_price']) {
+            $tot_sale_price = $order['sale_price'];
+        } else {
+            $tot_sale_price = 0;
+        }
+
+        //$logo_img = \URL::to('/') . '/pdf_print_logo.png';
+        $logo_img = public_path().'/pdf_print_logo.png';
+
+        if ($is_from_formadata_var2 != 1) {
+            if ($order_vr_id && $order_vr_id != null) {
+                if (strpos($order_vr_id, 'VR00') !== false) { // ViarStudia
+                } else { // Viar
+                    // $ord_strings['req_num_place'] = '';
+                    // $ord_strings['req_num_text'] = '';
+                    // $ord_strings['pvn_place'] = '';
+                    // $ord_strings['pvn_text'] = '';
+                    // $ord_strings['bank_code_place'] = '';
+                    // $ord_strings['acc_num_place'] = '';
+                    // $ord_strings['acc_num_text'] = '';
+                }
+            }
+        }
+
+
+        if(!$ord_strings['req_num_text']){
+            $ord_strings['req_num_place'] = '';
+        }
+        if(!$ord_strings['pvn_text']){
+            $ord_strings['pvn_place'] = '';
+        }
+        if(!$ord_strings['bank_code']){
+            $ord_strings['bank_code_place'] = '';
+            $ord_strings['swift'] = '';
+        }
+        if(!$ord_strings['acc_num_text']){
+            $ord_strings['acc_num_place'] = '';
+        }
+
+        $text = '
+        <html>
+        <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <style>
+            body { font-family: DejaVu Sans;font-size:12px; }
+            .nb_all{ border-bottom: none!important; } .tac{ text-align:center; } .tar{ text-align:right; } table{ max-width:100%; width:100%;} .table__1 tr{ border-bottom: 1px solid #000; } .tr__border{ border-bottom: 1px solid #000; } .table__2 tr{ border: 1px solid #000; }
+        </style>
+        </head>
+        <body>
+        <img style="margin-left:auto;margin-right:auto;margin-bottom:20px;text-algin:center;max-width:70px;" src="data:image/png;base64,'.base64_encode(file_get_contents($logo_img)).'">
+        <h3 align="center;margin-bottom:25px;">'.$ord_strings['invoice']." ".$order_vr_id. '</h3>
+        <h3 class="tac" style="text-align: center;">' . $cur_date . '</h3>
+        <table class="table__1" width="100%" style="border-collapse:collapse;max-width: 100%;width: 100%;">
+
+
+        <tr class="tr__border" style="border-bottom: 1px solid #000;">
+            <td style="border-bottom:1px solid #000;">' . $ord_strings['consignor_place'] . '</td>
+            <td style="border-bottom:1px solid #000;">' . $ord_strings['consignor_text'] . '</td>
+            <td style="border-bottom:1px solid #000;"></td>
+            <td style="border-bottom:1px solid #000;text-align: right;">
+            ' . $ord_strings['req_num_place'] . ' ' . $ord_strings['req_num_text'] . '</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #000;">
+            <td style="border-bottom:1px solid #000;">' . $ord_strings['addr_place'] . '</td>
+            <td style="border-bottom:1px solid #000;white-space:nowrap;">' . $ord_strings['addr_text'] . '</td>
+            <td style="border-bottom:1px solid #000;"></td>
+            <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">
+            ' . $ord_strings['pvn_place'] . ' ' . $ord_strings['pvn_text'] . '</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #000;">
+            <td style="border-bottom:1px solid #000;">' . $ord_strings['bank_name_place'] . '</td>
+            <td style="border-bottom:1px solid #000;">' . $ord_strings['bank_name_text'] . '</td>
+            <td style="border-bottom:1px solid #000;"></td>
+            <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">
+            ' . $ord_strings['swift'] . ' ' . $ord_strings['bank_code'] . '</td>
+        </tr>
+
+        ';
+        $text .= '
+            <tr style="border-bottom: 1px solid #000;">
+                <td style="border-bottom:1px solid #000;white-space:nowrap;">' . $ord_strings['office_addr_place'] . '</td>
+                <td style="border-bottom:1px solid #000;white-space:nowrap;">' . $ord_strings['office_addr_text'] . '</td>
+                <td style="border-bottom:1px solid  #000;"></td>
+                <td style="border-bottom:1px solid #000;white-space:nowrap;" class="tar" style="text-align: right;">
+                ' . $ord_strings['acc_num_place'] . ' ' . $ord_strings['acc_num_text'] . '</td>
+            </tr>';
+        $text .= '
+            <tr style="border-bottom: 1px solid #000;">
+                <td style="border-bottom:1px solid #000;white-space:nowrap;">' . $ord_strings['cel-platezha'] . '</td>
+                <td style="border-bottom:1px solid #000;white-space:nowrap;">' . $order_vr_id . '</td>
+                <td style="border-bottom:1px solid  #000;"></td>
+                <td style="border-bottom:1px solid #000;white-space:nowrap;" class="tar" style="text-align: right;"></td>
+            </tr>';
+        $text .= '
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="nb_all" style="border-bottom: none!important;">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+
+        <tr style="border-bottom: 1px solid #000;">
+            <td style="border-bottom:1px solid #000;">' . $ord_strings['customer_place'] . '</td>
+            <td style="border-bottom:1px solid #000;">' . ($ur_name_l ? $ur_name_l : (($order['delivery']['first_name'] ?? null) . ' ' . ($order['delivery']['last_name'] ?? null))) . '</td>
+            <td style="border-bottom:1px solid #000;"></td>
+            <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">
+            ' . $ord_strings['reg_num_place'] . ' ' . $ur_reg_num . '</td>
+        </tr>';
+
+        if ($ur_addr != '' || $ur_pnr_nr != '') {
+            $text .= '
+            <tr style="border-bottom: 1px solid #000;">
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['legal_addr_place'] . '</td>
+                <td style="border-bottom:1px solid #000;">' . $ur_addr . '</td>
+                <td style="border-bottom:1px solid #000;"></td>
+                <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">
+                ' . __('ord_strings.reg_num_place') . ' ' . $ur_pnr_nr . '</td>
+            </tr>';
+        }
+
+        if ($ur_bank_name != '' || $ur_bank_code != '') {
+            $text .= '
+            <tr style="border-bottom: 1px solid #000;">
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['bank_name_place2'] . '</td>
+                <td style="border-bottom:1px solid #000;">' . $ur_bank_name . '</td>
+                <td style="border-bottom:1px solid #000;"></td>
+                <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">
+                ' . $ord_strings['bank_code2'] . ' ' . $ur_bank_code . '</td>
+            </tr>';
+        }
+
+        if ($del_addr != '' || $ur_bank_acc_code != '') {
+            $text .= '
+            <tr style="border-bottom: 1px solid #000;">
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['deliv_addr_place'] . '</td>
+                <td style="border-bottom:1px solid #000;">' . $del_addr . '</td>
+                <td style="border-bottom:1px solid #000;"></td>
+                <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">
+                ' . $ord_strings['code_place'] . ' ' . $ur_bank_acc_code . '</td>
+            </tr>';
+        }
+
+        $text .= '
+        </table>
+        <br>
+
+        <table class="table__2" width="100%" style="border-collapse: collapse;border: 0px;max-width: 100%;width: 100%;">
+            <tr style="border: 1px solid #000;">
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['prod_nr_place'] . '</td>
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['prod_name_place'] . '</td>
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['prod_unit_place'] . '</td>
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['prod_qty_place'] . '</td>
+                <td style="border-bottom:1px solid #000;">' . $ord_strings['prod_price_place'] . '</td>
+                <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">' . $ord_strings['prod_am_place'] . '</td>
+            </tr>
+            ';
+
+        $i = 0;
+        $total_saved = 0;
+        $raw_terms_price=0;
+        $order_all_summ=0;
+
+        foreach ($order['items'] as $product) {
+            if (!isset($product['sumPrice'])) {
+                continue;
+            }
+
+            // if (isset($product['total_item_price'])) {
+            //     $product['sumPrice'] = $product['total_item_price'];
+            // }
+
+            $prod_add_name = '';
+
+            if (isset($product['show'])) {
+                if (isset($product['show']['size'])) {
+                    $prod_add_name = $product['show']['size'];
+                }
+            }
+
+            if (isset($product['size_name'])) {
+                $prod_add_name = $product['size_name'];
+            }
+
+            if (isset($product['count'])) {
+                $quant = $product['count'];
+            } else {
+                $quant = 1;
+            }
+
+            $i++;
+
+            if ((strpos($order_vr_id, 'VR00' ) !== false && !$ord_strings['is_pvn'])
+            || (strpos($order_vr_id, 'VRR' ) !== false && !$ord_strings['is_pvn_vrr'])
+            || (strpos($order_vr_id, 'BAW' ) !== false && !$ord_strings['is_pvn_vrv'])
+            || (strpos($order_vr_id, 'DS020' ) !== false && !$ord_strings['is_pvn_vra'])
+            ) {
+                $pr_price = $product['sumPrice'];
+
+            }else{
+                $pr_price = $product['sumPrice'] / 1.21;
+            }
+
+
+
+            $pr_price_final = number_format($pr_price, 2, '.', '');
+
+            $total_saved += $pr_price_final;
+
+            $price_for_one=$pr_price_final/$quant;
+            $price_for_one=number_format($price_for_one, 2, '.', '');
+
+            $text .= '<tr style="border: 1px solid #000;">
+                        <td style="border-bottom:1px solid #000;">' . $i . '</td>
+                        <td style="border-bottom:1px solid #000;">' . $product['name'] . ' ' . $prod_add_name . '</td>
+                        <td style="border-bottom:1px solid #000;">1</td>
+                        <td style="border-bottom:1px solid #000;">' . $quant . '</td>
+                        <td style="border-bottom:1px solid #000;">' . $price_for_one . '</td>
+                        <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">' . $pr_price_final . '&euro;</td>
+                    </tr>';
+
+            $order_all_summ+=$pr_price_final;
+
+            if(isset($product['terms_price']) && (float)$product['terms_price'] > 0)
+            {
+                $raw_terms_price +=(float)$product['terms_price'];
+                $terms_price = (float)$product['terms_price'];
+
+                if ((strpos($order_vr_id, 'VR00' ) !== false && !$ord_strings['is_pvn'])
+                || (strpos($order_vr_id, 'VRR' ) !== false && !$ord_strings['is_pvn_vrr'])
+                || (strpos($order_vr_id, 'BAW' ) !== false && !$ord_strings['is_pvn_vrv'])
+                || (strpos($order_vr_id, 'DS020' ) !== false && !$ord_strings['is_pvn_vra']))
+                {
+                }else{
+
+                    $terms_price = $terms_price / 1.21;
+                }
+
+                $terms_price = number_format($terms_price, 2, '.', '');
+
+                $total_saved += $terms_price;
+                $order_all_summ+=$terms_price;
+                $i++;
+                    $text .= '<tr style="border: 1px solid #000;">
+                        <td style="border-bottom:1px solid #000;">' . $i . '</td>
+                        <td style="border-bottom:1px solid #000;">' . $product['name'] .' '. trans('gl.express', [], $user_loc) . '</td>
+                        <td style="border-bottom:1px solid #000;">1</td>
+                        <td style="border-bottom:1px solid #000;">1</td>
+                        <td style="border-bottom:1px solid #000;">' . $terms_price . '</td>
+                        <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">' . $terms_price . '&euro;</td>
+                    </tr>';
+            }
+        }
+
+
+        if ($order['ur_name'] == '') {
+            $nds_price = $total_saved / 100 * number_format($ord_strings['nds'], 2, '.', '');
+        } else {
+            $nds_price = $total_saved / 100 * number_format($ord_strings['nds'], 2, '.', '');
+        }
+
+
+        if (isset($order['delivery']['deliv_price'])) {
+            $dost_full_price = number_format($order['delivery']['deliv_price'], 2, '.', ''); // 4
+
+            $dost_calc_price = number_format($dost_full_price / 121 * 100, 2, '.', ''); // 3,31
+
+            $dost_calc_price_full = $dost_full_price - $dost_calc_price;
+        } else {
+            $dost_calc_price_full = 0;
+
+            $dost_calc_price = 0;
+            $dost_full_price = 0;
+        }
+
+
+
+        $nds_price_full = $dost_calc_price_full + $nds_price;
+
+        $nds_price_full = number_format($nds_price_full, 2, '.', '');
+
+
+        $order_all_summ+=$dost_calc_price+$nds_price_full;
+
+
+
+        $pr = str_replace(' €', '', $order['price']);
+
+        if ((strpos($order_vr_id, 'VR00' ) !== false && !$ord_strings['is_pvn'])
+         || (strpos($order_vr_id, 'VRR' ) !== false && !$ord_strings['is_pvn_vrr'])
+         || (strpos($order_vr_id, 'BAW' ) !== false && !$ord_strings['is_pvn_vrv'])
+         || (strpos($order_vr_id, 'DS020' ) !== false && !$ord_strings['is_pvn_vra']))
+        {
+            $nds_price_full = 0;
+            $dost_calc_price = $dost_full_price;
+        }
+
+
+
+
+
+
+        if ($salesumm!=0 && ($order['sale_price']!=NULL || $order['sale_price']!=0)){
+           // if ($pr != $order['sale_price'] && $order['sale_price'] != null && $order['sale_price'] != '') {
+            $pr = $order['sale_price'];
+
+//            $all_summ=$order_all_summ-$price_shown;
+//
+//            if ($all_summ!=0) {
+//
+//            }
+        }
+
+
+        if (isset($order['delivery']['deliv_price'])) {
+            $dp = intval($order['delivery']['deliv_price']);
+        } else {
+            $dp = 0;
+        }
+
+        $price_shown = number_format((float)$pr + (float)$dp + (float)$raw_terms_price, 2, '.', '');
+
+
+
+
+
+        /// TODO:  PDF тут вставляем строку со скидкой если есть
+        ///
+
+     $sale_html='<tr style="border: 1px solid #000;">
+                <td>' .  $ord_strings['sale_price_text'] . '</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="tar" style="text-align: right;">-'.$salesumm.'&euro;</td>
+            </tr>';
+
+
+        if ($salesumm!=0 && ($order['sale_price']!=NULL || $order['sale_price']!=0)){  $text .=$sale_html;  }
+
+    $text .= ' <tr style="border: 1px solid #000;">
+
+                <td>' . $ord_strings['deliv_price'] . '</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="tar" style="text-align: right;">' . $dost_calc_price . '&euro;</td>
+            </tr>
+            <tr style="border: 1px solid #000;">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                ';
+            if ($nds_price_full != 0)
+            {
+                $text .= '
+                <td>'.$ord_strings['nds'].'%</td>
+                <td class="tar" style="text-align: right;">'.$nds_price_full.'&euro;</td>
+                ';
+            }
+            $text .= '
+            </tr>
+            <tr style="border: 1px solid #000;">
+                <td>' . $ord_strings['total_am_place'] . '</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="tar" style="text-align: right;">' . $price_shown . '&euro;</td>
+            </tr>
+        </table>
+        </body>
+        </html>
+                ';
+
+        $text = $this->rus2translit($text);
+
+        return $text;
+    }
+
+    private function rus2translit($string)
+    {
+        $converter = [
+            'а' => 'a', 'б' => 'b', 'в' => 'v',
+            'г' => 'g', 'д' => 'd', 'е' => 'e',
+            'ё' => 'e', 'ж' => 'zh', 'з' => 'z',
+            'и' => 'i', 'й' => 'y', 'к' => 'k',
+            'л' => 'l', 'м' => 'm', 'н' => 'n',
+            'о' => 'o', 'п' => 'p', 'р' => 'r',
+            'с' => 's', 'т' => 't', 'у' => 'u',
+            'ф' => 'f', 'х' => 'h', 'ц' => 'c',
+            'ч' => 'ch', 'ш' => 'sh', 'щ' => 'sch',
+            'ь' => '\'', 'ы' => 'y', 'ъ' => '\'',
+            'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
+            'А' => 'A', 'Б' => 'B', 'В' => 'V',
+            'Г' => 'G', 'Д' => 'D', 'Е' => 'E',
+            'Ё' => 'E', 'Ж' => 'Zh', 'З' => 'Z',
+            'И' => 'I', 'Й' => 'Y', 'К' => 'K',
+            'Л' => 'L', 'М' => 'M', 'Н' => 'N',
+            'О' => 'O', 'П' => 'P', 'Р' => 'R',
+            'С' => 'S', 'Т' => 'T', 'У' => 'U',
+            'Ф' => 'F', 'Х' => 'H', 'Ц' => 'C',
+            'Ч' => 'Ch', 'Ш' => 'Sh', 'Щ' => 'Sch',
+            'Ь' => '\'', 'Ы' => 'Y', 'Ъ' => '\'',
+            'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
+        ];
+
+        return strtr($string, $converter);
+    }
+}

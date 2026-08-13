@@ -1,0 +1,13 @@
+evidence_id,area,required_result,stop_condition,status
+TEST-E01,DNS and HTTPS,test resolves to 65.108.243.50 and valid HTTPS,wrong origin or certificate,pass
+TEST-E02,Hestia and Nginx,current domain root template backend captured,production alias or shared root,pass
+TEST-E03,PHP backend,exact current and target PHP 8.3 mapping known,production pool change required,partial
+TEST-E04,capacity,current test size plus target headroom fit 18 GiB,insufficient free space,pass
+TEST-E05,runtime ownership,no unowned worker cron or service references,active test process unknown,pass
+TEST-E06,current data,test declared disposable by user,current test must be preserved,pass
+TEST-E07,APP identity,new APP_KEY and cookie required,production APP_KEY or cookie reused,blocked
+TEST-E08,database,new sanitized DB and least privilege user,production DB or user reused,partial
+TEST-E09,Redis and queue,separate DB prefix cache and queue names,production namespace collision,blocked
+TEST-E10,providers,all outbound disabled sandbox or sink,live payment mail OAuth or Synvolve credentials,blocked
+TEST-E11,filesystem,new target tree and storage stay under test domain,production storage link,pass
+TEST-E12,production safety,no production config service data or provider changes,any production mutation,pass

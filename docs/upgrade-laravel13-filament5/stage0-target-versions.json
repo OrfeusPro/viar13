@@ -1,0 +1,148 @@
+{
+  "schema": "viar-stage0-target-versions-v1",
+  "generated_at": "2026-07-17T14:00:00+03:00",
+  "legacy_snapshot": {
+    "branch": "main",
+    "commit": "bc8f95636214fa633b77bbbd75c0f6bdc180d1d6",
+    "working_tree_before_evidence": "clean",
+    "php": "7.4.30",
+    "laravel": "6.20.40",
+    "voyager": "1.5.2",
+    "composer_lock_sha256": "43d5329c8b20b845e60179eb0b1e331d2a3607b0f327c3f3ae5abc60bed3d461",
+    "package_lock_sha256": "696f290dbb414f7c762680604e3522cd3eba920383f6fe5ef9c607422bb4a31a",
+    "mix_manifest_sha256": "6d6778d507972a65729b2ba6c88661ed08fb92b5763ec21449057fb74404bf08",
+    "public_asset_count": 12,
+    "public_asset_total_bytes": 3045730,
+    "public_asset_canonical_sha256": "e6b47e10bc8da6080b377dee23c4b78e1c5f25146e3a8f07903e0d2f084ee80d"
+  },
+  "target_runtime": {
+    "php_constraint": "^8.3",
+    "preferred_php_minor": "8.4",
+    "composer_solver_platform": "8.3.0",
+    "composer": "2.9.5",
+    "required_extensions": [
+      "bcmath",
+      "ctype",
+      "curl",
+      "dom",
+      "fileinfo",
+      "filter",
+      "gd",
+      "hash",
+      "iconv",
+      "intl",
+      "json",
+      "libxml",
+      "mbstring",
+      "openssl",
+      "pdo_mysql",
+      "session",
+      "tokenizer",
+      "xml",
+      "xmlreader",
+      "xmlwriter",
+      "zip"
+    ],
+    "required_if_selected": [
+      "imagick",
+      "redis"
+    ],
+    "blocking_local_gap": "ext-intl is absent from C:\\dev\\php\\php8.3\\php.ini",
+    "fpm_gate": "CLI and FPM must report the same PHP minor and required extensions before S0-02 installation"
+  },
+  "target_composer_lock": {
+    "path": "docs/upgrade-laravel13-filament5/.audit-tmp/stage0-solver/composer.lock",
+    "sha256": "02419848c492981859a3edf7e11658734abbdeab66d1e53feb730297915f5ae7",
+    "content_hash": "448b00b253643a9d73a28e1f329e1ee9",
+    "package_count": 108,
+    "security_advisories": 0,
+    "resolved": {
+      "laravel/framework": "13.20.0",
+      "filament/filament": "5.6.8",
+      "livewire/livewire": "4.3.3"
+    },
+    "solver_result": "resolved only after ignoring the already-identified ext-intl platform gap; no legacy lock was modified"
+  },
+  "target_frontend_lock": {
+    "scope": "Filament panel only",
+    "node": "24.13.0",
+    "npm": "11.6.2",
+    "path": "docs/upgrade-laravel13-filament5/.audit-tmp/stage0-solver/package-lock.json",
+    "sha256": "0b3d51ed86bcc6cd833de9492cd8fff012a0096d811f373eca70995ea7904400",
+    "package_count": 101,
+    "security_vulnerabilities": 0,
+    "resolved": {
+      "@tailwindcss/vite": "4.3.3",
+      "concurrently": "10.0.3",
+      "laravel-vite-plugin": "3.1.3",
+      "tailwindcss": "4.3.3",
+      "vite": "8.1.5"
+    },
+    "legacy_public_assets_included": false
+  },
+  "data_services": {
+    "mariadb_initial_target": "10.11.16-MariaDB",
+    "redis_initial_target": "7.0.15",
+    "policy": "do not combine database or Redis major upgrades with the first Filament cutover"
+  },
+  "server_staging_preflight": {
+    "evidence_date": "2026-07-17T11:45:08Z",
+    "os": "Ubuntu 24.04.4 LTS",
+    "php_cli": "8.3.30",
+    "php_fpm": "8.3.30",
+    "ext_intl": "PASS",
+    "required_extensions": "PASS",
+    "php_fpm_service": "active and enabled",
+    "dedicated_pool": "/etc/php/8.3/fpm/pool.d/dev.viarcanvas.com.conf",
+    "dedicated_socket": "/run/php/php8.3-fpm-dev.viarcanvas.com.sock",
+    "domain_state": "SUSPENDED",
+    "nginx_root": "/usr/local/hestia/data/templates/web/suspend",
+    "staging_env": "ABSENT",
+    "staging_storage": "ABSENT",
+    "decision": "PHP PASS; dev vhost and isolation BLOCKED"
+  },
+  "selected_staging": {
+    "domain": "test.viarcanvas.com",
+    "replacement_policy": "replace only after the new Laravel 13 target is built and verified; current test remains operational until switch",
+    "current_backend": "PHP-7_4",
+    "target_backend": "PHP-8_3",
+    "current_tree_size": "1.3 GiB",
+    "filesystem_available": "18 GiB",
+    "database_boundary": "separate database, username and password confirmed",
+    "runtime_owners": "no test-root systemd or cron references found",
+    "hard_blocks": [
+      "APP_KEY shared with production",
+      "SMTP, PayPal and Google credentials shared with production",
+      "PAYPAL_SANDBOX=false",
+      "explicit Redis/cache/session namespaces absent"
+    ],
+    "quarantine_backup": "/root/viar-stage0-backups/test-quarantine-20260717T120810Z",
+    "quarantine_backup_sha256": "ebb54bccce82c3856b6ef8058ae1f5c26f52b3517850f0a3498cdcea726f888c",
+    "quarantine_result": "PASS; backup verified and suspend rehearsal completed; user requested current test be restored until target readiness",
+    "current_operational_state": "ACTIVE; SUSPENDED=no; PHP-7_4; nginx configuration test PASS",
+    "next_action": "build and verify the isolated target offline while current test remains active, then schedule an atomic switch",
+    "replacement_started": false
+  },
+  "offline_target_build": {
+    "build_id": "viar-next-stage0-20260717T123427Z",
+    "source_path": "C:\\OSPanel\\domains\\asoft\\viar-next",
+    "artifact_path": "C:\\OSPanel\\domains\\asoft\\viar-next-artifacts\\viar-next-stage0-20260717T123427Z.tar.gz",
+    "artifact_bytes": 2267407,
+    "artifact_sha256": "5f279d54e07d4d28e61340ddfce38997e67c92e456d4967a49ccf4c51cd6600b",
+    "composer_lock_sha256": "054fc367b324891b1c60863743af02b82754ceb8e1e25cf618bd072b84fe1b71",
+    "package_lock_sha256": "aad66713652b730c45f5ce0f46b58d0f3c918e0d03db34cd99f388837928a52b",
+    "tests": "6 PASS / 8 assertions",
+    "clean_artifact_rehearsal": "PASS",
+    "active_test_changed": false,
+    "next_action": "execute TEST-S02-D from document 63 after uploading the artifact; install into a non-public release directory without switching Hestia, PHP-FPM or the active test root"
+  },
+  "filament_plugin_policy": {
+    "baseline_third_party_plugins": [],
+    "decision": "core Filament plus project adapters first; all optional ACL, translation, media, settings and audit plugins are deferred until their dedicated parity spike"
+  },
+  "decision": {
+    "s0_01": "CONDITIONAL_GO",
+    "allowed_next_action": "back up and suspend the current disposable test vhost, then provision an isolated Laravel 13 target on PHP 8.3",
+    "forbidden_next_action": "install into the Laravel 6 tree, rebuild public assets, or connect target workers/providers to production"
+  }
+}

@@ -1,0 +1,378 @@
+<?php
+
+return [
+    'openai' => [
+        'api_key' => config('alt_generation.openai.api_key'),
+        'model' => config('alt_generation.openai.model', 'gpt-4o-mini'),
+        'fallback_model' => config('alt_generation.openai.fallback_model', 'gpt-4o'),
+        'timeout' => config('alt_generation.openai.timeout', 60),
+        'max_tokens' => 850,
+    ],
+
+    'daily_call_limit' => config('alt_generation.daily_call_limit', 2000),
+
+    'project_context' => config('alt_generation.project_context'),
+
+    'limits' => [
+        'meta_title_max' => 60,
+        'meta_title_target_min' => 50,
+        'meta_description_max' => 155,
+        'meta_description_target_min' => 140,
+        'field_max_chars' => 300,
+        'body_excerpt_max_chars' => 900,
+        'fact_max_chars' => 160,
+        'total_context_max_chars' => 7000,
+    ],
+
+    'cache' => [
+        'enabled' => true,
+        'ttl_minutes' => 1440,
+    ],
+
+    'locale_fallback' => [
+        'default_locale' => 'ru',
+    ],
+
+    'targets' => [
+        \App\Models\BlogPost::class => [
+            'voyager_slug' => 'blog-posts',
+            'label' => 'Blog post',
+            'page_type' => 'article',
+            'product_type' => 'article / guide',
+            'primary_action' => 'read',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'context_fields' => [
+                'title' => ['title', 'name', 'meta_title'],
+                'description' => ['excerpt', 'short_desc', 'meta_desc'],
+                'body' => ['body', 'content', 'text', 'description'],
+                'slug' => ['slug'],
+                'facts' => ['is_idea', 'created_at', 'updated_at'],
+            ],
+        ],
+
+        \App\Models\GalleryItem::class => [
+            'voyager_slug' => 'gallery-items',
+            'label' => 'Gallery item',
+            'page_type' => 'product',
+            'product_type' => 'canvas wall art / custom wall art',
+            'primary_action' => 'buy / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'context_fields' => [
+                'title' => ['name', 'title', 'shortname', 'meta_title'],
+                'description' => ['short_desc', 'meta_desc'],
+                'body' => ['description', 'item_text', 'seo'],
+                'slug' => ['slug', 'meta_url'],
+                'facts' => [
+                    'price_from',
+                    'genre',
+                    'style',
+                    'is_sharj',
+                    'is_big_sale',
+                    'sale_end',
+                    'id_category',
+                    'id_type',
+                    'sizes_cals',
+                ],
+            ],
+        ],
+
+
+        \App\Models\BlogCategory::class => [
+            'voyager_slug' => 'blog-categories',
+            'label' => 'Blog category',
+            'page_type' => 'blog category page',
+            'product_type' => 'article category / content hub',
+            'primary_action' => 'read / browse articles',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/blog/category/{slug}',
+            'context_fields' => [
+                'title' => ['title', 'name', 'meta_title'],
+                'description' => ['meta_desc', 'seo'],
+                'body' => ['seo'],
+                'slug' => ['slug'],
+                'facts' => ['slug', 'created_at', 'updated_at'],
+            ],
+        ],
+
+        \App\Models\GalleryPage::class => [
+            'voyager_slug' => 'gallery-page',
+            'label' => 'Gallery page',
+            'page_type' => 'gallery landing page',
+            'product_type' => 'canvas prints / wall art catalog',
+            'primary_action' => 'browse / choose / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'url_path' => '/new/gallery',
+            'context_fields' => [
+                'title' => ['meta_title', 'left_title', 'right_title', 'modc_title', 'fotoc_title', 'repr_title'],
+                'description' => ['meta_description', 'left_sub_title', 'modc_sub', 'fotoc_sub', 'repr_sub_title', 'gal__desc'],
+                'body' => ['gal__desc', 'modc_text', 'fotoc_text', 'repr_text', 'right_t1', 'right_t2', 'right_t3'],
+                'facts' => ['modc_link_text', 'fotoc_link_text', 'repr_link_text'],
+            ],
+        ],
+
+        \App\Models\GalleryCategory::class => [
+            'voyager_slug' => 'gallery-categories',
+            'label' => 'Gallery category',
+            'page_type' => 'gallery category page',
+            'product_type' => 'canvas prints / wall art category',
+            'primary_action' => 'browse / buy / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'url_path' => '/gallery/{gallery_type}/{url}',
+            'context_fields' => [
+                'title' => ['name', 'title', 'meta_title'],
+                'description' => ['description', 'meta_description'],
+                'body' => ['description'],
+                'slug' => ['url', 'slug'],
+                'facts' => ['id_type', 'active', 'url'],
+            ],
+        ],
+
+        \App\Models\AGalleryGenre::class => [
+            'voyager_slug' => 'a-gallery-genres',
+            'label' => 'Gallery genre',
+            'page_type' => 'gallery filter page',
+            'product_type' => 'art reproductions / paintings by genre',
+            'primary_action' => 'browse / buy / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'url_path' => '/gallery/genre/{alias}',
+            'context_fields' => [
+                'title' => ['name', 'meta_title'],
+                'description' => ['meta_description'],
+                'body' => ['meta_description'],
+                'slug' => ['alias'],
+                'facts' => ['alias', 'sort'],
+            ],
+        ],
+
+        \App\Models\AGalleryStyle::class => [
+            'voyager_slug' => 'a-gallery-styles',
+            'label' => 'Gallery style',
+            'page_type' => 'gallery filter page',
+            'product_type' => 'art reproductions / paintings by style',
+            'primary_action' => 'browse / buy / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'url_path' => '/gallery/style/{alias}',
+            'context_fields' => [
+                'title' => ['name', 'meta_title'],
+                'description' => ['meta_description'],
+                'body' => ['meta_description'],
+                'slug' => ['alias'],
+                'facts' => ['alias', 'sort'],
+            ],
+        ],
+
+        \App\Models\AGalleryAge::class => [
+            'voyager_slug' => 'a-gallery-ages',
+            'label' => 'Gallery age',
+            'page_type' => 'gallery filter page',
+            'product_type' => 'art reproductions / paintings by period',
+            'primary_action' => 'browse / buy / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'url_path' => '/gallery/age/{alias}',
+            'context_fields' => [
+                'title' => ['name', 'meta_title'],
+                'description' => ['meta_description'],
+                'body' => ['meta_description'],
+                'slug' => ['alias'],
+                'facts' => ['alias', 'sort'],
+            ],
+        ],
+
+        \App\Models\AGalleryNationality::class => [
+            'voyager_slug' => 'a-gallery-nationalities',
+            'label' => 'Gallery nationality',
+            'page_type' => 'gallery filter page',
+            'product_type' => 'art reproductions / paintings by artist nationality',
+            'primary_action' => 'browse / buy / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'url_path' => '/gallery/nationality/{alias}',
+            'context_fields' => [
+                'title' => ['name', 'meta_title'],
+                'description' => ['meta_description'],
+                'body' => ['meta_description'],
+                'slug' => ['alias'],
+                'facts' => ['alias', 'sort'],
+            ],
+        ],
+
+        \App\Models\CanvasHeader::class => [
+            'voyager_slug' => 'canvas-header',
+            'label' => 'Canvas page',
+            'page_type' => 'product landing page',
+            'product_type' => 'photo on canvas / canvas print',
+            'primary_action' => 'order online / upload photo',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/new/canvas',
+            'context_fields' => [
+                'title' => ['name', 'meta_title', 'c_left1', 'c_right_top', 'c_right_order_title'],
+                'description' => ['meta_desc', 'calc_sub_title', 'c_left2', 'c_right1', 'c_right2'],
+                'body' => ['seo', 'c_right3', 'c_right4', 'c_right5', 'c_right6', 'choose_pack'],
+                'facts' => ['sizes_30x40', 'sizes_38x38', 'sizes_40x30', 'sizes_60x30'],
+            ],
+        ],
+
+        \App\Models\CollageHeader::class => [
+            'voyager_slug' => 'collage-header',
+            'label' => 'Collage page',
+            'page_type' => 'product landing page',
+            'product_type' => 'photo collage / collage on canvas',
+            'primary_action' => 'order online / create collage',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/collage',
+            'context_fields' => [
+                'title' => ['meta_title', 'c_left1', 'c_right_top', 'be_glad_coll_title', 'order_text_title'],
+                'description' => ['meta_desc', 'c_left2', 'be_glad_coll_sub', 'size_text_price', 'price_text_title'],
+                'body' => ['c_right1', 'c_right2', 'c_right3', 'c_right4', 'c_right5', 'c_right6', 'et_title', 'et1_text', 'et2_text', 'et3_text', 'et4_text', 'et5_text'],
+                'facts' => ['from_price_text', 'goto_link_text', 'goto_after_text'],
+            ],
+        ],
+
+        \App\Models\Stock::class => [
+            'voyager_slug' => 'stocks',
+            'label' => 'Stocks page',
+            'page_type' => 'promotions landing page',
+            'product_type' => 'discounts / special offers for canvas products',
+            'primary_action' => 'claim offer / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'url_path' => '/stocks',
+            'context_fields' => [
+                'title' => ['title', 'meta_title', 'poss_sales', 'modc_title', 'fotoc', 'repr'],
+                'description' => ['meta_description', 'etc_actual_subm', 'dates_sales_text', 'friend_sale_text', 'print_text', 'foto_free_text'],
+                'body' => ['dates_tip', 'friend_tip', 'print_tip', 'modc_sale', 'fotoc_sale', 'repr_sale'],
+                'facts' => ['friend_sale', 'date_1_sale', 'date_2_sale', 'custom_coupon_sale', 'facebook_sale'],
+            ],
+        ],
+
+        \App\Models\PageDelivery::class => [
+            'voyager_slug' => 'page-delivery',
+            'label' => 'Delivery page',
+            'page_type' => 'service information page',
+            'product_type' => 'delivery and production information',
+            'primary_action' => 'learn delivery terms / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/page/delivery',
+            'context_fields' => [
+                'title' => ['title', 'meta_title'],
+                'description' => ['meta_desc', 'first_block_text', 'second_block_text'],
+                'body' => ['first_block_box1', 'first_block_box2', 'first_block_box3', 'first_block_box4', 'second_block_text2', 'second_block_box1', 'second_block_box2', 'second_block_box3'],
+                'facts' => ['title'],
+            ],
+        ],
+
+        \App\Models\PagePartnership::class => [
+            'voyager_slug' => 'page-partnership',
+            'label' => 'Partnership page',
+            'page_type' => 'partnership landing page',
+            'product_type' => 'partnership / discounts / cooperation',
+            'primary_action' => 'learn partnership terms / contact ViarCanvas',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/page/partnership',
+            'context_fields' => [
+                'title' => ['title', 'meta_title'],
+                'description' => ['meta_desc', 'top_text'],
+                'body' => ['partner_item_1', 'partner_item_2', 'partner_item_3', 'sale_from', 'sale_after', 'sale_bot_text'],
+                'facts' => ['sale_link_title', 'sale_link'],
+            ],
+        ],
+
+
+        \App\Models\GiftCard::class => [
+            'voyager_slug' => 'gift-card',
+            'label' => 'Gift card page',
+            'page_type' => 'product landing page',
+            'product_type' => 'gift card for canvas prints and personalized wall art',
+            'primary_action' => 'buy gift card / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'desc',
+            'url_path' => '/new/gift-card',
+            'context_fields' => [
+                'title' => ['meta_title', 'title', 'nom_title', 'when_send_title'],
+                'description' => ['desc', 'adv_title', 'of_opl_after_text'],
+                'body' => ['desc', 'grats_text', 'rules_list', 'adv1_text', 'adv2_text', 'adv3_text', 'adv4_text', 'adv5_text', 'adv6_text'],
+                'facts' => ['custom_summ', 'hide_nominal', 'sender', 'receiver'],
+            ],
+        ],
+
+        \App\Models\ModularPicsHead::class => [
+            'voyager_slug' => 'modular-pics-head',
+            'label' => 'Modular generator page',
+            'page_type' => 'product landing page',
+            'product_type' => 'modular canvas pictures / wall art generator',
+            'primary_action' => 'create modular picture / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/modular-generator',
+            'context_fields' => [
+                'title' => ['meta_title', 'right1_title', 'right2_title', 'pop_items_title'],
+                'description' => ['meta_desc', 'pop_items_order_text', 'seo_city_desc'],
+                'body' => ['our_works', 'seo_city_title', 'seo_city_desc'],
+                'facts' => ['price', 'is_cities_on_page'],
+            ],
+        ],
+
+        \App\Models\HomepageOption::class => [
+            'voyager_slug' => 'homepage-options',
+            'label' => 'Homepage',
+            'page_type' => 'homepage',
+            'product_type' => 'custom wall art and personalized gift brand',
+            'primary_action' => 'browse products / order online',
+            'title_field' => 'page_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/',
+            'context_fields' => [
+                'title' => ['page_title', 'seo_city_title'],
+                'description' => ['meta_desc', 'seo_city_desc'],
+                'body' => ['seo', 'all_styles', 'all_sizes'],
+                'facts' => ['fb_share_link_main', 'is_cities_on_page'],
+            ],
+        ],
+
+        \App\Models\AllStyle::class => [
+            'voyager_slug' => 'all-styles',
+            'label' => 'All styles page',
+            'page_type' => 'style catalog landing page',
+            'product_type' => 'portrait and wall art styles catalog',
+            'primary_action' => 'choose style / order online',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_desc',
+            'url_path' => '/all_styles',
+            'context_fields' => [
+                'title' => ['meta_title', 'title', 'f_title'],
+                'description' => ['meta_desc', 'desc', 'from_text'],
+                'body' => ['desc', 'f_desc1', 'f_desc2', 'files_loaded'],
+                'facts' => ['price_val', 'order_btn_text', 'show_more_text'],
+            ],
+        ],
+
+        \App\Models\Page::class => [
+            'voyager_slug' => 'pages',
+            'label' => 'Page',
+            'page_type' => 'landing page',
+            'product_type' => 'service / information page',
+            'primary_action' => 'learn / order when supported by page context',
+            'title_field' => 'meta_title',
+            'description_field' => 'meta_description',
+            'context_fields' => [
+                'title' => ['title', 'name', 'meta_title'],
+                'description' => ['meta_description', 'excerpt', 'short_desc'],
+                'body' => ['body', 'content', 'text'],
+                'slug' => ['slug', 'url'],
+                'facts' => ['template', 'url', 'meta_keys'],
+            ],
+        ],
+    ],
+];

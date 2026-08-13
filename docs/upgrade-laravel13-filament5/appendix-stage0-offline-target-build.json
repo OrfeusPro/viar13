@@ -1,0 +1,45 @@
+{
+  "schema": "viar-stage0-offline-target-evidence-v1",
+  "build_id": "viar-next-stage0-20260717T123427Z",
+  "target_path": "C:\\OSPanel\\domains\\asoft\\viar-next",
+  "artifact_path": "C:\\OSPanel\\domains\\asoft\\viar-next-artifacts\\viar-next-stage0-20260717T123427Z.tar.gz",
+  "artifact_bytes": 2267407,
+  "artifact_entries": 164,
+  "artifact_forbidden_entries": 0,
+  "artifact_sha256": "5f279d54e07d4d28e61340ddfce38997e67c92e456d4967a49ccf4c51cd6600b",
+  "versions": {
+    "laravel_skeleton": "13.8.0",
+    "laravel_framework": "13.20.0",
+    "filament": "5.6.8",
+    "livewire": "4.3.3",
+    "composer": "2.9.5",
+    "php_platform": "8.3.0"
+  },
+  "hashes": {
+    "composer_lock": "054fc367b324891b1c60863743af02b82754ceb8e1e25cf618bd072b84fe1b71",
+    "package_lock": "aad66713652b730c45f5ce0f46b58d0f3c918e0d03db34cd99f388837928a52b",
+    "composer_phar": "c86ce603fe836bf0861a38c93ac566c8f1e69ac44b2445d9b7a6a17ea2e9972a",
+    "canonical_source_tree": "ebd5d44b44e149f3c8a7e1252c8f50a662f5ab4488ae43cdaeb4218fafe8cbc8"
+  },
+  "verification": {
+    "composer_validate": "PASS",
+    "platform": "PASS",
+    "composer_audit_advisories": 0,
+    "npm_audit_vulnerabilities": 0,
+    "php_lint_files": 29,
+    "php_lint_failures": 0,
+    "pint": "PASS",
+    "tests": 6,
+    "assertions": 8,
+    "clean_artifact_rehearsal": "PASS"
+  },
+  "safety": {
+    "panel_enabled": false,
+    "writes_enabled": false,
+    "outbound_enabled": false,
+    "user_access": "deny-by-default",
+    "production_credentials_included": false,
+    "legacy_frontend_build_executed": false,
+    "active_test_changed": false
+  }
+}

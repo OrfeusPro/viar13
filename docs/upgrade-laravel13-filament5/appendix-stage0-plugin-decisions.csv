@@ -1,0 +1,9 @@
+decision_id,capability,candidate,decision,locked_version,license_check,compatibility_check,migrations,rollback,rationale
+PLG-00,baseline third-party Filament plugins,none,ACCEPTED,N/A,N/A,N/A,none,remove target skeleton,Core Filament plus project adapters is the Stage 0 baseline
+PLG-01,ACL and navigation,bezhansalleh/filament-shield,DEFERRED,N/A,required before approval,Filament 5 and Livewire 4 proof required,unknown until approval,do not install and retain project policy adapter,Existing 675 permissions and 2080 assignments must not be remapped implicitly
+PLG-02,permission storage,spatie/laravel-permission,DEFERRED,N/A,required before approval,Laravel 13 proof required,unknown until approval,do not install and retain existing schema,Current role and permission tables remain source of truth
+PLG-03,translation manager,any Filament translation plugin,REJECTED_FOR_BASELINE,N/A,N/A,N/A,none,keep custom Translation Resource and adapters,Production translations and ltm_translations need exact owner and hash parity
+PLG-04,media library,any Filament media plugin,REJECTED_FOR_BASELINE,N/A,N/A,N/A,none,keep current media rows paths and storage adapter,Implicit path or metadata migration is unacceptable
+PLG-05,settings manager,any settings plugin,REJECTED_FOR_BASELINE,N/A,N/A,N/A,none,use typed project Page and existing storage,Settings contracts are project-specific
+PLG-06,audit log,third-party activity plugin,DEFERRED,N/A,required before approval,Laravel 13 and queue proof required,unknown until approval,use project domain receipts first,Critical actions need domain-specific receipts rather than generic model events
+PLG-07,bulk import and export,Filament import/export helpers,DISABLED,N/A,N/A,core feature intentionally disabled,none,leave actions unregistered,Mass writes are outside Stage 0 and require separate idempotency and rollback design

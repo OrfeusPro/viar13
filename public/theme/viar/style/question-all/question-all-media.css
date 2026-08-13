@@ -1,0 +1,199 @@
+@media (max-width: 1500px) {
+    .size-screen .pp-screen .pm-object {
+        right: 9%;
+    }
+    .ellipse img {
+        margin-bottom: 0;
+    }
+}
+@media (max-width: 1300px) {
+    .sizes-images .rtop {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .sizes-images .rbottom {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+@media (max-width: 1200px) {
+    .g-viar-blocks {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .sizes-item {
+        grid-template-columns: 1fr 1fr;
+    }
+    .sizes-item .content:nth-child(2) {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+    }
+    .sizes-item .content:nth-child(3) {
+        grid-column: 2 / 3;
+        grid-row: 1 / 3;
+    }
+}
+
+@media (max-width: 992px) {
+    .question-page__inner {
+        padding-bottom: 680px;
+    }
+    .question-page__block {
+        max-width: 100%;
+    }
+    .question-page .img {
+        right: 50%;
+        transform: translateX(50%);
+    }
+    .sizes-item {
+        grid-template-columns: 1fr;
+        grid-gap: 20px;
+    }
+    .sizes-item .content:nth-child(2) {
+        grid-column: unset;
+        grid-row: unset;
+    }
+    .sizes-item .content:nth-child(3) {
+        grid-column: unset;
+        grid-row: unset;
+    }
+    .btn-desk {
+        display: none;
+    }
+    .btn-mob.btn {
+        display: flex;
+    }
+    .sizes-item .text {
+        margin-bottom: 0;
+    }
+    .sizes-images .rtop {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .sizes-images .rbottom {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    /* .ellipse {
+    margin-top: -48px;
+} */
+}
+
+@media (max-width: 768px) {
+    .sz-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .main-first {
+        padding: 30px 0;
+        margin-top: 110px;
+    }
+
+    .g-viar-title {
+        text-align: center;
+    }
+
+    .question-page .img {
+        bottom: -30px;
+    }
+    .question-page__block {
+        padding: 0;
+        background: none;
+    }
+    .question-page__block .faq-item {
+        padding: 12px 10px;
+        background: #ffffff;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .condition-item .title {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    .condition-list {
+        font-size: 12px;
+    }
+    .size-screen .mp__list--item {
+        text-align: start;
+        justify-content: start;
+    }
+}
+
+@media (max-width: 576px) {
+    .question-page__inner {
+        padding-bottom: 408px;
+    }
+    .sizes-item {
+        text-align: center;
+    }
+    .sizes-item .content .title {
+        display: none;
+        margin: 0 0 10px;
+        font-size: 16px;
+    }
+    .sizes-item .content > p {
+        font-size: 16px;
+    }
+    .mobTitle {
+        font-family: "Trajan";
+        font-style: normal;
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 20px;
+        color: #fa7846;
+        display: inline;
+    }
+    .sizes-item .text,
+    .sizes-item .content .check-js {
+        font-size: 12px;
+        line-height: 18px;
+    }
+    .sz-item {
+        padding: 0 5px;
+        gap: 5px;
+    }
+    .sz-item svg {
+        width: 15px;
+        height: 15px;
+    }
+    .sz-item p {
+        font-size: 12px;
+        line-height: 22px;
+    }
+    .sz-item .sz-price {
+        font-size: 16px;
+        line-height: 24px;
+    }
+    .no-bg .pmain__screen {
+        background: unset;
+        padding: 112px 0 60px;
+    }
+}
+@media (max-width: 525px) {
+    .g-viar {
+        padding: 100px 0;
+    }
+    .g-viar-blocks {
+        grid-template-columns: repeat(1, 1fr);
+        grid-gap: 40px;
+    }
+    .g-viar-block p {
+        font-size: 14px;
+        line-height: 16px;
+    }
+    .g-viar-btitle {
+        margin: 3px 0 8px;
+    }
+    .size-screen .mp__inner {
+        padding-top: 20px;
+    }
+    .size-screen .mp-m-bg {
+        height: 525px;
+    }
+    .size-screen .portraits-title {
+        font-size: 30px;
+    }
+}
+@media (max-width: 374px) {
+    .list-group {
+        font-size: 16px;
+    }
+}

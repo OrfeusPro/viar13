@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'target-box_0_title' => 'Choose <span>the order option</span> that suits you!',
+  'target-box_1_text1' => 'In a quick order, you can choose:',
+  'target-box_1_text2' => 'Size',
+  'target-box_1_text3' => 'Consultation',
+  'target-box_1_text4' => 'Upload a photo',
+  'target-box_1_text5' => 'Order in 1 minute',
+  'target-box_1_btn' => 'Quick order',
+  'target-box_2_text1' => 'In the details you can choose:',
+  'target-box_2_text2' => '<strong>Size and price</strong>',
+  'target-box_2_text3' => '3 options <strong>for photo processing</strong>',
+  'target-box_2_text4' => 'Layout <strong>view</strong> / in the interior',
+  'target-box_2_text5' => '<strong>decorations</strong>',
+  'target-box_2_text6' => 'Add <strong>a comment, wishes, favorite example</strong>',
+  'target-box_2_btn' => 'Detail order',
+  'target-box_3_btn' => 'contact us now',
+  'popup-why_title' => 'Why are you leaving?',
+  'popup-why_subtitle' => 'Choose a reason and we will do our best to help you!',
+  'popup-why_z0_none' => '------------',
+  'popup-why_0_none' => '------------',
+  'popup-callback_0_none' => '------------',
+  'popup-callback_title' => 'How can I contact you?',
+  'popup-callback_subtitle' => 'We will try to solve your problem!',
+  'popup-callback_content_phone' => 'Enter your phone number and we&#39;ll help you figure it all out!',
+  'please_enter_email' => 'Want a discount? Enter your email to get it.',
+);

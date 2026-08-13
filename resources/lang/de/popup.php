@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'target-box_0_title' => 'Wählen Sie <span>die</span> für Sie passende Bestelloption!',
+  'target-box_1_text1' => 'Bei einer Schnellbestellung können Sie wählen:',
+  'target-box_1_text2' => 'Größe',
+  'target-box_1_text3' => 'Beratung',
+  'target-box_1_text4' => 'Lade ein Foto hoch',
+  'target-box_1_text5' => 'Bestellen Sie in 1 Minute',
+  'target-box_1_btn' => 'Schnelle Bestellung',
+  'target-box_2_text1' => 'In den Details können Sie wählen:',
+  'target-box_2_text2' => '<strong>Form</strong>',
+  'target-box_2_text3' => '3 Optionen <strong>für die Fotobearbeitung</strong>',
+  'target-box_2_text4' => '<strong>Grundrissansicht</strong> / im Innenraum',
+  'target-box_2_text5' => '<strong>Dekorationen</strong>',
+  'target-box_2_text6' => 'Fügen Sie <strong>einen Kommentar, Wünsche, Lieblingsbeispiel hinzu</strong>',
+  'target-box_2_btn' => 'Detailbestellung',
+  'target-box_3_btn' => 'kontaktiere uns jetzt',
+  'popup-why_z0_none' => '-------------',
+  'popup-why_0_none' => '-------------',
+  'popup-callback_0_none' => '-------------',
+  'popup-why_title' => 'Warum gehst du?',
+  'popup-why_subtitle' => 'Wählen Sie einen Grund und wir werden unser Bestes tun, um Ihnen zu helfen!',
+  'popup-callback_title' => 'Wie kann ich dich erreichen?',
+  'popup-callback_subtitle' => 'Wir werden versuchen, Ihr Problem zu lösen!',
+  'popup-callback_content_phone' => 'Geben Sie Ihre Telefonnummer ein und wir helfen Ihnen, alles herauszufinden!',
+  'please_enter_email' => 'Willst du einen Rabatt? Gib deine E-Mail ein, um ihn zu erhalten.',
+);

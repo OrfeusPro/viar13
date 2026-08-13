@@ -1,0 +1,305 @@
+.main-gift {
+    margin-top: 100px;
+    padding: 0 0 75px;
+    background: rgba(251, 242, 234, 0.56);
+}
+.main-gift__inner {
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    justify-content: space-between;
+    align-items: center;
+}
+.mgift-content {
+    max-width: 520px;
+    font-size: 18px;
+    line-height: 140%;
+}
+.mgift-title {
+    font-family: "Trajan";
+    font-style: normal;
+    font-weight: 600;
+    font-size: 45px;
+    line-height: 140%;
+    letter-spacing: -0.03em;
+    color: #fa7846;
+}
+.mgift-title span {
+    color: #1e2533;
+}
+.mgift-content hr {
+    height: 0.5px;
+    background: #fc8c5f;
+    max-width: 413px;
+    border: none;
+    margin: 20px 0;
+}
+.mgift-content > span {
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: #1E2533;
+    display: block;
+    margin-bottom: 15px;
+}
+.mgift-content > p {
+    font-weight: 400;;
+    letter-spacing: -0.03em;
+    color: #848484;
+}
+.mgift-content > p b {
+    color: #fa7846;
+}
+.mgift-image img {
+    margin-bottom: -18px;
+    max-width: 100%;
+    height: 430px;
+    object-fit: cover;
+}
+.mgift-image {
+    display: flex;
+    justify-content: end;
+}
+
+
+
+.main-gcard__inner {
+    max-width: 1180px;
+    margin: 20px auto 164px;
+    padding: 30px;
+    border: 0.5px solid #FC8C5F;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.sm-btn {
+    height: 65px;
+    width: 100%;
+    max-width: 290px;
+    background: linear-gradient(90deg, #fc8c5f 0%, #fa7846 100%);
+    box-shadow: 0px 20px 50px -5px rgb(250 120 70 / 25%), 0px 3px 0px #e87145;
+    border-radius: 8px;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #ffffff;
+    margin-top: 25px;
+}
+.gcard-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 450px;
+    margin: 0 auto;
+    justify-content: center;
+}
+.gcard-img img {
+    max-width: 100%;
+}
+.gcard-content span {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+    letter-spacing: -0.03em;
+    color: #848484;
+}
+.gcard-title {
+    font-family: 'Trajan';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 30px;
+    line-height: 130.4%;
+    color: #FA7846;
+}
+.gcard-content p {
+    margin: 10px 0 25px;
+}
+.select-wrapper {
+    position: relative;
+    margin-bottom: 5px;
+    background: #FFFFFF;
+    border: 0.5px solid #FC8C5F;
+    border-radius: 8px;
+    width: 260px;
+}
+.select-wrapper svg {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+.select-wrapper select {
+    padding-left: 30px;
+    background: transparent;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 130.4%;
+    color: #000000;
+    height: 50px;
+    border: none;
+    width: 100%;
+}
+
+
+
+.main-agift {
+    background: #1E2533;
+    padding: 70px 0 80px;
+    color: white;
+}
+.agift-title {
+    max-width: 700px;
+    margin: 0 auto 50px;
+    font-size: 35px;
+    line-height: 140%;
+    font-weight: 400;
+}
+.agift-title span {
+    color: #FA7846;
+    font-size: 45px;
+}
+.agift-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 60px 30px;
+}
+.agift-item {
+    display: grid;
+    grid-template-columns: 145px 1fr;
+    grid-gap: 20px;
+    padding: 20px 25px;
+    border: 0.5px solid rgba(252, 140, 95, .5);
+    border-radius: 8px;
+    align-items: center;
+    position: relative;
+}
+.agift-item.reverse {
+    grid-template-columns: 1fr 145px;
+}
+.agift-item p:last-child {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;  
+    opacity: 0.85;
+    margin-top: 5px;
+}
+.agift-item p:first-child {
+    font-weight: 600;
+    color: #FA7846;
+}
+.agift-img {
+    position: relative;
+}
+.agift-img img {
+    max-width: 100%;
+}
+.agift-img::after {
+    content: attr(data-num);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 24px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    color: #FFFFFF;
+    width: 36px;
+    height: 36px;
+    position: absolute;
+    top: -10px;
+    left: 0;
+    background: #FC8C5F;
+    box-shadow: 0px 2px 0px #E87145, 0px 18.4892px 46.223px -4.6223px rgba(250, 120, 70, 0.25);
+    border-radius: 50%;
+}
+.agift-item.reverse .agift-img::after {
+    left: unset;
+    right: 0;
+}
+
+
+.main-rgift {
+    padding: 120px 0;
+}
+.main-rgift__inner {
+    background: #FFFFFF;
+    box-shadow: 4px 4px 20px rgba(30, 37, 51, 0.15);
+    border-radius: 4px;
+    padding: 59px 60px;
+}
+.rgift-grid {
+    display: grid;
+    grid-template-columns: 45% 55%;
+}
+.title-fr {
+    font-size: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: start;
+}
+.title-fr span {
+    color: #FA7846;
+    font-weight: 600;
+    font-size: 45px;
+}
+.title-fr svg {
+    margin-top: 20px;
+}
+
+.rgift-content {
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 140%;
+    letter-spacing: -0.03em;
+    color: #1E2533;
+}
+.rgift-content li {
+    display: flex;
+}
+.rgift-content li:not(:last-child) {
+    margin-bottom: 25px;
+}
+
+.rgift-content li:not(:last-child) p {
+    padding-bottom: 20px;
+    border-bottom: 0.5px solid #FC8C5F;
+}
+.rgift-content li img {
+    margin-right: 30px;
+    height: 25px;
+    margin-top: 10px;
+}
+
+.r-flex {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+.r-flex.kviz-item {
+    padding: 0;
+} 
+.r-flex .kviz-radio label span {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 20px;
+    color: #1E2533;
+    opacity: 1;
+}
+.r-flex .kviz-group {
+    display: block;
+}
+.r-flex .kviz-radio {
+    margin-bottom: 0px;
+}
+.r-flex .kviz-radio_active.kviz-radio label span {
+    text-shadow: .5px 0  0 #000000;
+}

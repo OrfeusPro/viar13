@@ -1,0 +1,898 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+#301 to https
+#RewriteCond %{HTTPS} !=on
+#RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+#remove /home from url
+Redirect 301 /home https://viarcanvas.com/
+
+#redirect 301 /graphic-portrait /photo_portrait
+#redirect 301 /stylization-paintings /photo_portrait
+redirect 301 /canvas /new/canvas
+redirect 301 /graphic-portrait/portrait-beauty-art /new/graphic-portrait/portrait-beauty-art
+redirect 301 /graphic-portrait/classic-portrait /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/portrait-dream-art /new/graphic-portrait/portrait-dream-art
+redirect 301 /graphic-portrait/pop-art-portrait /new/graphic-portrait/pop-art-portrait
+redirect 301 /graphic-portrait/portrait-caricature /new/graphic-portrait/portrait-caricature
+redirect 301 /graphic-portrait/graphic-portrait /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/graphic-portrait /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/Grafik-Porträt /new/graphic-portrait/Grafik-Porträt
+
+
+redirect 301 /lv/graphic-portrait/portrait-beauty-art /lv/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lv/graphic-portrait/classic-portrait /lv/new/graphic-portrait/graphic-portrait
+redirect 301 /lv/graphic-portrait/portrait-dream-art /lv/new/graphic-portrait/portrait-dream-art
+redirect 301 /lv/graphic-portrait/pop-art-portrait /lv/new/graphic-portrait/pop-art-portrait
+redirect 301 /lv/graphic-portrait/portrait-caricature /lv/new/graphic-portrait/portrait-caricature
+redirect 301 /lv/graphic-portrait/graphic-portrait /lv/new/graphic-portrait/graphic-portrait
+redirect 301 /lv/graphic-portrait/Grafik-Porträt /lv/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /lt/graphic-portrait/portrait-beauty-art /lt/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lt/graphic-portrait/classic-portrait /lt/new/graphic-portrait/graphic-portrait
+redirect 301 /lt/graphic-portrait/portrait-dream-art /lt/new/graphic-portrait/portrait-dream-art
+redirect 301 /lt/graphic-portrait/pop-art-portrait /lt/new/graphic-portrait/pop-art-portrait
+redirect 301 /lt/graphic-portrait/portrait-caricature /lt/new/graphic-portrait/portrait-caricature
+redirect 301 /lt/graphic-portrait/graphic-portrait /lt/new/graphic-portrait/graphic-portrait
+redirect 301 /lt/graphic-portrait/Grafik-Porträt /lt/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /pl/graphic-portrait/portrait-beauty-art /pl/new/graphic-portrait/portrait-beauty-art
+redirect 301 /pl/graphic-portrait/classic-portrait /pl/new/graphic-portrait/graphic-portrait
+redirect 301 /pl/graphic-portrait/portrait-dream-art /pl/new/graphic-portrait/portrait-dream-art
+redirect 301 /pl/graphic-portrait/pop-art-portrait /pl/new/graphic-portrait/pop-art-portrait
+redirect 301 /pl/graphic-portrait/portrait-caricature /pl/new/graphic-portrait/portrait-caricature
+redirect 301 /pl/graphic-portrait/graphic-portrait /pl/new/graphic-portrait/graphic-portrait
+redirect 301 /pl/graphic-portrait/Grafik-Porträt /pl//new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /de/graphic-portrait/portrait-beauty-art /de/new/graphic-portrait/portrait-beauty-art
+redirect 301 /de/graphic-portrait/classic-portrait /de/new/graphic-portrait/graphic-portrait
+redirect 301 /de/graphic-portrait/portrait-dream-art /de/new/graphic-portrait/portrait-dream-art
+redirect 301 /de/graphic-portrait/pop-art-portrait /de/new/graphic-portrait/pop-art-portrait
+redirect 301 /de/graphic-portrait/portrait-caricature /de/new/graphic-portrait/portrait-caricature
+redirect 301 /de/graphic-portrait/graphic-portrait /de/new/graphic-portrait/graphic-portrait
+redirect 301 /de/graphic-portrait/Grafik-Porträt /de/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /en/graphic-portrait/portrait-beauty-art /en/new/graphic-portrait/portrait-beauty-art
+redirect 301 /en/graphic-portrait/classic-portrait /en/new/graphic-portrait/graphic-portrait
+redirect 301 /en/graphic-portrait/portrait-dream-art /en/new/graphic-portrait/portrait-dream-art
+redirect 301 /en/graphic-portrait/pop-art-portrait /en/new/graphic-portrait/pop-art-portrait
+redirect 301 /en/graphic-portrait/portrait-caricature /en/new/graphic-portrait/portrait-caricature
+redirect 301 /en/graphic-portrait/graphic-portrait /en/new/graphic-portrait/graphic-portrait
+redirect 301 /en/graphic-portrait/Grafik-Porträt /en/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /ee/graphic-portrait/portrait-beauty-art /ee/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ee/graphic-portrait/classic-portrait /ee/new/graphic-portrait/graphic-portrait
+redirect 301 /ee/graphic-portrait/portrait-dream-art /ee/new/graphic-portrait/portrait-dream-art
+redirect 301 /ee/graphic-portrait/pop-art-portrait /ee/new/graphic-portrait/pop-art-portrait
+redirect 301 /ee/graphic-portrait/portrait-caricature /ee/new/graphic-portrait/portrait-caricature
+redirect 301 /ee/graphic-portrait/graphic-portrait /ee/new/graphic-portrait/graphic-portrait
+redirect 301 /ee/graphic-portrait/Grafik-Porträt /ee/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /ru/graphic-portrait/portrait-beauty-art /ru/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ru/graphic-portrait/classic-portrait /ru/new/graphic-portrait/graphic-portrait
+redirect 301 /ru/graphic-portrait/portrait-dream-art /ru/new/graphic-portrait/portrait-dream-art
+redirect 301 /ru/graphic-portrait/pop-art-portrait /ru/new/graphic-portrait/pop-art-portrait
+redirect 301 /ru/graphic-portrait/portrait-caricature /ru/new/graphic-portrait/portrait-caricature
+redirect 301 /ru/graphic-portrait/graphic-portrait /ru/new/graphic-portrait/graphic-portrait
+redirect 301 /ru/graphic-portrait/Grafik-Porträt /ru/new/graphic-portrait/Grafik-Porträt
+
+
+
+redirect 301 /new/graphic-portrait/portrait-dream-art/buy /new/graphic-portrait/portrait-dream-art
+redirect 301 /new/graphic-portrait/portrait-beauty-art/buy /new/graphic-portrait/portrait-beauty-art
+
+redirect 301 /graphic-portrait/dream-art-portrait /new/graphic-portrait/portrait-dream-art
+redirect 301 /de/graphic-portrait/dream-art-portrait /de/new/graphic-portrait/portrait-dream-art
+redirect 301 /ee/graphic-portrait/dream-art-portrait /ee/new/graphic-portrait/portrait-dream-art
+redirect 301 /en/graphic-portrait/dream-art-portrait /en/new/graphic-portrait/portrait-dream-art
+redirect 301 /pl/graphic-portrait/dream-art-portrait /lp/new/graphic-portrait/portrait-dream-art
+redirect 301 /lt/graphic-portrait/dream-art-portrait /lt/new/graphic-portrait/portrait-dream-art
+redirect 301 /lv/graphic-portrait/dream-art-portrait /lv/new/graphic-portrait/portrait-dream-art
+redirect 301 /ru/graphic-portrait/dream-art-portrait /ru/new/graphic-portrait/portrait-dream-art
+
+
+redirect 301 /photo /photo_portrait
+redirect 301 /de/photo /de/photo_portrait
+redirect 301 /ee/photo /ee/photo_portrait
+redirect 301 /en/photo /en/photo_portrait
+redirect 301 /pl/photo /lp/photo_portrait
+redirect 301 /lt/photo /lt/photo_portrait
+redirect 301 /lv/photo /lv/photo_portrait
+redirect 301 /ru/photo /ru/photo_portrait
+
+redirect 301 /gallery/oil-pictures /new/graphic-portrait/kartiny
+redirect 301 /de/gallery/oil-pictures /de/new/graphic-portrait/kartiny
+redirect 301 /ee/gallery/oil-pictures /ee/new/graphic-portrait/kartiny
+redirect 301 /en/gallery/oil-pictures /en/new/graphic-portrait/kartiny
+redirect 301 /pl/gallery/oil-pictures /pl/new/graphic-portrait/kartiny
+redirect 301 /lt/gallery/oil-pictures /lt/new/graphic-portrait/kartiny
+redirect 301 /lv/gallery/oil-pictures /lv/new/graphic-portrait/kartiny
+redirect 301 /ru/gallery/oil-pictures /ru/new/graphic-portrait/kartiny
+
+
+
+redirect 301 /oil-portrait /new/graphic-portrait/kartiny
+redirect 301 /de/oil-portrait /de/new/graphic-portrait/kartiny
+redirect 301 /ee/oil-portrait /ee/new/graphic-portrait/kartiny
+redirect 301 /en/oil-portrait /en/new/graphic-portrait/kartiny
+redirect 301 /pl/oil-portrait /lp/new/graphic-portrait/kartiny
+redirect 301 /lt/oil-portrait /lt/new/graphic-portrait/kartiny
+redirect 301 /lv/oil-portrait /lv/new/graphic-portrait/kartiny
+redirect 301 /ru/oil-portrait /ru/new/graphic-portrait/kartiny
+
+redirect 301 /graphic-portrait/portrait-beauty-art/buy /new/graphic-portrait/portrait-beauty-art
+redirect 301 /graphic-portrait/classic-portrait/buy /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/portrait-dream-art/buy /new/graphic-portrait/portrait-dream-art
+redirect 301 /graphic-portrait/pop-art-portrait/buy /new/graphic-portrait/pop-art-portrait
+redirect 301 /graphic-portrait/portrait-caricature/buy /new/graphic-portrait/portrait-caricature
+redirect 301 /graphic-portrait/graphic-portrait/buy /new/graphic-portrait/graphic-portrait
+
+redirect 301 /lv/graphic-portrait/portrait-beauty-art/buy /lv/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lv/graphic-portrait/classic-portrait/buy /lv/new/graphic-portrait/graphic-portrait
+redirect 301 /lv/graphic-portrait/portrait-dream-art/buy /lv/new/graphic-portrait/portrait-dream-art
+redirect 301 /lv/graphic-portrait/pop-art-portrait/buy /lv/new/graphic-portrait/pop-art-portrait
+redirect 301 /lv/graphic-portrait/portrait-caricature/buy /lv/new/graphic-portrait/portrait-caricature
+redirect 301 /lv/graphic-portrait/graphic-portrait/buy /lv/new/graphic-portrait/graphic-portrait
+
+redirect 301 /lt/graphic-portrait/portrait-beauty-art/buy /lt/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lt/graphic-portrait/classic-portrait/buy /lt/new/graphic-portrait/graphic-portrait
+redirect 301 /lt/graphic-portrait/portrait-dream-art/buy /lt/new/graphic-portrait/portrait-dream-art
+redirect 301 /lt/graphic-portrait/pop-art-portrait/buy /lt/new/graphic-portrait/pop-art-portrait
+redirect 301 /lt/graphic-portrait/portrait-caricature/buy /lt/new/graphic-portrait/portrait-caricature
+redirect 301 /lt/graphic-portrait/graphic-portrait/buy /lt/new/graphic-portrait/graphic-portrait
+
+redirect 301 /pl/graphic-portrait/portrait-beauty-art/buy /pl/new/graphic-portrait/portrait-beauty-art
+redirect 301 /pl/graphic-portrait/classic-portrait/buy /pl/new/graphic-portrait/graphic-portrait
+redirect 301 /pl/graphic-portrait/portrait-dream-art/buy /pl/new/graphic-portrait/portrait-dream-art
+redirect 301 /pl/graphic-portrait/pop-art-portrait/buy /pl/new/graphic-portrait/pop-art-portrait
+redirect 301 /pl/graphic-portrait/portrait-caricature/buy /pl/new/graphic-portrait/portrait-caricature
+redirect 301 /pl/graphic-portrait/graphic-portrait/buy /pl/new/graphic-portrait/graphic-portrait
+
+redirect 301 /de/graphic-portrait/portrait-beauty-art/buy /de/new/graphic-portrait/portrait-beauty-art
+redirect 301 /de/graphic-portrait/classic-portrait/buy /de/new/graphic-portrait/graphic-portrait
+redirect 301 /de/graphic-portrait/portrait-dream-art/buy /de/new/graphic-portrait/portrait-dream-art
+redirect 301 /de/graphic-portrait/pop-art-portrait/buy /de/new/graphic-portrait/pop-art-portrait
+redirect 301 /de/graphic-portrait/portrait-caricature/buy /de/new/graphic-portrait/portrait-caricature
+redirect 301 /de/graphic-portrait/graphic-portrait/buy /de/new/graphic-portrait/graphic-portrait
+
+redirect 301 /en/graphic-portrait/portrait-beauty-art/buy /en/new/graphic-portrait/portrait-beauty-art
+redirect 301 /en/graphic-portrait/classic-portrait/buy /en/new/graphic-portrait/graphic-portrait
+redirect 301 /en/graphic-portrait/portrait-dream-art/buy /en/new/graphic-portrait/portrait-dream-art
+redirect 301 /en/graphic-portrait/pop-art-portrait/buy /en/new/graphic-portrait/pop-art-portrait
+redirect 301 /en/graphic-portrait/portrait-caricature/buy /en/new/graphic-portrait/portrait-caricature
+redirect 301 /en/graphic-portrait/graphic-portrait/buy /en/new/graphic-portrait/graphic-portrait
+
+redirect 301 /ee/graphic-portrait/portrait-beauty-art/buy /ee/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ee/graphic-portrait/classic-portrait/buy /ee/new/graphic-portrait/graphic-portrait
+redirect 301 /ee/graphic-portrait/portrait-dream-art/buy /ee/new/graphic-portrait/portrait-dream-art
+redirect 301 /ee/graphic-portrait/pop-art-portrait/buy /ee/new/graphic-portrait/pop-art-portrait
+redirect 301 /ee/graphic-portrait/portrait-caricature/buy /ee/new/graphic-portrait/portrait-caricature
+redirect 301 /ee/graphic-portrait/graphic-portrait/buy /ee/new/graphic-portrait/graphic-portrait
+
+redirect 301 /ru/graphic-portrait/portrait-beauty-art/buy /ru/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ru/graphic-portrait/classic-portrait/buy /ru/new/graphic-portrait/graphic-portrait
+redirect 301 /ru/graphic-portrait/portrait-dream-art/buy /ru/new/graphic-portrait/portrait-dream-art
+redirect 301 /ru/graphic-portrait/pop-art-portrait/buy /ru/new/graphic-portrait/pop-art-portrait
+redirect 301 /ru/graphic-portrait/portrait-caricature/buy /ru/new/graphic-portrait/portrait-caricature
+redirect 301 /ru/graphic-portrait/graphic-portrait/buy /ru/new/graphic-portrait/graphic-portrait
+
+
+
+
+#fix multilang params in url
+
+#remove last slash
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [R=301,L]
+
+#www to no www
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+
+RewriteCond %{HTTPS} on
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^((?s).*)$ index.php?_url=/$1 [QSA,L]
+
+RewriteCond %{THE_REQUEST} ^GET.*index\.php [NC]
+
+#remove index.php
+RewriteRule (.*?)index\.php/*(.*) /$1$2 [R=301,NE,L]
+
+#remove public
+RewriteRule (.*?)public/*(.*) /$1$2 [R=301,NE,L]
+
+
+
+
+</IfModule>
+
+
+
+# nginx configuration by winginx.com
+
+location /canvas {
+  rewrite ^(.*)$ /new/canvas redirect;
+}
+
+location /graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /lv/graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /lv/graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lv/graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /lv/graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /lv/graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /lv/graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lv/graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /lt/graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /lt/graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lt/graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /lt/graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /lt/graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /lt/graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lt/graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /pl/graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /pl/graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /pl/graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /pl/graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /pl/graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /pl/graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /pl/graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /pl//new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /de/graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /de/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /de/graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /de/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /de/graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /de/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /de/graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /de/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /de/graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /de/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /de/graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /de/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /de/graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /de/new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /en/graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /en/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /en/graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /en/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /en/graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /en/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /en/graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /en/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /en/graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /en/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /en/graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /en/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /en/graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /en/new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /ee/graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /ee/graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ee/graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /ee/graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /ee/graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /ee/graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ee/graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /ru/graphic-portrait/portrait-beauty-art {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /ru/graphic-portrait/classic-portrait {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ru/graphic-portrait/portrait-dream-art {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /ru/graphic-portrait/pop-art-portrait {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /ru/graphic-portrait/portrait-caricature {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /ru/graphic-portrait/graphic-portrait {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ru/graphic-portrait/Grafik-Porträt {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/Grafik-Porträt redirect;
+}
+
+location /new/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /new/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /de/graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /de/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /ee/graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /en/graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /en/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /pl/graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /lp/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /lt/graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /lv/graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /ru/graphic-portrait/dream-art-portrait {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /photo {
+  rewrite ^(.*)$ /photo_portrait redirect;
+}
+
+location /de/photo {
+  rewrite ^(.*)$ /de/photo_portrait redirect;
+}
+
+location /ee/photo {
+  rewrite ^(.*)$ /ee/photo_portrait redirect;
+}
+
+location /en/photo {
+  rewrite ^(.*)$ /en/photo_portrait redirect;
+}
+
+location /pl/photo {
+  rewrite ^(.*)$ /lp/photo_portrait redirect;
+}
+
+location /lt/photo {
+  rewrite ^(.*)$ /lt/photo_portrait redirect;
+}
+
+location /lv/photo {
+  rewrite ^(.*)$ /lv/photo_portrait redirect;
+}
+
+location /ru/photo {
+  rewrite ^(.*)$ /ru/photo_portrait redirect;
+}
+
+location /gallery/oil-pictures {
+  rewrite ^(.*)$ /new/graphic-portrait/kartiny redirect;
+}
+
+location /de/gallery/oil-pictures {
+  rewrite ^(.*)$ /de/new/graphic-portrait/kartiny redirect;
+}
+
+location /ee/gallery/oil-pictures {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/kartiny redirect;
+}
+
+location /en/gallery/oil-pictures {
+  rewrite ^(.*)$ /en/new/graphic-portrait/kartiny redirect;
+}
+
+location /pl/gallery/oil-pictures {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/kartiny redirect;
+}
+
+location /lt/gallery/oil-pictures {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/kartiny redirect;
+}
+
+location /lv/gallery/oil-pictures {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/kartiny redirect;
+}
+
+location /ru/gallery/oil-pictures {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/kartiny redirect;
+}
+
+location /oil-portrait {
+  rewrite ^(.*)$ /new/graphic-portrait/kartiny redirect;
+}
+
+location /de/oil-portrait {
+  rewrite ^(.*)$ /de/new/graphic-portrait/kartiny redirect;
+}
+
+location /ee/oil-portrait {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/kartiny redirect;
+}
+
+location /en/oil-portrait {
+  rewrite ^(.*)$ /en/new/graphic-portrait/kartiny redirect;
+}
+
+location /pl/oil-portrait {
+  rewrite ^(.*)$ /lp/new/graphic-portrait/kartiny redirect;
+}
+
+location /lt/oil-portrait {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/kartiny redirect;
+}
+
+location /lv/oil-portrait {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/kartiny redirect;
+}
+
+location /ru/oil-portrait {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/kartiny redirect;
+}
+
+location /graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lv/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /lv/graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lv/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /lv/graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /lv/graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /lv/graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /lv/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lt/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /lt/graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /lt/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /lt/graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /lt/graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /lt/graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /lt/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /pl/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /pl/graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /pl/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /pl/graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /pl/graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /pl/graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /pl/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /de/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /de/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /de/graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /de/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /de/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /de/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /de/graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /de/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /de/graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /de/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /de/graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /de/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /en/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /en/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /en/graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /en/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /en/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /en/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /en/graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /en/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /en/graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /en/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /en/graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /en/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ee/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /ee/graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ee/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /ee/graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /ee/graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /ee/graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /ee/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ru/graphic-portrait/portrait-beauty-art/buy {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/portrait-beauty-art redirect;
+}
+
+location /ru/graphic-portrait/classic-portrait/buy {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/graphic-portrait redirect;
+}
+
+location /ru/graphic-portrait/portrait-dream-art/buy {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/portrait-dream-art redirect;
+}
+
+location /ru/graphic-portrait/pop-art-portrait/buy {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/pop-art-portrait redirect;
+}
+
+location /ru/graphic-portrait/portrait-caricature/buy {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/portrait-caricature redirect;
+}
+
+location /ru/graphic-portrait/graphic-portrait/buy {
+  rewrite ^(.*)$ /ru/new/graphic-portrait/graphic-portrait redirect;
+}
+
+
+
+
+<IfModule mod_expires.c>
+    ExpiresActive on
+    ExpiresDefault                                      "access plus 1 month"
+  # CSS
+    ExpiresByType text/css                              "access plus 1 year"
+  # Data interchange
+    ExpiresByType application/atom+xml                  "access plus 1 hour"
+    ExpiresByType application/rdf+xml                   "access plus 1 hour"
+    ExpiresByType application/rss+xml                   "access plus 1 hour"
+
+    ExpiresByType application/json                      "access plus 0 seconds"
+    ExpiresByType application/ld+json                   "access plus 0 seconds"
+    ExpiresByType application/schema+json               "access plus 0 seconds"
+    ExpiresByType application/vnd.geo+json              "access plus 0 seconds"
+    ExpiresByType application/xml                       "access plus 0 seconds"
+    ExpiresByType text/xml                              "access plus 0 seconds"
+
+  # Favicon (cannot be renamed!) and cursor images
+    ExpiresByType image/vnd.microsoft.icon              "access plus 1 week"
+    ExpiresByType image/x-icon                          "access plus 1 week"
+
+  # HTML
+    ExpiresByType text/html                             "access plus 0 seconds"
+
+  # JavaScript
+    ExpiresByType application/javascript                "access plus 1 year"
+    ExpiresByType application/x-javascript              "access plus 1 year"
+    ExpiresByType text/javascript                       "access plus 1 year"
+
+  # Manifest files
+    ExpiresByType application/manifest+json             "access plus 1 year"
+
+    ExpiresByType application/x-web-app-manifest+json   "access plus 0 seconds"
+    ExpiresByType text/cache-manifest                   "access plus 0 seconds"
+
+  # Media files
+    ExpiresByType audio/ogg                             "access plus 1 month"
+    ExpiresByType image/bmp                             "access plus 1 month"
+    ExpiresByType image/gif                             "access plus 1 month"
+    ExpiresByType image/jpeg                            "access plus 1 month"
+    ExpiresByType image/png                             "access plus 1 month"
+    ExpiresByType image/svg+xml                         "access plus 1 month"
+    ExpiresByType image/webp                            "access plus 1 month"
+    ExpiresByType video/mp4                             "access plus 1 month"
+    ExpiresByType video/ogg                             "access plus 1 month"
+    ExpiresByType video/webm                            "access plus 1 month"
+
+  # Web fonts
+
+    # Embedded OpenType (EOT)
+    ExpiresByType application/vnd.ms-fontobject         "access plus 1 month"
+    ExpiresByType font/eot                              "access plus 1 month"
+
+    # OpenType
+    ExpiresByType font/opentype                         "access plus 1 month"
+
+    # TrueType
+    ExpiresByType application/x-font-ttf                "access plus 1 month"
+
+    # Web Open Font Format (WOFF) 1.0
+    ExpiresByType application/font-woff                 "access plus 1 month"
+    ExpiresByType application/x-font-woff               "access plus 1 month"
+    ExpiresByType font/woff                             "access plus 1 month"
+
+    # Web Open Font Format (WOFF) 2.0
+    ExpiresByType application/font-woff2                "access plus 1 month"
+
+  # Other
+    ExpiresByType text/x-cross-domain-policy            "access plus 1 week"
+
+</IfModule>
+
+
+<filesMatch "\.(pdf)$">
+	FileETag None
+	Header unset ETag
+	Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+	Header set Pragma "no-cache"
+	Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
+</filesMatch>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php74” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php74 .php .php7 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
+
+# BEGIN cPanel-generated php ini directives, do not edit
+# Manual editing of this file may result in unexpected behavior.
+# To make changes to this file, use the cPanel MultiPHP INI Editor (Home >> Software >> MultiPHP INI Editor)
+# For more information, read our documentation (https://go.cpanel.net/EA4ModifyINI)
+<IfModule php7_module>
+   php_flag display_errors Off
+   php_value max_execution_time 60
+   php_value max_input_time 120
+   php_value max_input_vars 10000
+   php_value memory_limit 128M
+   php_value post_max_size 256M
+   php_value session.gc_maxlifetime 1440
+   php_value session.save_path "/var/cpanel/php/sessions/ea-php74"
+   php_value upload_max_filesize 256M
+   php_flag zlib.output_compression Off
+</IfModule>
+<IfModule lsapi_module>
+   php_flag display_errors Off
+   php_value max_execution_time 60
+   php_value max_input_time 120
+   php_value max_input_vars 10000
+   php_value memory_limit 128M
+   php_value post_max_size 256M
+   php_value session.gc_maxlifetime 1440
+   php_value session.save_path "/var/cpanel/php/sessions/ea-php74"
+   php_value upload_max_filesize 256M
+   php_flag zlib.output_compression Off
+</IfModule>
+# END cPanel-generated php ini directives, do not edit

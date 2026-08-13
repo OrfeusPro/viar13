@@ -1,0 +1,7 @@
+.product-download button img {
+    opacity: 1 !important;
+}
+
+.product-download button img[src=""] {
+    opacity: 0 !important;
+}

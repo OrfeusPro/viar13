@@ -1,0 +1,37 @@
+<?php
+
+return array (
+  'header_col1_name' => 'Portraits',
+  'header_col2_name' => 'Canvas',
+  'header_col3_name' => 'Collage',
+  'header_col4_name' => 'Ideas',
+  'we_in_socs' => 'We are in social networks:',
+  'footer_col1_name' => 'Portrait styles',
+  'footer_col2_name' => 'Types of portrait',
+  'footer_col3_name' => 'Information',
+  'footer_addr1' => 'Rīga, Lubānas 65, LV-1073',
+  'footer_addr2' => 'Daugavpils, Muitas iela 3, LV-5401',
+  'footer_phone' => '+371 27044470',
+  'footer_phone2' => '+371 25444744',
+  'footer_email' => 'viarstudia@gmail.com',
+  'footer_addr2_link' => 'https://www.google.com/maps/place/Viar+Art+Canvas/@55.8811515,26.5126457,17z/data=!3m1!4b1!4m5!3m4!1s0x46c295795530c25d:0x400f37c7743e684a!8m2!3d55.8811515!4d26.5148344',
+  'footer_addr1_link' => 'https://www.google.com/maps/dir//Turu+34,+51004+Tartu,+Эстония/@58.3577546,26.7430004,399m/data=!3m1!1e3!4m8!4m7!1m0!1m5!1m1!1s0x46eb372d6347a6c5:0xafe8738a8eb5c527!2m2!1d26.7431368!2d58.3575743?entry=ttu',
+  'footer_copyright' => 'ViarStudia SIA 2021.gada 31.marta noslēdza ar LIAA līgumu Nr. SKV-L-2021/63 par atbalsta saņemšanu pasākuma “Starptautiskās konkurētspējas veicināšana” ietvaros, ko līdzfinansē Eiropas Reģionālās attīstības fonds.',
+  'footer_copyright2' => 'D-Art-Solutions, SIA, 40203366048,  Jēkabpils nov., Jēkabpils, Slimnīcas iela 3 - 27, +37127044470, orders@viarcanvas.com',
+  'contacts' => 'Contacts',
+  'terms_and_conditions' => 'Privacy Policy, General Terms and Conditions',
+  'prices' => 'Prices',
+  'stocks' => 'Sale',
+  'header' => 
+  array (
+    'top_sale' => 'Summer Sale 2026 <span>up to -65%</span>',
+  ),
+  'footer_paysera' => 'ViarStudia SIA provides functionality for the development and promotion of the site. graphics development',
+  'footer_phone_new' => '+371 27044470',
+  'footer_phone_clean2' => '+371 25444744',
+  'footer_phone_clean' => '+371 27044470',
+  'footer_org_addressCountry' => 'LV',
+  'footer_org_addressLocality' => 'Daugavpils',
+  'footer_org_postalCode' => 'LV-5401',
+  'footer_org_streetAddress' => 'Muitas iela 3',
+);

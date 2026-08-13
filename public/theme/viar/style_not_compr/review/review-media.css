@@ -1,0 +1,166 @@
+/*  */
+
+@media (max-width: 1500px) {
+    .r-images_title {
+        font-size: 21px;
+        line-height: 25px;
+    }
+    .r-images-block {
+        flex: 0 0 280px;
+        position: relative;
+    }
+    .r-images-block:first-child {
+        margin-right: 30px;
+    }
+    /*  */
+    .b-content {
+        flex: 0 0 32%;
+    }
+    .b-soc {
+        flex: 0 0 32%;
+        justify-content: center;
+    }
+    .b-image {
+        flex: 0 0 32%;
+    }
+    .b-image img {
+        width: 100%;
+        height: auto;
+    }
+}
+@media (max-width: 1200px) {
+    .r-form {
+        flex: 0 0 38%;
+    }
+    .r-images {
+        flex: 0 0 60%;
+    }
+    .r-images-block:first-child {
+        margin-right: 20px;
+    }
+    
+}
+
+@media (max-width: 991px) {
+    .r-block-row {
+        flex-direction: column-reverse;
+    }
+    .r-form {
+        margin-top: 30px;
+    }
+    .r-images_row {
+        justify-content: center;
+    }
+    .r-images-block:first-child {
+        margin-right: 40px;
+    }
+    .r-images-block:first-child::after {
+        width: 86.5px;
+    }
+    .b-content_inner {
+        padding: 40px 20px;
+    }
+    .bonus-subtitle {
+        font-size: 20px;
+        line-height: 24px;
+    }
+    .b-soc-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .b-soc-item img {
+        width: 60px;
+        height: 60px;
+    }
+    .o-box::after {
+        top: 5px;
+        right: 5px;
+    }
+}
+@media (max-width: 768px) {
+    .r-images-block:first-child {
+        margin-right: 20px;
+    }
+    .bonus__row {
+        flex-direction: column;
+    }
+    .b-content {
+        order: 2;
+        margin: 50px 0 70px;
+    }
+    .b-soc {
+        order: 1;
+    }
+    .b-image {
+        order: 3;
+        max-width: 330px;
+        
+    }
+    .b-content::after {
+        top: 65%;
+        left: 70%;
+        width: 94.52px;
+        height: 162px;
+        background: url(../../images/review/vector2M.svg) no-repeat;
+        background-size: contain;
+    }
+}
+@media (max-width: 600px) {
+    .r-images_row {
+        flex-direction: column;
+        align-items: center;
+    }
+    .r-images_row > div {
+        max-width: 330px;
+        width: 100%;
+    }
+    .r-images-block:first-child {
+        margin-right: 0;
+        margin-bottom: 86px;
+    }
+    .r-images-block:last-child .r-images_title::after {
+        top: -35px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .r-images-block:first-child::after {
+        top: 95%;
+        left: 50%;
+        width: 113.96px;
+        height: 208.5px;
+        background: url(../../images/review/vector1M.svg) no-repeat;
+        background-size: contain;
+    }
+    .r-images_title {
+        font-size: 20px;
+    }
+    .r-images_title span {
+        font-size: 15px;
+        line-height: 20px;
+    }
+}
+
+@media (max-width: 520px) {
+    .only-row {
+        flex-direction: column;
+    }
+    .only-row > div:not(:last-child) {
+        margin-bottom: 50px;
+    }
+    .only-row > div {
+        max-width: 250px;
+        margin-right: auto;
+        margin-left: auto;
+    }
+    .r-file-container_audio {
+        flex-direction: column;
+        align-items: start;
+    }
+    .r-file-container_audio > div:not(:last-child) {
+        margin-bottom: 15px;
+    }
+    .r-btn  {
+        margin-top: 0;
+    }
+}

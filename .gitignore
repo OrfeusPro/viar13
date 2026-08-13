@@ -1,0 +1,275 @@
+/.idea
+/node_modules
+/public/hot
+/public/storage
+/storage/app/public
+/storage/*.key
+
+/vendor
+/public/images
+/public/uploads
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/nbproject/private/
+nbproject/project.properties
+nbproject/project.xml
+admin_main.sql
+database/migrations/2014_04_02_193005_create_translations_table.php
+database/migrations/2014_10_12_000000_create_users_table.php
+database/migrations/2014_10_12_100000_create_password_resets_table.php
+database/migrations/2016_01_01_000000_create_pages_table.php
+database/migrations/2016_01_01_000000_create_posts_table.php
+database/migrations/2016_02_15_204651_create_categories_table.php
+database/migrations/2017_04_11_000000_alter_post_nullable_fields_table.php
+database/migrations/2019_08_19_000000_create_failed_jobs_table.php
+database/migrations/2020_05_03_094713_create_locales_table.php
+database/migrations/2020_05_05_160543_page.php
+database/migrations/2020_05_06_190051_create_gallery_types_table.php
+database/migrations/2020_05_06_190102_create_gallery_categories_table.php
+database/migrations/2020_05_06_190113_create_gallery_items_table.php
+database/migrations/2020_05_06_190129_create_gallery_sizes_table.php
+database/migrations/2020_05_06_190142_create_gallery_tag_rooms_table.php
+database/migrations/2020_05_06_190152_create_gallery_tag_colors_table.php
+database/migrations/2020_05_06_190206_create_gallery_holsts_table.php
+database/migrations/2020_05_06_190219_create_gallery_boxes_table.php
+database/migrations/2020_05_20_174548_create_gallery_executions_table.php
+database/migrations/2020_05_27_000000_create_orders_table.php
+database/migrations/2020_06_09_124149_create_gallery_decorations_table.php
+database/migrations/2020_06_11_092426_create_user_types_table.php
+database/migrations/2020_06_11_092800_add_type_id_column_to_users_table.php
+database/migrations/2020_06_11_113543_create_jobs_table.php
+database/migrations/2020_09_18_174502_create_sessions_table.php
+database/migrations/2021_01_20_134847_create_painter_orders_table.php
+database/migrations/2021_11_19_144327_create_media_table.php
+database/migrations/2021_11_19_144609_create_media_table.php
+database/migrations/2014_04_02_193005_create_translations_table.php
+database/migrations/2014_10_12_000000_create_users_table.php
+database/migrations/2014_10_12_100000_create_password_resets_table.php
+database/migrations/2016_01_01_000000_create_pages_table.php
+database/migrations/2016_01_01_000000_create_posts_table.php
+database/migrations/2016_02_15_204651_create_categories_table.php
+database/migrations/2017_04_11_000000_alter_post_nullable_fields_table.php
+database/migrations/2019_08_19_000000_create_failed_jobs_table.php
+database/migrations/2020_05_03_094713_create_locales_table.php
+database/migrations/2020_05_05_160543_page.php
+database/migrations/2020_05_06_190051_create_gallery_types_table.php
+database/migrations/2020_05_06_190102_create_gallery_categories_table.php
+database/migrations/2020_05_06_190113_create_gallery_items_table.php
+database/migrations/2020_05_06_190129_create_gallery_sizes_table.php
+database/migrations/2020_05_06_190142_create_gallery_tag_rooms_table.php
+database/migrations/2020_05_06_190152_create_gallery_tag_colors_table.php
+database/migrations/2020_05_06_190206_create_gallery_holsts_table.php
+database/migrations/2020_05_06_190219_create_gallery_boxes_table.php
+database/migrations/2020_05_20_174548_create_gallery_executions_table.php
+database/migrations/2020_05_27_000000_create_orders_table.php
+database/migrations/2020_06_09_124149_create_gallery_decorations_table.php
+database/migrations/2020_06_11_092426_create_user_types_table.php
+database/migrations/2020_06_11_092800_add_type_id_column_to_users_table.php
+database/migrations/2020_06_11_113543_create_jobs_table.php
+database/migrations/2020_09_18_174502_create_sessions_table.php
+database/migrations/2021_01_20_134847_create_painter_orders_table.php
+database/migrations/2021_11_19_144327_create_media_table.php
+database/migrations/2021_11_19_144609_create_media_table.php
+database/migrations/2021_11_19_144609_create_media_table.php
+database/migrations/2021_11_19_144327_create_media_table.php
+database/migrations/2021_01_20_134847_create_painter_orders_table.php
+database/migrations/2020_09_18_174502_create_sessions_table.php
+database/migrations/2020_06_11_113543_create_jobs_table.php
+database/migrations/2020_06_11_092800_add_type_id_column_to_users_table.php
+database/migrations/2020_06_11_092426_create_user_types_table.php
+database/migrations/2020_06_09_124149_create_gallery_decorations_table.php
+database/migrations/2020_05_27_000000_create_orders_table.php
+database/migrations/2020_05_20_174548_create_gallery_executions_table.php
+database/migrations/2020_05_06_190219_create_gallery_boxes_table.php
+database/migrations/2020_05_06_190206_create_gallery_holsts_table.php
+database/migrations/2020_05_06_190152_create_gallery_tag_colors_table.php
+database/migrations/2020_05_06_190142_create_gallery_tag_rooms_table.php
+database/migrations/2020_05_06_190129_create_gallery_sizes_table.php
+database/migrations/2020_05_06_190113_create_gallery_items_table.php
+database/migrations/2020_05_06_190102_create_gallery_categories_table.php
+database/migrations/2020_05_06_190051_create_gallery_types_table.php
+database/migrations/2020_05_05_160543_page.php
+database/migrations/2020_05_03_094713_create_locales_table.php
+database/migrations/2019_08_19_000000_create_failed_jobs_table.php
+database/migrations/2017_04_11_000000_alter_post_nullable_fields_table.php
+database/migrations/2016_02_15_204651_create_categories_table.php
+database/migrations/2016_01_01_000000_create_posts_table.php
+database/migrations/2016_01_01_000000_create_pages_table.php
+database/migrations/2014_10_12_100000_create_password_resets_table.php
+database/migrations/2014_10_12_000000_create_users_table.php
+database/migrations/2014_04_02_193005_create_translations_table.php
+public/uploads/0NHj16VEcYhhSaHoJUFqkgXtiqQFccu3XQnHURol.jpg
+public/uploads/1UoQ9zETBZuVjRgJqgg9GgOeCj1vGZPo4MJcoOu7.jpg
+public/uploads/3gz9c4e5Wotadj971eI6p0DmZZtFXbMrM6elvg8s.jpg
+public/uploads/6Mxj3WlLYHfqZXgOw4u3X5MiHZbhwNlwOoHaHqIP.jpg
+public/uploads/7kzoRstfh424gTgi84UpSHdNyCmmC8UZ3plrs7dF.jpg
+public/uploads/A4XUeUmq2pemoaG9Hp6JwbGgQDdw6kQCxGzKgIyC.jpg
+public/uploads/ASSxQndZeIsOm8Uh37aF1lQ7yQJqYArPRuPbBhah.jpg
+public/uploads/CDTEosyt9ilLNWRFJEqnze5p2rQXAyfokT6wejyQ.jpg
+public/uploads/ClddHauzOwuqe8zRcJFCE5DigwsMPeWMO6qNJbL1.jpg
+public/uploads/COuY5NPI4qNNl6igGfSWk6g8FCHC0ptEOek5ShzS.jpg
+public/uploads/dA0vfyPAd9bjjXh0IRMlRP0s4WvnfvupkQZleVf3.jpg
+public/uploads/DqSSSsCSvgbquDTUICFZRSMjd1OVEgvPcHDY8bfZ.jpg
+public/uploads/e75MVgH19Vkpi4DjF9vfcob16BQjnZfcLDRai30r.jpg
+public/uploads/FC4rxs8Gzk9LVJf0MfTcbFVG6qqSkUxc1jZgM4bK.jpg
+public/uploads/gPwYaDzxSjK9nJh22CwuYo37goLpRpCSZUzG7PJx.jpg
+public/uploads/hLjN4sibceuoiesfarlI37NqFBzH728fsdV90CoJ.jpg
+public/uploads/HlOXbMheytegfmgWp3jg3LpEHl6gSxXiTrm0CKpZ.jpg
+public/uploads/iVaCPKKp7r2Owd97v4xxtrlBGPysRc9ZVUJAbd3R.jpg
+public/uploads/NAvJY50DY0opC1kTLN7ZifJ2GzyWhkbhjeZCTeJb.jpg
+public/uploads/ocrdy6FgwFEpOP6Bi4NVIZJjwst7rqGPY4exz4hT.jpg
+public/uploads/oF0sOREvjIqyPL6r7zjuD8blaIrgBR0rjULxPLX9.jpg
+public/uploads/P7s2rKRcnyopAyv80pWigx6J3dMLM2rjNNsRmh24.jpg
+public/uploads/R6mneAT8b0d45eeRDk7ldB9UYBJgtlJG8QhyNG4q.jpg
+public/uploads/Sf8W1k4txRWIWEwqWuLrKbrDUcZaua3rSoASf3CH.jpg
+public/uploads/sKZqtbl8nSooIJ2qkYScn9Jm1MtZgvQaMhOKCp5f.jpg
+public/uploads/SPmE5EytQMvqh7gl1oBOoOchmmGVa5Yz19Bs8jpV.jpg
+public/uploads/tVD5LHWc3LzJunBS3v7w1VHRcQ6przmm7uBvFaSH.jpg
+public/uploads/U2JmxzbUzMrZAwQeo3QaDhnc75A2rYERChVtt2ml.jpg
+public/uploads/U7RhEiMbcbF412tXebxbuiquJaQPZcUAXqXvrDes.jpg
+public/uploads/UHIfZbV7DUnBrDDI7zvy5YF9BpmXDwTIgrMOLEhd.jpg
+public/uploads/VvcdvRiMJyREIpBRlksfDz356q0ZxHuVYV9rLAL5.jpg
+public/uploads/vYh0TXBlSvb8tweVWFNPT6baAn9lVz78g0BWKVFH.jpg
+public/uploads/Wi9Hr7YVpt7AycaZYNT676xmhQAss5YhTKd9xFQv.jpg
+public/uploads/wZDDHaXyyiPMOgn0qwBd2q52SLHy34niuuZNz0DZ.jpg
+public/uploads/y8XrJngp6FmTOtBhLyCiUL6QeP23ZGcKvcWC1rDr.jpg
+database/migrations/2014_04_02_193005_create_translations_table.php
+database/migrations/2014_10_12_000000_create_users_table.php
+database/migrations/2014_10_12_100000_create_password_resets_table.php
+database/migrations/2016_01_01_000000_create_pages_table.php
+database/migrations/2016_01_01_000000_create_posts_table.php
+database/migrations/2016_02_15_204651_create_categories_table.php
+database/migrations/2017_04_11_000000_alter_post_nullable_fields_table.php
+database/migrations/2019_08_19_000000_create_failed_jobs_table.php
+database/migrations/2020_05_03_094713_create_locales_table.php
+database/migrations/2020_05_05_160543_page.php
+database/migrations/2020_05_06_190051_create_gallery_types_table.php
+database/migrations/2020_05_06_190102_create_gallery_categories_table.php
+database/migrations/2020_05_06_190113_create_gallery_items_table.php
+database/migrations/2020_05_06_190129_create_gallery_sizes_table.php
+database/migrations/2020_05_06_190142_create_gallery_tag_rooms_table.php
+database/migrations/2020_05_06_190152_create_gallery_tag_colors_table.php
+database/migrations/2020_05_06_190206_create_gallery_holsts_table.php
+database/migrations/2020_05_06_190219_create_gallery_boxes_table.php
+database/migrations/2020_05_20_174548_create_gallery_executions_table.php
+database/migrations/2020_05_27_000000_create_orders_table.php
+database/migrations/2020_06_09_124149_create_gallery_decorations_table.php
+database/migrations/2020_06_11_092426_create_user_types_table.php
+database/migrations/2020_06_11_092800_add_type_id_column_to_users_table.php
+database/migrations/2020_06_11_113543_create_jobs_table.php
+database/migrations/2020_09_18_174502_create_sessions_table.php
+database/migrations/2021_01_20_134847_create_painter_orders_table.php
+database/migrations/2021_11_19_144327_create_media_table.php
+database/migrations/2021_11_19_144609_create_media_table.php
+*.jpg
+database/migrations/2014_04_02_193005_create_translations_table.php
+database/migrations/2014_10_12_000000_create_users_table.php
+database/migrations/2014_10_12_100000_create_password_resets_table.php
+database/migrations/2016_01_01_000000_create_pages_table.php
+database/migrations/2016_01_01_000000_create_posts_table.php
+database/migrations/2016_02_15_204651_create_categories_table.php
+database/migrations/2017_04_11_000000_alter_post_nullable_fields_table.php
+database/migrations/2019_08_19_000000_create_failed_jobs_table.php
+database/migrations/2020_05_03_094713_create_locales_table.php
+database/migrations/2020_05_05_160543_page.php
+database/migrations/2020_05_06_190051_create_gallery_types_table.php
+database/migrations/2020_05_06_190102_create_gallery_categories_table.php
+database/migrations/2020_05_06_190113_create_gallery_items_table.php
+database/migrations/2020_05_06_190129_create_gallery_sizes_table.php
+database/migrations/2020_05_06_190142_create_gallery_tag_rooms_table.php
+database/migrations/2020_05_06_190152_create_gallery_tag_colors_table.php
+database/migrations/2020_05_06_190206_create_gallery_holsts_table.php
+database/migrations/2020_05_06_190219_create_gallery_boxes_table.php
+database/migrations/2020_05_20_174548_create_gallery_executions_table.php
+database/migrations/2020_05_27_000000_create_orders_table.php
+database/migrations/2020_06_09_124149_create_gallery_decorations_table.php
+database/migrations/2020_06_11_092426_create_user_types_table.php
+database/migrations/2020_06_11_092800_add_type_id_column_to_users_table.php
+database/migrations/2020_06_11_113543_create_jobs_table.php
+database/migrations/2020_09_18_174502_create_sessions_table.php
+database/migrations/2021_01_20_134847_create_painter_orders_table.php
+database/migrations/2021_11_19_144609_create_media_table.php
+public/theme/viar/images/icon — копия/angle-down.svg
+public/theme/viar/images/icon — копия/angle-down.webp
+public/theme/viar/images/icon — копия/arrow-small.svg
+public/theme/viar/images/icon — копия/arrow-small.webp
+public/theme/viar/images/icon — копия/arrow.svg
+public/theme/viar/images/icon — копия/arrow.webp
+public/theme/viar/images/icon — копия/check-circle.svg
+public/theme/viar/images/icon — копия/check-circle.webp
+public/theme/viar/images/icon — копия/check-done.svg
+public/theme/viar/images/icon — копия/check-done.webp
+public/theme/viar/images/icon — копия/check.svg
+public/theme/viar/images/icon — копия/check.webp
+public/theme/viar/images/icon — копия/ellipse-black.svg
+public/theme/viar/images/icon — копия/ellipse-black.webp
+public/theme/viar/images/icon — копия/ellipse-cream.svg
+public/theme/viar/images/icon — копия/ellipse-cream.webp
+public/theme/viar/images/icon — копия/ellipse-whete.svg
+public/theme/viar/images/icon — копия/ellipse-whete.webp
+public/theme/viar/images/icon — копия/email.svg
+public/theme/viar/images/icon — копия/email.webp
+public/theme/viar/images/icon — копия/footer-mail.svg
+public/theme/viar/images/icon — копия/footer-mail.webp
+public/theme/viar/images/icon — копия/footer-phone.svg
+public/theme/viar/images/icon — копия/footer-phone.webp
+public/theme/viar/images/icon — копия/gift.svg
+public/theme/viar/images/icon — копия/gift.webp
+public/theme/viar/images/icon — копия/google.svg
+public/theme/viar/images/icon — копия/google.webp
+public/theme/viar/images/icon — копия/info.svg
+public/theme/viar/images/icon — копия/info.webp
+public/theme/viar/images/icon — копия/kviz-arrowsvg.svg
+public/theme/viar/images/icon — копия/kviz-arrowsvg.webp
+public/theme/viar/images/icon — копия/like.svg
+public/theme/viar/images/icon — копия/like.webp
+public/theme/viar/images/icon — копия/load-more.webp
+public/theme/viar/images/icon — копия/lock-popup.svg
+public/theme/viar/images/icon — копия/lock-popup.webp
+public/theme/viar/images/icon — копия/lock.svg
+public/theme/viar/images/icon — копия/lock.webp
+public/theme/viar/images/icon — копия/log-check.svg
+public/theme/viar/images/icon — копия/log-check.webp
+public/theme/viar/images/icon — копия/mail.svg
+public/theme/viar/images/icon — копия/mail.webp
+public/theme/viar/images/icon — копия/map.svg
+public/theme/viar/images/icon — копия/map.webp
+public/theme/viar/images/icon — копия/master.svg
+public/theme/viar/images/icon — копия/master.webp
+public/theme/viar/images/icon — копия/more.svg
+public/theme/viar/images/icon — копия/more.webp
+public/theme/viar/images/icon — копия/phone.svg
+public/theme/viar/images/icon — копия/phone.webp
+public/theme/viar/images/icon — копия/picture.svg
+public/theme/viar/images/icon — копия/picture.webp
+public/theme/viar/images/icon — копия/plus.svg
+public/theme/viar/images/icon — копия/plus.webp
+public/theme/viar/images/icon — копия/save.svg
+public/theme/viar/images/icon — копия/save.webp
+public/theme/viar/images/icon — копия/size.svg
+public/theme/viar/images/icon — копия/size.webp
+public/theme/viar/images/icon — копия/user-popup.svg
+public/theme/viar/images/icon — копия/user-popup.webp
+public/theme/viar/images/icon — копия/visa.svg
+public/theme/viar/images/icon — копия/visa.webp
+public/theme/viar/images/icon — копия/wh.svg
+public/theme/viar/images/icon — копия/wh.webp
+public/theme/viar/images/icon — копия/work-arrow.svg
+public/theme/viar/images/icon — копия/work-arrow.webp
+public/theme/viar/images/icon/angle-down.webp
+public/theme/viar/images/icon/check-circle.webp
+public/theme/viar/images/icon/check-done.webp
+public/theme/viar/images/icon/ellipse-black.webp
+public/theme/viar/images/icon/ellipse-cream.webp
+public/theme/viar/images/icon/ellipse-whete.webp
+public/theme/viar/images/icon/gift.webp
+public/theme/viar/images/icon/master.webp
+public/theme/viar/images/icon/visa.webp
+public/theme/viar/images/logo.webp
+public/theme/viar/images/mcard/1.svg
+resources/lang/ru/sharj.php

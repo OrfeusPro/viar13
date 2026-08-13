@@ -1,0 +1,80 @@
+.section-frame {
+    max-width: 1350px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.emotion{
+    margin-top: 0!important;
+    position: relative;
+    padding-top: 82px;
+    padding-bottom: 135px;
+}
+
+.emotion::before {
+    content: "";
+    display: block;
+    position: absolute;
+    background: url(../img/ex-bg.svg) center center/cover no-repeat;
+    height: 637px;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.emotion-title {
+    z-index: 2;
+    color: #fff;
+    position: relative;
+    text-align: center;
+}
+
+@media screen and (max-width: 93.75em) {
+    .stock-gift {
+        display: none;
+    }
+}
+
+
+@media screen and (max-width: 61.25em) {
+    .step-counter, .stock-full {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 61.25em) {
+    .kviz-item__title {
+        font-size: 30px;
+        margin-bottom: 30px;
+    }
+}
+
+@media screen and (max-width: 61.25em) {
+    .stock-full_tablet {
+        display: block;
+    }
+}
+
+@media screen and (max-width: 43.75em) {
+    .section-frame {
+        max-width: 475px;
+        padding: 0 15px;
+    }
+}
+
+.kviz-thanks__parent.quiz-thanks__show {
+    box-sizing: border-box;
+    opacity: 1;
+    z-index: 50;
+    display: block;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 20px;
+    height: calc(100% - 20px);
+    background: #FBF2EA;
+    visibility: visible;
+    transition: .4s;
+}

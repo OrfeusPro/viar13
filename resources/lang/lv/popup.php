@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'target-box_0_title' => 'Izvēlaties Jums piemērotu <span> pasūtījuma variantu </span>!',
+  'target-box_1_text1' => 'Ātrā pasūtījumā varat izvēlēties:',
+  'target-box_1_text2' => 'Izmērs un Cena',
+  'target-box_1_text3' => 'Konsultācija',
+  'target-box_1_text4' => 'Augšupielādēt attēlu',
+  'target-box_1_text5' => 'Pasūtījums 1 minūtes laikā',
+  'target-box_1_btn' => 'Ātrā pasūtīšana',
+  'target-box_2_text1' => 'Detalizēts pasūtījums:',
+  'target-box_2_text2' => '<strong>Cena un izmērs</strong>',
+  'target-box_2_text3' => '<strong> Maketa </strong> apskate / interjerā',
+  'target-box_2_text4' => 'Pievienot <strong>piegādes adresi</strong>',
+  'target-box_2_text5' => 'Piegādes <strong>laiks un datums</strong>',
+  'target-box_2_text6' => 'Pievienot <strong> komentāru, vēlmes, iepatikušos paraugu</strong>',
+  'target-box_2_btn' => 'Detalizēts pasūtījums:',
+  'target-box_3_btn' => 'Sazināties ar mums uzreiz',
+  'popup-why_title' => 'Kāpēc Jūs dodaties prom?',
+  'popup-why_subtitle' => 'Izvēlieties iemeslu un mēs izdarīsim visu, lai Jums palīdzētu',
+  'popup-why_z0_none' => '-------------',
+  'popup-callback_content_phone' => 'Ievadiet savu telefona numuru un mēs palīdzēsim tikt ar visu skaidrībā!',
+  'popup-callback_subtitle' => 'Mēs centīsimies atrisināt Jūsu problēmu!',
+  'popup-callback_title' => 'Kā ar JUMS ir iespējams sazināties?',
+  'popup-why_0_none' => '-------------',
+  'popup-callback_0_none' => '-------------',
+  'please_enter_email' => 'Gribi atlaidi? Ieraksti savu e-pastu, lai to saņemtu.',
+);

@@ -1,0 +1,91 @@
+<?php
+
+return array (
+  'to_order_portrait' => 'Pateikiant užsakymą',
+  'tab1_title' => 'Kas tai yra',
+  'tab2_title' => 'Reikalavimai Nuotraukos',
+  'tab3_title' => 'Dydžiai',
+  'tab4_title' => 'Dydžiai ir kainos',
+  'tab5_title' => 'Pristatymas ir laikas',
+  'work_photos' => 'MŪSŲ DARBAI',
+  'tabs_title' => 'Portretas iš nuotraukos pagal užsakymą',
+  'sizes__title' => 'Dydžių įvairovė',
+  'tab2__inner_title' => 'Kokios nuotraukos tinka portretui kurti?',
+  'tab2__inner_text' => 'Jeigu nuotraukoje aiškiai matomos veido detalės, akių, nosies, lūpų struktūra ir kiti išvaizdos ypatumai, greičiausiai to pakaks portretui sukurti.',
+  'tab5__inner__title' => 'Gamybos laikas ir pristatymas',
+  'tab5__inner__block1_title' => 'Užsakymo pagaminimo laikas 4-10 dienos',
+  'tab5__inner__block1_text' => 'Patvirtinus užsakymą. Jei terminai padidinami,
+                            dėl retušavimo ar sudėtingo apdorojimo – dizaineris,
+                            būtinai informuos.',
+  'tab5__inner__block2_title' => 'Greitas užsakymas – 1 diena.',
+  'tab5__inner__block2_text' => 'Išskyrus pristatymo laiką. Šią paslaugą galima pasirinkti užsakymo metu.',
+  'tab5__inner__block3_title' => 'Pristatymas pasirinktą dieną',
+  'tab5__inner__block3_text' => 'Šią paslaugą galima pasirinkti užsakymo metu.',
+  'tab5__delivery__title' => 'Pristatymas',
+  'tab5__delivery__block1_title' => 'Užsakymo pristatymas per 1-2 dienas',
+  'tab5__delivery__block2_title' => 'Pristatymo kaina Jūsų nurodytu adresu:',
+  'tab5__delivery__block3_title' => 'Kitos šalys, į kurias siunčiame:',
+  'tab5__delivery__after_text' => 'Pristatymą atlieka kurjerių tarnybos:',
+  'tab5__delivery__after_block1_text' => 'Pristatymas vykdomas iki pat namo durų. Taip pat <a href="#"> atsiėmimo </a> punktuose ir pašto skyriuose.',
+  'tab5__delivery__after_block2_text' => 'Norėdami gauti daugiau informacijos, susisiekite su mumis <a href="mailto:orders@viarcanvas.com"> orders@viarcanvas.com </a> arba skambinkite <a href="tel:+370 64749413"> +370 64749413</ a>',
+  'tabs_show_btn_text' => 'Daugiau',
+  'tabs_hide_btn_text' => 'Slėpti',
+  'tab5__delivery__block2_title_after' => 'Standartinis 1-2 dienos - 5 EUR <br>
+Atsiėmimo taškai 1-2 dienos - 3 EUR <br>
+Express 1 diena - 5 eurai <br>',
+  'tab5__delivery__block3_title_after' => 'Visos ES šalys - 5 eur',
+  'tab2__inner_block1_text' => '<span> Siųskite nuotraukas, kurios Jums patinka. </span> Geriausiam rezultatui pasiekti atkreipkite dėmesį į šiuos momentus: jeigu nuotraukoje Jums nepatinka žvilgsnis, veido išraiška ar šypsena - geriau atsiųskite papildomų nuotraukų, kuriose veido bruožai Jus tenkina',
+  'tab2__inner_block2_text' => '<span> Stenkitės siųsti kuo didesnės raiškos (failo dydžio) nuotraukas.</span> Pageidautina siųsti nuotraukų originalus bet kokiu formatu (JPG, PNG...) ir nesiųsti ekrano nuotraukų (PrintScreen)',
+  'tab2__inner_block3_text' => 'Taip pat <span> apkreipkite dėmesį į nuotraukos kokybę ir apšvietimą. </span> Išplaukęs vaizdas, šešėlyje esantis arba pernelyg apšviestas veidas, nuotraukos pikseliai - visa tai neužtikrina geriausio rezultato </p>',
+  'tab2__inner_mob1_hint' => 'Jei planuojate užsisakyti portretą vestuvėms ar jubiliejui,
+                bet neturite bendros poros nuotraukos, tada atsiųskite
+                kelios atskiros sutuoktinių nuotraukos.',
+  'tab2__inner_mob2_hint' => 'Jei planuojate užsisakyti portretą vestuvėms ar jubiliejui,
+                bet neturite bendros poros nuotraukos, tada atsiųskite
+                kelios atskiros sutuoktinių nuotraukos.',
+  'tab3__bot__text' => 'Atsižvelgiame į išskirtinius pageidavimus dėl papildomo mokėjimo.',
+  'examples_title' => 'Mūsų portretų pavyzdžiai',
+  'before_after' => 'PRIEŠ / PO',
+  'before_after_desc' => 'Galime nupiešti gražiai, visiškai išlaikydami portretinį panašumą',
+  'move_cursor' => '(perkelkite slankiklį)',
+  'tabs_etc_styles_see' => 'Taip pat galite pamatyti kitus stilius',
+  'tabs_etc_styles_but' => 'Papildomos dovanų idėjos',
+  'order_steps_title' => 'Užsakymo etapai',
+  'order_steps_desc' => 'Užsisakyti nuotrauką ant drobės – greita ir paprasta',
+  'order_step1_title' => 'Nuotrauka',
+  'order_step1_desc' => 'Spustelėkite „Užsakyti drobę“, įkelkite savo nuotrauką ir nurodykite
+norimus parametrus',
+  'order_step2_title' => 'Diskusija',
+  'order_step2_desc' => 'Susisieksime su jumis ir išsiaiškinsime visas detales
+                                        darbo diena.',
+  'order_step3_title' => 'Portretas',
+  'order_step3_desc' => 'Menininkas piešia portretą. Dėl ko mes su jumis susitarsime',
+  'order_step4_title' => 'Gamyba',
+  'order_step4_desc' => 'Pradedame daryti jūsų drobę, montuojame stovus
+ir supakuoti.',
+  'order_step5_title' => 'Pristatymas',
+  'order_step5_desc' => 'Greitai pristatome užsakymą tiesiai į namus arba į bet kurį kitą
+                                        Kita vieta.',
+  'order_steps_bot_text' => 'Užsisakykite portretą iš nuotraukos ant drobės
+<span> su nuolaida </span>',
+  'ex_cl_works_title' => 'Mūsų klientų nuotraukos',
+  'ex_cl_works_desc' => 'Pas mus galite užsisakyti bet kokį paveikslą',
+  'ex_video_title' => 'Žiūrėkite 60 sekundžių vaizdo įrašą ir sužinokite',
+  'ex_video_desc' => 'kaip dailininkas nupieš tavo paveikslą',
+  'des_help_title' => 'Nemokama dizainerio pagalba',
+  'des_help_desc' => 'Portretas iš nuotraukos pagal užsakymą',
+  'des_help_step1' => '<b> Ar turite kokių nors abejonių? </b> Mes padėsime jums rasti geriausią sprendimą ir
+                                    suteiksime profesionalias konsultacijas',
+  'des_help_step2' => '<b> Daug galimybių. </b> Mes sukursime jums vieną arba
+                                    keli išdėstymai, atsižvelgiant į individualias ypatybes
+                                    Nuotrauka.',
+  'des_help_step3' => '<b> Puikus rezultatas. </b> Visiems užsakymams atliekame pataisymus,
+                                    kol nepasakysi – TAIP!',
+  'des_help_step4' => '<b> Bet kokios idėjos ir pageidavimai. </b> Susisiekite su mumis dėl
+                                    daugiau detalių.',
+  'form_add_comment' => 'Pridėti komentarą',
+  'form_photo' => 'Nuotrauka',
+  'form_files_loaded' => 'Failai įkelti',
+  'tab5__inner__block3_title_after' => 'Užsakymą pristatysime nurodytą dieną. Galite pasirinkti užsakymo metu',
+  'tab5__delivery__block1_title_after' => 'Užsakymai pristatomi darbo valandomis. Gausite SMS žinutę su siuntinio numeriu. Ir kurjerio numeris, turėsite galimybę pasiteirauti, kokiu laiku siuntinys bus pristatytas',
+);

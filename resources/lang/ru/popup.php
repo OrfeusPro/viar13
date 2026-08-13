@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'target-box_0_title' => 'Выберите подходящий для ВАС <span>вариант заказа</span>!',
+  'target-box_1_text1' => 'Быстрый заказ:',
+  'target-box_1_text2' => 'Цена и Размер',
+  'target-box_1_text3' => 'Консультация',
+  'target-box_1_text4' => 'Загрузить фото',
+  'target-box_1_text5' => 'Заказ за 30 секунд',
+  'target-box_1_btn' => 'Быстрый заказ',
+  'target-box_2_text1' => 'Детальный заказ:',
+  'target-box_2_text2' => '<strong>Цена и Размер</strong>',
+  'target-box_2_text3' => '<strong>Просмотр</strong>  макета',
+  'target-box_2_text4' => 'Написать <strong>адрес доставки </strong>',
+  'target-box_2_text5' => '<strong>Время и дата </strong> доставки',
+  'target-box_2_text6' => 'Добавить <strong>комментарий, пожелания, понравившийся пример</strong>',
+  'target-box_2_btn' => 'Детальный заказ',
+  'target-box_3_btn' => 'Связаться с нами сейчас',
+  'popup-why_title' => 'Почему ВЫ уходите?',
+  'popup-why_subtitle' => 'Выберите причину и мы сделаем все чтобы Вам помочь!',
+  'popup-why_z0_none' => '------------',
+  'popup-why_0_none' => '------------',
+  'popup-callback_0_none' => '------------',
+  'popup-callback_title' => 'Как можно с ВАМИ связаться?',
+  'popup-callback_subtitle' => 'Мы постараемся решить Вашу проблему!',
+  'popup-callback_content_phone' => 'Введите свой номер телефона, и мы поможем Вам во всем розобраться!',
+  'please_enter_email' => 'Хочешь скидку ? Напиши email, чтобы получить скидку',
+);

@@ -1,0 +1,294 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+#301 to https
+#RewriteCond %{HTTPS} !=on
+#RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+#remove /home from url
+Redirect 301 /home https://viarcanvas.com/
+
+#redirect 301 /graphic-portrait /photo_portrait
+#redirect 301 /stylization-paintings /photo_portrait
+redirect 301 /canvas /new/canvas
+redirect 301 /graphic-portrait/portrait-beauty-art /new/graphic-portrait/portrait-beauty-art
+redirect 301 /graphic-portrait/classic-portrait /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/portrait-dream-art /new/graphic-portrait/portrait-dream-art
+redirect 301 /graphic-portrait/pop-art-portrait /new/graphic-portrait/pop-art-portrait
+redirect 301 /graphic-portrait/portrait-caricature /new/graphic-portrait/portrait-caricature
+redirect 301 /graphic-portrait/graphic-portrait /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/graphic-portrait /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/Grafik-Porträt /new/graphic-portrait/Grafik-Porträt
+
+
+redirect 301 /lv/graphic-portrait/portrait-beauty-art /lv/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lv/graphic-portrait/classic-portrait /lv/new/graphic-portrait/graphic-portrait
+redirect 301 /lv/graphic-portrait/portrait-dream-art /lv/new/graphic-portrait/portrait-dream-art
+redirect 301 /lv/graphic-portrait/pop-art-portrait /lv/new/graphic-portrait/pop-art-portrait
+redirect 301 /lv/graphic-portrait/portrait-caricature /lv/new/graphic-portrait/portrait-caricature
+redirect 301 /lv/graphic-portrait/graphic-portrait /lv/new/graphic-portrait/graphic-portrait
+redirect 301 /lv/graphic-portrait/Grafik-Porträt /lv/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /lt/graphic-portrait/portrait-beauty-art /lt/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lt/graphic-portrait/classic-portrait /lt/new/graphic-portrait/graphic-portrait
+redirect 301 /lt/graphic-portrait/portrait-dream-art /lt/new/graphic-portrait/portrait-dream-art
+redirect 301 /lt/graphic-portrait/pop-art-portrait /lt/new/graphic-portrait/pop-art-portrait
+redirect 301 /lt/graphic-portrait/portrait-caricature /lt/new/graphic-portrait/portrait-caricature
+redirect 301 /lt/graphic-portrait/graphic-portrait /lt/new/graphic-portrait/graphic-portrait
+redirect 301 /lt/graphic-portrait/Grafik-Porträt /lt/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /pl/graphic-portrait/portrait-beauty-art /pl/new/graphic-portrait/portrait-beauty-art
+redirect 301 /pl/graphic-portrait/classic-portrait /pl/new/graphic-portrait/graphic-portrait
+redirect 301 /pl/graphic-portrait/portrait-dream-art /pl/new/graphic-portrait/portrait-dream-art
+redirect 301 /pl/graphic-portrait/pop-art-portrait /pl/new/graphic-portrait/pop-art-portrait
+redirect 301 /pl/graphic-portrait/portrait-caricature /pl/new/graphic-portrait/portrait-caricature
+redirect 301 /pl/graphic-portrait/graphic-portrait /pl/new/graphic-portrait/graphic-portrait
+redirect 301 /pl/graphic-portrait/Grafik-Porträt /pl//new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /de/graphic-portrait/portrait-beauty-art /de/new/graphic-portrait/portrait-beauty-art
+redirect 301 /de/graphic-portrait/classic-portrait /de/new/graphic-portrait/graphic-portrait
+redirect 301 /de/graphic-portrait/portrait-dream-art /de/new/graphic-portrait/portrait-dream-art
+redirect 301 /de/graphic-portrait/pop-art-portrait /de/new/graphic-portrait/pop-art-portrait
+redirect 301 /de/graphic-portrait/portrait-caricature /de/new/graphic-portrait/portrait-caricature
+redirect 301 /de/graphic-portrait/graphic-portrait /de/new/graphic-portrait/graphic-portrait
+redirect 301 /de/graphic-portrait/Grafik-Porträt /de/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /en/graphic-portrait/portrait-beauty-art /en/new/graphic-portrait/portrait-beauty-art
+redirect 301 /en/graphic-portrait/classic-portrait /en/new/graphic-portrait/graphic-portrait
+redirect 301 /en/graphic-portrait/portrait-dream-art /en/new/graphic-portrait/portrait-dream-art
+redirect 301 /en/graphic-portrait/pop-art-portrait /en/new/graphic-portrait/pop-art-portrait
+redirect 301 /en/graphic-portrait/portrait-caricature /en/new/graphic-portrait/portrait-caricature
+redirect 301 /en/graphic-portrait/graphic-portrait /en/new/graphic-portrait/graphic-portrait
+redirect 301 /en/graphic-portrait/Grafik-Porträt /en/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /ee/graphic-portrait/portrait-beauty-art /ee/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ee/graphic-portrait/classic-portrait /ee/new/graphic-portrait/graphic-portrait
+redirect 301 /ee/graphic-portrait/portrait-dream-art /ee/new/graphic-portrait/portrait-dream-art
+redirect 301 /ee/graphic-portrait/pop-art-portrait /ee/new/graphic-portrait/pop-art-portrait
+redirect 301 /ee/graphic-portrait/portrait-caricature /ee/new/graphic-portrait/portrait-caricature
+redirect 301 /ee/graphic-portrait/graphic-portrait /ee/new/graphic-portrait/graphic-portrait
+redirect 301 /ee/graphic-portrait/Grafik-Porträt /ee/new/graphic-portrait/Grafik-Porträt
+
+redirect 301 /ru/graphic-portrait/portrait-beauty-art /ru/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ru/graphic-portrait/classic-portrait /ru/new/graphic-portrait/graphic-portrait
+redirect 301 /ru/graphic-portrait/portrait-dream-art /ru/new/graphic-portrait/portrait-dream-art
+redirect 301 /ru/graphic-portrait/pop-art-portrait /ru/new/graphic-portrait/pop-art-portrait
+redirect 301 /ru/graphic-portrait/portrait-caricature /ru/new/graphic-portrait/portrait-caricature
+redirect 301 /ru/graphic-portrait/graphic-portrait /ru/new/graphic-portrait/graphic-portrait
+redirect 301 /ru/graphic-portrait/Grafik-Porträt /ru/new/graphic-portrait/Grafik-Porträt
+
+
+
+redirect 301 /new/graphic-portrait/portrait-dream-art/buy /new/graphic-portrait/portrait-dream-art
+redirect 301 /new/graphic-portrait/portrait-beauty-art/buy /new/graphic-portrait/portrait-beauty-art
+
+redirect 301 /graphic-portrait/dream-art-portrait /new/graphic-portrait/portrait-dream-art
+redirect 301 /de/graphic-portrait/dream-art-portrait /de/new/graphic-portrait/portrait-dream-art
+redirect 301 /ee/graphic-portrait/dream-art-portrait /ee/new/graphic-portrait/portrait-dream-art
+redirect 301 /en/graphic-portrait/dream-art-portrait /en/new/graphic-portrait/portrait-dream-art
+redirect 301 /pl/graphic-portrait/dream-art-portrait /lp/new/graphic-portrait/portrait-dream-art
+redirect 301 /lt/graphic-portrait/dream-art-portrait /lt/new/graphic-portrait/portrait-dream-art
+redirect 301 /lv/graphic-portrait/dream-art-portrait /lv/new/graphic-portrait/portrait-dream-art
+redirect 301 /ru/graphic-portrait/dream-art-portrait /ru/new/graphic-portrait/portrait-dream-art
+
+
+redirect 301 /photo /photo_portrait
+redirect 301 /de/photo /de/photo_portrait
+redirect 301 /ee/photo /ee/photo_portrait
+redirect 301 /en/photo /en/photo_portrait
+redirect 301 /pl/photo /lp/photo_portrait
+redirect 301 /lt/photo /lt/photo_portrait
+redirect 301 /lv/photo /lv/photo_portrait
+redirect 301 /ru/photo /ru/photo_portrait
+
+redirect 301 /gallery/oil-pictures /new/graphic-portrait/kartiny
+redirect 301 /de/gallery/oil-pictures /de/new/graphic-portrait/kartiny
+redirect 301 /ee/gallery/oil-pictures /ee/new/graphic-portrait/kartiny
+redirect 301 /en/gallery/oil-pictures /en/new/graphic-portrait/kartiny
+redirect 301 /pl/gallery/oil-pictures /pl/new/graphic-portrait/kartiny
+redirect 301 /lt/gallery/oil-pictures /lt/new/graphic-portrait/kartiny
+redirect 301 /lv/gallery/oil-pictures /lv/new/graphic-portrait/kartiny
+redirect 301 /ru/gallery/oil-pictures /ru/new/graphic-portrait/kartiny
+
+
+
+redirect 301 /oil-portrait /new/graphic-portrait/kartiny
+redirect 301 /de/oil-portrait /de/new/graphic-portrait/kartiny
+redirect 301 /ee/oil-portrait /ee/new/graphic-portrait/kartiny
+redirect 301 /en/oil-portrait /en/new/graphic-portrait/kartiny
+redirect 301 /pl/oil-portrait /lp/new/graphic-portrait/kartiny
+redirect 301 /lt/oil-portrait /lt/new/graphic-portrait/kartiny
+redirect 301 /lv/oil-portrait /lv/new/graphic-portrait/kartiny
+redirect 301 /ru/oil-portrait /ru/new/graphic-portrait/kartiny
+
+redirect 301 /graphic-portrait/portrait-beauty-art/buy /new/graphic-portrait/portrait-beauty-art
+redirect 301 /graphic-portrait/classic-portrait/buy /new/graphic-portrait/graphic-portrait
+redirect 301 /graphic-portrait/portrait-dream-art/buy /new/graphic-portrait/portrait-dream-art
+redirect 301 /graphic-portrait/pop-art-portrait/buy /new/graphic-portrait/pop-art-portrait
+redirect 301 /graphic-portrait/portrait-caricature/buy /new/graphic-portrait/portrait-caricature
+redirect 301 /graphic-portrait/graphic-portrait/buy /new/graphic-portrait/graphic-portrait
+
+redirect 301 /lv/graphic-portrait/portrait-beauty-art/buy /lv/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lv/graphic-portrait/classic-portrait/buy /lv/new/graphic-portrait/graphic-portrait
+redirect 301 /lv/graphic-portrait/portrait-dream-art/buy /lv/new/graphic-portrait/portrait-dream-art
+redirect 301 /lv/graphic-portrait/pop-art-portrait/buy /lv/new/graphic-portrait/pop-art-portrait
+redirect 301 /lv/graphic-portrait/portrait-caricature/buy /lv/new/graphic-portrait/portrait-caricature
+redirect 301 /lv/graphic-portrait/graphic-portrait/buy /lv/new/graphic-portrait/graphic-portrait
+
+redirect 301 /lt/graphic-portrait/portrait-beauty-art/buy /lt/new/graphic-portrait/portrait-beauty-art
+redirect 301 /lt/graphic-portrait/classic-portrait/buy /lt/new/graphic-portrait/graphic-portrait
+redirect 301 /lt/graphic-portrait/portrait-dream-art/buy /lt/new/graphic-portrait/portrait-dream-art
+redirect 301 /lt/graphic-portrait/pop-art-portrait/buy /lt/new/graphic-portrait/pop-art-portrait
+redirect 301 /lt/graphic-portrait/portrait-caricature/buy /lt/new/graphic-portrait/portrait-caricature
+redirect 301 /lt/graphic-portrait/graphic-portrait/buy /lt/new/graphic-portrait/graphic-portrait
+
+redirect 301 /pl/graphic-portrait/portrait-beauty-art/buy /pl/new/graphic-portrait/portrait-beauty-art
+redirect 301 /pl/graphic-portrait/classic-portrait/buy /pl/new/graphic-portrait/graphic-portrait
+redirect 301 /pl/graphic-portrait/portrait-dream-art/buy /pl/new/graphic-portrait/portrait-dream-art
+redirect 301 /pl/graphic-portrait/pop-art-portrait/buy /pl/new/graphic-portrait/pop-art-portrait
+redirect 301 /pl/graphic-portrait/portrait-caricature/buy /pl/new/graphic-portrait/portrait-caricature
+redirect 301 /pl/graphic-portrait/graphic-portrait/buy /pl/new/graphic-portrait/graphic-portrait
+
+redirect 301 /de/graphic-portrait/portrait-beauty-art/buy /de/new/graphic-portrait/portrait-beauty-art
+redirect 301 /de/graphic-portrait/classic-portrait/buy /de/new/graphic-portrait/graphic-portrait
+redirect 301 /de/graphic-portrait/portrait-dream-art/buy /de/new/graphic-portrait/portrait-dream-art
+redirect 301 /de/graphic-portrait/pop-art-portrait/buy /de/new/graphic-portrait/pop-art-portrait
+redirect 301 /de/graphic-portrait/portrait-caricature/buy /de/new/graphic-portrait/portrait-caricature
+redirect 301 /de/graphic-portrait/graphic-portrait/buy /de/new/graphic-portrait/graphic-portrait
+
+redirect 301 /en/graphic-portrait/portrait-beauty-art/buy /en/new/graphic-portrait/portrait-beauty-art
+redirect 301 /en/graphic-portrait/classic-portrait/buy /en/new/graphic-portrait/graphic-portrait
+redirect 301 /en/graphic-portrait/portrait-dream-art/buy /en/new/graphic-portrait/portrait-dream-art
+redirect 301 /en/graphic-portrait/pop-art-portrait/buy /en/new/graphic-portrait/pop-art-portrait
+redirect 301 /en/graphic-portrait/portrait-caricature/buy /en/new/graphic-portrait/portrait-caricature
+redirect 301 /en/graphic-portrait/graphic-portrait/buy /en/new/graphic-portrait/graphic-portrait
+
+redirect 301 /ee/graphic-portrait/portrait-beauty-art/buy /ee/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ee/graphic-portrait/classic-portrait/buy /ee/new/graphic-portrait/graphic-portrait
+redirect 301 /ee/graphic-portrait/portrait-dream-art/buy /ee/new/graphic-portrait/portrait-dream-art
+redirect 301 /ee/graphic-portrait/pop-art-portrait/buy /ee/new/graphic-portrait/pop-art-portrait
+redirect 301 /ee/graphic-portrait/portrait-caricature/buy /ee/new/graphic-portrait/portrait-caricature
+redirect 301 /ee/graphic-portrait/graphic-portrait/buy /ee/new/graphic-portrait/graphic-portrait
+
+redirect 301 /ru/graphic-portrait/portrait-beauty-art/buy /ru/new/graphic-portrait/portrait-beauty-art
+redirect 301 /ru/graphic-portrait/classic-portrait/buy /ru/new/graphic-portrait/graphic-portrait
+redirect 301 /ru/graphic-portrait/portrait-dream-art/buy /ru/new/graphic-portrait/portrait-dream-art
+redirect 301 /ru/graphic-portrait/pop-art-portrait/buy /ru/new/graphic-portrait/pop-art-portrait
+redirect 301 /ru/graphic-portrait/portrait-caricature/buy /ru/new/graphic-portrait/portrait-caricature
+redirect 301 /ru/graphic-portrait/graphic-portrait/buy /ru/new/graphic-portrait/graphic-portrait
+
+
+
+
+#fix multilang params in url
+
+#remove last slash
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [R=301,L]
+
+#www to no www
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+
+RewriteCond %{HTTPS} on
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^((?s).*)$ index.php?_url=/$1 [QSA,L]
+
+RewriteCond %{THE_REQUEST} ^GET.*index\.php [NC]
+
+#remove index.php
+RewriteRule (.*?)index\.php/*(.*) /$1$2 [R=301,NE,L]
+
+#remove public
+RewriteRule (.*?)public/*(.*) /$1$2 [R=301,NE,L]
+
+
+
+
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive on
+    ExpiresDefault                                      "access plus 1 month"
+  # CSS
+    ExpiresByType text/css                              "access plus 1 year"
+  # Data interchange
+    ExpiresByType application/atom+xml                  "access plus 1 hour"
+    ExpiresByType application/rdf+xml                   "access plus 1 hour"
+    ExpiresByType application/rss+xml                   "access plus 1 hour"
+
+    ExpiresByType application/json                      "access plus 0 seconds"
+    ExpiresByType application/ld+json                   "access plus 0 seconds"
+    ExpiresByType application/schema+json               "access plus 0 seconds"
+    ExpiresByType application/vnd.geo+json              "access plus 0 seconds"
+    ExpiresByType application/xml                       "access plus 0 seconds"
+    ExpiresByType text/xml                              "access plus 0 seconds"
+
+  # Favicon (cannot be renamed!) and cursor images
+    ExpiresByType image/vnd.microsoft.icon              "access plus 1 week"
+    ExpiresByType image/x-icon                          "access plus 1 week"
+
+  # HTML
+    ExpiresByType text/html                             "access plus 0 seconds"
+
+  # JavaScript
+    ExpiresByType application/javascript                "access plus 1 year"
+    ExpiresByType application/x-javascript              "access plus 1 year"
+    ExpiresByType text/javascript                       "access plus 1 year"
+
+  # Manifest files
+    ExpiresByType application/manifest+json             "access plus 1 year"
+
+    ExpiresByType application/x-web-app-manifest+json   "access plus 0 seconds"
+    ExpiresByType text/cache-manifest                   "access plus 0 seconds"
+
+  # Media files
+    ExpiresByType audio/ogg                             "access plus 1 month"
+    ExpiresByType image/bmp                             "access plus 1 month"
+    ExpiresByType image/gif                             "access plus 1 month"
+    ExpiresByType image/jpeg                            "access plus 1 month"
+    ExpiresByType image/png                             "access plus 1 month"
+    ExpiresByType image/svg+xml                         "access plus 1 month"
+    ExpiresByType image/webp                            "access plus 1 month"
+    ExpiresByType video/mp4                             "access plus 1 month"
+    ExpiresByType video/ogg                             "access plus 1 month"
+    ExpiresByType video/webm                            "access plus 1 month"
+
+  # Web fonts
+
+    # Embedded OpenType (EOT)
+    ExpiresByType application/vnd.ms-fontobject         "access plus 1 month"
+    ExpiresByType font/eot                              "access plus 1 month"
+
+    # OpenType
+    ExpiresByType font/opentype                         "access plus 1 month"
+
+    # TrueType
+    ExpiresByType application/x-font-ttf                "access plus 1 month"
+
+    # Web Open Font Format (WOFF) 1.0
+    ExpiresByType application/font-woff                 "access plus 1 month"
+    ExpiresByType application/x-font-woff               "access plus 1 month"
+    ExpiresByType font/woff                             "access plus 1 month"
+
+    # Web Open Font Format (WOFF) 2.0
+    ExpiresByType application/font-woff2                "access plus 1 month"
+
+  # Other
+    ExpiresByType text/x-cross-domain-policy            "access plus 1 week"
+
+</IfModule>
+
+
+<filesMatch "\.(pdf)$">
+	FileETag None
+	Header unset ETag
+	Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+	Header set Pragma "no-cache"
+	Header set Expires "Wed, 11 Jan 1984 05:00:00 GMT"
+</filesMatch>

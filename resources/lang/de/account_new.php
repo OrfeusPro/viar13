@@ -1,0 +1,178 @@
+<?php
+
+return array (
+  'settings' => 
+  array (
+    'meta_title' => 'Meine Einstellungen',
+    'bread' => 'Meine Einstellungen',
+    'meta_desc' => 'Meine Einstellungen',
+    'title_text' => 'Passwort ändern, dauerhafte Adresse eingeben, Lieferung,<br> Kontaktinformationsmanagement.',
+    'change_pass' => 'Kennwort ändern',
+    'contact_details' => 'Kontaktdaten',
+    'old_pass' => 'Altes Passwort',
+    'new_pass' => 'Neues Passwort',
+    'retry_pass' => 'Passwort wiederholen',
+    'surname' => 'Nachname',
+    'name' => 'Name',
+    'phone' => 'Telefon',
+    'permanent_address' => 'Ihre ständige Adresse',
+    'delivery_address' => 'Versandadresse',
+  ),
+  'main' => 
+  array (
+    'meta_title' => 'Persönliches Büro',
+    'meta_desc' => 'Persönliches Büro',
+    'bread' => 'Persönliches Büro',
+    'title' => 'Meine Daten',
+    'title_text' => 'Du bist eingeloggt als:',
+    'fio' => 'Ihr Vor- und Nachname:',
+    'email' => 'Deine E-Mail:',
+    'address' => 'Deine Adresse:',
+    'phone' => 'Ihre Kontakttelefonnummer:',
+  ),
+  'orders' => 
+  array (
+    'bread' => 'Meine Bestellungen',
+    'meta_title' => 'Meine Bestellungen',
+    'meta_desc' => 'Meine Bestellungen',
+    'total_amount_of_purchases' => 'Gesamtbetrag der Einkäufe:',
+    'chat_with_viarcanvas' => 'Chatten Sie mit <span class="activeSpan">ViarCanvas</span> :',
+    'chat' => 
+    array (
+      'admin' => 'Administrator:',
+      'you' => 'Du:',
+      'add_comment' => 'Einen Kommentar hinzufügen',
+      'placeholder' => 'Schreibe einen Kommentar',
+      'add_comment_placeholder' => 'Schreiben Sie, wenn Sie weitere Wünsche haben',
+      'client' => 'Klient:',
+      'painter' => 'Künstler:',
+    ),
+    'photocomments' => 'Fotokommentare',
+    'add_your_files' => 'Fügen Sie Ihre Dateien hinzu:',
+    'upload_file' => 'Datei hochladen',
+    'click_to_add_file' => 'Klicken Sie, um eine Datei hinzuzufügen',
+    'downloaded_files_from_viarcanvas' => 'Von <span class="activeSpan">ViarCanvas</span> heruntergeladene Dateien:',
+    'title' => 'Sie wissen immer, welche Bestellungen wann aufgegeben wurden!',
+    'you_images' => '<span class="activeSpan">Ihre</span> hochgeladenen Dateien:',
+    'user_status' => 
+    array (
+      'watching' => 'Ihre Bestellung <span>wird vom Künstler überprüft</span> . Wenn wir weitere Informationen benötigen, warten Sie auf eine Nachricht an Ihre E-Mail!',
+      'pegging' => 'Ihre Bestellung <span>ist in Bearbeitung</span> , der Künstler wird Ihnen in Kürze Skizzen zur Bestätigung oder Überarbeitung zusenden',
+      'picture' => 'Wenn Ihnen alles  gefällt, klicken Sie auf die Schaltfläche „Akzeptieren“ und wir bringen es in die letzte Produktionsphase!',
+      'sketch' => 'Die gezeichnete Skizze kann fertiggestellt oder direkt an die nächste Stufe gesendet werden! Im Chat können Sie Ihre Kommentare zur Skizze hinzufügen!',
+      'print_text' => 'Ihre Bestellung wurde in <span>die letzte Produktionsphase geschickt!</span><br> Wir benachrichtigen Sie, wenn das Gemälde versandbereit ist!',
+      'print' => 'Siegel',
+    ),
+    'execute_to' => 'Laufen bis',
+    'sketch_title' => '<span class="activeSpan">Skizzen</span>',
+    'picture_title' => '<span class="activeSpan">Gemälde</span>',
+    'chat_with_admin' => 'Chatten Sie mit dem Administrator',
+    'chat_with_admin_small_notif' => '*Chat ist nur für Sie und den Administrator sichtbar!',
+    'add_client_files' => 'Hochgeladene <span class="activeSpan">Kundendateien</span> :',
+    'count_paid_title' => 'Anzahl der getätigten Bestellungen',
+    'count_massage' => 'Sie haben <b class="activeSpan">### neue Nachricht vom Administrator</b>',
+    'count_massages' => 'Sie haben <b class="activeSpan">### neue Nachricht vom Administrator</b>',
+    'sended' => 'Gesendet',
+    'client_comments' => 'Zusätzliche Kommentare:',
+    'add_your_sketch' => '<span class="activeSpan">Skizze</span> hochladen:',
+    'add_your_picture' => '<span class="activeSpan">Bild</span> hochladen:',
+    'you_images_for_load' => '<span class="activeSpan">Ihre</span> Dateien zum Hochladen:',
+    'in_production' => 'In Produktion',
+    'fashion' => 'Vorlage / Muster',
+    'chat_with_client' => 'Chatten Sie mit dem Kunden',
+    'chat_with_client_small_notif' => 'Sie können einem Kunden nur dann in seiner Sprache schreiben, wenn eine schnelle Antwort erforderlich ist.',
+    'client_lang' => 'client-Sprache:',
+  ),
+  'stocks' => 
+  array (
+    'bread' => 'Meine Boni',
+    'meta_title' => 'Meine Boni',
+    'meta_desc' => 'Meine Boni',
+    'title' => '<span>Optionen</span> , um weitere Rabatte und Boni zu erhalten:',
+    'bonuses' => 'Boni:',
+    'bonus' => 
+    array (
+      'title' => 'Nutzen Sie angesammelte Boni<br> für weitere Einkäufe.',
+    ),
+    'p1' => 'Achten Sie beim Kauf auf Boni.<br> Nutzen Sie angesammelte Prämien für weitere Einkäufe.',
+  ),
+  'btn' => 
+  array (
+    'logout' => 'Hinausgehen',
+    'change' => 'ändern',
+    'save' => 'Speichern',
+    'save_settings' => 'EINSTELLUNGEN SPEICHERN',
+    'send' => 'SCHICKEN',
+    'send_for_development' => 'ZUR ENTWICKLUNG SENDEN',
+    'accept' => 'AKZEPTIEREN',
+  ),
+  'menu' => 
+  array (
+    'my_account' => 'Meine Daten',
+    'my_orders' => 'Meine Bestellungen',
+    'my_bonuses' => 'Meine Boni',
+    'my_settings' => 'Meine Einstellungen',
+    'unpaid' => 'Unbezahlte Bestellungen',
+    'paid' => 'Bezahlte Bestellungen',
+    'orders_success' => 'Abgeschlossene Bestellungen',
+  ),
+  'special_offers' => 
+  array (
+    'title' => 'Sonderangebote <span>von ViarCanvas</span>',
+  ),
+  'unpaid' => 
+  array (
+    'title' => 'Unbezahlte Bestellungen',
+    'bread' => 'Unbezahlte Bestellungen',
+    'meta_title' => 'Unbezahlte Bestellungen',
+    'meta_desc' => 'Meine unbezahlten Bestellungen',
+  ),
+  'paid' => 
+  array (
+    'title' => 'Bezahlte Bestellungen',
+    'bread' => 'Bezahlte Bestellungen',
+    'meta_title' => 'Bezahlte Bestellungen',
+    'meta_desc' => 'Meine bezahlten Bestellungen',
+  ),
+  'orders_success' => 
+  array (
+    'title' => 'Abgeschlossene Bestellungen',
+    'bread' => 'Abgeschlossene Bestellungen',
+    'meta_title' => 'Abgeschlossene Bestellungen',
+    'meta_desc' => 'Meine abgeschlossenen Bestellungen',
+    'count' => 'Anzahl abgeschlossener Bestellungen:',
+  ),
+  'comments' => 
+  array (
+    'title' => 'Zusätzliche Anmerkungen zu Ihrer Bestellung:',
+  ),
+  'chat' => 
+  array (
+    'picture' => 'Malerei',
+    'sketch' => 'skizzieren',
+  ),
+  'picture_sub_title' => 'Chatten Sie mit dem Bild:',
+  'sketch_sub_title' => 'Chat zum Skizzieren:',
+  'payment_status' => 'Zahlungsstatus:',
+  'payment_status_paid' => 'Bezahlt',
+  'payment_status_unpaid' => 'Nicht bezahlt',
+  'payment_status_prepayment' => 'Vorauszahlung',
+  'tracking_number' => 'Tracking-Nummer:',
+  'pay_now' => 'Jetzt bezahlen',
+  'pay_order_title' => 'Zahlung der Bestellung',
+  'pay_order_meta_title' => 'Zahlung der Bestellung',
+  'pay_order_meta_desc' => 'Online-Zahlung für eine Bestellung im Kundenkonto',
+  'pay_order_hint' => 'Wählen Sie für diese Bestellung ein passendes Online-Zahlungssystem.',
+  'back_to_orders' => 'Zurück zu den Bestellungen',
+  'payment_request_amount' => 'Zu zahlender Betrag',
+  'payment_request_cancelled_message' => 'Die Zahlung wurde abgebrochen. Sie können die Zahlungsmethode erneut auswählen.',
+  'payment_request_hint' => 'Wählen Sie ein passendes Online-Zahlungssystem für diesen Zahlungslink.',
+  'payment_request_invalid_message' => 'Die Zahlung konnte nicht bestätigt werden. Bitte versuchen Sie es erneut oder wählen Sie eine andere Methode.',
+  'payment_request_number' => 'Anfragenummer:',
+  'payment_request_order_number' => 'Bestellnummer:',
+  'payment_request_purpose' => 'Verwendungszweck:',
+  'payment_request_status_paid' => 'Bezahlt',
+  'payment_request_status_pending' => 'Wartet auf Zahlung',
+  'payment_request_success_message' => 'Die Zahlung wurde erfolgreich abgeschlossen. Vielen Dank!',
+  'payment_request_title' => 'Zahlung per Link',
+);

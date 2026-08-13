@@ -1,0 +1,28 @@
+<?php
+
+return array (
+  'target-box_0_title' => 'Išsirinkite Jums tinkantį <span>užsakymo variantą</span> !',
+  'target-box_1_text1' => 'Greitu užsakymu galite pasirinkti:',
+  'target-box_1_text2' => 'Dydis',
+  'target-box_1_text3' => 'Konsultacija',
+  'target-box_1_text4' => 'Įkelti nuotrauką',
+  'target-box_1_text5' => 'Užsisakykite per 1 minutę',
+  'target-box_1_btn' => 'Greitas užsakymas',
+  'target-box_2_text1' => 'Detalėje galite pasirinkti:',
+  'target-box_2_text2' => '<strong>figūra</strong>',
+  'target-box_2_text3' => '3 <strong>nuotraukų apdorojimo</strong> parinktys',
+  'target-box_2_text4' => 'Išplanavimo <strong>vaizdas</strong> / interjere',
+  'target-box_2_text5' => '<strong>dekoracijos</strong>',
+  'target-box_2_text6' => 'Pridėkite <strong>komentarą, pageidavimus, mėgstamą pavyzdį</strong>',
+  'target-box_2_btn' => 'Detalus užsakymas',
+  'target-box_3_btn' => 'susisiekite su mumis dabar',
+  'popup-why_z0_none' => '-------------',
+  'popup-why_0_none' => '-------------',
+  'popup-callback_0_none' => '-------------',
+  'popup-why_title' => 'Kodėl išeini?',
+  'popup-why_subtitle' => 'Pasirinkite priežastį ir mes padarysime viską, kad jums padėtume!',
+  'popup-callback_title' => 'Kaip galiu su jumis susisiekti?',
+  'popup-callback_subtitle' => 'Mes pasistengsime išspręsti jūsų problemą!',
+  'popup-callback_content_phone' => 'Įveskite savo telefono numerį ir mes padėsime jums viską išsiaiškinti!',
+  'please_enter_email' => 'Nori nuolaidos? Įrašyk savo el. paštą, kad ją gautum.',
+);

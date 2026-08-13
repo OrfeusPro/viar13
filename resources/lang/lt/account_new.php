@@ -1,0 +1,178 @@
+<?php
+
+return array (
+  'settings' => 
+  array (
+    'meta_title' => 'Mano nustatymai',
+    'bread' => 'Mano nustatymai',
+    'meta_desc' => 'Mano nustatymai',
+    'title_text' => 'Slaptažodžio keitimas, nuolatinio adreso įvedimas, pristatymas,<br> kontaktinės informacijos valdymas.',
+    'change_pass' => 'Pakeisti slaptažodį',
+    'contact_details' => 'Kontaktiniai duomenys',
+    'old_pass' => 'Senas slaptažodis',
+    'new_pass' => 'Naujas Slaptažodis',
+    'retry_pass' => 'Pakartokite slaptažodį',
+    'surname' => 'Pavardė',
+    'name' => 'vardas',
+    'phone' => 'Telefonas',
+    'permanent_address' => 'Jūsų nuolatinis adresas',
+    'delivery_address' => 'Pristatymo adresas',
+  ),
+  'main' => 
+  array (
+    'meta_title' => 'Asmeninė sritis',
+    'meta_desc' => 'Asmeninė sritis',
+    'bread' => 'Asmeninė sritis',
+    'title' => 'Mano duomenys',
+    'title_text' => 'Jūs esate prisijungę kaip:',
+    'fio' => 'Jūsų vardas ir pavardė:',
+    'email' => 'Tavo elektroninis paštas:',
+    'address' => 'Jūsų adresas:',
+    'phone' => 'Jūsų kontaktinis telefono numeris:',
+  ),
+  'orders' => 
+  array (
+    'bread' => 'Mano įsakymai',
+    'meta_title' => 'Mano įsakymai',
+    'meta_desc' => 'Mano įsakymai',
+    'total_amount_of_purchases' => 'Bendra pirkinių suma:',
+    'chat_with_viarcanvas' => 'Kalbėkitės su <span class="activeSpan">ViarCanvas</span> :',
+    'chat' => 
+    array (
+      'admin' => 'Administratorius:',
+      'you' => 'Tu:',
+      'add_comment' => 'Pridėti komentarą',
+      'placeholder' => 'Parašykite komentarą',
+      'add_comment_placeholder' => 'Rašykite, jei turite papildomų pageidavimų',
+      'client' => 'Klientas:',
+      'painter' => 'Menininkas:',
+    ),
+    'photocomments' => 'Nuotraukų komentarai',
+    'add_your_files' => 'Pridėkite failus:',
+    'upload_file' => 'Įkelti failą',
+    'click_to_add_file' => 'Spustelėkite norėdami pridėti failą',
+    'downloaded_files_from_viarcanvas' => 'Atsisiųsti failai iš <span class="activeSpan">ViarCanvas</span> :',
+    'title' => 'Jūs visada žinosite, kokie užsakymai buvo pateikti ir kada!',
+    'you_images' => '<span class="activeSpan">Jūsų</span> įkelti failai:',
+    'user_status' => 
+    array (
+      'watching' => 'Jūsų užsakymą <span>peržiūri atlikėjas</span> , jei reikia papildomos informacijos, laukite žinutės į Jūsų el.',
+      'pegging' => 'Jūsų užsakymas <span>vykdomas</span> , netrukus menininkas išsiųs eskizus patvirtinimui ar peržiūrai',
+      'picture' => 'Jei jums viskas patiko, spustelėkite mygtuką „Priimti“ ir mes perkelsime jį į galutinį gamybos etapą !',
+      'sketch' => 'Nupieštas eskizas gali būti užbaigtas arba išsiųstas tiesiai į kitą etapą! Pokalbyje galite pridėti savo komentarus apie eskizą!',
+      'print_text' => 'Jūsų užsakymas išsiųstas į <span>paskutinį gamybos etapą!</span><br> Informuosime, kai paveikslas bus paruoštas siuntimui!',
+      'print' => 'Antspaudas',
+    ),
+    'execute_to' => 'Bėgti iki',
+    'sketch_title' => '<span class="activeSpan">Eskizai</span> :',
+    'picture_title' => '<span class="activeSpan">Piešimas</span> :',
+    'chat_with_admin' => 'Kalbėkitės su administratoriumi',
+    'chat_with_admin_small_notif' => '*pokalbį mato tik jūs ir administratorius!',
+    'add_client_files' => 'Įkelti <span class="activeSpan">kliento</span> failai:',
+    'count_paid_title' => 'Atliktų užsakymų skaičius',
+    'count_massage' => 'Gavote <b class="activeSpan">### naują pranešimą iš administratoriaus</b>',
+    'count_massages' => 'Gavote <b class="activeSpan">### naują pranešimą iš administratoriaus</b>',
+    'sended' => 'Išsiųsta',
+    'client_comments' => 'Papildomi komentarai:',
+    'add_your_sketch' => 'Įkelti <span class="activeSpan">eskizą</span> :',
+    'add_your_picture' => 'Įkelti <span class="activeSpan">paveikslėlį</span> :',
+    'you_images_for_load' => '<span class="activeSpan">Jūsų</span> failai, kuriuos norite įkelti:',
+    'in_production' => 'Gamyboje',
+    'fashion' => 'Šablonas / Pavyzdys',
+    'chat_with_client' => 'Pokalbis su klientu',
+    'chat_with_client_small_notif' => 'Klientui jo kalba galite rašyti tik tuo atveju, jei reikia greito atsakymo.',
+    'client_lang' => 'kliento kalba:',
+  ),
+  'stocks' => 
+  array (
+    'bread' => 'Mano premijos',
+    'meta_title' => 'Mano premijos',
+    'meta_desc' => 'Mano premijos',
+    'title' => '<span>Galimybės</span> gauti daugiau nuolaidų ir premijų:',
+    'bonuses' => 'Premijos:',
+    'bonus' => 
+    array (
+      'title' => 'Naudokite sukauptas premijas<br> tolesniems pirkiniams.',
+    ),
+    'p1' => 'Pirkdami atkreipkite dėmesį į premijas.<br> Sukauptas premijas naudokite tolesniems pirkiniams.',
+  ),
+  'btn' => 
+  array (
+    'logout' => 'IŠEITI',
+    'change' => 'pakeisti',
+    'save' => 'Sutaupyti',
+    'save_settings' => 'IŠSAUGOTI NUSTATYMUS',
+    'send' => 'SIŲSTI',
+    'send_for_development' => 'SIŲSTI KŪRĖTI',
+    'accept' => 'PRIIMTI',
+  ),
+  'menu' => 
+  array (
+    'my_account' => 'Mano duomenys',
+    'my_orders' => 'Mano įsakymai',
+    'my_bonuses' => 'Mano premijos',
+    'my_settings' => 'Mano nustatymai',
+    'unpaid' => 'Neapmokėti užsakymai',
+    'paid' => 'Apmokėti užsakymai',
+    'orders_success' => 'Atlikti užsakymai',
+  ),
+  'special_offers' => 
+  array (
+    'title' => 'Specialūs <span>ViarCanvas</span> pasiūlymai',
+  ),
+  'unpaid' => 
+  array (
+    'title' => 'Neapmokėti užsakymai',
+    'bread' => 'Neapmokėti užsakymai',
+    'meta_title' => 'Neapmokėti užsakymai',
+    'meta_desc' => 'Mano neapmokėti užsakymai',
+  ),
+  'paid' => 
+  array (
+    'title' => 'Apmokėti užsakymai',
+    'bread' => 'Apmokėti užsakymai',
+    'meta_title' => 'Apmokėti užsakymai',
+    'meta_desc' => 'Mano apmokėti užsakymai',
+  ),
+  'orders_success' => 
+  array (
+    'title' => 'Atlikti užsakymai',
+    'bread' => 'Atlikti užsakymai',
+    'meta_title' => 'Atlikti užsakymai',
+    'meta_desc' => 'Mano įvykdyti užsakymai',
+    'count' => 'Atliktų užsakymų skaičius:',
+  ),
+  'comments' => 
+  array (
+    'title' => 'Papildomi komentarai apie jūsų užsakymą:',
+  ),
+  'chat' => 
+  array (
+    'picture' => 'tapyba',
+    'sketch' => 'eskizas',
+  ),
+  'picture_sub_title' => 'Pokalbis su nuotrauka:',
+  'sketch_sub_title' => 'Pokalbis ir eskizas:',
+  'payment_status' => 'Mokėjimo būsena:',
+  'payment_status_paid' => 'Apmokėta',
+  'payment_status_unpaid' => 'Neapmokėta',
+  'payment_status_prepayment' => 'Išankstinis apmokėjimas',
+  'tracking_number' => 'Sekimo numeris:',
+  'pay_now' => 'Apmokėti',
+  'pay_order_title' => 'Užsakymo apmokėjimas',
+  'pay_order_meta_title' => 'Užsakymo apmokėjimas',
+  'pay_order_meta_desc' => 'Užsakymo apmokėjimas internetu kliento paskyroje',
+  'pay_order_hint' => 'Pasirinkite patogią internetinio apmokėjimo sistemą šiam užsakymui.',
+  'back_to_orders' => 'Grįžti į užsakymus',
+  'payment_request_amount' => 'Mokėtina suma',
+  'payment_request_cancelled_message' => 'Mokėjimas buvo atšauktas. Galite dar kartą pasirinkti mokėjimo būdą.',
+  'payment_request_hint' => 'Pasirinkite patogų internetinio apmokėjimo būdą šiai nuorodai.',
+  'payment_request_invalid_message' => 'Nepavyko patvirtinti mokėjimo. Bandykite dar kartą arba pasirinkite kitą būdą.',
+  'payment_request_number' => 'Užklausos numeris:',
+  'payment_request_order_number' => 'Užsakymo numeris:',
+  'payment_request_purpose' => 'Mokėjimo paskirtis:',
+  'payment_request_status_paid' => 'Apmokėta',
+  'payment_request_status_pending' => 'Laukia apmokėjimo',
+  'payment_request_success_message' => 'Mokėjimas sėkmingai gautas. Ačiū!',
+  'payment_request_title' => 'Apmokėjimas pagal nuorodą',
+);

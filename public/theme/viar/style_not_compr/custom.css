@@ -1,0 +1,154 @@
+.hidden {
+    display: none !important;
+}
+
+.eraf {
+    text-align: center;
+    box-sizing: border-box;
+    background-color: #fff;
+    padding: 10px 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    height: auto !important;
+	position: relative;
+}
+
+
+.eraf>div {
+    width: 85%;
+    max-width: 880px;
+    margin: 0 auto 20px;
+    height: 138px;
+}
+
+.eraf .magnetic-logo {
+    width: 15%;
+    height: 100%;
+    background: url(../images/footer/1.png) no-repeat;
+    background-size: contain;
+}
+
+.eraf .liaa-logo {
+    width: 33%;
+    height: 100%;
+    background: url(../images/footer/2.png) no-repeat;
+    background-size: contain;
+}
+
+.eraf .eraf-logo {
+    width: 49%;
+    height: 100%;
+    background: url(../images/footer/3.png) no-repeat;
+    background-size: contain;
+}
+
+.liaa-logo {
+    width: auto;
+    height: 80px;
+    background-size: contain;
+    background: url(../image/liaa-logo.png) no-repeat center;
+    margin: 25px auto 0;
+}
+
+.eraf .liaa-text {
+    width: 100%;
+    margin: 20px 0 15px 0;
+    max-width: inherit;
+    height: auto;
+    padding-top: 15px;
+    color: #7f7f7f;
+    font-size: 14px;
+}
+
+.eraf > div > div {
+    height: 100%;
+    box-sizing: border-box;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+@media screen and (max-width: 980px) {
+    .eraf .media-wrapper {
+        height: 130px;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .eraf .media-wrapper {
+        height: 120px;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .eraf .media-wrapper {
+        height: 114px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .eraf .media-wrapper {
+        height: 108px;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    .eraf .media-wrapper {
+        height: 100px;
+    }
+}
+
+@media screen and (max-width: 680px) {
+    .eraf .media-wrapper {
+        height: 100px;
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .eraf .media-wrapper {
+        height: 99px;
+    }
+	
+    .eraf>div {
+        width: 89%;
+    }
+}
+
+@media screen and (max-width: 575px) {
+    .eraf .media-wrapper {
+        height: 90px;
+    }
+}
+
+@media screen and (max-width: 540px) {
+    .eraf .media-wrapper {
+        height: 84px;
+    }
+	
+    .eraf>div {
+        margin: 0 auto 30px;
+    }
+}
+
+.gallery-client-upload {
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.gallery-client-upload__label {
+    background-color: #ffffff;
+    box-shadow: 4px 4px 20px rgba(30, 37, 51, 0.08);
+}
+
+.gallery-client-upload__label .gallery-client-photo-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.gallery-client-upload__label .gallery-photo-clear {
+    cursor: pointer;
+}

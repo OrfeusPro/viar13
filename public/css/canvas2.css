@@ -1,0 +1,201 @@
+.product-download {
+	display: block !important;
+	margin: -6px 0 0;
+	touch-action: none;
+}
+
+.product-download button {
+	border: 1px solid #8c535b;
+	border-radius: 10px;
+	/* background-color: rgba(255,255,255,0.5); */
+	background: url(../img/download-icon.png) center no-repeat;
+	overflow: hidden;
+	width: calc(33.33% - 10px);
+	height: 20%;
+	margin: 8px 0;
+}
+.product-download button img {
+	opacity: 0;
+	width: 101%;
+	height: 80px;
+	display: block;
+	object-fit:cover;
+	
+	
+	
+}
+
+.DragAndDrop
+{
+	position: fixed;
+	margin-left: -60px;
+	margin-top: -60px;
+	height: 120px;
+	width: 120px;
+	pointer-events: none;
+	object-fit: cover;
+	opacity: .7;
+	border-radius: 5px;
+	z-index: 106;
+	animation: DragAndDrop .3s cubic-bezier(0.7, -1, 0.4, 1.22);
+	touch-action: none;
+}
+
+@keyframes DragAndDrop {
+	0% {
+		transform: scale(.3);
+		opacity: 0;
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.PhotoEditor{
+	user-select: none;	
+	width: 100%;
+	
+	display: flex;
+	pointer-events: none;
+}
+
+.PhotoEditor .tools
+{
+	display: inline-table; 
+	height: auto;
+	width: 40px;	
+	pointer-events: all;
+	
+}
+
+.PhotoEditor .tool
+{   
+	position: relative;
+	display: table;
+	cursor: pointer;
+	height: 31px;
+	width: 31px;
+	margin: 3px;	
+	float: left;
+	font-size: 28px;
+	color: #FF9118;
+	text-align: center;
+}
+
+.PhotoEditor .canvas_container canvas
+{
+	
+	pointer-events: all;	
+}
+
+.PhotoEditor .tool:before
+{
+	display: table-cell;
+	vertical-align: middle;	
+}
+
+.PhotoEditor .tool.disable
+{
+	opacity: .2;
+	pointer-events: none;
+}
+
+.PhotoEditor .tool:focus-within
+{
+	z-index: 1;	
+	color: #8c535b;			
+}
+
+.PhotoEditor .tool .window
+{
+	position: absolute;
+	display: none;
+	top: 100%;
+	left: -85px;
+	width: 200px;
+	background: #ffffff;	
+	border: 1px solid #5b6059;
+	border-radius: 5px;
+	-webkit-box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.75);
+	-moz-box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.75);
+	box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.75);
+	cursor: default;
+}
+
+.PhotoEditor .tool:focus-within .window
+{
+	display: table;
+}
+
+.PhotoEditor .tool .window .text_add
+{
+	width: 100%;
+	margin: 5px;
+}
+
+.PhotoEditor .tool .window .text_add input
+{
+	height: 20px;
+}
+
+.PhotoEditor .tool .window .text_add input[type="color"]
+{	
+	border: 1px solid #8c535b;
+	width: 20px;
+	border-radius: 0;
+}
+
+.PhotoEditor .tool .window .text_add input[type="text"]
+{
+	border: 1px solid #8c535b;	
+	width: 150px;
+	border-radius: 0;
+}
+
+.PhotoEditor .tool .window .text_add select
+{
+	border: 1px solid #8c535b;
+	width: 70px;
+	border-radius: 0;	
+}
+
+.PhotoEditor .tool .window .text_add button {
+	border: 1px solid #8c535b;
+	border-radius: 5px;
+	padding: 5px;
+	background: #c49ba2;
+}
+
+.PhotoEditor .tool .window .smiles .item {
+	position: relative;
+	display: block;
+	float: left;
+	overflow: hidden;
+	width: 30px;
+	height: 30px;
+	margin: 4px;
+	text-align: center;
+	background: url("../img/smile_add.png") no-repeat;
+	
+}
+
+.PhotoEditor .tool .window .smiles .item img 
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	opacity: 0;
+	width: 30px;
+	height: 30px;
+	display: block;
+	background: #ffffff; 
+}
+
+.PhotoEditor .canvas_container
+{
+	width: calc(100% - 40px);
+	text-align: right;
+	touch-action: none;
+}
+
+
