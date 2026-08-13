@@ -45,7 +45,6 @@ class QuickOrderRequest extends FormRequest
                 'required',
                 'file',
                 'mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,heic,heif',
-                'max:15360',
             ],
         ];
     }

@@ -11,13 +11,13 @@ class SendClientPainterImageService {
     public function store($request, bool $appendToClientImages = true)
     {
             $validator = Validator::make($request->all(), [
-                'client_images.*' => 'image|mimes:jpeg,png,jpg,gif,png,pdf,fig,heic,heif|max:5048',
+                'client_images.*' => 'image|mimes:jpeg,png,jpg,gif,png,pdf,fig,heic,heif',
             ]);
 
             if ($validator->fails())
             {
                 return redirect()->back()->withErrors([
-                    'images' => 'Invalid filesize or extension.',
+                    'images' => 'Invalid file format.',
                 ]);
             }
 

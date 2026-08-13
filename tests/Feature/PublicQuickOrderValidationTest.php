@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class PublicQuickOrderValidationTest extends TestCase
@@ -20,16 +21,16 @@ class PublicQuickOrderValidationTest extends TestCase
         }
     }
 
-    public function test_quick_order_rejects_oversized_file(): void
+    public function test_quick_order_has_no_application_file_size_limit(): void
     {
-        $this->from('/')
-            ->post('/send_photo_portrait_form', [
-                'email' => 'customer@example.test',
-                'phone' => '+371 20-123-456',
-                'file' => [UploadedFile::fake()->create('portrait.jpg', 15361, 'image/jpeg')],
-            ])
-            ->assertRedirect('/')
-            ->assertSessionHasErrors('file.0');
+        $rules = (new \App\Http\Requests\QuickOrderRequest())->rules();
+        $validator = Validator::make([
+            'email' => 'customer@example.test',
+            'phone' => '+37120123456',
+            'file' => [UploadedFile::fake()->create('print-source.jpg', 102400, 'image/jpeg')],
+        ], $rules);
+
+        $this->assertTrue($validator->passes(), $validator->errors()->toJson());
     }
 
     public function test_legacy_numbered_upload_fields_are_normalized_to_the_file_array(): void
@@ -37,12 +38,13 @@ class PublicQuickOrderValidationTest extends TestCase
         $this->from('/')
             ->post('/send_photo_portrait_form', [
                 'email' => 'customer@example.test',
-                'phone' => '+371 20-123-456',
+                'phone' => '123',
                 'file' => UploadedFile::fake()->create('portrait.jpg', 100, 'image/jpeg'),
-                'file2' => UploadedFile::fake()->create('reference.jpg', 15361, 'image/jpeg'),
+                'file2' => UploadedFile::fake()->create('reference.jpg', 102400, 'image/jpeg'),
             ])
             ->assertRedirect('/')
-            ->assertSessionHasErrors('file.1');
+            ->assertSessionHasErrors('phone')
+            ->assertSessionDoesntHaveErrors(['file', 'file.0', 'file.1']);
     }
 
     public function test_photo_calculation_form_rejects_invalid_contact_data(): void

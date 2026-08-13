@@ -61,7 +61,8 @@
 - review image/audio сохраняются явно на public disk; success-path подтверждён
   fake storage тестом.
 - portrait/all-styles endpoints используют общий `QuickOrderRequest`;
-- быстрые заявки проверяют email, телефон, 1--10 файлов, MIME и лимит 15 MiB;
+- быстрые заявки проверяют email, телефон, 1--10 файлов и MIME; Laravel-лимит
+  размера исходника для печати отсутствует;
 - нормализуются оба найденных upload-контракта: `file[]` и legacy
   `file`, `file2` ... `file10`;
 - validation contracts photo/portrait/all-styles подтверждены feature-тестами.

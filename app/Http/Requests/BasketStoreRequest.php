@@ -32,7 +32,7 @@ class BasketStoreRequest extends FormRequest
 
                     'basketType' => 'required',
 
-                    'userImage' => 'required|image|max:10240',
+                    'userImage' => 'required|image',
 
                     'formId' => 'required',
 
