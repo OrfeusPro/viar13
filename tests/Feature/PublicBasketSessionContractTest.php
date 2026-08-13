@@ -53,6 +53,50 @@ class PublicBasketSessionContractTest extends TestCase
             ]);
     }
 
+    public function test_current_canvas_builder_optional_fields_match_the_server_contract(): void
+    {
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('addToBasket')->once()->andReturn(1);
+
+        $this->post('/basket/add', [
+            'basketType' => BasketType::CANVAS_TYPE,
+            'price' => 120,
+            'userImage' => UploadedFile::fake()->image('print-source.jpg')->size(102400),
+            'formId' => 1,
+            'sizeId' => '60x40h',
+            'executionId' => 2,
+            'canvasId' => 3,
+            'decorationId' => 4,
+            'ram_id' => 5,
+            'terms_price' => 10,
+            'boxIds' => '[3,4]',
+            'Image3d' => 'data:image/jpeg;base64,' . base64_encode('preview'),
+            'photo_ex' => UploadedFile::fake()->image('example.jpg')->size(102400),
+            'orig_images' => [
+                UploadedFile::fake()->image('original.jpg')->size(102400),
+            ],
+        ])->assertOk()
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_canvas_add_rejects_malformed_preview_and_packaging_without_mutation(): void
+    {
+        $this->post('/basket/add', [
+            'basketType' => BasketType::CANVAS_TYPE,
+            'price' => 120,
+            'userImage' => UploadedFile::fake()->image('print-source.jpg'),
+            'formId' => 1,
+            'sizeId' => '60x40',
+            'executionId' => 2,
+            'canvasId' => 3,
+            'boxIds' => '[0,"forged"]',
+            'Image3d' => 'not-an-image',
+            'terms_price' => 121,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['boxIds', 'Image3d', 'terms_price'])
+            ->assertSessionMissing('basket');
+    }
+
     public function test_portrait_upload_rules_accept_a_100_mb_source(): void
     {
         $validator = Validator::make([
@@ -309,6 +353,27 @@ class PublicBasketSessionContractTest extends TestCase
             Schema::dropIfExists('a_production_time');
             Schema::dropIfExists('canvas_header');
         }
+    }
+
+    public function test_orphan_inter_and_module_endpoints_are_explicitly_retired(): void
+    {
+        Storage::fake('uploads');
+
+        foreach ([
+            '/basket/add/inter' => '/basket/add',
+            '/basket/add/module' => '/basket/add/construct',
+        ] as $endpoint => $replacement) {
+            $this->post($endpoint, [
+                'image' => 'data:image/png;base64,' . base64_encode('payload'),
+                'price' => 0.01,
+            ])->assertStatus(410)
+                ->assertJsonPath('success', false)
+                ->assertJsonPath('code', 'legacy_endpoint_retired')
+                ->assertJsonPath('replacement', url($replacement))
+                ->assertSessionMissing('basket');
+        }
+
+        $this->assertSame([], Storage::disk('uploads')->allFiles());
     }
 
     public function test_modular_add_normalizes_frontend_image_and_accepts_a_100_mb_source(): void

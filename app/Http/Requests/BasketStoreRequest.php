@@ -55,17 +55,44 @@ class BasketStoreRequest extends FormRequest
 
                     'price' => $rules['price'],
 
-                    'userImage' => 'required|image',
+                    'userImage' => [
+                        'required',
+                        'file',
+                        'mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,psd,heic,heif',
+                    ],
 
-                    'formId' => 'required',
+                    'formId' => ['required', 'integer', 'min:1'],
 
-                    'sizeId' => 'required',
+                    'sizeId' => ['required', 'string', 'max:100'],
 
                     // 'effectId' => 'required',
 
-                    'executionId' => 'required',
+                    'executionId' => ['required', 'integer', 'min:1'],
 
-                    'canvasId' => 'required',
+                    'canvasId' => ['required', 'integer', 'min:1'],
+
+                    'decorationId' => ['nullable', 'integer', 'min:1'],
+
+                    'ram_id' => ['nullable', 'integer', 'min:1'],
+
+                    'terms_price' => ['nullable', 'numeric', 'min:0', 'lte:price'],
+
+                    'boxIds' => ['nullable', 'json'],
+
+                    'Image3d' => ['nullable', 'string'],
+
+                    'orig_images' => ['nullable', 'array'],
+
+                    'orig_images.*' => [
+                        'file',
+                        'mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,psd,heic,heif',
+                    ],
+
+                    'photo_ex' => [
+                        'nullable',
+                        'file',
+                        'mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,psd,heic,heif',
+                    ],
 
                 ];
 
@@ -120,6 +147,41 @@ class BasketStoreRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ((int) $this->input('basketType') !== BasketType::CANVAS_TYPE) {
+                return;
+            }
+
+            $preview = $this->input('Image3d');
+            if ($preview !== null && $preview !== '' && ! $this->isValidImageData($preview)) {
+                $validator->errors()->add('Image3d', 'The canvas preview is invalid.');
+            }
+
+            $boxIds = $this->input('boxIds');
+            if ($boxIds !== null && $boxIds !== '') {
+                $decoded = json_decode($boxIds, true);
+                if (
+                    ! is_array($decoded)
+                    || ! array_is_list($decoded)
+                    || array_filter($decoded, fn ($id) => ! is_int($id) || $id < 1)
+                ) {
+                    $validator->errors()->add('boxIds', 'The packaging selection is invalid.');
+                }
+            }
+        });
+    }
+
+    private function isValidImageData(string $image): bool
+    {
+        if (! preg_match('#^data:image/(jpeg|png);base64,([A-Za-z0-9+/=\s]+)$#', $image, $matches)) {
+            return false;
+        }
+
+        return base64_decode(preg_replace('/\s+/', '', $matches[2]), true) !== false;
     }
 
     protected function failedValidation(Validator $validator): void

@@ -426,8 +426,8 @@ Route::group(
         Route::any('/basket/coupon_use', [BasketController::class, 'coupon_use'])->name('coupon_use');
 
         Route::post('/basket/add/portrait',[BasketController::class, 'addToBasketPortrait'])->name('add_item_to_basket_portrait');
-        Route::post('/basket/add/inter', [BasketController::class, 'addToBasketInterier'])->name('add_item_to_basket_inter');
-        Route::post('/basket/add/module', [BasketController::class, 'addToBasketModule'])->name('add_item_to_basket_module');
+        Route::post('/basket/add/inter', [BasketController::class, 'retiredLegacyBasketEndpoint'])->name('add_item_to_basket_inter');
+        Route::post('/basket/add/module', [BasketController::class, 'retiredLegacyBasketEndpoint'])->name('add_item_to_basket_module');
         Route::post('/basket/add/construct', [BasketController::class, 'addToBasketConstruct'])->name('add_item_to_basket_construct');
         Route::post('/basket/add/future_art', [BasketController::class, 'addToBasketArt'])->name('add_future_art');
         Route::post('/basket/add/recommended', [BasketController::class, 'addRecommendedToBasket'])->name('basket.add_recommended');

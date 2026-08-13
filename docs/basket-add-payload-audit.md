@@ -4,18 +4,18 @@
 
 ## Вывод
 
-Проверка всех вариантов **не завершена**. В проекте опубликовано восемь
-add-endpoints, а payload формируется несколькими поколениями Blade и JS.
-Готовыми считаются только контракты, для которых указан automated evidence.
+Payload и reachability всех восьми опубликованных add-endpoints
+классифицированы. Активные контракты имеют automated evidence; недостижимые
+legacy endpoints и шаблоны явно отмечены и оставлены до frontend UAT.
 
 ## Матрица endpoints
 
 | Endpoint | Основные источники payload | Статус |
 |---|---|---|
-| `POST basket/add` | global `new_bot_scripts.js`, legacy canvas partial, canvas-new partial, legacy `graph_portrait.blade.php` | Частично: current canvas и modular validation протестированы |
+| `POST basket/add` | активный global `new_bot_scripts.js`; три недостижимых legacy Blade builder | Готово: current canvas validation и optional payload протестированы; legacy builders классифицированы orphan |
 | `POST basket/add/portrait` | `module.js`, `simpsons.js`, `sharj.js`, `royal.js`, `oil.js`, legacy `public/js/sharj.js` | Готово: simple generated, active oil и current wizard families протестированы |
-| `POST basket/add/inter` | legacy canvas form/action | Не проверен, Form Request отсутствует |
-| `POST basket/add/module` | legacy modular/interior flow | Не проверен, Form Request отсутствует |
+| `POST basket/add/inter` | закомментированный legacy canvas tab | Orphan: route name сохранён, endpoint возвращает JSON 410 |
+| `POST basket/add/module` | старый modular/interior flow | Orphan: active modular использует construct, endpoint возвращает JSON 410 |
 | `POST basket/add/construct` | collage old/new, family и modular generator | Готово: raw/data base64 и original-file режимы разделены условным contract |
 | `POST basket/add/future_art` | graphic portrait и footer form | Validation contract готов; 100 MiB разрешены, максимум 15 файлов, frontend-лимит удалён |
 | `POST basket/add/recommended` | `module.js` | Готово: session offer + серверная базовая gallery-цена с 30% |
@@ -31,34 +31,46 @@ add-endpoints, а payload формируется несколькими поко
 `sizeId`, `canvasId`, `executionId`, `decorationId`, `boxIds`, `photo_ex`,
 `ram_id`, `terms`, `terms_price`, `pid`, `improve_photo`.
 
-Статус: базовая validation и файл 100 MiB подтверждены тестом.
+Статус: обязательные идентификаторы конфигурации, optional-поля, JSON `boxIds`,
+base64 preview и соотношение `terms_price <= price` проверяются сервером.
+Основной файл, оригинал и пример по 100 MiB подтверждены тестом без
+application-level size limit. При JSON 422 активный JS показывает первое
+сообщение Laravel и не очищает выбранные большие файлы.
 
 ### Legacy canvas Blade
 
 Источник: `resources/views/partials/canvas/top_scripts.blade.php`.
 
 Payload близок current canvas, но отличается способом выбора `sizeId`, цены,
-preview/base64 и response parsing. Нужен отдельный contract test.
+preview/base64 и response parsing. Top-level `resources/views/canvas.blade.php`
+не рендерится контроллерами и не включается другими Blade; builder признан
+orphan и не определяет активный контракт.
 
 ### Canvas-new Blade
 
 Источник: `resources/views/partials/canvas_new/new_bot_scripts.blade.php`.
 
-Имеет собственную копию сборщика FormData и отличается от global JS. Нужна
-проверка, какой именно скрипт выполняется на странице и нет ли двойного submit.
+Имеет собственную копию сборщика FormData и отличается от global JS. Однако
+top-level `resources/views/canvas_new.blade.php` также не имеет активного
+render/include; прежний `return view('canvas_new')` в контроллере закомментирован.
+На `/new/canvas` двойного submit от этой inline-копии нет.
 
 ### Legacy `graph_portrait.blade.php` через общий endpoint
 
 Источник: `resources/views/graph_portrait.blade.php`.
 
-Найдено расхождение: FormData передаёт canvas-поля, но не передаёт `price`.
-Текущий `BasketStoreRequest` вернёт JSON 422. Прямой `return view()`/include для
-этого файла пока не найден, поэтому он классифицирован как вероятный orphan до
-полного reachability-аудита.
+Найдено расхождение: FormData передаёт canvas-поля, но не передаёт `price`, и
+текущий `BasketStoreRequest` вернул бы JSON 422. Полный source search не нашёл
+прямого или косвенного render/include этого файла, поэтому он окончательно
+классифицирован как orphan.
 
 Активные `/graphic-portrait*` рендерят `graphical-portrait-buy`, подключают
 `partials/grap_styl_paint_send.blade.php` и отправляют цену на
 `basket/add/portrait`; это отдельный current wizard payload family.
+
+Активный `/new/canvas` рендерит `theme.viar.pages.canvas`, layout подключает
+ровно global `public/theme/viar/js/new_bot_scripts.js`, а submit выполняется
+через `#t3_submit_btn`. Его поля совпадают с текущим `BasketStoreRequest`.
 
 ## Portrait payload families
 
@@ -118,14 +130,32 @@ item-card recommendation endpoint сохраняет только базовый
 переносит выбранные пользователем size/frame/options. Эти поля нельзя добавить
 в доверенный контракт до серверного пересчёта полной конфигурации.
 
+## Retired inter/module endpoints
+
+Reachability-проверка не нашла активных submit/callers:
+
+- единственная форма с action `add_item_to_basket_inter` находится в
+  `partials/canvas/tab2.blade.php`, include которой закомментирован;
+- её legacy click-handler в любом случае перенаправлял действие на общий
+  `.js_sbm__calc`, а не выполнял form submit;
+- route/URL caller для `add_item_to_basket_module` отсутствует;
+- классы `.js_add_basket_module` в активных скриптах только вызывают
+  `#t1_submit_btn`; текущая modular page отправляет данные в `add/construct`.
+
+Имена маршрутов сохранены, но оба POST URL направлены в compatibility handler:
+HTTP 410, `code=legacy_endpoint_retired` и URL актуальной замены. Тест
+подтверждает отсутствие session/file mutation. Старые недостижимые методы пока
+оставлены в контроллере для сравнения на UAT и запланированы к удалению после
+подтверждения.
+
 ## Общие риски
 
 1. `VerifyCsrfToken::$except` исключает `basket/add`, `*/basket/*`, `/cart/*`
    и фактически отключает CSRF для basket/cart mutations.
 2. Цена для нескольких endpoints принимается из frontend request; необходим
    серверный пересчёт по каталогу/конфигурации.
-3. Есть исходники, min-копии и inline Blade-копии одного сценария; они уже
-   различаются по полям и обработке JSON response.
+3. Есть исходник и min-копия активного JS; одинаковая обработка validation
+   error синхронизирована. Отличающиеся inline Blade-копии недостижимы.
 4. Реальный web-server/PHP должен быть настроен выше ожидаемого размера всего
    multipart-запроса; Laravel намеренно не задаёт собственный size limit.
 5. Base64-ветки пишут файлы через `file_put_contents()` без единого строгого
@@ -133,8 +163,7 @@ item-card recommendation endpoint сохраняет только базовый
 
 ## Следующие действия
 
-1. Подтвердить reachability legacy `graph_portrait.blade.php` и удалить либо
-   исправить его только после подтверждения использования.
-2. Завершить reachability-классификацию `inter` и `module`.
-3. Спроектировать общий server-side pricing для конфигурируемых товаров.
-5. После contract coverage сузить CSRF exceptions и подтвердить все callers.
+1. Проверить точный охват basket/cart CSRF exceptions и безопасно сузить их для
+   подтверждённых callers.
+2. Спроектировать общий server-side pricing для конфигурируемых товаров.
+3. После frontend UAT удалить orphan Blade/builders и старые controller methods.

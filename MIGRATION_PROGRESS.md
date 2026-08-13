@@ -320,3 +320,42 @@ scope; Filament 5 будет рассматриваться отдельным �
 - найден следующий риск: item-card recommendation теряет выбранную
   конфигурацию и сохраняет только базовый товар; задача добавлена в backlog;
 - следующий точный шаг: reachability/contracts `add/inter` и `add/module`.
+
+### 2026-08-13 — retired legacy inter/module endpoints
+
+- полный source search не нашёл активных callers `/basket/add/inter` и
+  `/basket/add/module`;
+- inter-form существует только в закомментированном canvas tab, а её
+  click-handler перенаправлял submit на другой calculator action;
+- active modular page использует `/basket/add/construct`; одноимённые CSS/JS
+  классы лишь триггерят основной submit и не вызывают add/module;
+- route names сохранены, оба POST URL переведены на единый JSON 410
+  `legacy_endpoint_retired` с указанием актуальной замены;
+- тест подтверждает HTTP 410 и отсутствие записи файлов/session mutation;
+- targeted basket result: 24 tests / 121 assertions PASS;
+- frontend regression: 51 tests / 257 assertions PASS; `view:cache`, полный
+  список basket add routes и `git diff --check` также PASS;
+- физическое удаление двух недостижимых controller methods оставлено после UAT;
+- следующий точный шаг: общий `/basket/add`, legacy canvas builders и
+  reachability `graph_portrait.blade.php`.
+
+### 2026-08-13 — общий canvas payload и orphan builders
+
+- активный `/new/canvas` подтверждён как `theme.viar.pages.canvas` с одним
+  global `public/theme/viar/js/new_bot_scripts.js` submit builder;
+- `canvas.blade.php`, `canvas_new.blade.php` и `graph_portrait.blade.php` не
+  имеют активного controller render/include и классифицированы как orphan;
+- активные graphic portrait routes используют `graphical-portrait-buy` и
+  отдельный `/basket/add/portrait` contract;
+- `BasketStoreRequest` теперь проверяет обязательные canvas IDs, JSON-массив
+  положительных `boxIds`, строгий base64-формат preview и
+  `terms_price <= price`;
+- `userImage`, `orig_images[]` и `photo_ex` сохраняют MIME-проверку без
+  application-level size limit; файлы по 100 MiB подтверждены тестом;
+- active JS и min-копия показывают Laravel validation message и не сбрасывают
+  выбранные файлы при 422;
+- targeted basket result: 26 tests / 130 assertions PASS;
+- frontend regression: 53 tests / 266 assertions PASS; `view:cache`, проверка
+  обоих JS-файлов и список восьми basket add routes также PASS;
+- физическое удаление orphan Blade/partials оставлено после frontend UAT;
+- следующий точный шаг: аудит и безопасное сужение basket/cart CSRF exceptions.

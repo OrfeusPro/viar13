@@ -143,16 +143,18 @@
   по серверным данным для каждого типа товара.
 - [x] Создать матрицу восьми basket add-endpoints и известных JS/Blade payload
   families в `docs/basket-add-payload-audit.md`.
-- [ ] Классифицировать reachability legacy `graph_portrait.blade.php`: он
-  отправляет `/basket/add` без `price`, но прямой render/include пока не найден.
-- [ ] Отдельно проверить legacy canvas и canvas-new inline FormData builders,
-  включая фактически подключённые global/inline скрипты.
+- [x] Классифицировать reachability legacy `graph_portrait.blade.php`: прямых
+  render/include нет, а активные graphic portrait routes используют другой
+  Blade и `/basket/add/portrait`; шаблон признан orphan.
+- [x] Проверить legacy canvas и canvas-new inline FormData builders: оба
+  находятся только в недостижимых top-level Blade, активный `/new/canvas`
+  использует theme canvas и global `new_bot_scripts.js`.
 - [x] Покрыть simple legacy и current wizard portrait payload families.
 - [x] Исправить active graphic/oil crash-path: `pid=undefined` с
   `orig_images[]`, но без base64 `image` приводил к `strpos(null)`.
 - [~] Добавить отдельные contracts для `add/inter`, `add/module`,
   `add/construct`, `add/future_art` и двух recommendation endpoints:
-  future-art, construct и recommendation готовы; inter/module остаются.
+  active endpoints готовы; orphan inter/module явно retired с JSON 410.
 - [x] Убрать frontend-лимит 20 MiB в future-art для печатных исходников.
 - [ ] Сузить basket/cart CSRF exceptions после проверки всех callers; сейчас
   `basket/add`, `*/basket/*` и `/cart/*` исключены глобально.
@@ -161,8 +163,15 @@
 - [ ] Исправить recommendation item-card contract: текущий отдельный endpoint
   сохраняет базовый gallery-товар и теряет выбранные size/frame/options; до
   server-side pricing нельзя безопасно принимать их JS-цену.
+- [ ] После frontend UAT физически удалить недостижимые реализации
+  `addToBasketInterier()` и `addToBasketModule()`; публичные маршруты уже
+  безопасно переведены на compatibility JSON 410.
+- [ ] После frontend UAT физически удалить orphan-шаблоны `canvas.blade.php`,
+  `canvas_new.blade.php`, `graph_portrait.blade.php` и их недостижимые partials
+  после контрольного поиска динамических вызовов.
 
 ## Текущая задача
 
 - [~] Провести полный аудит и стабилизацию всех восьми basket add-endpoints;
-  следующая точка — reachability/contracts legacy `add/inter`, `add/module`.
+  payload/reachability contracts классифицированы, следующая точка — аудит и
+  безопасное сужение basket/cart CSRF exceptions для подтверждённых callers.

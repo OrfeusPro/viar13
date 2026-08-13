@@ -1836,6 +1836,20 @@ class BasketController extends Controller
         }
     }
 
+    public function retiredLegacyBasketEndpoint(Request $request)
+    {
+        $replacement = $request->routeIs('add_item_to_basket_module')
+            ? route('add_item_to_basket_construct')
+            : route('add_item_to_basket');
+
+        return response()->json([
+            'success' => false,
+            'code' => 'legacy_endpoint_retired',
+            'message' => 'This legacy basket endpoint is no longer used by the frontend.',
+            'replacement' => $replacement,
+        ], 410);
+    }
+
     public function addToBasketInterier(Request $request)
     {
         $img_base = $request->input('image');

@@ -341,16 +341,19 @@
             },
 
             error: function (error) {
-            $('.images-container').html('');
-            $('.file-input').val('');
             $loading.stop(true, true).fadeOut(150);
 
             if (error && error.responseText) {
                 try {
                 var resp = JSON.parse(error.responseText);
-                $('#err_msgs').html('<span style="display:block;">' + (resp.message || '') + '</span>');
-                if (resp.text) {
-                    $.each(resp.text, function (key, value) { alert(value[0]); });
+                var errors = resp.errors || resp.text || {};
+                var firstError = resp.message || '';
+                $.each(errors, function (key, value) {
+                    if (!firstError && value && value.length) firstError = value[0];
+                });
+                $('#err_msgs').html('<span style="display:block;">' + firstError + '</span>');
+                if (firstError) {
+                    alert(firstError);
                 }
                 } catch (e) {
                 alert('Server error');
