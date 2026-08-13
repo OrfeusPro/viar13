@@ -152,12 +152,17 @@
   `orig_images[]`, но без base64 `image` приводил к `strpos(null)`.
 - [~] Добавить отдельные contracts для `add/inter`, `add/module`,
   `add/construct`, `add/future_art` и двух recommendation endpoints:
-  future-art и construct готовы, остальные остаются в работе.
+  future-art, construct и recommendation готовы; inter/module остаются.
 - [x] Убрать frontend-лимит 20 MiB в future-art для печатных исходников.
 - [ ] Сузить basket/cart CSRF exceptions после проверки всех callers; сейчас
   `basket/add`, `*/basket/*` и `/cart/*` исключены глобально.
+- [x] Защитить три recommendation add-endpoints: серверная цена, session offer
+  для gallery и обязательный базовый товар для canvas.
+- [ ] Исправить recommendation item-card contract: текущий отдельный endpoint
+  сохраняет базовый gallery-товар и теряет выбранные size/frame/options; до
+  server-side pricing нельзя безопасно принимать их JS-цену.
 
 ## Текущая задача
 
 - [~] Провести полный аудит и стабилизацию всех восьми basket add-endpoints;
-  следующая точка — recommendation endpoints и серверный источник цены.
+  следующая точка — reachability/contracts legacy `add/inter`, `add/module`.

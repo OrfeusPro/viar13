@@ -143,6 +143,174 @@ class PublicBasketSessionContractTest extends TestCase
         Storage::disk('uploads')->assertExists(ltrim($activeImage, '/'));
     }
 
+    public function test_gallery_recommendation_ignores_a_forged_frontend_price(): void
+    {
+        Schema::create('gallery_items', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->decimal('price_from', 10, 2);
+            $table->text('images')->nullable();
+            $table->timestamps();
+        });
+
+        try {
+            DB::table('gallery_items')->insert([
+                'id' => 50,
+                'name' => 'Server-priced art',
+                'price_from' => 100,
+                'images' => '["catalog/art.jpg"]',
+            ]);
+
+            $repository = $this->mock(BasketRepository::class);
+            $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+            $this->withSession(['recommendation_discount_50' => 30])
+                ->post('/basket/add/recommended', [
+                    'item_id' => 50,
+                    'price' => 0.01,
+                ])->assertOk()
+                ->assertJsonPath('success', true)
+                ->assertSessionHas('basket.0.original_price', 100.0)
+                ->assertSessionHas('basket.0.price', 70.0)
+                ->assertSessionMissing('recommendation_discount_50');
+        } finally {
+            Schema::dropIfExists('gallery_items');
+        }
+    }
+
+    public function test_recommendation_requires_a_server_issued_session_offer(): void
+    {
+        Schema::create('gallery_items', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->decimal('price_from', 10, 2);
+            $table->text('images')->nullable();
+            $table->timestamps();
+        });
+
+        try {
+            DB::table('gallery_items')->insert([
+                'id' => 51,
+                'name' => 'No offer art',
+                'price_from' => 100,
+            ]);
+
+            $this->post('/basket/add/recommended', [
+                'item_id' => 51,
+                'price' => 0.01,
+            ])->assertBadRequest()
+                ->assertJsonPath('success', false);
+        } finally {
+            Schema::dropIfExists('gallery_items');
+        }
+    }
+
+    public function test_cart_recommendation_also_ignores_the_frontend_price(): void
+    {
+        Schema::create('gallery_items', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('id_type')->nullable();
+            $table->string('name');
+            $table->decimal('price_from', 10, 2);
+            $table->text('images')->nullable();
+            $table->text('custom_size_prices')->nullable();
+            $table->timestamps();
+        });
+        Schema::create('gallery_types', function (Blueprint $table): void {
+            $table->id();
+            $table->string('url')->nullable();
+            $table->timestamps();
+        });
+
+        try {
+            DB::table('gallery_items')->insert([
+                'id' => 52,
+                'name' => 'Modal art',
+                'price_from' => 200,
+                'images' => '["catalog/modal.jpg"]',
+            ]);
+
+            $repository = $this->mock(BasketRepository::class);
+            $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+            $this->withSession(['recommendation_discount_52' => 30])
+                ->post('/cart/add-recommended', [
+                    'item_id' => 52,
+                    'price' => 0.01,
+                ])->assertOk()
+                ->assertJsonPath('success', true)
+                ->assertSessionHas('basket.0.price', 140.0)
+                ->assertSessionMissing('recommendation_discount_52');
+        } finally {
+            Schema::dropIfExists('gallery_types');
+            Schema::dropIfExists('gallery_items');
+        }
+    }
+
+    public function test_canvas_recommendation_requires_an_existing_base_item(): void
+    {
+        $this->post('/basket/add-canvas-recommendation', [
+            'size' => '60x40',
+            'full_size' => '60x40h',
+            'price' => 0.01,
+            'userImage' => UploadedFile::fake()->image('canvas.jpg'),
+        ])->assertBadRequest()
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_canvas_recommendation_uses_catalog_price_and_accepts_a_100_mb_source(): void
+    {
+        Storage::fake('uploads');
+        Schema::create('canvas_header', function (Blueprint $table): void {
+            $table->id();
+            $table->text('sizes_30x40');
+        });
+        Schema::create('a_production_time', function (Blueprint $table): void {
+            $table->id();
+            $table->string('category');
+            $table->string('standart_text');
+            $table->decimal('standart_price', 10, 2);
+            $table->timestamps();
+        });
+        Schema::create('translations', function (Blueprint $table): void {
+            $table->id();
+            $table->string('table_name');
+            $table->string('column_name');
+            $table->unsignedBigInteger('foreign_key');
+            $table->string('locale');
+            $table->text('value')->nullable();
+        });
+
+        try {
+            DB::table('canvas_header')->insert([
+                'sizes_30x40' => '60x40h[100]',
+            ]);
+            DB::table('a_production_time')->insert([
+                'category' => 'canvas',
+                'standart_text' => 'Standard',
+                'standart_price' => 5,
+            ]);
+
+            $repository = $this->mock(BasketRepository::class);
+            $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+
+            $this->withSession([
+                'basket' => [['pid' => 10, 'name' => 'Base item', 'count' => 1]],
+            ])->post('/basket/add-canvas-recommendation', [
+                'size' => '60x40',
+                'full_size' => '60x40h',
+                'price' => 0.01,
+                'userImage' => UploadedFile::fake()->image('canvas.jpg')->size(102400),
+            ])->assertOk()
+                ->assertJsonPath('success', true)
+                ->assertSessionHas('basket.1.price', 70.0);
+        } finally {
+            Schema::dropIfExists('translations');
+            Schema::dropIfExists('a_production_time');
+            Schema::dropIfExists('canvas_header');
+        }
+    }
+
     public function test_modular_add_normalizes_frontend_image_and_accepts_a_100_mb_source(): void
     {
         $repository = $this->mock(BasketRepository::class);

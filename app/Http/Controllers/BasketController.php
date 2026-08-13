@@ -41,6 +41,8 @@ use App\Http\Requests\BasketStoreRequest;
 use App\Http\Requests\PortraitBasketRequest;
 use App\Http\Requests\FutureArtRequest;
 use App\Http\Requests\ConstructBasketRequest;
+use App\Http\Requests\RecommendedBasketItemRequest;
+use App\Http\Requests\CanvasRecommendationRequest;
 use App\Models\DeliveryPickupAtViarWorkshop;
 
 class BasketController extends Controller
@@ -1607,18 +1609,10 @@ class BasketController extends Controller
         }
     }
 
-    public function addRecommendedItem(Request $request)
+    public function addRecommendedItem(RecommendedBasketItemRequest $request)
     {
         try {
             $itemId = $request->input('item_id');
-            $discountedPrice = $request->input('price');
-
-            if (!$itemId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.item_not_found')
-                ]);
-            }
 
             $item = GalleryItem::find($itemId);
             if (!$item) {
@@ -1628,10 +1622,26 @@ class BasketController extends Controller
                 ]);
             }
 
+            $sessionKey = 'recommendation_discount_' . $itemId;
+            if (! $request->session()->has($sessionKey)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => trans('cart_new.discount_not_found'),
+                ], 400);
+            }
+
+            $discountedPrice = $this->getRecommendedGalleryPrice($item, $request);
+            if ($discountedPrice <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => trans('cart_new.item_not_found'),
+                ], 422);
+            }
+
             $itemType = GalleryType::find($item->id_type);
 
-            $images = json_decode($item->image, true);
-            $imageUrl = is_array($images) && !empty($images) ? $images[0] : $item->image;
+            $images = json_decode($item->images, true);
+            $imageUrl = is_array($images) && !empty($images) ? $images[0] : $item->images;
 
             $firstSize = '30x40';
             if ($item->custom_size_prices) {
@@ -1671,6 +1681,7 @@ class BasketController extends Controller
             $basket[] = $basketItem;
 
             session(['basket' => $basket]);
+            $request->session()->forget($sessionKey);
             $this->basketRepository->saveBasketToAbandonedCartModel($basket);
 
             return response()->json([
@@ -2401,7 +2412,7 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
-    public function addRecommendedToBasket(Request $request)
+    public function addRecommendedToBasket(RecommendedBasketItemRequest $request)
     {
         try {
             $itemId = $request->input('item_id');
@@ -2427,9 +2438,18 @@ class BasketController extends Controller
             }
             $recommendationDiscount = 30;
 
-            $originalPrice = $request->input('price') ? floatval($request->input('price')) : ($item->price_from ?? 0);
+            $originalPrice = round(
+                (float) ($item->price_from ?? 0) * $this->getCountryPriceMultiplier($request),
+                2
+            );
+            $discountedPrice = $this->getRecommendedGalleryPrice($item, $request);
 
-            $discountedPrice = round($originalPrice/* * (1 - $recommendationDiscount / 100)*/, 2);
+            if ($discountedPrice <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('basket.item_not_found'),
+                ], 422);
+            }
 
 
             $basketItem = [
@@ -2492,26 +2512,27 @@ class BasketController extends Controller
         }
     }
 
-    public function addCanvasRecommendation(Request $request)
+    public function addCanvasRecommendation(CanvasRecommendationRequest $request)
     {
         try {
+            if (! $this->hasBaseBasketItem($request->session()->get('basket', []))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => trans('cart_new.discount_not_found'),
+                ], 400);
+            }
+
             $size = $request->input('size');
             $full_size = $request->input('full_size');
-            $price = $request->input('price');
-
-            if (!$size || !$price) {
+            $catalogPrice = $this->getCanvasSizePrice($full_size);
+            if ($catalogPrice === null) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('cart_new.missing_data'),
-                ], 400);
+                    'message' => trans('cart_new.size_not_found'),
+                ], 422);
             }
 
-            if (!$request->hasFile('userImage')) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('gl.error_image_canvas'),
-                ], 400);
-            }
+            $price = round($catalogPrice * 0.7, 2);
 
             $savedImagePath = \Storage::disk('uploads')->putFile('uploads', $request->file('userImage'));
             $savedImage = \URL::to('/') . '/' . $savedImagePath;
@@ -2573,5 +2594,38 @@ class BasketController extends Controller
                 'message' => __('basket.error_add'),
             ], 500);
         }
+    }
+
+    private function getRecommendedGalleryPrice(GalleryItem $item, Request $request): float
+    {
+        $basePrice = (float) ($item->price_from ?? 0);
+
+        return round($basePrice * $this->getCountryPriceMultiplier($request) * 0.7, 2);
+    }
+
+    private function getCountryPriceMultiplier(Request $request): float
+    {
+        $country = $request->session()->get('basket_country');
+
+        if (! $country) {
+            return 1.0;
+        }
+
+        $multiplier = DB::table('country_tels')
+            ->where('country_code', $country)
+            ->value('price_country_mltpr');
+
+        return $multiplier && (float) $multiplier > 0 ? (float) $multiplier : 1.0;
+    }
+
+    private function hasBaseBasketItem(array $basket): bool
+    {
+        foreach ($basket as $item) {
+            if (is_array($item) && empty($item['is_recommendation'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

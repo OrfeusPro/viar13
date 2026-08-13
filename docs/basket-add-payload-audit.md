@@ -18,8 +18,8 @@ add-endpoints, а payload формируется несколькими поко
 | `POST basket/add/module` | legacy modular/interior flow | Не проверен, Form Request отсутствует |
 | `POST basket/add/construct` | collage old/new, family и modular generator | Готово: raw/data base64 и original-file режимы разделены условным contract |
 | `POST basket/add/future_art` | graphic portrait и footer form | Validation contract готов; 100 MiB разрешены, максимум 15 файлов, frontend-лимит удалён |
-| `POST basket/add/recommended` | `module.js` | Не проверен; цена принимается из request |
-| `POST basket/add-canvas-recommendation` | cart recommendations Blade | Не проверен отдельным Form Request |
+| `POST basket/add/recommended` | `module.js` | Готово: session offer + серверная базовая gallery-цена с 30% |
+| `POST basket/add-canvas-recommendation` | cart recommendations Blade | Готово: catalog size price + 30%, нужен базовый товар, 100 MiB разрешены |
 
 ## Варианты общего `basket/add`
 
@@ -100,6 +100,24 @@ style-specific полями. Невалидный base64 и отсутствие
 session/storage path и оба invalid source режима подтверждены feature-тестами;
 правила original-файла принимают 100 MiB.
 
+## Recommendation endpoints
+
+Помимо двух `basket/add*` найден активный `POST /cart/add-recommended` из
+checkout modal. Все три endpoint игнорируют совместимое поле `price`:
+
+- gallery modal и item-card получают базовую цену из `gallery_items.price_from`,
+  применяют country multiplier и 30%; требуется одноразовый session offer;
+- canvas получает цену выбранного `full_size` из
+  `canvas_header.sizes_30x40`, затем применяет 30%; в корзине уже должен быть
+  хотя бы один базовый товар;
+- canvas `userImage` проверяется по MIME без size limit; 100 MiB подтверждены.
+
+Подмена browser-поля `price` значением `0.01` покрыта тестами для gallery,
+checkout modal и canvas. Найдено отдельное функциональное ограничение:
+item-card recommendation endpoint сохраняет только базовый gallery item и не
+переносит выбранные пользователем size/frame/options. Эти поля нельзя добавить
+в доверенный контракт до серверного пересчёта полной конфигурации.
+
 ## Общие риски
 
 1. `VerifyCsrfToken::$except` исключает `basket/add`, `*/basket/*`, `/cart/*`
@@ -117,6 +135,6 @@ session/storage path и оба invalid source режима подтвержде�
 
 1. Подтвердить reachability legacy `graph_portrait.blade.php` и удалить либо
    исправить его только после подтверждения использования.
-2. Проверить recommended endpoints и убрать доверие к frontend price.
-3. Завершить reachability-классификацию `inter` и `module`.
+2. Завершить reachability-классификацию `inter` и `module`.
+3. Спроектировать общий server-side pricing для конфигурируемых товаров.
 5. После contract coverage сузить CSRF exceptions и подтвердить все callers.

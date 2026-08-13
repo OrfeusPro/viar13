@@ -297,3 +297,26 @@ scope; Filament 5 будет рассматриваться отдельным �
 - frontend regression: 45 tests / 227 assertions PASS;
 - `route:list --path=basket/add`, `view:cache` и `git diff --check` PASS;
 - следующий точный шаг: recommendation endpoints и серверный источник цены.
+
+### 2026-08-13 — recommendation endpoints и server price
+
+- кроме двух известных basket endpoints найден активный третий
+  `/cart/add-recommended`; он добавлен в scope и документацию;
+- добавлены `RecommendedBasketItemRequest` и
+  `CanvasRecommendationRequest` с единым JSON 422 contract;
+- frontend `price` сохранён только для обратной совместимости и больше не
+  участвует в расчёте;
+- gallery recommendation рассчитывается из `gallery_items.price_from`, country
+  multiplier и скидки 30%, а также требует одноразовый session offer;
+- canvas recommendation рассчитывается по `canvas_header.sizes_30x40`, требует
+  существующий базовый товар и принимает исходник 100 MiB без size limit;
+- исправлено чтение несуществующего `GalleryItem::image`: используется реальное
+  поле `images`;
+- подмена browser price на `0.01` не влияет на сохранённую цену во всех трёх
+  сценариях;
+- targeted basket result: 23 tests / 110 assertions PASS;
+- frontend regression: 50 tests / 246 assertions PASS; `view:cache`,
+  recommendation routes и `git diff --check` также PASS;
+- найден следующий риск: item-card recommendation теряет выбранную
+  конфигурацию и сохраняет только базовый товар; задача добавлена в backlog;
+- следующий точный шаг: reachability/contracts `add/inter` и `add/module`.
