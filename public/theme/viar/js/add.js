@@ -113,13 +113,19 @@ document.addEventListener("DOMContentLoaded", function (event) {
           $('.js_login_form [data-name="email"]').text(msg.errors);
         }
       },
-      error: function (jqXHR, exception) {},
+      error: function (jqXHR) {
+        const errors = jqXHR.responseJSON && jqXHR.responseJSON.errors;
+        if (errors) {
+          $('.js_login_form [data-name="email"]').text(
+            (errors.email || errors.password || [""])[0]
+          );
+        }
+      },
     });
   });
   $(document).on("submit", "#reg_form", function (e) {
     e.stopImmediatePropagation();
     e.preventDefault();
-    if (!$(".g-recaptcha-response").val()) return;
     $.ajax({
       url: $(this).attr("action"),
       method: "POST",
@@ -134,7 +140,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         password_confirmation: $(
           ".popup-registration input[name=password_confirmation]"
         ).val(),
-        "g-recaptcha-response": $(".g-recaptcha-response").val(),
       },
       success: function (msg) {
         console.log(msg);

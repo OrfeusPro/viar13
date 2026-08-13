@@ -63,14 +63,13 @@ scope; Filament 5 будет рассматриваться отдельным �
 
 ## В работе
 
-- проверка основных страниц личного кабинета и их зависимостей.
+- проверка корзины и сохранения session state.
 
 ## Следующие действия
 
-1. Проверить основные страницы account/new account с авторизованным
-   пользователем.
-2. Инвентаризировать публичные формы и POST/AJAX endpoints.
-3. Затем переходить к корзине и checkout.
+1. Инвентаризировать basket/cart endpoint contracts и frontend payloads.
+2. Покрыть добавление, изменение и очистку корзины session-тестами.
+3. Затем переходить к checkout.
 
 ## Риски и открытые вопросы
 
@@ -131,3 +130,89 @@ scope; Filament 5 будет рассматриваться отдельным �
 - после auth-изменений повторно прошли `route:list`, полный `view:cache` и
   `git diff --check`;
 - следующий точный шаг: authenticated account pages и их data dependencies.
+
+### 2026-08-13 — клиентский личный кабинет
+
+- compatibility User дополнен связью `role()` и read-only моделью Role;
+- общий layout получает безопасные пустые tracker variables в test/CLI, при
+  обычном HTTP они переопределяются реальными настройками;
+- глобальная Blade-функция `isActiveRoute()` заменена локальным callback, что
+  устранило fatal error при повторном account-render в одном PHP-процессе;
+- на изолированной SQLite-схеме подтверждены authenticated customer routes:
+  legacy `/account` redirect, `/new/account`, `/new/settings`, пустой
+  `/new/orders` и `/new/mystocks` без активных акций;
+- найден отдельный долг: account GET-страницы генерируют и сохраняют
+  `inv_sale_code`; менять это без проверки legacy-сценария пока нельзя;
+- наполненные orders/payment и painter account остаются отдельными задачами;
+- следующий точный шаг: inventory публичных форм и AJAX endpoints.
+
+### 2026-08-13 — route inventory и форма отзыва
+
+- создан `docs/frontend-mutating-routes-audit.md`;
+- зафиксировано 112 mutating route records: 99 web и 13 API;
+- 81 web record не имеет явного route-level `auth`; это не признано
+  уязвимостью без проверки controller/service guards;
+- отдельно отмечены 20 `orders/*` POST routes и 3 публичных route records,
+  ведущих в Admin controllers;
+- review endpoint использует актуализированный `CreateReviewRequest`;
+- обязательные текстовые поля, два изображения до 10 MiB и audio data URL
+  получили серверную валидацию;
+- исправлена неинициализированная переменная отзыва без аудио;
+- image/audio отзывов сохраняются явно на public disk;
+- validation, text-only и image/audio success paths покрыты feature-тестами;
+- следующий точный шаг: photo/portrait/all-styles request forms.
+
+### 2026-08-13 — photo/portrait/all-styles request forms
+
+- быстрые заявки portrait и all-styles переведены на общий
+  `QuickOrderRequest`;
+- email проверяется как RFC email, телефон нормализуется и допускает от 7 до
+  15 цифр с необязательным `+`;
+- загрузка обязательна, ограничена 10 файлами и 15 MiB на файл; разрешённые
+  MIME/расширения перечислены явно;
+- сохранена совместимость двух реально найденных Blade-контрактов: массив
+  `file[]` и legacy-поля `file`, `file2` ... `file10`;
+- валидация обычной photo calculation form также подтверждена регрессионным
+  тестом;
+- targeted result: 4 tests / 25 assertions PASS;
+- следующий точный шаг: guest AJAX login/register contract.
+
+### 2026-08-13 — guest AJAX login/register
+
+- добавлен отдельный `LoginAjaxRequest`: обязательные RFC email/password,
+  нормализация email и JSON 422 validation contract;
+- `RegisterStoreRequest` нормализует email/телефон и валидирует email, длины,
+  формат телефона и подтверждение пароля;
+- устранён блокер регистрации: активный frontend JS ожидал отсутствующее
+  CAPTCHA-поле, а backend требовал его и выполнял синхронный внешний запрос;
+- login/register endpoints получили rate limit `10/min` и `5/min`;
+- ошибки Laravel 422 теперь выводятся в AJAX login UI; оба фактически
+  используемых `add.js` проходят `node --check`;
+- success login сохраняет legacy JSON `{"status":true}`, success register —
+  JSON `true`; регистрация без реальной почты и нормализация данных покрыты
+  feature-тестами;
+- полноценная CAPTCHA/Turnstile оставлена явной отдельной задачей; фиктивная
+  проверка site key не используется;
+- совместная regression: 33 tests / 147 assertions PASS;
+- `route:list`, полный `view:cache`, JS syntax и `git diff --check` PASS;
+- следующий точный шаг: корзина и session state.
+
+### 2026-08-13 — корзина, первый session-срез
+
+- инвентаризированы 17 `basket/*` routes и основные `cart/*` routes;
+- `basket/remove` переведён на `RemoveBasketItemRequest`: `basketId`
+  обязателен, является целым индексом и не может быть отрицательным;
+- устранён риск удаления нулевой позиции отсутствующим `basketId` из-за
+  нестрогого сравнения legacy PHP;
+- `basket/update/count` использует `UpdateBasketCountRequest` и принимает
+  только целое количество 1--99 и неотрицательный индекс;
+- validation errors этих AJAX endpoints всегда возвращаются JSON 422, а
+  успешный legacy response contract сохранён;
+- убрано лишнее двойное сохранение abandoned cart при одном update count;
+- session tests подтверждают отклонение неверных payloads без мутации,
+  корректное изменение количества и удаление позиции;
+- targeted result: 4 tests / 24 assertions PASS;
+- текущая совместная regression: 37 tests / 171 assertions PASS; `route:list`,
+  полный `view:cache` и `git diff --check` также PASS;
+- найдены отдельные задачи: state-changing GET/ANY basket routes и отсутствие
+  общих validation contracts у `basket/add/*`.

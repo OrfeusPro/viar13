@@ -15,6 +15,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use App\Http\Requests\CreateReviewRequest;
 
 class ReviewController extends Controller
@@ -119,7 +122,7 @@ class ReviewController extends Controller
         ];
     }
 
-    public function store(\Illuminate\Http\Request $request)
+    public function store(CreateReviewRequest $request)
     {
 
         $locale = session('locale');
@@ -129,36 +132,26 @@ class ReviewController extends Controller
         $uploadedFiles = $request->file('file');
 
         // Decode the base64-encoded audio data
-        if ($request->has('audioData')) {
-
-
-            $audioData = $request->input('audioData');
-            $decodedAudio = base64_decode(preg_replace('#^data:audio/\w+;base64,#i', '', $audioData));
-
-            // Generate a unique filename
-            $filename = uniqid('review_audio_') . '.webm';
-
-            // Determine the storage path
-            $storagePath = storage_path('app/public/review/audio/');
-            if (!is_dir($storagePath)) {
-                // Create the directory if it does not exist
-                mkdir($storagePath, 0755, true);
+        $audioDB = '';
+        if ($request->filled('audioData')) {
+            preg_match('#^data:audio/(webm|ogg|mpeg|mp4|wav);base64,(.+)$#s', $request->string('audioData'), $audio);
+            $decodedAudio = base64_decode($audio[2] ?? '', true);
+            if ($decodedAudio === false) {
+                throw ValidationException::withMessages(['audioData' => ['The audio recording is invalid.']]);
             }
 
-
-            // Save the audio file
-            file_put_contents($storagePath . $filename, $decodedAudio);
-
+            $extension = $audio[1] === 'mpeg' ? 'mp3' : $audio[1];
+            $filename = 'review_audio_' . Str::uuid() . '.' . $extension;
             $databasePath = 'review/audio/' . $filename;
-            $audioDB = '[{"download_link":"' . $databasePath . '","original_name": "' . $filename . '"}]';
-        } else {
-            $databasePath = '';
+            Storage::disk('public')->put($databasePath, $decodedAudio);
+            $audioDB = json_encode([[
+                'download_link' => $databasePath,
+                'original_name' => $filename,
+            ]], JSON_UNESCAPED_SLASHES);
         }
         if ($uploadedFiles) {
             foreach ($uploadedFiles as $key => $uploadedFile) {
-                $filePathName = $uploadedFile->store('public/review');
-
-                $filePathName = str_replace('public/', '', $filePathName);
+                $filePathName = $uploadedFile->store('review', 'public');
 
                 if ($key == 1) {
                     $img = $filePathName;
@@ -210,9 +203,9 @@ class ReviewController extends Controller
         $review = Review::create([
             'img'         => $img,
             'avatar'      => $avatar,
-            'name'        => $request->input('name'),
-            'email'       => $request->input('email'),
-            'text'        => $request->input('text'),
+            'name'        => $request->validated('name'),
+            'email'       => $request->validated('email'),
+            'text'        => $request->validated('text'),
             'active'      => 0,
             'a_player'    => $audioDB,
             'orig_locale' => $locale,

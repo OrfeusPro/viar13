@@ -257,11 +257,13 @@ Route::group(
         Route::get('get_warehouse', [VinepakApiController::class, 'get_warehouse'])->name('get_warehouse');
 
         /** Login& register */
-        Route::post('custom_login_ajax', [UserManageController::class, 'custom_login_ajax'])->name('custom_login_ajax');
+        Route::post('custom_login_ajax', [UserManageController::class, 'custom_login_ajax'])
+            ->middleware('throttle:10,1')
+            ->name('custom_login_ajax');
         Route::post(
             'custom_register_ajax',
             [UserManageController::class, 'custom_register_ajax']
-        )->name('custom_register_ajax');
+        )->middleware('throttle:5,1')->name('custom_register_ajax');
 
         Route::post(
             'send_photo_portrait_form',

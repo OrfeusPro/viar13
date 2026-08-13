@@ -19,4 +19,9 @@ class User extends Authenticatable
             'settings' => 'array',
         ];
     }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 }

@@ -6,8 +6,12 @@
 
 ### Laravel 13 — публичный frontend
 
-- [`../MIGRATION_PROGRESS.md`](../MIGRATION_PROGRESS.md) — единственный
-  актуальный краткий план и журнал миграции текущего репозитория.
+- [`../MIGRATION_PLAN.md`](../MIGRATION_PLAN.md) — актуальный план, backlog и
+  найденные задачи.
+- [`../MIGRATION_PROGRESS.md`](../MIGRATION_PROGRESS.md) — журнал выполненных
+  работ и evidence.
+- [`frontend-mutating-routes-audit.md`](frontend-mutating-routes-audit.md) —
+  аудит публичных POST/AJAX/ANY routes.
 - `upgrade-laravel13-filament5/` — архив прежнего направления; использовать
   только как справочные аудиты, не как активный план.
 

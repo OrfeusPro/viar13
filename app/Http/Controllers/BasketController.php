@@ -37,6 +37,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use App\Repositories\BasketRepository;
+use App\Http\Requests\RemoveBasketItemRequest;
+use App\Http\Requests\UpdateBasketCountRequest;
 use App\Models\DeliveryPickupAtViarWorkshop;
 
 class BasketController extends Controller
@@ -1431,7 +1433,7 @@ class BasketController extends Controller
         }
     }
 
-    public function removeFromBasket(Request $request)
+    public function removeFromBasket(RemoveBasketItemRequest $request)
     {
         $response = [];
         $item_id = $request['basketId'];
@@ -1472,7 +1474,7 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
-    public function updateCount(Request $request)
+    public function updateCount(UpdateBasketCountRequest $request)
     {
         $req['count'] = intval($request->input('count'));
         $req['index'] = intval($request->input('index'));
@@ -1485,8 +1487,6 @@ class BasketController extends Controller
                     return response()->json(['success' => 0], 422);
                 }
                 $basket[$index]['count'] = $req['count'];
-                session(['basket' => $basket]);
-                $this->basketRepository->saveBasketToAbandonedCartModel($basket);
                 $response['success'] = 1;
                 $response['price'] = ($basket[$index]['price'] * $req['count']) . "€";
 
