@@ -173,6 +173,16 @@
 
 ## Текущая задача
 
-- [~] Устранить небезопасные mutating GET/ANY basket routes: начать с
-  `submitbonuses`, `clear_coupon`, `coupon_use` и `send_gift_card`, сохранив
-  только подтверждённые POST callers и совместимый frontend contract.
+- [~] Провести browser UAT основного frontend-контура; initial page-load smoke
+  завершён, следующая точка — интерактивное добавление canvas/gallery item в
+  корзину и переходы checkout без создания реального заказа.
+
+## Browser smoke
+
+- [x] Проверить HTTP/DOM main, gallery, item card, canvas, portrait, basket,
+  cart, login и register на `viar13.loc`.
+- [x] Исправить найденные 500 legacy basket/cart layouts.
+- [x] Устранить JS crash `InteriorGenerator` на module item card без canvas.
+- [ ] Пройти интерактивные canvas/gallery → basket/cart сценарии.
+- [ ] Проверить основные страницы в mobile viewport.
+- [ ] После frontend interaction UAT вернуться к mutating GET/ANY basket routes.

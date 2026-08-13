@@ -14,6 +14,8 @@
   аудит публичных POST/AJAX/ANY routes.
 - [`basket-add-payload-audit.md`](basket-add-payload-audit.md) — матрица
   basket add-endpoints, JS/Blade payloads и статусов проверки.
+- [`frontend-browser-smoke.md`](frontend-browser-smoke.md) — матрица запуска
+  основных страниц и найденные браузером frontend-проблемы.
 - `upgrade-laravel13-filament5/` — архив прежнего направления; использовать
   только как справочные аудиты, не как активный план.
 

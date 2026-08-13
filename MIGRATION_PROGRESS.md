@@ -374,3 +374,25 @@ scope; Filament 5 будет рассматриваться отдельным �
   и inventory basket/cart routes также PASS;
 - следующий точный шаг: удалить mutating GET/ANY варианты basket routes после
   проверки callers и сохранить только POST contracts.
+
+### 2026-08-13 — initial browser smoke основных страниц
+
+- реальный HTTP/Chrome smoke выполнен на `https://viar13.loc` с текущей MySQL;
+- main, module gallery, реальная item card `id=31`, canvas, portrait, basket,
+  cart, login и register возвращают HTTP 200;
+- исправлен 500 legacy basket: базовый Voyager `MenuItem` получил совместимый
+  `link()`, включая route parameters и fallback для отсутствующего route;
+- рекурсия frontend menu больше не зависит от отключённого
+  `voyager::menu.bootstrap`;
+- исправлен 500 cart: header widget использует `config('theme.resource')`
+  вместо runtime `env('THEME_RESOURCES')`;
+- устранён JS crash module item card: `interiorGallery.js` не запускается без
+  обязательного `#canvas_interior`;
+- повторная Chrome-проверка item card: title/H1/DOM присутствуют, project JS
+  errors отсутствуют;
+- frontend regression: 56 tests / 278 assertions PASS; JS/PHP syntax,
+  `view:cache` и повторный реальный browser smoke также PASS;
+- отдельная матрица и наблюдения сохранены в
+  `docs/frontend-browser-smoke.md`;
+- следующий точный шаг: интерактивный canvas/gallery → cart smoke без создания
+  заказа.

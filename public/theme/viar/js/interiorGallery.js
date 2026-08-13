@@ -11,6 +11,9 @@
 	}	
 	
 	var canvas = document.getElementById("canvas_interior");
+	if (!canvas) {
+		return;
+	}
    
 	var gen = new InteriorGenerator(canvas);
 	

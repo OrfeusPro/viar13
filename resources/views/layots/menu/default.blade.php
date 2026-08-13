@@ -48,7 +48,7 @@ if (Voyager::translatable($items)) {
             {{ $item->title }}
         </a>
         @if (!$originalItem->children->isEmpty())
-            @include('voyager::menu.bootstrap', ['items' => $originalItem->children, 'options' => $options, 'innerLoop'
+            @include('layots.menu.default', ['items' => $originalItem->children, 'options' => $options, 'innerLoop'
             => true])
         @endif
     </li>
