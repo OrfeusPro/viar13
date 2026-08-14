@@ -421,3 +421,43 @@ scope; Filament 5 будет рассматриваться отдельным �
   классифицируются как project JS errors;
 - следующий точный шаг: canvas upload → cart, затем валидный delivery → payment
   без отправки заказа.
+
+### 2026-08-14 — синхронизация server commit `72af3357`
+
+- source проверен напрямую в `C:\OSPanel\domains\asoft\viar`; commit содержит
+  68 файлов;
+- 47 language-файлов уже побайтно совпадали с состоянием commit и повторно не
+  перезаписывались;
+- перенесены 11 публичных изменений: localhost-safe image URL normalization,
+  Apache bot/gallery protection, `.user.ini`/`php.ini`, legacy password-reset
+  payload, public CSS, Google verification и три contact WebP;
+- `app/Helpers/functions.php` не заменялся целиком: сохранены Laravel 13
+  compatibility helpers `str_trans`, `setting`, `menu`, `voyager_asset`, а
+  серверная localhost-правка интегрирована отдельно;
+- SHA-256 трёх WebP совпадает с server source; HTTP каждого изображения —
+  `200 image/webp`; Google verification возвращает точное содержимое commit;
+- при первой синхронизации 10 admin/Voyager ALT-файлов были ошибочно оставлены
+  только в backlog из-за frontend scope; после уточнения пользователя все они
+  физически перенесены в `viar13` как source corpus;
+- 67 из 68 commit paths побайтно совпадают с server commit; единственное
+  намеренное отличие — `app/Helpers/functions.php`, где серверная правка
+  объединена с обязательными Laravel 13 compatibility helpers;
+- синхронизированы `AltApprovePendingCommand`, `AltGenerateCommand`,
+  `AltSuggestionController`, `GenerateImageAltJob`, `AltGenerator`, config,
+  два admin assets, Voyager master и `routes/admin.php`;
+- PHP/JS syntax всех добавленных ALT-файлов проходит; Artisan видит команды
+  `alt:approve-pending` и `alt:generate`, их `--help` загружается без ошибок;
+- Voyager ALT routes не активировались: `route:list --path=alt-suggestions`
+  пуст, что соответствует отключённой админке текущего этапа;
+- Apache smoke: главная 200, обычная gallery после locale redirect 200,
+  SemrushBot 403, gallery с `size=` 403, verification 200;
+- обнаружен риск: production `.htaccess` блокирует реальные gallery filters
+  `color|order|size`, которые обслуживает `GalleryController`; правило пока
+  сохранено точно по server commit, решение вынесено в план;
+- первый auth regression выявил старую cache-зависимость тестов: без прогретого
+  cache отсутствовали SQLite-таблицы `header_menu`/`footer_menu`; тестовая схема
+  дополнена, cache очищается перед каждым тестом;
+- итог: frontend regression 59 tests / 295 assertions PASS; `view:cache`, PHP/
+  JS syntax и `git diff --check` PASS;
+- следующий точный шаг: решить судьбу blanket gallery filter block либо
+  продолжить запланированный canvas upload → cart smoke.

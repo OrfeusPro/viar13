@@ -634,7 +634,7 @@ TEXT,
 
     'auto_observer' => env('ALT_GEN_AUTO_OBSERVER', false),
 
-    'daily_call_limit' => 2000,
+    'daily_call_limit' => 30000,
 
     'exclude' => [
         'path_prefixes' => [

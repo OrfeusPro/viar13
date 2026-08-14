@@ -261,11 +261,14 @@ if (!function_exists('image_normalize_url_scheme')) {
             return $url;
         }
 
-        if (strpos($trimmed, '//') === 0 && image_is_same_domain_url($trimmed)) {
+        $host = parse_url(strpos($trimmed, '//') === 0 ? 'http:' . $trimmed : $trimmed, PHP_URL_HOST);
+        $isLocalHost = in_array(strtolower((string) $host), ['localhost', '127.0.0.1', '::1'], true);
+
+        if (strpos($trimmed, '//') === 0 && image_is_same_domain_url($trimmed) && !$isLocalHost) {
             return 'https:' . $trimmed;
         }
 
-        if (stripos($trimmed, 'http://') === 0 && image_is_same_domain_url($trimmed)) {
+        if (stripos($trimmed, 'http://') === 0 && image_is_same_domain_url($trimmed) && !$isLocalHost) {
             return 'https://' . substr($trimmed, 7);
         }
 

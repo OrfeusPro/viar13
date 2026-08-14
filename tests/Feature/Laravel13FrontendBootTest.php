@@ -82,4 +82,22 @@ class Laravel13FrontendBootTest extends TestCase
         $this->assertStringEndsWith('/storage/example/image.jpg', \Voyager::image('example/image.jpg'));
         $this->assertSame('https://cdn.example.test/image.jpg', \Voyager::image('https://cdn.example.test/image.jpg'));
     }
+
+    public function test_image_scheme_normalizer_preserves_local_http_urls(): void
+    {
+        config(['app.url' => 'http://localhost']);
+
+        $this->assertSame(
+            'http://localhost/images/example.jpg',
+            image_normalize_url_scheme('http://localhost/images/example.jpg')
+        );
+        $this->assertSame(
+            '//127.0.0.1/images/example.jpg',
+            image_normalize_url_scheme('//127.0.0.1/images/example.jpg')
+        );
+        $this->assertSame(
+            'https://viarcanvas.com/images/example.jpg',
+            image_normalize_url_scheme('http://viarcanvas.com/images/example.jpg')
+        );
+    }
 }

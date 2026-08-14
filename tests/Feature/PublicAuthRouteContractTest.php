@@ -9,6 +9,7 @@ use App\Repositories\BasketRepository;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -21,6 +22,8 @@ class PublicAuthRouteContractTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        Cache::flush();
 
         Schema::dropIfExists('users');
         Schema::create('users', function (Blueprint $table): void {
@@ -73,6 +76,26 @@ class PublicAuthRouteContractTest extends TestCase
             $table->unsignedBigInteger('foreign_key');
             $table->string('locale');
             $table->text('value')->nullable();
+        });
+        Schema::dropIfExists('header_menu');
+        Schema::create('header_menu', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title')->nullable();
+            $table->string('link')->nullable();
+            $table->string('images')->nullable();
+            $table->unsignedInteger('menu_pos')->default(1);
+            $table->unsignedInteger('order')->default(0);
+            $table->boolean('is_show')->default(true);
+            $table->timestamps();
+        });
+        Schema::dropIfExists('footer_menu');
+        Schema::create('footer_menu', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title')->nullable();
+            $table->string('link')->nullable();
+            $table->unsignedInteger('menu_pos')->default(1);
+            $table->unsignedInteger('order')->default(0);
+            $table->timestamps();
         });
         Schema::dropIfExists('locales');
         Schema::create('locales', function (Blueprint $table): void {

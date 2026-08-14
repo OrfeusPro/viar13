@@ -1240,14 +1240,12 @@ template {
 }
 
 .vz-art.popup-login .popup-close,
-.vz-art.popup-repair-basket .popup-close,
 .vz-art.popup-registration .popup-close {
   color: #9ca5b5;
 }
 
 .vz-art.popup-close:hover,
 .vz-art.popup-login .popup-close:hover,
-.vz-art.popup-repair-basket .popup-close:hover,
 .vz-art.popup-registration .popup-close:hover {
   color: #fa7846;
 }
@@ -1660,7 +1658,6 @@ template {
 }
 
 .vz-art.popup-login::before,
-.vz-art.popup-repair-basket::before,
 .vz-art.popup-registration::before {
   content: "";
   height: calc(100% - 20px);
@@ -1671,7 +1668,6 @@ template {
 }
 
 .vz-art.popup-login::before,
-.vz-art.popup-repair-basket::before,
 .vz-art.popup-registration::before,
 .vz-art.thanks::before {
   width: calc(100% - 20px);
@@ -1689,7 +1685,6 @@ template {
 }
 
 .vz-art.popup-login,
-.vz-art.popup-repair-basket,
 .vz-art.popup-registration {
   padding: 70px;
   background: #fbf2ea;

@@ -87,18 +87,18 @@ class GenerateImageAltJob implements ShouldQueue
         $suggestion = $this->resolveSuggestion();
 
         if (!$this->force && in_array($suggestion->status, [
-            ImageAltSuggestion::STATUS_PENDING,
-            ImageAltSuggestion::STATUS_APPROVED,
-            ImageAltSuggestion::STATUS_APPLIED,
-        ], true)) {
+                ImageAltSuggestion::STATUS_PENDING,
+                ImageAltSuggestion::STATUS_APPROVED,
+                ImageAltSuggestion::STATUS_APPLIED,
+            ], true)) {
             return;
         }
 
         if ($this->force && in_array($suggestion->status, [
-            ImageAltSuggestion::STATUS_PENDING,
-            ImageAltSuggestion::STATUS_APPROVED,
-            ImageAltSuggestion::STATUS_APPLIED,
-        ], true)) {
+                ImageAltSuggestion::STATUS_PENDING,
+                ImageAltSuggestion::STATUS_APPROVED,
+                ImageAltSuggestion::STATUS_APPLIED,
+            ], true)) {
             $suggestion->setStatus(ImageAltSuggestion::STATUS_NEW);
             $suggestion->save();
         }
@@ -110,7 +110,13 @@ class GenerateImageAltJob implements ShouldQueue
         $descriptor = $this->buildDescriptor($suggestion, $config);
 
         try {
-            $gen->generateFor($entity, $descriptor, $locale, $suggestion);
+            $gen->generateFor(
+                $entity,
+                $descriptor,
+                $locale,
+                $suggestion,
+                $this->job === null
+            );
         } catch (NoPublicUrl $exception) {
             $skippedLogger->log($entity, 'no_public_url', [
                 'source' => 'GenerateImageAltJob',
@@ -121,6 +127,10 @@ class GenerateImageAltJob implements ShouldQueue
             ]);
 
             $this->markFailed($suggestion, $exception);
+
+            if ($this->job === null) {
+                throw $exception;
+            }
         } catch (DailyLimitReached $exception) {
             if ($this->job !== null) {
                 $this->release(3600);
@@ -129,8 +139,14 @@ class GenerateImageAltJob implements ShouldQueue
             }
 
             $this->markFailed($suggestion, $exception);
+
+            throw $exception;
         } catch (Throwable $exception) {
             $this->markFailed($suggestion, $exception);
+
+            if ($this->job === null) {
+                throw $exception;
+            }
         }
     }
 

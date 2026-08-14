@@ -153,6 +153,155 @@ class AltSuggestionController extends VoyagerBaseController
     }
 
     /**
+     * Return image alt suggestions for one Voyager BREAD record.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function entity(Request $request): JsonResponse
+    {
+        $this->authorizeAltSuggestions('browse');
+
+        $request->validate([
+            'slug' => 'required|string|max:255',
+            'id' => 'required|integer|min:1',
+        ]);
+
+        list($entity, $types) = $this->resolveBreadEntity(
+            (string) $request->query('slug'),
+            (int) $request->query('id')
+        );
+
+        $suggestions = ImageAltSuggestion::query()
+            ->whereIn('imageable_type', $types)
+            ->where('imageable_id', $entity->getKey())
+            ->orderBy('field')
+            ->orderBy('image_path')
+            ->orderBy('locale')
+            ->orderByDesc('id')
+            ->get();
+
+        $rows = [];
+
+        foreach ($suggestions as $suggestion) {
+            $context = (array) $suggestion->prompt_context;
+            $image = isset($context['image']) && is_array($context['image'])
+                ? $context['image']
+                : [];
+            $field = (string) $suggestion->field;
+            $sourceField = isset($image['field']) && is_string($image['field']) && $image['field'] !== ''
+                ? $image['field']
+                : $field;
+
+            if (strpos($sourceField, 'media:') === 0) {
+                $sourceField = substr($sourceField, 6);
+            }
+
+            $rows[] = [
+                'id' => (int) $suggestion->id,
+                'field' => $field,
+                'source_field' => $sourceField,
+                'image_path' => (string) $suggestion->image_path,
+                'preview_url' => $this->suggestionPreviewUrl((string) $suggestion->image_path),
+                'locale' => (string) ($suggestion->locale ?: ''),
+                'status' => (string) $suggestion->status,
+                'alt' => $suggestion->approved_alt !== null
+                    ? (string) $suggestion->approved_alt
+                    : (string) ($suggestion->suggested_alt ?: ''),
+                'title' => $suggestion->approved_title !== null
+                    ? (string) $suggestion->approved_title
+                    : (string) ($suggestion->suggested_title ?: ''),
+                'current_alt' => (string) ($suggestion->current_alt ?: ''),
+                'current_title' => (string) ($suggestion->current_title ?: ''),
+                'source_type' => isset($image['source_type']) ? (string) $image['source_type'] : 'field',
+                'media_id' => isset($image['media_id']) ? (int) $image['media_id'] : null,
+            ];
+        }
+
+        /** @var \App\Services\AltGeneration\LocaleResolver $localeResolver */
+        $localeResolver = app(LocaleResolver::class);
+
+        return new JsonResponse([
+            'entity' => [
+                'type' => get_class($entity),
+                'id' => (int) $entity->getKey(),
+            ],
+            'locales' => $localeResolver->supportedLocales(),
+            'can_edit' => $this->hasAltSuggestionsPermission('edit'),
+            'suggestions' => $rows,
+        ]);
+    }
+
+    /**
+     * Save edited values and apply them through the existing alt:apply workflow.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function applyEntity(Request $request): JsonResponse
+    {
+        $this->authorizeAltSuggestions('edit');
+
+        $limits = (array) config('alt_generation.limits', []);
+        $request->validate([
+            'slug' => 'required|string|max:255',
+            'id' => 'required|integer|min:1',
+            'suggestions' => 'required|array|min:1|max:500',
+            'suggestions.*.id' => 'required|integer|min:1',
+            'suggestions.*.alt' => 'nullable|string|max:' . (int) ($limits['alt_max'] ?? 125),
+            'suggestions.*.title' => 'nullable|string|max:' . (int) ($limits['title_max'] ?? 70),
+        ]);
+
+        list($entity, $types) = $this->resolveBreadEntity(
+            (string) $request->input('slug'),
+            (int) $request->input('id')
+        );
+        $payload = collect((array) $request->input('suggestions'))
+            ->keyBy(function ($row) {
+                return (int) ($row['id'] ?? 0);
+            });
+        $ids = $payload->keys()->filter()->map(function ($id) {
+            return (int) $id;
+        })->values()->all();
+        $suggestions = ImageAltSuggestion::query()
+            ->whereIn('imageable_type', $types)
+            ->where('imageable_id', $entity->getKey())
+            ->whereIn('id', $ids)
+            ->get();
+
+        if ($suggestions->count() !== count($ids)) {
+            return new JsonResponse([
+                'message' => 'One or more suggestions do not belong to this record.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($suggestions, $payload): void {
+            foreach ($suggestions as $suggestion) {
+                $row = (array) $payload->get((int) $suggestion->id, []);
+                $suggestion->approved_alt = array_key_exists('alt', $row) ? $row['alt'] : $suggestion->suggested_alt;
+                $suggestion->approved_title = array_key_exists('title', $row) ? $row['title'] : $suggestion->suggested_title;
+                $suggestion->setStatus(ImageAltSuggestion::STATUS_APPROVED);
+                $suggestion->reviewed_by = auth()->id();
+                $suggestion->reviewed_at = Carbon::now();
+                $suggestion->error = null;
+                $suggestion->save();
+            }
+        });
+
+        $applied = $this->applySuggestions($ids);
+        $statuses = ImageAltSuggestion::query()
+            ->whereIn('id', $ids)
+            ->pluck('status', 'id');
+
+        return new JsonResponse([
+            'message' => 'Applied ' . $applied . ' of ' . count($ids) . ' suggestion(s).',
+            'applied' => $applied,
+            'requested' => count($ids),
+            'statuses' => $statuses,
+        ]);
+    }
+
+    /**
      * Approve an edited suggestion.
      *
      * @param \Illuminate\Http\Request $request
@@ -843,6 +992,57 @@ class AltSuggestionController extends VoyagerBaseController
     }
 
     /**
+     * @param string $slug
+     * @param int $id
+     * @return array{0: \Illuminate\Database\Eloquent\Model, 1: array<int, string>}
+     */
+    private function resolveBreadEntity(string $slug, int $id): array
+    {
+        $dataType = Voyager::model('DataType')->where('slug', $slug)->firstOrFail();
+        $class = (string) $dataType->model_name;
+
+        if ($class === '' || !class_exists($class) || !is_subclass_of($class, Model::class)) {
+            abort(404);
+        }
+
+        /** @var \Illuminate\Database\Eloquent\Model $entity */
+        $entity = $class::query()->findOrFail($id);
+        $types = [get_class($entity)];
+        $morphClass = $entity->getMorphClass();
+
+        if (is_string($morphClass) && $morphClass !== '' && !in_array($morphClass, $types, true)) {
+            $types[] = $morphClass;
+        }
+
+        return [$entity, $types];
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    private function suggestionPreviewUrl(string $path): string
+    {
+        $path = trim($path);
+
+        if ($path === '' || strpos($path, 'data:image/') === 0 || preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+
+        $normalized = ltrim(str_replace('\\', '/', $path), '/');
+
+        if (strpos($normalized, 'storage/') === 0) {
+            return asset($normalized);
+        }
+
+        if (Storage::disk('public')->exists($normalized)) {
+            return Storage::disk('public')->url($normalized);
+        }
+
+        return asset($normalized);
+    }
+
+    /**
      * @return array<string, int>
      */
     private function statusCounts(): array
@@ -868,18 +1068,25 @@ class AltSuggestionController extends VoyagerBaseController
      */
     private function authorizeAltSuggestions(string $action): void
     {
+        if (!$this->hasAltSuggestionsPermission($action)) {
+            abort(403);
+        }
+    }
+
+    /**
+     * @param string $action
+     * @return bool
+     */
+    private function hasAltSuggestionsPermission(string $action): bool
+    {
         $user = auth()->user();
 
         if (!$user || !method_exists($user, 'hasPermission')) {
-            abort(403);
+            return false;
         }
 
-        $allowed = $user->hasPermission($action . '_alt_suggestions')
+        return $user->hasPermission($action . '_alt_suggestions')
             || $user->hasPermission($action . '_image_alt_suggestions');
-
-        if (!$allowed) {
-            abort(403);
-        }
     }
 
     /**

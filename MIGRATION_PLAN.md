@@ -177,6 +177,16 @@
 
 ## Текущая задача
 
+- [x] [DONE] Досинхронизировать все server files commit `72af3357`,
+  включая ALT/Voyager исходники и assets; сохранить admin routes отключёнными
+  в Laravel 13 runtime и не потерять frontend compatibility helpers.
+- [x] [DONE] Синхронизировать публичные изменения server commit
+  `72af3357` из `C:\OSPanel\domains\asoft\viar`: перенести frontend-переводы,
+  публичные assets и совместимые web-server настройки; admin/Voyager ALT-код
+  классифицировать и отложить до отдельного Filament 5 этапа.
+- [x] [DONE] Устранить cache-зависимость account feature-тестов:
+  тестовая схема не создавала обязательные `header_menu`/`footer_menu`, поэтому
+  результат ошибочно зависел от ранее прогретого cache.
 - [~] Провести browser UAT основного frontend-контура; gallery item → cart,
   data и delivery проверены, следующая точка — интерактивный canvas upload и
   заполненный delivery → payment без создания реального заказа.
@@ -193,3 +203,16 @@
   payment view проверить после сохранения валидной доставки.
 - [ ] Проверить основные страницы в mobile viewport.
 - [ ] После frontend interaction UAT вернуться к mutating GET/ANY basket routes.
+
+## Задачи, найденные при server sync `72af3357`
+
+- [ ] [TODO] Согласовать замену blanket Apache-блокировки gallery query
+  `color|order|size`: правило из production commit возвращает 403 для реальных
+  параметров, которые читает `GalleryController::hb_type_render()`. До решения
+  серверная защита сохранена без изменений.
+- [x] [DONE] Синхронизировать 10 admin-only файлов `72af3357` как
+  неактивный source corpus; функциональный перенос ALT UI на Filament 5 всё
+  равно остаётся отдельным будущим этапом.
+- [ ] [TODO] На этапе Filament 5 функционально адаптировать перенесённый ALT UI:
+  сейчас исходники, команды и assets синхронизированы, но Voyager admin routes
+  по-прежнему не загружаются в Laravel 13 runtime.

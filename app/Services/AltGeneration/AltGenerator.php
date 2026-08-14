@@ -76,7 +76,8 @@ class AltGenerator
         Model $entity,
         ImageDescriptor $image,
         ?string $locale = null,
-        ?ImageAltSuggestion $targetSuggestion = null
+        ?ImageAltSuggestion $targetSuggestion = null,
+        bool $throwOnFailure = false
     ): ImageAltSuggestion
     {
         $context = $this->contextResolver->resolve($entity, $image, $locale);
@@ -119,7 +120,7 @@ class AltGenerator
                 } catch (DailyLimitReached $limitException) {
                     throw $limitException;
                 } catch (Throwable $fallbackException) {
-                    return $this->recordFailure(
+                    $failure = $this->recordFailure(
                         $entity,
                         $image,
                         $context,
@@ -127,20 +128,58 @@ class AltGenerator
                         $fallbackException,
                         $targetSuggestion
                     );
+
+                    if ($throwOnFailure) {
+                        throw $fallbackException;
+                    }
+
+                    return $failure;
                 }
             } else {
-                return $this->recordFailure($entity, $image, $context, $model, $exception, $targetSuggestion);
+                $failure = $this->recordFailure(
+                    $entity,
+                    $image,
+                    $context,
+                    $model,
+                    $exception,
+                    $targetSuggestion
+                );
+
+                if ($throwOnFailure) {
+                    throw $exception;
+                }
+
+                return $failure;
             }
         } catch (DailyLimitReached $exception) {
             throw $exception;
         } catch (Throwable $exception) {
-            return $this->recordFailure($entity, $image, $context, $model, $exception, $targetSuggestion);
+            $failure = $this->recordFailure(
+                $entity,
+                $image,
+                $context,
+                $model,
+                $exception,
+                $targetSuggestion
+            );
+
+            if ($throwOnFailure) {
+                throw $exception;
+            }
+
+            return $failure;
         }
 
         return $this->recordSuccess($entity, $image, $context, $result, $usedModel, $targetSuggestion);
     }
 
     /**
+     * Build the client payload.
+     *
+     * The nested image metadata keeps the original public URL for logging and
+     * prompt context. Only the top-level public_url used by OpenAiVisionClient
+     * is replaced with a base64 data URL when a local file is available.
+     *
      * @param array<string, mixed> $context
      * @param \App\Services\AltGeneration\ImageDescriptor $image
      * @return array<string, mixed>
@@ -151,9 +190,117 @@ class AltGenerator
             'context' => $context,
             'image' => $image->toArray(),
             'path' => $image->path,
-            'public_url' => $image->publicUrl,
+            'public_url' => $this->imageInputUrl($image),
             'absolute_path' => $image->absolutePath,
         ];
+    }
+
+    /**
+     * Return a base64 data URL for a readable local image.
+     *
+     * Remote-only images keep their public URL. Existing data URLs are passed
+     * through unchanged.
+     *
+     * @param \App\Services\AltGeneration\ImageDescriptor $image
+     * @return string|null
+     */
+    private function imageInputUrl(ImageDescriptor $image): ?string
+    {
+        $path = trim((string) $image->path);
+
+        if (strpos($path, 'data:image/') === 0) {
+            return $path;
+        }
+
+        $absolutePath = $image->absolutePath;
+
+        if (
+            $absolutePath === null ||
+            trim((string) $absolutePath) === '' ||
+            !is_file($absolutePath) ||
+            !is_readable($absolutePath)
+        ) {
+            return $image->publicUrl;
+        }
+
+        $mimeType = $this->imageMimeType($absolutePath);
+
+        if ($mimeType === null) {
+            return $image->publicUrl;
+        }
+
+        $contents = file_get_contents($absolutePath);
+
+        if ($contents === false || $contents === '') {
+            return $image->publicUrl;
+        }
+
+        return 'data:' .
+            $mimeType .
+            ';base64,' .
+            base64_encode($contents);
+    }
+
+    /**
+     * Detect an OpenAI-compatible image MIME type.
+     *
+     * @param string $absolutePath
+     * @return string|null
+     */
+    private function imageMimeType(string $absolutePath): ?string
+    {
+        $mimeType = null;
+
+        if (function_exists('getimagesize')) {
+            $imageInfo = @getimagesize($absolutePath);
+
+            if (
+                is_array($imageInfo) &&
+                isset($imageInfo['mime']) &&
+                is_string($imageInfo['mime'])
+            ) {
+                $mimeType = strtolower(
+                    trim($imageInfo['mime'])
+                );
+            }
+        }
+
+        if (
+            $mimeType === null &&
+            function_exists('finfo_open')
+        ) {
+            $finfo = @finfo_open(FILEINFO_MIME_TYPE);
+
+            if ($finfo !== false) {
+                $detected = @finfo_file(
+                    $finfo,
+                    $absolutePath
+                );
+
+                finfo_close($finfo);
+
+                if (is_string($detected)) {
+                    $mimeType = strtolower(
+                        trim($detected)
+                    );
+                }
+            }
+        }
+
+        $allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+        ];
+
+        return in_array(
+            $mimeType,
+            $allowedMimeTypes,
+            true
+        )
+            ? $mimeType
+            : null;
     }
 
     /**
