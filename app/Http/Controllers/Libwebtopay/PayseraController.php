@@ -11,8 +11,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Libwebtopay\WebToPay;
-use App\Models\Orders;
-use App\Services\SynvolveWebhookService;
+use App\Services\Payment\PayseraCallbackService;
 
 class PayseraController extends Controller
 {
@@ -82,21 +81,6 @@ class PayseraController extends Controller
         return rtrim(url(App::getLocale()), '/');
     }
 
-    function isPaymentValid(array $order, array $response): bool
-    {
-        if (array_key_exists('payamount', $response) === false) {
-            if ($order['amount'] !== $response['amount'] || $order['currency'] !== $response['currency']) {
-                throw new Exception('Wrong payment amount');
-            }
-        } else {
-            if ($order['amount'] !== $response['payamount'] || $order['currency'] !== $response['paycurrency']) {
-                throw new Exception('Wrong payment amount');
-            }
-        }
-
-        return true;
-    }
-
     function pay_accept()
     {
 
@@ -109,23 +93,7 @@ class PayseraController extends Controller
             );
 
             if ($response['status'] === '1' || $response['status'] === '3') {
-                //@ToDo: Validate payment amount and currency, example provided in isPaymentValid method.
-                //@ToDo: Validate order status by $response['orderid']. If it is not already approved, approve it.
-
-                $order = Orders::where('id', $response['orderid'])->get()->first();
-                if (! $order) {
-                    throw new Exception('Payment order was not found.');
-                }
-
-                // get the id of current order
-                // i want to check delivery data in this order by id , i have a function in Order model called getDeliveryData()
-                // i want to check if has_invited_sale=1 then i want to know id of the user who invited this sale
-
-                // $order_id = $response['orderid'];
-                // $has_invited_sale= $order->getDeliveryData($order_id,'has_invited_sale');
-                $order->payment_status = "payed";
-                $order->save();
-                app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paysera');
+                app(PayseraCallbackService::class)->confirmOrder($response);
 
                 // $content = view(env('THEME_RESOURCES') . '.pay.callback')->with('response', $response)->render();
                 return Redirect::route('thanks', ['order_id' => $response['orderid'], 'payed' => true ]);
@@ -165,33 +133,7 @@ class PayseraController extends Controller
                 (string) config('paysera.sign_password')
             );
 
-            if ($response['status'] === '1' || $response['status'] === '3') {
-                //@ToDo: Validate payment amount and currency, example provided in isPaymentValid method.
-                //@ToDo: Validate order status by $response['orderid']. If it is not already approved, approve it.
-
-                $order = Orders::where('id', $response['orderid'])->get()->first();
-                if (! $order) {
-                    throw new Exception('Payment order was not found.');
-                }
-
-                // get the id of current order
-
-                // i want to check delivery data in this order by id , i have a function in Order model called getDeliveryData()
-                // i want to check if has_invited_sale=1 then i want to know id of the user who invited this sale
-
-                // $order_id = $response['orderid'];
-                // $has_invited_sale= $order->getDeliveryData($order_id,'has_invited_sale');
-                $order->payment_status = "payed";
-                $order->save();
-                app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paysera');
-
-                // $content = view(env('THEME_RESOURCES') . '.pay.callback')->with('response', $response)->render();
-                return Redirect::route('thanks', ['order_id' => $response['orderid'], 'payed' => true ]);
-            } else {
-                throw new Exception('Payment was not successful');
-                //$content = view(env('THEME_RESOURCES') . '.pay.callback')->with('exception', 'Payment was not successful')->render();
-                return Redirect::route('thanks', ['order_id' => $response['orderid']]);
-            }
+            return Redirect::route('thanks', ['order_id' => $response['orderid'] ?? null]);
         } catch (Throwable $exception) {
             //$content = view(env('THEME_RESOURCES') . '.pay.callback')->with('exception', $exception->getMessage())->render();
 
@@ -224,22 +166,9 @@ class PayseraController extends Controller
                 (string) config('paysera.sign_password')
             );
 
-            if ($response['status'] === '1' || $response['status'] === '3') {
+            app(PayseraCallbackService::class)->confirmOrder($response);
 
-                $order = Orders::where('id', $response['orderid'])->get()->first();
-                if (! $order) {
-                    throw new Exception('Payment order was not found.');
-                }
-                $order->payment_status = "payed";
-                $order->save();
-                app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paysera');
-
-                return response('OK', 200);
-                // $order_id = $response['orderid'];
-                // $has_invited_sale= $order->getDeliveryData($order_id,'has_invited_sale');
-            } else {
-                throw new Exception('Payment was not successful');
-            }
+            return response('OK', 200);
         } catch (Throwable $exception) {
             Log::warning('Paysera callback was rejected.', [
                 'order_id' => $response['orderid'] ?? null,

@@ -112,7 +112,7 @@ class OneTimePayPalService
         return rtrim(url(App::getLocale() . '/paypal'), '/');
     }
 
-    public function checkPayment($orderID)
+    public function capturePayment($orderID): ?object
     {
         $request = new OrdersCaptureRequest($orderID);
         $request->prefer('return=representation');
@@ -121,13 +121,13 @@ class OneTimePayPalService
             $response = $this->client()->execute($request);
             Log::channel('paypal')->debug('Success callback payment: ', (array)$response->result);
 
-            return true;
+            return $response->result;
         } catch (\Exception $ex) {
             Log::channel('paypal')->error('Fail callback payment: ', [
                 'message' => $ex->getMessage()
             ]);
 
-            return false;
+            return null;
         }
     }
 }

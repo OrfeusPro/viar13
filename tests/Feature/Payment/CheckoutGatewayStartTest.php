@@ -107,6 +107,48 @@ class CheckoutGatewayStartTest extends TestCase
         $this->assertTrue($controller->pay_cancel($request)->isRedirect(route('cart.index')));
     }
 
+    public function test_paypal_capture_returns_provider_result_without_external_request(): void
+    {
+        $service = new class extends OneTimePayPalService {
+            protected function client()
+            {
+                return new class {
+                    public function execute($request): object
+                    {
+                        return (object) [
+                            'result' => (object) [
+                                'status' => 'COMPLETED',
+                                'purchase_units' => [],
+                            ],
+                        ];
+                    }
+                };
+            }
+        };
+
+        $result = $service->capturePayment('PAYPAL-TEST-ID');
+
+        $this->assertNotNull($result);
+        $this->assertSame('COMPLETED', $result->status);
+    }
+
+    public function test_paypal_capture_error_returns_null_without_external_request(): void
+    {
+        $service = new class extends OneTimePayPalService {
+            protected function client()
+            {
+                return new class {
+                    public function execute($request): void
+                    {
+                        throw new RuntimeException('Simulated PayPal capture outage');
+                    }
+                };
+            }
+        };
+
+        $this->assertNull($service->capturePayment('PAYPAL-TEST-ID'));
+    }
+
     public function test_invalid_paysera_callbacks_return_controlled_responses(): void
     {
         $originalRequest = $_REQUEST;

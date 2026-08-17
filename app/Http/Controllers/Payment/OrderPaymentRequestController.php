@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\Payment;
 
-use Exception;
+use Throwable;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Libwebtopay\WebToPay;
-use App\Http\Controllers\Libwebtopay\PayseraController;
 use App\Models\OrderPaymentRequest;
 use App\Services\Payment\OrderPaymentRequestService;
+use App\Services\Payment\PayseraCallbackService;
+use App\Services\Payment\PayPalCaptureService;
 use App\Services\Payment\PayPal\OneTimePayPalService;
 
 class OrderPaymentRequestController extends Controller
@@ -70,22 +72,27 @@ class OrderPaymentRequestController extends Controller
 
     public function payseraAccept()
     {
+        $response = [];
+
         try {
             $response = WebToPay::validateAndParseData(
                 $_REQUEST,
-                PayseraController::projectid,
-                PayseraController::sign_password
+                (string) config('paysera.project_id'),
+                (string) config('paysera.sign_password')
             );
 
             if ($response['status'] === '1' || $response['status'] === '3') {
-                $paymentRequest = $this->orderPaymentRequestService->markAsPaidByPublicNumber((string) $response['orderid']);
+                $paymentRequest = app(PayseraCallbackService::class)->confirmPaymentRequest($response);
 
                 if ($paymentRequest) {
                     return Redirect::to($paymentRequest->publicUrl())->with('payment_request_flash', 'paid');
                 }
             }
-        } catch (Exception $exception) {
-            // ignore, fallback below
+        } catch (Throwable $exception) {
+            Log::warning('Paysera payment-request accept was rejected.', [
+                'order_id' => $response['orderid'] ?? request('orderid'),
+                'message' => $exception->getMessage(),
+            ]);
         }
 
         $paymentRequest = OrderPaymentRequest::where('public_number', (string) request('orderid'))->first();
@@ -110,39 +117,57 @@ class OrderPaymentRequestController extends Controller
 
     public function payseraCallback()
     {
+        $response = [];
+
         try {
             $response = WebToPay::validateAndParseData(
                 $_REQUEST,
-                PayseraController::projectid,
-                PayseraController::sign_password
+                (string) config('paysera.project_id'),
+                (string) config('paysera.sign_password')
             );
 
             if ($response['status'] === '1' || $response['status'] === '3') {
-                $this->orderPaymentRequestService->markAsPaidByPublicNumber((string) $response['orderid']);
-                echo 'OK';
+                app(PayseraCallbackService::class)->confirmPaymentRequest($response);
 
-                return;
+                return response('OK', 200);
             }
-        } catch (Exception $exception) {
-            echo get_class($exception) . ':' . $exception->getMessage();
+        } catch (Throwable $exception) {
+            Log::warning('Paysera payment-request callback was rejected.', [
+                'order_id' => $response['orderid'] ?? request('orderid'),
+                'message' => $exception->getMessage(),
+            ]);
 
-            return;
+            return response('ERROR', 400);
         }
 
-        echo 'Payment was not successful';
+        return response('ERROR', 400);
     }
 
     public function paypalAccept(HttpRequest $request)
     {
         $paymentRequest = OrderPaymentRequest::where('billing_invoice_uuid', $request->token)->firstOrFail();
 
-        if ((new OneTimePayPalService())->checkPayment($request->token)) {
-            $this->orderPaymentRequestService->markAsPaid($paymentRequest);
-
+        if ($paymentRequest->isPaid()) {
             return Redirect::to($paymentRequest->publicUrl())->with('payment_request_flash', 'paid');
         }
 
-        return Redirect::to($paymentRequest->publicUrl())->with('payment_request_flash', 'error');
+        $captureResult = app(OneTimePayPalService::class)->capturePayment($request->token);
+        if (! $captureResult) {
+            return Redirect::to($paymentRequest->publicUrl())->with('payment_request_flash', 'error');
+        }
+
+        try {
+            app(PayPalCaptureService::class)->confirmPaymentRequest($paymentRequest, $captureResult);
+
+            return Redirect::to($paymentRequest->publicUrl())->with('payment_request_flash', 'paid');
+        } catch (Throwable $exception) {
+            Log::warning('PayPal payment-request capture was rejected.', [
+                'payment_request_id' => $paymentRequest->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return Redirect::to($paymentRequest->publicUrl())->with('payment_request_flash', 'error');
+        }
     }
 
     public function paypalCancel(HttpRequest $request)

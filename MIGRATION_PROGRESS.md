@@ -564,5 +564,48 @@ scope; Filament 5 будет рассматриваться отдельным �
 - реальные запросы Paysera/PayPal не выполнялись: локальный `.env` использует
   production endpoints. По решению пользователя sandbox исключён из приёмки,
   так как недоступен; реальная транзакция остаётся только штатной проверкой
-  после запуска. Отдельная техническая задача — проверка суммы, валюты и
-  перехода статуса Paysera callback.
+  после запуска.
+
+### 2026-08-17 — защита Paysera callback
+
+- добавлен единый `PayseraCallbackService` для checkout-заказов и публичных
+  ссылок на доплату;
+- перед оплатой checkout сумма восстанавливается только из сохранённых данных:
+  `sale_price` (либо `price`) + `items.total_terms_price` +
+  `delivery.deliv_price`; входящая сумма Paysera сравнивается в евроцентах;
+- проверяются успешный Paysera status, EUR/сохранённая валюта, реальный
+  Paysera-метод заказа и допустимый переход `not_payed -> payed`; уже оплаченный
+  заказ обрабатывается идемпотентно без повторного webhook;
+- для ссылки на доплату разрешён только переход `pending -> paid`, сумма и
+  валюта сверяются с `order_payment_requests`, повторный callback безопасен;
+- `pay_cancel` больше не способен пометить заказ оплаченным; callbacks ссылок
+  на доплату используют `config/paysera.php` вместо удалённых констант и не
+  раскрывают текст внутренних исключений в HTTP-response;
+- реальные запросы и списания не выполнялись;
+- проверки: PHP syntax PASS; payment regression — 14 passed / 38 assertions,
+  1 admin-only test ожидаемо skipped; проверены неверная сумма, валюта,
+  запрещённый переход и повторный callback.
+- последующий аудит PayPal подтвердил только базовое покрытие start/error/cancel:
+  текущий Capture handler ещё не сверяет `COMPLETED`, сумму, валюту и
+  `reference_id`, поэтому полная проверка PayPal вынесена в следующий TODO.
+
+### 2026-08-17 — защита подтверждения PayPal
+
+- Capture API теперь возвращает контроллеру фактический provider result, а не
+  только `true/false`; заказ не меняется по данным браузера;
+- добавлен `PayPalCaptureService`: обязательны верхний статус `COMPLETED`, один
+  purchase unit с ожидаемым `reference_id`, один завершённый capture, точная
+  сумма и сохранённая валюта EUR;
+- для checkout дополнительно проверяется метод `paypalOnetimePayment` и переход
+  `not_payed -> payed`; повторный возврат для уже оплаченного заказа не вызывает
+  новый Capture API и не отправляет повторный Synvolve webhook;
+- аналогичные проверки применены к публичным ссылкам на доплату с переходом
+  `pending -> paid`;
+- выделен единый `OrderPaymentAmountCalculator` для PayPal/Paysera callback и
+  повторного запуска оплаты из кабинета; учитываются сохранённые `sale_price`,
+  `sale_eur`, `sale_percent`, срочность и доставка;
+- реальные запросы к PayPal и списания не выполнялись; ответы Create/Capture и
+  ошибки провайдера проверены test doubles;
+- проверки: payment/account regression — 26 passed / 66 assertions,
+  1 admin-only test ожидаемо skipped; PHP syntax, Pint новых сервисов и
+  `git diff --check` PASS.

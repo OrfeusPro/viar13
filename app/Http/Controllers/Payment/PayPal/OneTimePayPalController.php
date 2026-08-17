@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Payment\PayPal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Orders;
-use App\Services\SynvolveWebhookService;
+use App\Services\Payment\PayPalCaptureService;
 use App\Services\Payment\PayPal\OneTimePayPalService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Throwable;
 
 class OneTimePayPalController extends Controller
 {
@@ -22,13 +24,25 @@ class OneTimePayPalController extends Controller
             return Redirect::route('cart.index')->with('error', __('Payment order was not found.'));
         }
 
-        if (app(OneTimePayPalService::class)->checkPayment($request->token)) {
-            $order->payment_status = "payed";
-            $order->save();
-            app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paypal');
+        if ($order->payment_status === 'payed') {
+            return Redirect::route('thanks', ['order_id' => $order->id, 'payed' => true]);
+        }
+
+        $captureResult = app(OneTimePayPalService::class)->capturePayment($request->token);
+        if (! $captureResult) {
+            return Redirect::route('thanks', ['order_id' => $order->id]);
+        }
+
+        try {
+            app(PayPalCaptureService::class)->confirmOrder($order, $captureResult);
 
             return Redirect::route('thanks', ['order_id' => $order->id, 'payed' => true]);
-        } else {
+        } catch (Throwable $exception) {
+            Log::warning('PayPal capture was rejected.', [
+                'order_id' => $order->id,
+                'message' => $exception->getMessage(),
+            ]);
+
             return Redirect::route('thanks', ['order_id' => $order->id]);
         }
     }

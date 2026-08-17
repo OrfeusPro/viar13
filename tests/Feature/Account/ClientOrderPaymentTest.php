@@ -4,6 +4,7 @@ namespace Tests\Feature\Account;
 
 use App\Models\User;
 use App\Services\Payment\ClientOrderPaymentService;
+use App\Services\Payment\PayPal\OneTimePayPalService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Hash;
@@ -75,6 +76,34 @@ class ClientOrderPaymentTest extends TestCase
         $this->actingAs($user)->post(route('new_account.order_payment.start', ['order' => 503]), [
             'payment' => 'paypalOnetimePayment',
         ]);
+    }
+
+    public function test_repayment_uses_the_same_saved_discount_total_as_capture_validation()
+    {
+        $user = $this->createUser(14, 2, 'discount@example.test');
+        $this->createOrder(504, 14, 'not_payed');
+        $order = \App\Models\Orders::query()->findOrFail(504);
+        $order->price = '100.00';
+        $order->sale_price = '90.00';
+        $order->sale_eur = '10.00';
+        $order->sale_percent = '10.00';
+        $order->save();
+
+        $paypal = \Mockery::mock(OneTimePayPalService::class);
+        $paypal->shouldReceive('getRequisites')
+            ->once()
+            ->withArgs(function (array $payload): bool {
+                return $payload['order_id'] === 504
+                    && $payload['paypalTotalPrice'] === '87.00';
+            })
+            ->andReturn(redirect('/fake-paypal'));
+        $this->app->instance(OneTimePayPalService::class, $paypal);
+
+        $this->actingAs($user);
+        $response = app(ClientOrderPaymentService::class)->start($order, 'paypalOnetimePayment');
+
+        $this->assertTrue($response->isRedirect());
+        $this->assertStringEndsWith('/fake-paypal', $response->getTargetUrl());
     }
 
     private function createSchema(): void
