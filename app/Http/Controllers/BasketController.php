@@ -1420,7 +1420,18 @@ class BasketController extends Controller
     {
         Log::info('BasketController@addToBasket: начало вызова', [
             'user_id' => auth()->id(),
-            'request' => request()->all(),
+            'basket_type' => $request->input('basketType'),
+            'input_fields' => array_keys($request->except([
+                'Image3d',
+                'image',
+                'image_offset',
+                'photo_ex',
+                'orig_images',
+                'userImage',
+            ])),
+            'has_image_3d' => $request->filled('Image3d'),
+            'has_user_image' => $request->hasFile('userImage'),
+            'original_images_count' => count($request->file('orig_images', [])),
         ]);
 
         try {

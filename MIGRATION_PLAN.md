@@ -200,7 +200,12 @@
 - [x] Исправить найденные 500 legacy basket/cart layouts.
 - [x] Устранить JS crash `InteriorGenerator` на module item card без canvas.
 - [x] Пройти интерактивный gallery item → cart сценарий с проверкой сессии.
-- [ ] Пройти интерактивный canvas → cart сценарий с реальным тестовым файлом.
+- [x] [DONE] Пройти интерактивный canvas → cart сценарий с реальным тестовым файлом:
+  проверить фактический POST, ответ, Laravel log, JS console и session cart.
+- [x] [DONE] Исправить найденные при Canvas UAT ошибки: перенаправлять HTTP на HTTPS,
+  чтобы браузер не блокировал HTTPS-шрифты по CORS; не писать
+  `Image3d`/загруженные файлы целиком в Laravel log; защитить `Canvas3D` mouse
+  events после очистки редактора.
 - [~] Проверить checkout: data/delivery и защита payment готовы; полноценный
   payment view проверить после сохранения валидной доставки.
 - [ ] Проверить основные страницы в mobile viewport.

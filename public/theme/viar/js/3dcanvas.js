@@ -3190,6 +3190,11 @@ Canvas3D.prototype.render = function()
 
 Canvas3D.prototype.PosTo3dBoxPos = function(SinglePos)
 {
+	if (!SinglePos || !this.camera || !this.box)
+	{
+		return;
+	}
+
 	var raycaster = new THREE.Raycaster();
 	var point = new THREE.Vector2();
 	point.y = -(SinglePos.y * 2 - 1);
@@ -3219,6 +3224,10 @@ Canvas3D.prototype.InitRotation = function()
 var trigger = new Events();
 new MouseEvents(this.canvas_ViewPort,trigger).on();
 trigger.addEventListener("mousedown", function(e){
+	if (!this.box || !this.camera)
+	{
+		return;
+	}
 
 	var old_r_y = this.box.rotation.y;
 	var old_r_x = this.box.rotation.x;

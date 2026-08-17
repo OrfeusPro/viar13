@@ -485,3 +485,27 @@ scope; Filament 5 будет рассматриваться отдельным �
   таблица `orders` в SQLite и четыре ожидаемых метода сервиса;
 - следующий точный шаг: интерактивный canvas upload → cart с реальным тестовым
   изображением и проверкой HTTP-ответа, Laravel log, JS console и session cart.
+
+### 2026-08-17 — интерактивный Canvas → cart
+
+- пользователь прошёл полный Canvas-конфигуратор и отправил реальный файл;
+  Laravel log подтверждает успешный `/basket/add`: исходник сохранён в
+  `uploads`, preview — в `user_images`, `boxIds=[3]`, итоговый `new_count=1`;
+- ответ не был `422`: repository и controller завершили добавление успешно;
+- причина отсутствующих иконок установлена по browser console: Canvas был
+  открыт по HTTP, а шрифты запрашивались по HTTPS и блокировались CORS;
+- включён постоянный HTTP → HTTPS redirect с учётом
+  `X-Forwarded-Proto: https`; HTTP Canvas возвращает `301` на тот же HTTPS URL,
+  прокси-запрос не зацикливается, WOFF по HTTPS возвращает `200 font/woff`;
+- на HTTPS браузер подтверждает `icons-tools`, загруженный font и glyph content
+  для `undo/redo/zoom/turn/delete`; отдельные файлы иконок не требуются;
+- найденная browser error `Canvas3D.PosTo3dBoxPos: reading layers` защищена от
+  событий после очистки `box`/`camera`;
+- стартовый лог `/basket/add` больше не пишет полный `Image3d` base64 и
+  содержимое загруженных файлов: остаются только поля и безопасные признаки;
+- ограничение размера загружаемых изображений не добавлялось; контракт файла
+  100 MiB по-прежнему проходит;
+- проверки: PHP syntax, `node --check`, `view:cache`, `git diff --check` PASS;
+  basket regression — 29 tests / 151 assertions PASS;
+- следующий точный шаг: сохранить валидную доставку и открыть payment view без
+  отправки реального заказа.
