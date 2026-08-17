@@ -461,3 +461,27 @@ scope; Filament 5 будет рассматриваться отдельным �
   JS syntax и `git diff --check` PASS;
 - следующий точный шаг: решить судьбу blanket gallery filter block либо
   продолжить запланированный canvas upload → cart smoke.
+
+### 2026-08-17 — восстановление gallery query filters
+
+- из `public/.htaccess` удалена blanket-блокировка `color|order|size`, которая
+  запрещала штатные ссылки frontend-галереи; блокировка Semrush/PetalBot
+  сохранена и проверена ответом 403;
+- подтверждено, что gallery filters используют параметризованный Laravel Query
+  Builder, а сортировка ограничена значениями `new|cheap|expensive`;
+- реальные HTTP-проверки `color=1`, `size=30x40_over`,
+  `size=30x40_smaller`, всех сортировок и комбинированного запроса на `/en/`
+  возвращают 200; выдача меняется для color и разных сортировок;
+- негативная проверка обнаружила `500 Undefined array key 1` для
+  `size=broken`, затем второй 500 в Blade при массивном `size[]`;
+- `GalleryController` теперь удаляет некорректные `color`, `size`, `order` из
+  query до передачи в модель и Blade; `GalleryItem` дополнительно защищён от
+  некорректных типов и формата размера;
+- повторные запросы с `size=broken`, `size[]=...`, `color=abc`, `color[]=1` и
+  `order[]=cheap` возвращают 200; после них Laravel log не изменился;
+- PHP syntax PASS; frontend regression — 59 tests / 295 assertions PASS;
+- полный suite проверен отдельно: 72 passed / 5 failed. Все пять failures
+  относятся к уже известному backlog `SynvolveWebhookServiceTest`: отсутствует
+  таблица `orders` в SQLite и четыре ожидаемых метода сервиса;
+- следующий точный шаг: интерактивный canvas upload → cart с реальным тестовым
+  изображением и проверкой HTTP-ответа, Laravel log, JS console и session cart.

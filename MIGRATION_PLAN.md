@@ -121,7 +121,9 @@
 - [x] Передавать обычную строку в `Hash::check()` из
   `ConfirmPasswordController` под Laravel 13.
 - [ ] Классифицировать legacy-тесты, зависящие от отсутствующей SQLite-схемы и
-  устаревшего контракта `SynvolveWebhookService`.
+  устаревшего контракта `SynvolveWebhookService`: полный прогон 2026-08-17 —
+  72 passed / 5 failed; один failure из-за отсутствующей `orders` в SQLite и
+  четыре из-за отсутствующих методов conversation/lead update в сервисе.
 - [ ] Провести отдельный аудит публичных служебных и изменяющих состояние
   GET-маршрутов (`mail/*`, генераторы, checkout helpers, admin controllers).
 - [ ] Проверить controller-level authorization для 20 `orders/*` POST routes,
@@ -206,10 +208,14 @@
 
 ## Задачи, найденные при server sync `72af3357`
 
-- [ ] [TODO] Согласовать замену blanket Apache-блокировки gallery query
+- [x] [DONE] Удалить blanket Apache-блокировку gallery query
   `color|order|size`: правило из production commit возвращает 403 для реальных
-  параметров, которые читает `GalleryController::hb_type_render()`. До решения
-  серверная защита сохранена без изменений.
+  параметров, которые читает `GalleryController::hb_type_render()`; штатные
+  фильтры возвращают 200, bot-блокировка Semrush/PetalBot сохранена.
+- [x] [DONE] Защитить gallery filter parser от повреждённых query:
+  `size=broken` после снятия Apache-блока выявил `500 Undefined array key 1`;
+  некорректные и массивные `size`/`color`/`order` теперь удаляются до модели и
+  Blade, возвращают 200 без новых ошибок в Laravel log.
 - [x] [DONE] Синхронизировать 10 admin-only файлов `72af3357` как
   неактивный source corpus; функциональный перенос ALT UI на Filament 5 всё
   равно остаётся отдельным будущим этапом.

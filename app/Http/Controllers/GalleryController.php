@@ -326,11 +326,12 @@ class GalleryController extends Controller
 
     public function hb_type_render(Request $request, $type, $category = false)
     {
+        $validatedFilters = $this->validatedGalleryFilters($request);
         $page = $request->get('page');
         $tag = $request->get('tag');
-        $color = $request->get('color');
-        $size = $request->get('size');
-        $order = $request->get('order');
+        $color = $validatedFilters['color'];
+        $size = $validatedFilters['size'];
+        $order = $validatedFilters['order'];
         $search = $request->get('search');
         $shape = $request->get('shape');
 
@@ -955,11 +956,12 @@ class GalleryController extends Controller
 
     public function universal(Request $request, $alias, $filter_type, $param)
     {
+        $validatedFilters = $this->validatedGalleryFilters($request);
         $page = $request->get('page') ?? null;
         $tag = $request->get('tag') ?? null;
-        $color = $request->get('color') ?? null;
-        $size = $request->get('size') ?? null;
-        $order = $request->get('order') ?? null;
+        $color = $validatedFilters['color'];
+        $size = $validatedFilters['size'];
+        $order = $validatedFilters['order'];
         $search = $request->get('search') ?? null;
 
         $params = $request->query();
@@ -1074,6 +1076,29 @@ class GalleryController extends Controller
         $this->vars = Arr::add($this->vars, 'meta_desc', $param['meta_desc']);
         $this->vars = Arr::add($this->vars, 'content', $content);
         return $this->renderOutput();
+    }
+
+    private function validatedGalleryFilters(Request $request): array
+    {
+        $color = $request->query('color');
+        if (!is_string($color) || !ctype_digit($color) || (int) $color < 1) {
+            $request->query->remove('color');
+            $color = null;
+        }
+
+        $size = $request->query('size');
+        if (!is_string($size) || !preg_match('/^\d{1,4}x\d{1,4}_(over|smaller)$/', $size)) {
+            $request->query->remove('size');
+            $size = null;
+        }
+
+        $order = $request->query('order');
+        if (!is_string($order) || !in_array($order, ['new', 'cheap', 'expensive'], true)) {
+            $request->query->remove('order');
+            $order = null;
+        }
+
+        return compact('color', 'size', 'order');
     }
 
 

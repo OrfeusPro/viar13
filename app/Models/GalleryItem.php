@@ -432,9 +432,14 @@ class GalleryItem extends Model implements HasMedia
                     $q->where('gallery_category_id', $category);
             });
         }
-        if (!empty($filtr['color'])) {
+        $color = $filtr['color'] ?? null;
+        $color = is_scalar($color)
+            ? filter_var($color, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+            : false;
+
+        if ($color !== false && $color !== null) {
             $color_items_ids = DB::table('gallery_items_ gallery_tag_colors')
-                ->where('gallery_tag_color_id', $filtr['color'])->pluck('gallery_item_id');
+                ->where('gallery_tag_color_id', $color)->pluck('gallery_item_id');
 
             $items = $items->whereIn('id', $color_items_ids);
         }
@@ -462,13 +467,12 @@ class GalleryItem extends Model implements HasMedia
             $items = $items->whereIn('id', $shape_ids);
         }
 
-        if (!empty($filtr['size'])) {
+        $size = $filtr['size'] ?? null;
+        if (is_string($size) && preg_match('/^(\d{1,4})x(\d{1,4})_(over|smaller)$/', $size, $matches)) {
+            $size1 = (int) $matches[1];
+            $size2 = (int) $matches[2];
+            $size_sort = $matches[3];
 
-            $sizes = explode("x", $filtr['size']);
-            $size1 = $sizes[0];
-            $size_sort = explode("_", $sizes[1]);
-            $size2 = $size_sort[0];
-            $size_sort = $size_sort[1];
             if($size_sort === "over")
             {
                 $size_ids = DB::table('gallery_sizes')->where('height',">=", $size1)->where('length',">=", $size2)->pluck('id');
