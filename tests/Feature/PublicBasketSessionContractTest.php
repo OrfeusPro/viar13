@@ -9,6 +9,7 @@ use App\Http\Requests\PortraitBasketRequest;
 use App\Http\Requests\FutureArtRequest;
 use App\Http\Requests\ConstructBasketRequest;
 use App\Repositories\BasketRepository;
+use App\Support\CheckoutPaymentMethods;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
@@ -174,6 +176,82 @@ class PublicBasketSessionContractTest extends TestCase
             Schema::dropIfExists('a_delivery_towns');
             Schema::dropIfExists('country_tels');
         }
+    }
+
+    public function test_all_checkout_payment_methods_are_validated_before_session_storage(): void
+    {
+        $this->assertCount(8, CheckoutPaymentMethods::all());
+
+        $delivery = [
+            'delivery_type' => 'to_the_door',
+            'country' => 'LV',
+        ];
+
+        foreach (CheckoutPaymentMethods::all() as $method) {
+            $this->withSession(['cart_delivery' => $delivery])
+                ->post('/cart/setpay', ['paymentData' => $method])
+                ->assertOk()
+                ->assertJsonPath('success', 1)
+                ->assertSessionHas('cart_pay_type.type', $method);
+        }
+
+        $this->withSession(['cart_delivery' => $delivery])
+            ->postJson('/cart/setpay', ['paymentData' => 'forged-provider'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('paymentData');
+
+        $this->withSession(['cart_delivery' => [
+            'delivery_type' => 'pickup_at_viar_workshop',
+            'country' => 'LV',
+        ]])->postJson('/cart/setpay', ['paymentData' => 'on_delivery'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('paymentData');
+
+        $this->app['session.store']->flush();
+        $this->postJson('/cart/setpay', ['paymentData' => 'transfer'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('paymentData');
+    }
+
+    public function test_order_creation_endpoint_is_post_only_and_guards_checkout_session(): void
+    {
+        $route = Route::getRoutes()->getByName('save_order_and_pay');
+        $this->assertNotNull($route);
+        $this->assertSame(['POST'], $route->methods());
+
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('getBasketProperties')->once()->andReturn([]);
+
+        $this->post('/save_order_and_pay')
+            ->assertRedirect(route('cart.index'));
+    }
+
+    public function test_order_creation_redirects_to_missing_checkout_step_without_mutation(): void
+    {
+        $basket = [[
+            'count' => 1,
+            'price' => 50.0,
+            'sumPrice' => 50.0,
+        ]];
+        $repository = $this->mock(BasketRepository::class);
+        $repository->shouldReceive('getBasketProperties')->twice()->andReturn($basket);
+
+        $user = new User();
+        $user->id = 1002;
+        $this->actingAs($user);
+
+        $this->withSession(['basket' => $basket])
+            ->post('/save_order_and_pay')
+            ->assertRedirect(route('cart.step3'));
+
+        $this->withSession([
+            'basket' => $basket,
+            'cart_delivery' => [
+                'delivery_type' => 'to_the_door',
+                'country' => 'LV',
+            ],
+        ])->post('/save_order_and_pay')
+            ->assertRedirect(route('cart.step4'));
     }
 
     public function test_canvas_add_rejects_an_incomplete_payload_as_json(): void

@@ -13,9 +13,16 @@ class OneTimePayPalController extends Controller
 {
     public function pay_accept(Request $request)
     {
-        $order = Orders::where('billing_invoice_uuid', $request->token)->first();
+        if (! $request->filled('token')) {
+            return Redirect::route('cart.index')->with('error', __('Payment reference is missing.'));
+        }
 
-        if ((new OneTimePayPalService)->checkPayment($request->token)) {
+        $order = Orders::where('billing_invoice_uuid', $request->token)->first();
+        if (! $order) {
+            return Redirect::route('cart.index')->with('error', __('Payment order was not found.'));
+        }
+
+        if (app(OneTimePayPalService::class)->checkPayment($request->token)) {
             $order->payment_status = "payed";
             $order->save();
             app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paypal');
@@ -28,7 +35,14 @@ class OneTimePayPalController extends Controller
 
     public function pay_cancel(Request $request)
     {
+        if (! $request->filled('token')) {
+            return Redirect::route('cart.index')->with('error', __('Payment reference is missing.'));
+        }
+
         $order = Orders::where('billing_invoice_uuid', $request->token)->first();
+        if (! $order) {
+            return Redirect::route('cart.index')->with('error', __('Payment order was not found.'));
+        }
 
         return Redirect::route('thanks', ['order_id' => $order->id]);
     }

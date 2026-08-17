@@ -49,6 +49,7 @@ use App\Http\Controllers\IndexController;
 use App\Http\Controllers\GiftcardController;
 use App\Notifications\ThanksForBuyNotification;
 use App\Services\SynvolveWebhookService;
+use App\Support\CheckoutPaymentMethods;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Controllers\Libwebtopay\PayseraController;
 
@@ -57,6 +58,7 @@ class OrdersController extends Controller
     private $Orders;
     private $DynamicPDF;
     private $basketRepository;
+    private $paypalService;
 
     public function __construct()
     {
@@ -64,6 +66,7 @@ class OrdersController extends Controller
         $this->DynamicPDF = app(DynamicPDFController::class);
         $this->basketRepository = resolve(BasketRepository::class);
         $this->payseraController = resolve(PayseraController::class);
+        $this->paypalService = resolve(OneTimePayPalService::class);
         $this->gfc = resolve(GiftcardController::class);
     }
 
@@ -1993,8 +1996,10 @@ class OrdersController extends Controller
 
             $request["payseraTotalPrice"] = number_format($payseraTotal, 2, '', '');
 
-            $this->payseraController->index($request);
+            return $this->payseraController->index($request);
         }
+
+        return null;
     }
 
     public function save_order_and_pay(Request $request)
@@ -2016,6 +2021,17 @@ class OrdersController extends Controller
 
         $cart_delivery = request()->session()->get('cart_delivery');
         $cart_pay_type = request()->session()->get('cart_pay_type');
+
+        if (! is_array($cart_delivery) || empty($cart_delivery['country'])) {
+            return redirect()->route('cart.step3');
+        }
+
+        $paymentType = is_array($cart_pay_type) ? ($cart_pay_type['type'] ?? null) : null;
+        if (! is_string($paymentType)
+            || ! CheckoutPaymentMethods::isAllowedForDelivery($paymentType, $cart_delivery)) {
+            return redirect()->route('cart.step4')
+                ->with('error', __('The selected payment method is unavailable.'));
+        }
 
         $ur_name = request()->session()->get('ur_name');
         if($ur_name) $ur_name = 'on';
@@ -2126,10 +2142,16 @@ class OrdersController extends Controller
             $paypalTotal = $baseTotal + $termsTotal + $deliveryTotal;
             $request["paypalTotalPrice"] = number_format($paypalTotal, 2, '.', '');
 
-            (new OneTimePayPalService)->getRequisites($request->all());
+            $gatewayResponse = $this->paypalService->getRequisites($request->all());
+            if ($gatewayResponse) {
+                return $gatewayResponse;
+            }
         }
 
-        $this->handlePayseraMethods($request, $makeOrder, $terms_price, $basket);
+        $gatewayResponse = $this->handlePayseraMethods($request, $makeOrder, $terms_price, $basket);
+        if ($gatewayResponse) {
+            return $gatewayResponse;
+        }
 
         $currentDate = date('ymd');
 

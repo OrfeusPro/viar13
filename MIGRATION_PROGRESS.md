@@ -534,3 +534,35 @@ scope; Filament 5 будет рассматриваться отдельным �
 - найден отдельный TODO: Ahrefs Analytics инициализируется дважды; CookieYes,
   Meta и extension warnings относятся к локальному домену/браузерному окружению;
 - следующий точный шаг: проверить основные frontend-страницы в mobile viewport.
+
+### 2026-08-17 — безопасная проверка способов оплаты
+
+- `/cart/setpay` принимает только 8 методов, реально показанных checkout:
+  `on_delivery`, четыре метода Paysera, PayPal, transfer и prepayment;
+  произвольные значения и наложенный платёж для несовместимой доставки дают
+  JSON `422`, отсутствующая delivery session также отклоняется;
+- финальное создание заказа переведено с GET на CSRF-защищённый POST; frontend
+  отправляет скрытую POST-форму и блокирует повторный клик, что снижает риск
+  дублирования заказа;
+- `save_order_and_pay` больше не обращается к отсутствующим delivery/payment
+  session keys: пользователь возвращается на точный недостающий шаг checkout;
+- Paysera start больше не использует `dd()`/`exit()` и возвращает Laravel
+  redirect либо контролируемую ошибку; URL шлюза строится без внешнего запроса;
+- PayPal start больше не использует `header()/exit()`; redirect и ошибка
+  возвращаются вызывающему controller, поэтому ошибка шлюза не маскируется
+  ложной страницей успешного заказа;
+- callbacks PayPal без token/заказа безопасно возвращают в корзину; повреждённые
+  Paysera accept/cancel/callback не дают 500, callback отвечает `400 ERROR`;
+- Paysera project/sign secret удалены из PHP и перенесены в `config/paysera.php`
+  + локальный `.env`; `.env.example` содержит только пустые placeholders;
+- два legacy payment test-файла снова включены в PHPUnit 12: методы с устаревшим
+  `@test` переименованы в `test_*`; admin-only тест ожидаемо skipped, поскольку
+  admin routes исключены из текущего frontend runtime;
+- проверки: расширенный frontend/payment regression — 76 passed / 397
+  assertions, 1 admin-only skipped; PHP/JS syntax, config cache, `view:cache` и
+  `git diff --check` PASS;
+- реальные запросы Paysera/PayPal не выполнялись: локальный `.env` использует
+  production endpoints. По решению пользователя sandbox исключён из приёмки,
+  так как недоступен; реальная транзакция остаётся только штатной проверкой
+  после запуска. Отдельная техническая задача — проверка суммы, валюты и
+  перехода статуса Paysera callback.

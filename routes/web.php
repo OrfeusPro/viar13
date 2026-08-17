@@ -404,7 +404,7 @@ Route::group(
         Route::post('/cart/setdelivery', [BasketController::class, 'setdelivery'])->name('setdelivery')->middleware('preventBackHistory');
         Route::post('/cart/setuser', [BasketController::class, 'setuser'])->name('setuser')->middleware('preventBackHistory');
         Route::post('/cart/setpay', [BasketController::class, 'setpay'])->name('setpay')->middleware('preventBackHistory');
-        Route::get('/save_order_and_pay', [OrdersController::class, 'save_order_and_pay'])->name('save_order_and_pay');
+        Route::post('/save_order_and_pay', [OrdersController::class, 'save_order_and_pay'])->name('save_order_and_pay');
         Route::get('/cart/clear_coupon', [BasketController::class, 'clearcart'])->name('clearcart')->middleware('preventBackHistory');
         Route::get('/cart', [BasketController::class, 'cart'])->name('cart.index')->middleware('preventBackHistory');
         Route::get('/cart/data', [BasketController::class, 'cart_step2'])->name('cart.step2')->middleware('preventBackHistory');

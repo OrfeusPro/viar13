@@ -217,6 +217,16 @@
 - [ ] Убрать повторную инициализацию Ahrefs Analytics, обнаруженную в browser
   console checkout; внешние CookieYes/Meta и extension warnings вести отдельно.
 - [ ] Проверить основные страницы в mobile viewport.
+- [x] [DONE] Проверить все публичные способы оплаты без реального списания: frontend
+  contract, создание заказа, redirect/form провайдера, ошибки и отмена;
+  внешние production-запросы заменить тестовыми doubles.
+- [x] [DONE] Убрать Paysera credentials из `PayseraController` в `.env`/config и
+  заменить `dd()`/`exit()` контролируемыми redirect/error responses.
+- [x] [NOT REQUIRED] Sandbox-транзакции Paysera/PayPal исключены из приёмки:
+  sandbox недоступен; production redirect и ошибки проверяются без отправки
+  платежа, реальная транзакция выполняется только штатным заказом после запуска.
+- [ ] Проверять сумму, валюту и допустимый переход статуса в Paysera callback;
+  legacy-код помечает это как TODO и пока доверяет подписанному ответу.
 - [ ] После frontend interaction UAT вернуться к mutating GET/ANY basket routes.
 
 ## Задачи, найденные при server sync `72af3357`

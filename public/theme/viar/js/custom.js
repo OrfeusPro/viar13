@@ -589,10 +589,11 @@ $(document).ready(function() {
           scrollTop: $(".js-cart-delivery-item").offset().top
       }, 1e3)
   }), $(document).on("click", ".cart_send_pay", function() {
-      let e = $(".cart-payments-page__item.js-active .window-prompt").text(),
+      let n = $(this),
+          e = $(".cart-payments-page__item.js-active .window-prompt").text(),
           t = $(".cart-payments-page__item.js-active").data("type"),
           a = $(this).data("action");
-      $(".cart-payments-sidebar__personal-data .cart-payments-page__item").hasClass("js-active") && $(".cart-payments-page__list .cart-payments-page__item").hasClass("js-active") && $.ajax({
+      $(".cart-payments-sidebar__personal-data .cart-payments-page__item").hasClass("js-active") && $(".cart-payments-page__list .cart-payments-page__item").hasClass("js-active") && !n.data("submitting") && (n.data("submitting", !0), $.ajax({
           type: "post",
           dataType: "html",
           headers: {
@@ -606,10 +607,25 @@ $(document).ready(function() {
           success: function(e) {
               if (e) {
                   var t = jQuery.parseJSON(e);
-                  t.Error ? alert(t.Error) : t.success && (console.log("ok"), window.location.href = a)
+                  t.Error ? (n.removeData("submitting"), alert(t.Error)) : t.success && (console.log("ok"), $("<form>", {
+                      method: "post",
+                      action: a
+                  }).append($("<input>", {
+                      type: "hidden",
+                      name: "_token",
+                      value: $('meta[name="csrf-token"]').attr("content")
+                  })).appendTo("body").trigger("submit"))
               }
+          },
+          error: function(e) {
+              n.removeData("submitting");
+              var t = e.responseJSON || {},
+                  a = t.message || "";
+              !a && t.errors && $.each(t.errors, function(e, t) {
+                  return a = t && t.length ? t[0] : "", !1
+              }), alert(a || "Server error")
           }
-      })
+      }))
   }), $(".cart-data-page__input input, .cart-data-page__input input").on("keyup", function() {
       c(this)
   }), $(document).on("click", ".cart_send_userdata", function(event) {

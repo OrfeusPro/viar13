@@ -61,11 +61,13 @@ class OneTimePayPalService
         }
 
         if (!empty($payLink)) {
-            header("Location: $payLink", true);
-            exit;
+            return redirect()->away($payLink);
         }
 
-        return response("Error receiving payment details! Please contact the administrator!");
+        return redirect()->back()->with(
+            'error',
+            __('Unable to start PayPal payment. Please try again or choose another payment method.')
+        );
     }
 
     private function storeBillingInvoiceUuid(array $requestClient, string $billingInvoiceUuid): void
@@ -94,7 +96,7 @@ class OneTimePayPalService
         }
     }
 
-    private function client()
+    protected function client()
     {
         if (env('PAYPAL_SANDBOX')) {
             $environment = new SandboxEnvironment(env('PAYPAL_SANDBOX_ID'), env('PAYPAL_SANDBOX_SECRET'));
@@ -107,23 +109,7 @@ class OneTimePayPalService
 
     public function getSelfUrl(): string
     {
-        $url = substr(strtolower($_SERVER['SERVER_PROTOCOL']), 0, strpos($_SERVER['SERVER_PROTOCOL'], '/'));
-
-        if (isset($_SERVER['HTTPS']) === true) {
-            $url .= ($_SERVER['HTTPS'] === 'on') ? 's' : '';
-        }
-
-        $url .= '://' . $_SERVER['HTTP_HOST'];
-
-        if (isset($_SERVER['SERVER_PORT']) === true && $_SERVER['SERVER_PORT'] !== '80') {
-            $url .= ':' . $_SERVER['SERVER_PORT'];
-        }
-
-        $url .= dirname($_SERVER['SCRIPT_NAME']);
-        $url = $url . App::getLocale();
-        $url = str_replace("\\",'/', $url);
-
-        return str_replace("\\",'/', $url) . "/paypal";
+        return rtrim(url(App::getLocale() . '/paypal'), '/');
     }
 
     public function checkPayment($orderID)

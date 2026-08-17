@@ -26,8 +26,7 @@ class ClientOrderPaymentTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
-    public function owned_unpaid_order_can_start_online_payment()
+    public function test_owned_unpaid_order_can_start_online_payment()
     {
         $user = $this->createUser(10, 2, 'client@example.test');
         $this->createOrder(501, 10, 'not_payed');
@@ -49,8 +48,7 @@ class ClientOrderPaymentTest extends TestCase
         $response->assertRedirect('/fake-payment-provider');
     }
 
-    /** @test */
-    public function payment_method_is_validated()
+    public function test_payment_method_is_validated()
     {
         $user = $this->createUser(11, 2, 'validator@example.test');
         $this->createOrder(502, 11, 'not_payed');
@@ -65,8 +63,7 @@ class ClientOrderPaymentTest extends TestCase
         $response->assertSessionHasErrors('payment');
     }
 
-    /** @test */
-    public function foreign_order_payment_is_not_accessible()
+    public function test_foreign_order_payment_is_not_accessible()
     {
         $user = $this->createUser(12, 2, 'owner@example.test');
         $this->createUser(13, 2, 'other@example.test');

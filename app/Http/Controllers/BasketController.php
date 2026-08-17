@@ -42,6 +42,7 @@ use App\Http\Requests\PortraitBasketRequest;
 use App\Http\Requests\FutureArtRequest;
 use App\Http\Requests\ConstructBasketRequest;
 use App\Http\Requests\SetDeliveryRequest;
+use App\Http\Requests\SetPaymentRequest;
 use App\Http\Requests\RecommendedBasketItemRequest;
 use App\Http\Requests\CanvasRecommendationRequest;
 use App\Models\DeliveryPickupAtViarWorkshop;
@@ -640,23 +641,13 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
-    public function setpay(Request $request)
+    public function setpay(SetPaymentRequest $request)
     {
-        $response = [];
-        $cart_pay_type = [];
+        session(['cart_pay_type' => [
+            'type' => $request->validated('paymentData'),
+        ]]);
 
-        if($request->input('paymentData'))
-        {
-            $cart_pay_type['type'] = $request->input('paymentData');
-            session(['cart_pay_type' => $cart_pay_type]);
-
-            $response['success'] = 1;
-        }
-        else
-        {
-            $response['success'] = 0;
-        }
-        return json_encode($response);
+        return response()->json(['success' => 1]);
     }
 
     /// TODO: Функция для получения данных корзины
