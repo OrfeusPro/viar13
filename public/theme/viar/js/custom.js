@@ -505,10 +505,6 @@ $(document).ready(function() {
                   var t = jQuery.parseJSON(e);
                   t.Error || (t.success ? (console.log(t),
                       $(".cart-pickup").css("display", "block"),
-                      $(".js-active").removeClass("js-active"),
-                      $(".cart-pickup").addClass("js-active"),
-                      $(".cart-delivery-item__content").css("display", "none"),
-                      $(".cart-pickup .cart-delivery-item__content").css("display", "block"),
                       $(".cart-data-page__input .simplebar-content").html(t.towns),
                       $(".cities-inner").text($(".cities-inner").data("inner")), $(".cart-delivery-point__pickup-point--wrapper .simplebar-content").html(t.pickup_points),
                       $(".pickup-text").text($(".cart-delivery-point__pickup-point--item:not(.hidden-item)").length),
@@ -576,6 +572,18 @@ $(document).ready(function() {
                   var a = jQuery.parseJSON(t);
                   a.Error ? alert(a.Error) : a.success && (console.log("ok"), window.location.href = e)
               }
+          },
+          error: function(e) {
+              var t = e.responseJSON || {};
+              if (!Object.keys(t).length && e.responseText) try {
+                  t = JSON.parse(e.responseText)
+              } catch (e) {
+                  t = {}
+              }
+              var a = t.message || "";
+              !a && t.errors && $.each(t.errors, function(e, t) {
+                  return a = t && t.length ? t[0] : "", !1
+              }), alert(a || "Server error")
           }
       }) : $("html, body").animate({
           scrollTop: $(".js-cart-delivery-item").offset().top

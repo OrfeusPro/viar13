@@ -76,6 +76,106 @@ class PublicBasketSessionContractTest extends TestCase
         );
     }
 
+    public function test_delivery_variants_use_server_prices_and_validate_required_fields(): void
+    {
+        Schema::create('country_tels', function (Blueprint $table): void {
+            $table->id();
+            $table->string('country_code');
+            $table->decimal('deliv_price', 10, 2)->nullable();
+            $table->decimal('delivery_venipak', 10, 2)->nullable();
+        });
+        Schema::create('a_delivery_towns', function (Blueprint $table): void {
+            $table->id();
+            $table->string('country');
+            $table->string('city')->nullable();
+            $table->decimal('price', 10, 2)->nullable();
+        });
+        Schema::create('delivery_pickup_at_viar_workshop', function (Blueprint $table): void {
+            $table->id();
+            $table->string('country_code')->default('ALL');
+            $table->boolean('is_show')->default(true);
+        });
+
+        try {
+            DB::table('country_tels')->insert([
+                'country_code' => 'LV',
+                'deliv_price' => 5,
+                'delivery_venipak' => 4,
+            ]);
+            DB::table('a_delivery_towns')->insert([
+                'id' => 10,
+                'country' => 'LV',
+                'city' => 'Riga',
+                'price' => 2,
+            ]);
+            DB::table('delivery_pickup_at_viar_workshop')->insert([
+                'id' => 20,
+                'country_code' => 'LV',
+                'is_show' => true,
+            ]);
+
+            $basket = [['count' => 1, 'price' => 20]];
+            $repository = $this->mock(BasketRepository::class);
+            $repository->shouldReceive('getBasketProperties')->times(5)->andReturn($basket);
+            $repository->shouldReceive('normalizeBasket')->times(5)->andReturn($basket);
+            $repository->shouldReceive('saveBasketToAbandonedCartModel')->times(5);
+
+            $variants = [
+                ['payload' => [
+                    'country' => 'lv',
+                    'delivery_type' => 'to_the_door',
+                    'price' => 0.01,
+                    'city' => 'Riga',
+                    'index' => 'LV-1001',
+                    'address' => 'Testa iela 1',
+                ], 'price' => 5.0],
+                ['payload' => [
+                    'country' => 'LV',
+                    'delivery_type' => 'venipak',
+                    'price' => 0.01,
+                    'city' => 'Riga',
+                    'pickup' => 'Pickup point',
+                ], 'price' => 4.0],
+                ['payload' => [
+                    'country' => 'LV',
+                    'delivery_type' => 'pickup_at_viar_workshop',
+                    'price' => 99,
+                    'city' => 'Riga workshop',
+                    'pickup_workshop_id' => 20,
+                ], 'price' => 0.0],
+                ['payload' => [
+                    'country' => 'LV',
+                    'delivery_type' => 'city_delivery',
+                    'price' => 99,
+                    'address' => 'Testa iela 2',
+                    'delivery_town_id' => 10,
+                ], 'price' => 2.0],
+                ['payload' => [
+                    'country' => 'LV',
+                    'price' => 99,
+                ], 'price' => 0.0],
+            ];
+
+            foreach ($variants as $variant) {
+                $this->withSession(['basket' => $basket])
+                    ->post('/cart/setdelivery', $variant['payload'])
+                    ->assertOk()
+                    ->assertJsonPath('success', 1)
+                    ->assertSessionHas('cart_delivery.price', $variant['price']);
+            }
+
+            $this->post('/cart/setdelivery', [
+                'country' => 'LV',
+                'delivery_type' => 'to_the_door',
+            ])->assertUnprocessable()
+                ->assertJsonValidationErrors(['city', 'index', 'address']);
+        } finally {
+            Schema::dropIfExists('delivery_pickup_at_viar_workshop');
+            Schema::dropIfExists('a_delivery_towns');
+            Schema::dropIfExists('country_tels');
+        }
+    }
+
     public function test_canvas_add_rejects_an_incomplete_payload_as_json(): void
     {
         $this->post('/basket/add', [

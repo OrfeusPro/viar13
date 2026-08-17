@@ -756,6 +756,27 @@ $(document).ready(function () {
             }
           }
         },
+        error: function (error) {
+          var response = error.responseJSON || {};
+
+          if (!Object.keys(response).length && error.responseText) {
+            try {
+              response = JSON.parse(error.responseText);
+            } catch (parseError) {
+              response = {};
+            }
+          }
+
+          var message = response.message || "";
+          if (!message && response.errors) {
+            $.each(response.errors, function (field, errors) {
+              message = errors && errors.length ? errors[0] : "";
+              return false;
+            });
+          }
+
+          alert(message || "Server error");
+        },
       });
     }
 	else

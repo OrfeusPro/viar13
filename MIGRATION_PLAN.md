@@ -189,9 +189,9 @@
 - [x] [DONE] Устранить cache-зависимость account feature-тестов:
   тестовая схема не создавала обязательные `header_menu`/`footer_menu`, поэтому
   результат ошибочно зависел от ранее прогретого cache.
-- [~] Провести browser UAT основного frontend-контура; gallery item → cart,
-  data и delivery проверены, следующая точка — интерактивный canvas upload и
-  заполненный delivery → payment без создания реального заказа.
+- [~] Провести browser UAT основного frontend-контура; desktop-сценарии gallery
+  item → cart, Canvas → cart и delivery → payment пройдены без создания заказа;
+  следующая точка — основные страницы в mobile viewport.
 
 ## Browser smoke
 
@@ -206,8 +206,16 @@
   чтобы браузер не блокировал HTTPS-шрифты по CORS; не писать
   `Image3d`/загруженные файлы целиком в Laravel log; защитить `Canvas3D` mouse
   events после очистки редактора.
-- [~] Проверить checkout: data/delivery и защита payment готовы; полноценный
-  payment view проверить после сохранения валидной доставки.
+- [x] [DONE] Проверить checkout: валидная курьерская доставка сохранена,
+  payment view открыт с корректной суммой `63 €`, заказ не создавался.
+- [x] [DONE] Защитить `/cart/setdelivery`: покрыть все способы доставки условной
+  серверной валидацией, не принимать стоимость доставки из браузера и
+  показывать JSON 422 в активном frontend JS.
+- [x] [DONE] Исправить AJAX-загрузку городов/пунктов Venipak: имена Blade view
+  не получают лишнюю точку перед `cart`; поздний AJAX-response больше не
+  переключает выбранную пользователем доставку и не очищает все `.js-active`.
+- [ ] Убрать повторную инициализацию Ahrefs Analytics, обнаруженную в browser
+  console checkout; внешние CookieYes/Meta и extension warnings вести отдельно.
 - [ ] Проверить основные страницы в mobile viewport.
 - [ ] После frontend interaction UAT вернуться к mutating GET/ANY basket routes.
 

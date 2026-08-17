@@ -509,3 +509,28 @@ scope; Filament 5 будет рассматриваться отдельным �
   basket regression — 29 tests / 151 assertions PASS;
 - следующий точный шаг: сохранить валидную доставку и открыть payment view без
   отправки реального заказа.
+
+### 2026-08-17 — checkout delivery → payment
+
+- создан отдельный `SetDeliveryRequest`: условно проверяются courier, Venipak,
+  Viar workshop, city delivery и email/no-delivery; ошибки возвращаются JSON
+  `422`, активный frontend показывает первое сообщение пользователю;
+- стоимость больше не принимается из браузера: courier/Venipak берутся из
+  `country_tels`, city delivery — из `a_delivery_towns`, workshop/email равны
+  нулю, купон `free_delivery` сохраняет нулевую доставку;
+- ограничения размера вложенного к комментарию изображения не добавлялись;
+  проверяются формат data URL и корректность base64;
+- browser UAT выявил и исправил отсутствующие Blade view из-за лишней точки в
+  `VinepakApiController` (`.cart.citys`/`.cart.warehouses`);
+- исправлена гонка Venipak AJAX: поздний ответ больше не сбрасывает выбранного
+  courier обратно на Venipak и не удаляет глобально все `.js-active`;
+- повторный HTTPS-проход сохранил courier `Riga / LV-1001 / Testa iela 1` с
+  серверной ценой `5 €` и открыл `/en/cart/payment`; итог `63.00 €`, заказ не
+  создавался;
+- regression: `PublicBasketSessionContractTest` — 30 tests / 174 assertions
+  PASS, включая все пять вариантов, подмену frontend price и обязательные поля;
+  расширенный frontend regression — 60 tests / 318 assertions PASS;
+  PHP/JS syntax, `view:cache` и `git diff --check` PASS;
+- найден отдельный TODO: Ahrefs Analytics инициализируется дважды; CookieYes,
+  Meta и extension warnings относятся к локальному домену/браузерному окружению;
+- следующий точный шаг: проверить основные frontend-страницы в mobile viewport.

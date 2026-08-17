@@ -41,6 +41,7 @@ use App\Http\Requests\BasketStoreRequest;
 use App\Http\Requests\PortraitBasketRequest;
 use App\Http\Requests\FutureArtRequest;
 use App\Http\Requests\ConstructBasketRequest;
+use App\Http\Requests\SetDeliveryRequest;
 use App\Http\Requests\RecommendedBasketItemRequest;
 use App\Http\Requests\CanvasRecommendationRequest;
 use App\Models\DeliveryPickupAtViarWorkshop;
@@ -324,11 +325,12 @@ class BasketController extends Controller
         }
     }
 
-    public function setdelivery(Request $request)
+    public function setdelivery(SetDeliveryRequest $request)
     {
+        $validated = $request->validated();
         $workingdays=null;
 
-        $cartDate = $request->input('cartDate');
+        $cartDate = $validated['cartDate'] ?? null;
 
         if($cartDate)
         {
@@ -347,11 +349,23 @@ class BasketController extends Controller
 
         $response = [];
 
-        $country = $request->input('country');
-        $price = (float)$request->input('price');
-        $delivery_type = $request->input('delivery_type');
-        $cartComment = $request->input('cartComment');
-        $cartCommentImage = $request->input('cartCommentImage');
+        $country = $validated['country'];
+        $delivery_type = $validated['delivery_type'] ?? null;
+        $countryDelivery = CountryTel::where('country_code', $country)->firstOrFail();
+        $price = match ($delivery_type) {
+            'to_the_door' => (float) ($countryDelivery->deliv_price ?? 0),
+            'venipak' => (float) ($countryDelivery->delivery_venipak ?? 0),
+            'city_delivery' => (float) ADeliveryTown::whereKey($validated['delivery_town_id'])->value('price'),
+            default => 0.0,
+        };
+
+        $basket = $this->get_basket();
+        if (($basket['coupon_type'] ?? null) === 'free_delivery') {
+            $price = 0.0;
+        }
+
+        $cartComment = $validated['cartComment'] ?? null;
+        $cartCommentImage = $validated['cartCommentImage'] ?? [];
         if(isset($cartCommentImage['src']) && $cartCommentImage['src'])
         {
             $cartCommentImage = $cartCommentImage['src'];
@@ -372,30 +386,30 @@ class BasketController extends Controller
             }
 
             $img = str_replace(' ', '+', $img);
-            $img_data = base64_decode($img);
+            $img_data = base64_decode($img, true);
             $rand_name = Str::random(12);
             file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
 
             $cartCommentImage = '/uploads/' . $rand_name . $ext;
         }
 
-        $city = $request->input('city');
-        $index = $request->input('index');
-        $pickup = $request->input('pickup');
-        $pickupWorkshopId = (int)$request->input('pickup_workshop_id', 0);
-        $deliveryTownId = (int)$request->input('delivery_town_id', 0);
+        $city = $validated['city'] ?? null;
+        $index = $validated['index'] ?? null;
+        $pickup = $validated['pickup'] ?? null;
+        $pickupWorkshopId = (int)($validated['pickup_workshop_id'] ?? 0);
+        $deliveryTownId = (int)($validated['delivery_town_id'] ?? 0);
         if($pickup)
         {
             $address = $pickup;
         }
         else
         {
-            $address = $request->input('address');
+            $address = $validated['address'] ?? null;
         }
 
         if($delivery_type == 'pickup_at_viar_workshop')
         {
-            $address = $request->input('city');
+            $address = $validated['city'] ?? null;
             $city = null;
             $deliveryTownId = 0;
         }
@@ -406,8 +420,6 @@ class BasketController extends Controller
              $pickupWorkshopId = 0;
          }
 
-
-        $pickup = $request->input('pickup');
 
         // $cart_delivery = request()->session()->get('cart_delivery');
         // Session::forget('cart_delivery');
