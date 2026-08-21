@@ -9108,3 +9108,17 @@ Extra checks:
 - Next exact action: repeat the existing-email checkout flow in the Telegram
   in-app browser and in mobile Chrome/Safari, confirming the card appears in
   view after pressing the delivery button.
+
+## 259. Update Log 2026-08-21 (Synvolve inactive workflow diagnosis)
+
+- Production checkout exposed an external delivery failure: both the configured
+  named `POST .../webhook/NewOrder` endpoint and the former UUID endpoint return
+  `404` with Synvolve's explicit workflow-not-registered/not-active response.
+  No speculative endpoint replacement was made.
+- An outbox/retry implementation was initially added outside the requested
+  scope, then fully removed. Its migration was rolled back and the temporary
+  table was deleted; the existing Synvolve payload and delivery flow remain
+  unchanged.
+- Still external: Synvolve must activate the production `NewOrder` workflow or
+  provide its current URL. Next exact action: repeat the existing application
+  call after activation and verify HTTP `2xx` in the application log.
