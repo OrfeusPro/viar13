@@ -1831,7 +1831,7 @@ class BasketController extends Controller
                 Mail::send([], [], function ($message) use ($data) {
                     $message->to($data['to']);
                     $message->subject($data['subject']);
-                    $message->setBody($data['content'], 'text/html');
+                    $message->html($data['content']);
                 });
             } catch (Throwable $e) {
                 return response()->json([
@@ -1846,7 +1846,7 @@ class BasketController extends Controller
                 Mail::send([], [], function ($message) use ($data) {
                     $message->to($data['email']);
                     $message->subject($data['subject']);
-                    $message->setBody($data['content'], 'text/html');
+                    $message->html($data['content']);
                 });
             } catch (Throwable $e) {
                 return response()->json([

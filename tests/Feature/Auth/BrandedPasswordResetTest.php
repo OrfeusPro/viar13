@@ -13,7 +13,7 @@ use Tests\TestCase;
 class BrandedPasswordResetTest extends TestCase
 {
     /** @test */
-    public function user_uses_the_branded_password_reset_notification()
+    public function test_user_uses_the_branded_password_reset_notification()
     {
         Notification::fake();
 
@@ -30,7 +30,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function branded_notification_contains_localized_subject_and_valid_reset_url()
+    public function test_branded_notification_contains_localized_subject_and_valid_reset_url()
     {
         app()->setLocale('ru');
 
@@ -58,7 +58,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function reset_notification_uses_the_current_site_language()
+    public function test_reset_notification_uses_the_current_site_language()
     {
         Notification::fake();
         app()->setLocale('lv');
@@ -86,7 +86,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function reset_request_keeps_explicit_storefront_language_even_when_application_locale_is_stale()
+    public function test_reset_request_keeps_explicit_storefront_language_even_when_application_locale_is_stale()
     {
         app()->setLocale('ru');
 
@@ -101,7 +101,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function reset_request_recovers_storefront_language_from_referer_for_legacy_forms()
+    public function test_reset_request_recovers_storefront_language_from_referer_for_legacy_forms()
     {
         app()->setLocale('ru');
 
@@ -115,7 +115,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function branded_reset_email_renders_in_every_storefront_language()
+    public function test_branded_reset_email_renders_in_every_storefront_language()
     {
         $user = new User();
         $user->email = 'customer@example.test';
@@ -143,7 +143,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function german_email_keeps_the_german_prefix_after_laravel_changes_the_runtime_locale()
+    public function test_german_email_keeps_the_german_prefix_after_laravel_changes_the_runtime_locale()
     {
         app()->setLocale('de');
 
@@ -160,7 +160,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function localized_reset_route_sets_page_language_and_keeps_locale_on_submit()
+    public function test_localized_reset_route_sets_page_language_and_keeps_locale_on_submit()
     {
         $controller = app(ResetPasswordController::class);
 
@@ -199,7 +199,7 @@ class BrandedPasswordResetTest extends TestCase
     }
 
     /** @test */
-    public function reset_page_uses_the_viarcanvas_card_instead_of_legacy_bootstrap_cdn()
+    public function test_reset_page_uses_the_viarcanvas_card_instead_of_legacy_bootstrap_cdn()
     {
         $template = file_get_contents(resource_path('views/auth/passwords/reset.blade.php'));
 

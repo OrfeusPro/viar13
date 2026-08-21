@@ -7,7 +7,6 @@ use URL;
 use Auth;
 use File;
 use Hash;
-use Mail;
 use Session;
 use Storage;
 use Eloquent;
@@ -17,6 +16,7 @@ use App\Models\OrderUserImages;
 use App\Models\OrderUserComments;
 use App\Models\OrderPainterImages;
 use App\Services\SynvolveWebhookService;
+use App\Services\BestEffortMailService;
 use Illuminate\Support\Facades\DB;
 use App\Mail\SendUserYourOrderGiven;
 use App\Repositories\BasketRepository;
@@ -443,7 +443,12 @@ class Orders extends Model
 
             Auth::login($user);
 
-            $sended = Mail::to($user->email)->send(new SendUserRegister($user, $random_pass));
+            app(BestEffortMailService::class)->send(
+                $user->email,
+                new SendUserRegister($user, $random_pass),
+                'checkout_user_registration',
+                ['user_id' => $user->id]
+            );
 
             $user_email = $checkoutParams['email'];
 
@@ -700,7 +705,12 @@ class Orders extends Model
 
         self::renameUploadsPhoto($order_id);
 
-        Mail::to($user_email)->send(new SendUserYourOrderGiven($basket, $user, $order_id, $user->preferredLocale()));
+        app(BestEffortMailService::class)->send(
+            $user_email,
+            new SendUserYourOrderGiven($basket, $user, $order_id, $user->preferredLocale()),
+            'checkout_order_confirmation',
+            ['order_id' => $order_id, 'user_id' => $user->id]
+        );
         app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order_id, 'site_order_created');
 
         if (isset($basket['coupon_id']) && $basket['coupon_id'] >0) {

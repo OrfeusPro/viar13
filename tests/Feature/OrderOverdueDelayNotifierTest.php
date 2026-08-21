@@ -21,7 +21,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_sends_delay_email_for_overdue_open_order()
+    public function test_it_sends_delay_email_for_overdue_open_order()
     {
         Mail::fake();
 
@@ -44,7 +44,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_uses_client_language_from_order_delivery()
+    public function test_it_uses_client_language_from_order_delivery()
     {
         Mail::fake();
 
@@ -65,7 +65,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_uses_user_locale_when_delivery_language_is_empty()
+    public function test_it_uses_user_locale_when_delivery_language_is_empty()
     {
         Mail::fake();
 
@@ -95,7 +95,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_falls_back_to_russian_when_client_language_is_unknown()
+    public function test_it_falls_back_to_russian_when_client_language_is_unknown()
     {
         Mail::fake();
 
@@ -116,7 +116,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_send_before_planned_shipping_date()
+    public function test_it_does_not_send_before_planned_shipping_date()
     {
         Mail::fake();
 
@@ -134,7 +134,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_send_duplicate_email_after_first_success()
+    public function test_it_does_not_send_duplicate_email_after_first_success()
     {
         Mail::fake();
 
@@ -154,7 +154,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_uses_desired_delivery_date_before_sla_rules()
+    public function test_it_uses_desired_delivery_date_before_sla_rules()
     {
         Mail::fake();
 
@@ -181,7 +181,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_sends_canvas_print_order_after_three_business_days_when_desired_date_is_empty()
+    public function test_it_sends_canvas_print_order_after_three_business_days_when_desired_date_is_empty()
     {
         Mail::fake();
 
@@ -207,7 +207,7 @@ class OrderOverdueDelayNotifierTest extends TestCase
     }
 
     /** @test */
-    public function it_sends_other_portrait_orders_after_eight_business_days_when_desired_date_is_empty()
+    public function test_it_sends_other_portrait_orders_after_eight_business_days_when_desired_date_is_empty()
     {
         Mail::fake();
 

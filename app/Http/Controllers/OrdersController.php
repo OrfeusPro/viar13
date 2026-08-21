@@ -49,6 +49,7 @@ use App\Http\Controllers\IndexController;
 use App\Http\Controllers\GiftcardController;
 use App\Notifications\ThanksForBuyNotification;
 use App\Services\SynvolveWebhookService;
+use App\Services\BestEffortMailService;
 use App\Support\CheckoutPaymentMethods;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Controllers\Libwebtopay\PayseraController;
@@ -59,6 +60,8 @@ class OrdersController extends Controller
     private $DynamicPDF;
     private $basketRepository;
     private $paypalService;
+    private $payseraController;
+    private $gfc;
 
     public function __construct()
     {
@@ -1161,7 +1164,7 @@ class OrdersController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['user_email']);
                 $message->subject($data['subject_send']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
         } else {
             DB::table('painter_orders')->where('order_id', $order_id)->delete();
@@ -1193,7 +1196,7 @@ class OrdersController extends Controller
             // Mail::send([], [], function ($message) use ($data) {
             //     $message->to($data['user_email']);
             //     $message->subject($data['subject_send']);
-            //     $message->setBody($data['content'], 'text/html');
+            //     $message->html($data['content']);
             // });
         } else {
             DB::table('printing_orders')->where('order_id', $order_id)->delete();
@@ -1550,7 +1553,7 @@ class OrdersController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
 			*/
         }
@@ -1735,7 +1738,7 @@ class OrdersController extends Controller
                 Mail::send([], [], function ($message) use ($data) {
                     $message->to($data['to']);
                     $message->subject('Вам пришли бонусы на сайте viarcanvas.com');
-                    $message->setBody('Вам пришел бонус на 5 евро', 'text/html');
+                    $message->html('Вам пришел бонус на 5 евро');
                 });
 
                 /// Update user bonuses with addBonusToUser function from OrderModel///
@@ -2269,7 +2272,11 @@ class OrdersController extends Controller
             return redirect()->back()->with('def_error', $response['Error']);
         }
         AbandonedCart::where('email', $request['email'])->delete();
-        $this->sendOrderInPdfToAdminEmail($order_id);
+        app(BestEffortMailService::class)->attempt(
+            fn () => $this->sendOrderInPdfToAdminEmail($order_id),
+            'checkout_admin_order_notification',
+            ['order_id' => $order_id]
+        );
 
 
         // скидки
@@ -2375,7 +2382,7 @@ class OrdersController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'] . 'Заказ: ' . $data['order_id'], 'text/html');
+            $message->html($data['content'] . 'Заказ: ' . $data['order_id']);
         });
 
         return true;

@@ -158,7 +158,7 @@ class UserManageController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
         }
 
@@ -230,7 +230,7 @@ class UserManageController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
 
             if ( $request->screen=='free') {
@@ -539,7 +539,7 @@ class UserManageController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         if ($request->filled('email')) {
@@ -635,7 +635,7 @@ class UserManageController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         return Redirect::route('thanks', ['order_id' => $analytic_params['order_id']]);
@@ -906,7 +906,7 @@ class UserManageController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
 
             return response()->json([

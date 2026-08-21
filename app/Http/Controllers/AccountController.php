@@ -96,7 +96,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         if (!is_null($uploaded_images)) {
@@ -132,7 +132,7 @@ class AccountController extends Controller
 				/*Mail::send([], [], function ($message) use ($data) {
 					$message->to($data['to']);
 					$message->subject($data['subject']);
-					$message->setBody($data['content'], 'text/html');
+					$message->html($data['content']);
 				});*/
 			}
 
@@ -170,7 +170,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         if (!is_null($uploaded_images)) {
@@ -207,7 +207,7 @@ class AccountController extends Controller
 				Mail::send([], [], function ($message) use ($data) {
 					$message->to($data['to']);
 					$message->subject($data['subject']);
-					$message->setBody($data['content'], 'text/html');
+					$message->html($data['content']);
 				});*/
 			}
 
@@ -248,7 +248,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         return json_encode([
@@ -343,7 +343,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['user_email']);
             $message->subject($data['subject_send']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         $updated = DB::table('orders_chats')->insert([

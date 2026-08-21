@@ -25,6 +25,8 @@ class DynamicPDFController extends Controller
 
     public function getOrderDataInHtml($order, $order_vr_id, $form_data)
     {
+        $order_vr_id = (string) $order_vr_id;
+
         if (isset($order['sale_eur']) && $order['sale_eur'] != '' && $order['sale_eur'] != null && $order['sale_eur'] != 0) {
             $order['sale_price'] = (float)$order['sale_price'] - (float)$order['sale_eur'];
         }
