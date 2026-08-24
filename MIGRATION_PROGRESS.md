@@ -775,3 +775,24 @@ scope; Filament 5 будет рассматриваться отдельным �
   `/pl/sitemap` сохраняет существующее перенаправление на `viar-art.pl`;
 - добавлен `SitemapHtmlContractTest`: `1 passed / 2 assertions`; также прошли
   `php artisan view:cache`, PHP syntax controller/test.
+
+### 2026-08-24 — локализованная генерация PDF-счёта (`f2feb24d`)
+
+- из `C:\OSPanel\domains\asoft\viar`, коммит `f2feb24d`, перенесены изменения
+  `DynamicPDFController` и четыре сервиса `App\Services\Invoice` для определения
+  НДС продавца, расчёта итогов, суммы прописью и формирования итогового блока;
+- добавлены переводы invoice для `lv`, `lt`, `pl`, `ru`, `de`, `en`, `et` и
+  alias `ee`; исторические CRM/Filament-документы исходного проекта не
+  переносились;
+- сохранена Laravel 13/PHP 8.4-защита: nullable `order_vr_id` преобразуется в
+  строку до строковых операций;
+- три перенесённых набора тестов адаптированы с docblock data providers на
+  атрибуты PHPUnit 12: `36 passed / 95 assertions`;
+- реальная проверка заказа `18449`: Dompdf 3.1.6 создал одностраничный A4 PDF
+  размером 931480 байт; визуально таблица, `Amount payable`, сумма прописью и
+  электронное уведомление отображаются полностью, без обрезки;
+- PHP syntax всех перенесённых классов/тестов и `php artisan view:cache` — PASS;
+- полный suite: PDF и frontend-тесты проходят, итог `162 passed / 1114
+  assertions`, `1 skipped`; остаются 5 ранее существующих несвязанных ошибок
+  `SynvolveWebhookServiceTest` (нет тестовой таблицы `orders` и методов,
+  отсутствующих в текущем откатанном Synvolve-сервисе).

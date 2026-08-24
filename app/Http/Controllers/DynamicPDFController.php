@@ -5,12 +5,29 @@ namespace App\Http\Controllers;
 use App;
 use App\Models\OrderString;
 use App\Models\User;
+use App\Services\Invoice\InvoiceSummaryRenderer;
+use App\Services\Invoice\InvoiceTotalsCalculator;
+use App\Services\Invoice\InvoiceVatResolver;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use URL;
 
 class DynamicPDFController extends Controller
 {
+    private $summaryRenderer;
+    private $totalsCalculator;
+    private $vatResolver;
+
+    public function __construct(
+        InvoiceSummaryRenderer $summaryRenderer,
+        InvoiceTotalsCalculator $totalsCalculator,
+        InvoiceVatResolver $vatResolver
+    ) {
+        $this->summaryRenderer = $summaryRenderer;
+        $this->totalsCalculator = $totalsCalculator;
+        $this->vatResolver = $vatResolver;
+    }
+
     public function getPDFFromOrder($order, $order_vr_id = null, $form_data = null)
     {
         $orderDataHtml = $this->getOrderDataInHtml($order, $order_vr_id, $form_data);
@@ -90,7 +107,7 @@ class DynamicPDFController extends Controller
         $pdf_locale = $user_order->DPFLocale();
         if($pdf_locale) $user_loc = $pdf_locale;
 
-         if($user_order->preferredLocale() == 'ee'){
+         if($user_loc == 'ee'){
              $user_loc = 'et';
          }
 
@@ -179,6 +196,21 @@ class DynamicPDFController extends Controller
             $ord_strings['bank_code'] = $form_data['bank_code']; //6
             $ord_strings['office_addr_text'] = $form_data['office_addr']; // 7
             $ord_strings['acc_num_text'] = $form_data['acc_num']; // 8
+        }
+
+        $vat_rate = (float) ($ord_strings['nds'] ?? 0);
+        $custom_vat_number = $form_data !== null
+            ? (string) ($form_data['vat_num'] ?? '')
+            : null;
+        $seller_has_vat = $this->vatResolver->sellerHasVat(
+            $order_vr_id,
+            $ord_strings,
+            $custom_vat_number
+        );
+
+        if (!$seller_has_vat) {
+            $ord_strings['pvn_place'] = '';
+            $ord_strings['pvn_text'] = '';
         }
 
 //        $ord_strings['order_vr'] = '';
@@ -459,9 +491,8 @@ class DynamicPDFController extends Controller
             ';
 
         $i = 0;
-        $total_saved = 0;
         $raw_terms_price=0;
-        $order_all_summ=0;
+        $legacy_vat_base = 0;
 
         foreach ($order['items'] as $product) {
             if (!isset($product['sumPrice'])) {
@@ -492,22 +523,14 @@ class DynamicPDFController extends Controller
 
             $i++;
 
-            if ((strpos($order_vr_id, 'VR00' ) !== false && !$ord_strings['is_pvn'])
-            || (strpos($order_vr_id, 'VRR' ) !== false && !$ord_strings['is_pvn_vrr'])
-            || (strpos($order_vr_id, 'BAW' ) !== false && !$ord_strings['is_pvn_vrv'])
-            || (strpos($order_vr_id, 'DS020' ) !== false && !$ord_strings['is_pvn_vra'])
-            ) {
-                $pr_price = $product['sumPrice'];
-
-            }else{
-                $pr_price = $product['sumPrice'] / 1.21;
-            }
+            $pr_price = $seller_has_vat
+                ? (float) $product['sumPrice'] / 1.21
+                : (float) $product['sumPrice'];
 
 
 
             $pr_price_final = number_format($pr_price, 2, '.', '');
-
-            $total_saved += $pr_price_final;
+            $legacy_vat_base += (float) $pr_price_final;
 
             $price_for_one=$pr_price_final/$quant;
             $price_for_one=number_format($price_for_one, 2, '.', '');
@@ -521,27 +544,18 @@ class DynamicPDFController extends Controller
                         <td style="border-bottom:1px solid #000;" class="tar" style="text-align: right;">' . $pr_price_final . '&euro;</td>
                     </tr>';
 
-            $order_all_summ+=$pr_price_final;
-
             if(isset($product['terms_price']) && (float)$product['terms_price'] > 0)
             {
                 $raw_terms_price +=(float)$product['terms_price'];
                 $terms_price = (float)$product['terms_price'];
 
-                if ((strpos($order_vr_id, 'VR00' ) !== false && !$ord_strings['is_pvn'])
-                || (strpos($order_vr_id, 'VRR' ) !== false && !$ord_strings['is_pvn_vrr'])
-                || (strpos($order_vr_id, 'BAW' ) !== false && !$ord_strings['is_pvn_vrv'])
-                || (strpos($order_vr_id, 'DS020' ) !== false && !$ord_strings['is_pvn_vra']))
-                {
-                }else{
-
-                    $terms_price = $terms_price / 1.21;
+                if ($seller_has_vat) {
+                    $terms_price /= 1.21;
                 }
 
                 $terms_price = number_format($terms_price, 2, '.', '');
+                $legacy_vat_base += (float) $terms_price;
 
-                $total_saved += $terms_price;
-                $order_all_summ+=$terms_price;
                 $i++;
                     $text .= '<tr style="border: 1px solid #000;">
                         <td style="border-bottom:1px solid #000;">' . $i . '</td>
@@ -555,47 +569,21 @@ class DynamicPDFController extends Controller
         }
 
 
-        if ($order['ur_name'] == '') {
-            $nds_price = $total_saved / 100 * number_format($ord_strings['nds'], 2, '.', '');
-        } else {
-            $nds_price = $total_saved / 100 * number_format($ord_strings['nds'], 2, '.', '');
-        }
-
-
         if (isset($order['delivery']['deliv_price'])) {
-            $dost_full_price = number_format($order['delivery']['deliv_price'], 2, '.', ''); // 4
-
-            $dost_calc_price = number_format($dost_full_price / 121 * 100, 2, '.', ''); // 3,31
-
-            $dost_calc_price_full = $dost_full_price - $dost_calc_price;
+            $delivery_full_price = number_format($order['delivery']['deliv_price'], 2, '.', '');
+            $dost_calc_price = $seller_has_vat
+                ? number_format($delivery_full_price / 121 * 100, 2, '.', '')
+                : $delivery_full_price;
+            $delivery_vat = $seller_has_vat ? $delivery_full_price - $dost_calc_price : 0;
         } else {
-            $dost_calc_price_full = 0;
-
             $dost_calc_price = 0;
-            $dost_full_price = 0;
+            $delivery_vat = 0;
         }
 
-
-
-        $nds_price_full = $dost_calc_price_full + $nds_price;
-
-        $nds_price_full = number_format($nds_price_full, 2, '.', '');
-
-
-        $order_all_summ+=$dost_calc_price+$nds_price_full;
-
-
-
+        $legacy_vat_amount = $seller_has_vat
+            ? number_format($delivery_vat + ($legacy_vat_base / 100 * number_format($ord_strings['nds'], 2, '.', '')), 2, '.', '')
+            : 0;
         $pr = str_replace(' €', '', $order['price']);
-
-        if ((strpos($order_vr_id, 'VR00' ) !== false && !$ord_strings['is_pvn'])
-         || (strpos($order_vr_id, 'VRR' ) !== false && !$ord_strings['is_pvn_vrr'])
-         || (strpos($order_vr_id, 'BAW' ) !== false && !$ord_strings['is_pvn_vrv'])
-         || (strpos($order_vr_id, 'DS020' ) !== false && !$ord_strings['is_pvn_vra']))
-        {
-            $nds_price_full = 0;
-            $dost_calc_price = $dost_full_price;
-        }
 
 
 
@@ -606,21 +594,22 @@ class DynamicPDFController extends Controller
            // if ($pr != $order['sale_price'] && $order['sale_price'] != null && $order['sale_price'] != '') {
             $pr = $order['sale_price'];
 
-//            $all_summ=$order_all_summ-$price_shown;
-//
-//            if ($all_summ!=0) {
-//
-//            }
         }
 
 
         if (isset($order['delivery']['deliv_price'])) {
-            $dp = intval($order['delivery']['deliv_price']);
+            $dp = (float) $order['delivery']['deliv_price'];
         } else {
             $dp = 0;
         }
 
         $price_shown = number_format((float)$pr + (float)$dp + (float)$raw_terms_price, 2, '.', '');
+        $invoice_totals = $this->totalsCalculator->calculateUsingVatAmount(
+            $price_shown,
+            $legacy_vat_amount,
+            $vat_rate,
+            $seller_has_vat
+        );
 
 
 
@@ -641,75 +630,20 @@ class DynamicPDFController extends Controller
 
         if ($salesumm!=0 && ($order['sale_price']!=NULL || $order['sale_price']!=0)){  $text .=$sale_html;  }
 
-    $text .= ' <tr style="border: 1px solid #000;">
-
+        $text .= ' <tr style="border: 1px solid #000;">
                 <td>' . $ord_strings['deliv_price'] . '</td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td class="tar" style="text-align: right;">' . $dost_calc_price . '&euro;</td>
-            </tr>
-            <tr style="border: 1px solid #000;">
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                ';
-            if ($nds_price_full != 0)
-            {
-                $text .= '
-                <td>'.$ord_strings['nds'].'%</td>
-                <td class="tar" style="text-align: right;">'.$nds_price_full.'&euro;</td>
-                ';
-            }
-            $text .= '
-            </tr>
-            <tr style="border: 1px solid #000;">
-                <td>' . $ord_strings['total_am_place'] . '</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="tar" style="text-align: right;">' . $price_shown . '&euro;</td>
-            </tr>
-        </table>
+            </tr>';
+        $text .= $this->summaryRenderer->render($invoice_totals, $user_loc);
+        $text .= '</table>
         </body>
-        </html>
-                ';
-
-        $text = $this->rus2translit($text);
+        </html>';
 
         return $text;
     }
 
-    private function rus2translit($string)
-    {
-        $converter = [
-            'а' => 'a', 'б' => 'b', 'в' => 'v',
-            'г' => 'g', 'д' => 'd', 'е' => 'e',
-            'ё' => 'e', 'ж' => 'zh', 'з' => 'z',
-            'и' => 'i', 'й' => 'y', 'к' => 'k',
-            'л' => 'l', 'м' => 'm', 'н' => 'n',
-            'о' => 'o', 'п' => 'p', 'р' => 'r',
-            'с' => 's', 'т' => 't', 'у' => 'u',
-            'ф' => 'f', 'х' => 'h', 'ц' => 'c',
-            'ч' => 'ch', 'ш' => 'sh', 'щ' => 'sch',
-            'ь' => '\'', 'ы' => 'y', 'ъ' => '\'',
-            'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
-            'А' => 'A', 'Б' => 'B', 'В' => 'V',
-            'Г' => 'G', 'Д' => 'D', 'Е' => 'E',
-            'Ё' => 'E', 'Ж' => 'Zh', 'З' => 'Z',
-            'И' => 'I', 'Й' => 'Y', 'К' => 'K',
-            'Л' => 'L', 'М' => 'M', 'Н' => 'N',
-            'О' => 'O', 'П' => 'P', 'Р' => 'R',
-            'С' => 'S', 'Т' => 'T', 'У' => 'U',
-            'Ф' => 'F', 'Х' => 'H', 'Ц' => 'C',
-            'Ч' => 'Ch', 'Ш' => 'Sh', 'Щ' => 'Sch',
-            'Ь' => '\'', 'Ы' => 'Y', 'Ъ' => '\'',
-            'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
-        ];
-
-        return strtr($string, $converter);
-    }
 }
