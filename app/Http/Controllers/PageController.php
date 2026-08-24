@@ -398,8 +398,7 @@ class PageController extends Controller
             $subcategories[$type->url] = GalleryItem::where('id_type', $type->id)
                 ->where('active', 1)
                 ->get()
-                ->translate(App::getLocale(), 'ru')
-                ->toArray();
+                ->translate(App::getLocale(), 'ru');
         }
 
         return view('sitemap')

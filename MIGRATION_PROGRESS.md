@@ -760,3 +760,18 @@ scope; Filament 5 будет рассматриваться отдельным �
   `viar13.loc/en/new/gallery/{type}`; новых production Laravel errors нет;
 - проверки: `GallerySliderLinkContractTest` — `1 passed / 4 assertions`,
   `php artisan view:cache` и `git diff --check` проходят.
+
+### 2026-08-21 — HTML sitemap и локализованные подкатегории
+
+- воспроизведён `500` на `/de/sitemap`: Blade ожидал Eloquent-объект
+  подкатегории (`$subcategory->slug`/`name`), но контроллер после перевода
+  преобразовывал коллекцию в массив через `toArray()`;
+- в `PageController::generate_sitemap_html()` убрано только лишнее
+  преобразование в массив; маршруты, содержимое sitemap, бизнес-логика и
+  внешний вид не менялись;
+- browser-проверка `/de/sitemap`: HTTP `200`, заголовок `Lageplan`, 264 ссылки,
+  страница Laravel-ошибки отсутствует;
+- HTTP-проверка включённых локалей: `ru`, `lv`, `lt`, `de`, `en`, `ee` — `200`;
+  `/pl/sitemap` сохраняет существующее перенаправление на `viar-art.pl`;
+- добавлен `SitemapHtmlContractTest`: `1 passed / 2 assertions`; также прошли
+  `php artisan view:cache`, PHP syntax controller/test.
