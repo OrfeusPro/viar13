@@ -80,6 +80,7 @@
         top: 0;
         width: 44px;
         height: 44px;
+        line-height: 44px;
         border-radius: 8px;
         transform: none;
     }
