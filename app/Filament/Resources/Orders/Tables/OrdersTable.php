@@ -689,6 +689,16 @@ class OrdersTable
                     ->requiresConfirmation()
                     ->action(function ($record): void {
                         $result = app(OrderInvoiceService::class)->approve($record);
+                        if ($result['email_suppressed']) {
+                            Notification::make()
+                                ->warning()
+                                ->title('Счёт подтверждён; внешняя почта отключена')
+                                ->body($result['mail_logged'] ? 'Тестовое письмо записано в локальный лог.' : 'Не удалось сформировать тестовое письмо, подробности записаны в лог.')
+                                ->send();
+
+                            return;
+                        }
+
                         $notification = Notification::make()->title(
                             $result['mail_sent'] ? 'Счёт подтверждён и отправлен' : 'Счёт подтверждён, но письмо не отправлено',
                         );

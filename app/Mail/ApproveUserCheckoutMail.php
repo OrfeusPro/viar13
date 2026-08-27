@@ -14,6 +14,12 @@ class ApproveUserCheckoutMail extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public mixed $updated_at;
+    public string $pdf;
+    public array $items;
+    public mixed $data;
+    public int $order_id;
+
     /**
      * Create a new message instance.
      *

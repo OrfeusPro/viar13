@@ -10,6 +10,7 @@ use App\Models\UserMessage;
 use App\Services\BestEffortMailService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -114,29 +115,44 @@ class OrderInvoiceService
             $messageData = [];
         }
         $freshOrder = $order->fresh();
-        $mailSent = $this->mail->send(
-            $customer->email,
-            new ApproveUserCheckoutMail(
+        $mailable = new ApproveUserCheckoutMail(
                 $pdfPath,
                 (string) $freshOrder->getRawOriginal('updated_at'),
                 $this->decodeJson($freshOrder->getRawOriginal('items')),
                 $messageData,
                 $freshOrder->id,
                 $locale,
-            ),
-            'admin_order_invoice_approval',
-            ['order_id' => $freshOrder->id, 'user_id' => $customer->id],
-        );
+            );
+        $emailEnabled = (bool) config('admin_migration.invoice_email_enabled', false);
+        $mailProcessed = $emailEnabled
+            ? $this->mail->send(
+                $customer->email,
+                $mailable,
+                'admin_order_invoice_approval',
+                ['order_id' => $freshOrder->id, 'user_id' => $customer->id],
+            )
+            : $this->mail->attempt(
+                static fn () => Mail::mailer('log')->to($customer->email)->send($mailable),
+                'admin_order_invoice_approval_preview',
+                ['order_id' => $freshOrder->id, 'user_id' => $customer->id],
+            );
 
         Log::info('Admin order invoice approved.', [
             'order_id' => $order->id,
             'reapproved' => $wasApproved,
-            'mail_sent' => $mailSent,
+            'mail_sent' => $emailEnabled && $mailProcessed,
+            'mail_logged' => ! $emailEnabled && $mailProcessed,
+            'email_suppressed' => ! $emailEnabled,
         ]);
 
         $order->refresh();
 
-        return ['mail_sent' => $mailSent, 'reapproved' => $wasApproved];
+        return [
+            'mail_sent' => $emailEnabled && $mailProcessed,
+            'mail_logged' => ! $emailEnabled && $mailProcessed,
+            'email_suppressed' => ! $emailEnabled,
+            'reapproved' => $wasApproved,
+        ];
     }
 
     public function defaultFirmData(Orders $order): array

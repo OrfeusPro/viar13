@@ -53,6 +53,21 @@
   однократный referral-бонус — 3 passed / 12 assertions;
 - итоговый admin regression suite: 21 passed / 52 assertions, 1 legacy test
   skipped по ранее зафиксированной причине отключённых admin routes;
+- добавлен UAT-предохранитель `ADMIN_INVOICE_EMAIL_ENABLED=false`: подтверждение
+  полностью рендерит письмо через Laravel log-mailer, но не вызывает внешний
+  транспорт; Filament явно предупреждает оператору об отключённой отправке;
+- создан изолированный тестовый заказ `18451` и пользователь
+  `filament-test-20260828002724@example.invalid`; на общей БД успешно проверены
+  `VR00999999`, PDF 931738 bytes, custom firm data, payment request
+  `OPR-000043`, первое и повторное подтверждение, `watching → pegging`;
+- локальный mail log содержит только тестовый адрес `.invalid`; реальные
+  клиенты в smoke-тесте не использовались и внешние письма не отправлялись;
+- browser smoke по поиску `18451` подтвердил полный итоговый вывод колонки:
+  VR actions, счёт, повторное подтверждение, OPR-номер/сумма/назначение/status;
+- устранены PHP deprecation warnings старого `ApproveUserCheckoutMail` за счёт
+  объявления его runtime properties;
+- тест защиты внешней почты подтверждает отсутствие вызова `send`; текущий
+  admin regression suite: 22 passed / 58 assertions, 1 legacy test skipped;
 - риск: legacy mutating GET routes пока остаются зарегистрированы для старого
   runtime-контракта; новые Filament actions их не используют, их закрытие нужно
   выполнить после отдельной проверки публичных потребителей;

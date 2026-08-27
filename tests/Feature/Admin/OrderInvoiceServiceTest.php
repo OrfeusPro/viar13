@@ -104,6 +104,7 @@ class OrderInvoiceServiceTest extends TestCase
             'updated_at' => now(),
         ]);
         $order = $this->createOrder($customerId, ['has_pdf' => 1]);
+        config()->set('admin_migration.invoice_email_enabled', true);
 
         $pdf = Mockery::mock(DynamicPDFController::class);
         $pdf->shouldReceive('getPDFFromOrder')->twice()->andReturn('https://viar13.loc/storage/pdf/'.$order->id.'.pdf');
@@ -153,6 +154,27 @@ class OrderInvoiceServiceTest extends TestCase
                 'pdf_link' => null,
             ]);
         }
+    }
+
+    public function test_external_invoice_email_is_logged_instead_of_sent_by_default(): void
+    {
+        config()->set('admin_migration.invoice_email_enabled', false);
+        $order = $this->createOrder(attributes: ['has_pdf' => 1]);
+
+        $pdf = Mockery::mock(DynamicPDFController::class);
+        $pdf->shouldReceive('getPDFFromOrder')->once()->andReturn('https://viar13.loc/storage/pdf/'.$order->id.'.pdf');
+        $this->app->instance(DynamicPDFController::class, $pdf);
+
+        $mail = Mockery::mock(BestEffortMailService::class);
+        $mail->shouldReceive('attempt')->once()->andReturnTrue();
+        $mail->shouldNotReceive('send');
+        $this->app->instance(BestEffortMailService::class, $mail);
+
+        $result = app(OrderInvoiceService::class)->approve($order);
+
+        $this->assertTrue($result['email_suppressed']);
+        $this->assertTrue($result['mail_logged']);
+        $this->assertFalse($result['mail_sent']);
     }
 
     private function createOrder(?int $userId = null, array $attributes = []): Orders
