@@ -8,12 +8,17 @@ use App\Notifications\BrandedResetPassword;
 use App\Models\Orders;
 use DB;
 use Eloquent;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
 use Throwable;
 
-class User extends \TCG\Voyager\Models\User implements HasLocalePreference
+class User extends \TCG\Voyager\Models\User implements FilamentUser, HasLocalePreference, HasName
 {
     use Notifiable;
 
@@ -208,6 +213,46 @@ class User extends \TCG\Voyager\Models\User implements HasLocalePreference
     public function type()
     {
         return $this->belongsTo(UserType::class, 'type_id');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->relationLoaded('role') && $this->role?->relationLoaded('permissions')) {
+            $hasPrimaryPermission = $this->role->permissions->contains('key', $permission);
+        } else {
+            $hasPrimaryPermission = $this->role()
+                ->whereHas('permissions', fn (Builder $query) => $query->where('key', $permission))
+                ->exists();
+        }
+
+        return $hasPrimaryPermission || $this->roles()
+            ->whereHas('permissions', fn (Builder $query) => $query->where('key', $permission))
+            ->exists();
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $panel->getId() === 'admin' && $this->hasPermission('browse_admin');
+    }
+
+    public function getFilamentName(): string
+    {
+        $fullName = trim(implode(' ', array_filter([
+            $this->first_name,
+            $this->last_name,
+        ])));
+
+        return $fullName !== '' ? $fullName : (string) $this->email;
     }
 
     public function change_password(array $data)

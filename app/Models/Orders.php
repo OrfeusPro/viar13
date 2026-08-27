@@ -132,9 +132,45 @@ class Orders extends Model
     ];
     private $basketRepository;
 
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
+        parent::__construct($attributes);
         $this->basketRepository = resolve(BasketRepository::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function painterAssignment()
+    {
+        return $this->hasOne(PainterOrder::class, 'order_id');
+    }
+
+    public function printingAssignment()
+    {
+        return $this->hasOne(PrintingOrder::class, 'order_id');
+    }
+
+    public function vrNumber()
+    {
+        return $this->hasOne(VrNumber::class, 'order_id');
+    }
+
+    public function adminChats()
+    {
+        return $this->hasMany(AdminChats::class, 'orders_id');
+    }
+
+    public function saMessages()
+    {
+        return $this->hasMany(SaMessage::class, 'orders_id');
     }
 
     // This function is used to get a delivery data form orders table

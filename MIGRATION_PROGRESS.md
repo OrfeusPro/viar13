@@ -1,5 +1,90 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-000 — Инвентаризация и roadmap (DONE, 2026-08-27)
+
+- frontend принят как завершённый RC и остаётся regression baseline;
+- единственная база реализации — `G:\OSPanel\home\viar13`;
+- новая панель до приёмки работает на `/filament`, Voyager routes не включаются;
+- legacy admin классифицирован по модулям; backlog записан в
+  `MIGRATION_PLAN.md`;
+- Filament в Composer пока отсутствует, compatibility-модель пользователя
+  содержит только `role()` без permission relations;
+- следующий точный шаг: **ADM-FIL-001 — Установка и базовая панель**.
+
+## ADM-FIL-001 — Установка и базовая панель (DONE, 2026-08-27)
+
+- установлены Filament `5.7.6` и Livewire `4.4.2`; Laravel обновлён в рамках
+  совместимого `^13.20` с `13.25.0` до `13.29.0`;
+- создан `AdminPanelProvider`, panel работает на `/filament`, локаль `ru`,
+  опубликованы автономные Filament assets; frontend build не изменён;
+- `/filament`, `/filament/login` зарегистрированы, Voyager routes отсутствуют;
+- `FilamentPanelBootTest`: 3 passed / 5 assertions.
+- после реального browser smoke исправлен конфликт общей frontend-сессии:
+  Filament переведён на отдельный session guard `filament`, поэтому вошедший
+  клиент больше не получает `403` вместо формы admin login;
+- повторный browser smoke показывает форму «Войдите в свой аккаунт»; целевой
+  admin-набор после исправления: 9 passed / 18 assertions.
+
+## ADM-FIL-002 — Авторизация и Voyager permissions (DONE, 2026-08-27)
+
+- добавлены first-party `Role` и `Permission` поверх существующих таблиц;
+- `User` реализует Filament contracts, `browse_admin` проверяется для основной
+  `role_id` и дополнительных ролей `user_roles`;
+- добавлен `OrdersPolicy` для `browse/read/add/edit/delete_orders`;
+- тесты panel + authorization: 6 passed / 10 assertions;
+- browser smoke существующей сессией обычного пользователя подтвердил `403`.
+
+## ADM-FIL-003 — Список и фильтры заказов (IN PROGRESS, 2026-08-27)
+
+- добавлен Orders Resource: ID, клиент, менеджер, status/payment badges, сумма,
+  признак admin order, дата; поиск, сортировка и фильтры;
+- добавлены Eloquent relations заказа к клиенту, менеджеру и назначениям;
+- незавершённые create/edit/delete actions не публикуются до следующих задач;
+- PHP syntax, routes и permission smoke прошли;
+- выполнено прямое browser-сравнение с действующим Voyager
+  `viarcanvas.loc/admin/orders`: legacy-экран содержит отдельные режимы текущих,
+  завершённых, неоплаченных, производственных, печатных и отправленных заказов,
+  расширенный поиск клиента/оплаты и производственные индикаторы;
+- в Filament добавлены вкладки «Текущие», «Завершённые», «Неоплаченные»,
+  «В производстве», «У печатника», «Отправлены сегодня», «Отправленные»,
+  «Новые сегодня/вчера» и «Все»; default теперь эквивалентен legacy текущим
+  заказам (`status != completed`);
+- добавлены фильтры ID заказа, номера payment request, клиента, телефона,
+  статуса, оплаты, менеджера, канала продаж, страны, точной суммы, размера и
+  диапазона дат; пагинация по умолчанию — 13;
+- browser smoke подтвердил отрисовку вкладок и 76 текущих заказов без ошибки;
+  admin feature suite: 9 passed / 18 assertions;
+- остаётся parity backlog: express-сортировка, категория, художник, VR-поиск,
+  итоговая сумма, unread/chat и производственные индикаторы;
+- после подключения общей БД воспроизведён legacy rotation comparator для
+  текущих, неоплаченных, печатных и express-заказов; browser-сверка первых 13
+  ID Voyager/Filament подтверждает одинаковые группы и порядок;
+- в список добавлены VR/BAW/VRR/DS номера, последние payment requests,
+  получатель и телефон, желаемая дата доставки, художник/печатник и счётчики
+  клиентского, административного, художнического и SA-чатов с unread marker;
+- VR-поиск добавлен в общий фильтр клиента; добавлен фильтр художника;
+- panel layout переключён на `Width::Full`, desktop sidebar сделан сворачиваемым;
+  канал продаж выведен по умолчанию,
+  добавлены категория и итоговая сумма `orders.price` по активной выборке;
+- следующий точный шаг: завершить этот parity backlog в
+  **ADM-FIL-003 — Список и фильтры заказов**, затем продолжить ADM-FIL-005.
+
+## ADM-FIL-004 — Карточка и редактирование заказа (DONE, 2026-08-27)
+
+- карточка заказа показывает клиента, менеджера, статусы, суммы, комментарии,
+  JSON-снимок доставки и полный legacy JSON состава заказа;
+- Edit page меняет менеджера, статус заказа, оплату, цены и admin comment через
+  `UpdateOrderService`, validation и DB transaction;
+- при смене статуса заполняются `status_date` и соответствующая статусная дата;
+- стандартный Filament delete action удалён: legacy deletion имеет обязательную
+  бизнес-логику возврата бонусов и будет переноситься отдельно;
+- `UpdateOrderServiceTest`: 2 passed / 5 assertions;
+- `composer validate` и `view:cache` прошли; общий suite: 188 passed / 1254
+  assertions, 5 skipped, 0 failed tests. Команда вернула exit code 1 при наличии
+  skipped legacy contracts; четыре skip — отсутствующие Synvolve contracts,
+  один — ещё не перенесённое создание admin payment request;
+- следующий точный шаг: **ADM-FIL-005 — Позиции и файлы заказа**.
+
 Обновлено: 2026-08-13.
 
 ## Цель

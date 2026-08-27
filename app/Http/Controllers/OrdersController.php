@@ -735,7 +735,7 @@ class OrdersController extends Controller
         ]);
     }
 
-    protected function sortAdminRotationOrders($orders, ?\DateTimeImmutable $now = null, ?string $orderIdSort = null): array
+    public function sortAdminRotationOrders($orders, ?\DateTimeImmutable $now = null, ?string $orderIdSort = null): array
     {
         if (in_array($orderIdSort, ['desc', 'asc'], true)) {
             return $this->sortAdminRotationOrdersById($orders, $orderIdSort);
@@ -808,7 +808,7 @@ class OrdersController extends Controller
         );
     }
 
-    protected function sortAdminExpressOrders($orders, ?string $orderIdSort = null): array
+    public function sortAdminExpressOrders($orders, ?string $orderIdSort = null): array
     {
         $expressOrders = [];
         $priorityOrders = [];

@@ -6,6 +6,57 @@
 
 **Миграция viar13 на Laravel 13 — запуск и стабилизация публичного фронтенда**
 
+## Этап админки Filament 5
+
+- [x] [DONE] **ADM-FIL-000 — Инвентаризация и roadmap**: frontend зафиксирован
+  как завершённый RC; legacy Voyager routes остаются выключенными; принят
+  временный URL `/filament`; составлена матрица переноса ниже.
+- [x] [DONE] **ADM-FIL-001 — Установка и базовая панель**: Filament 5.7.6 и
+  Livewire 4 установлены, panel доступен на `/filament`, Voyager выключен.
+- [x] [DONE] **ADM-FIL-002 — Авторизация и Voyager permissions**: panel access
+  использует `browse_admin`, поддержаны основная и дополнительные роли.
+- [~] [IN PROGRESS] **ADM-FIL-003 — Список и фильтры заказов**: после прямого
+  сравнения с Voyager добавлены операционные вкладки, 13 строк на страницу,
+  страна/канал, VR/payment request, получатель, исполнители, chat/unread и
+  основные legacy-фильтры. Rotation/express-порядок воспроизведён тем же
+  компаратором. Осталось перенести категории, итоговую сумму и остальные
+  данные/действия восьми Voyager-групп по связанным ADM-FIL задачам.
+  Панель переведена на полноширинный layout для операционной таблицы.
+- [x] [DONE] **ADM-FIL-004 — Карточка и редактирование заказа**: добавлены
+  read-only секции основных данных, доставки и позиций; редактирование основных
+  административных полей выполняется валидируемым транзакционным сервисом.
+- [ ] [TODO] **ADM-FIL-005 — Позиции и файлы заказа**: продолжить после
+  завершения parity-аудита ADM-FIL-003/004 по открытой Voyager админке.
+- [ ] [TODO] **ADM-FIL-006 — Художники и печать**.
+- [ ] [TODO] **ADM-FIL-007 — Чаты заказа**.
+- [ ] [TODO] **ADM-FIL-008 — Оплата и платёжные ссылки**.
+- [ ] [TODO] **ADM-FIL-009 — Доставка и Venipak**.
+- [ ] [TODO] **ADM-FIL-010 — Создание заказа менеджером**.
+- [ ] [TODO] **ADM-FIL-011 — Приёмка модуля заказов**.
+- [ ] [TODO] **ADM-FIL-020 — CRM-SA inbox**.
+- [ ] [TODO] **ADM-FIL-021 — Пользователи, роли и скидки**.
+- [ ] [TODO] **ADM-FIL-022 — Контент и мультиязычные CRUD**.
+- [ ] [TODO] **ADM-FIL-023 — SEO и ALT suggestions**.
+- [ ] [TODO] **ADM-FIL-024 — Рассылки, купоны и инструменты**.
+- [ ] [TODO] **ADM-FIL-025 — Dashboard и индикаторы**.
+- [ ] [TODO] **ADM-FIL-030 — Переключение на `/admin`**.
+- [ ] [TODO] **ADM-FIL-031 — Удаление зависимостей Voyager**.
+
+### Матрица переноса legacy admin
+
+| Legacy-контур | Целевой Filament-контур | Задача |
+|---|---|---|
+| Orders BREAD и кастомная карточка | Orders Resource + custom pages/actions | ADM-FIL-003—010 |
+| `painter_orders`, `printing_orders` | Relation managers/actions заказа | ADM-FIL-006 |
+| Три потока order chat | Order chat components | ADM-FIL-007 |
+| Payment requests | Order relation/action | ADM-FIL-008 |
+| Venipak admin API | Авторизованные order actions | ADM-FIL-009 |
+| SA conversations | Custom inbox pages | ADM-FIL-020 |
+| Users/roles/permissions | Resources + Laravel policies | ADM-FIL-002, ADM-FIL-021 |
+| Voyager BREAD content | Приоритетные Filament resources | ADM-FIL-022 |
+| SEO/ALT controllers | Custom pages and bulk actions | ADM-FIL-023 |
+| Mail/coupons/cache/TinyMCE | Custom pages/actions | ADM-FIL-024 |
+
 ## Статус frontend release candidate
 
 - [x] [DONE] Основной публичный frontend RC поднят на Laravel 13: страницы,
