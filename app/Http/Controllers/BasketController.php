@@ -31,6 +31,7 @@ use App\Mail\SendUserRegister;
 use App\Models\AProductionTime;
 use App\Models\GalleryDecoration;
 use App\Services\ImageSaverService;
+use App\Services\BestEffortMailService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -596,8 +597,13 @@ class BasketController extends Controller
                 $user->settings = $settings;
                 $user->save();
 
-                // send user notify
-                Mail::to($user->email)->send(new SendUserRegister($user, $random_pass, $cur_loc));
+                // Registration must not block checkout when SMTP is unavailable.
+                app(BestEffortMailService::class)->send(
+                    $user->email,
+                    new SendUserRegister($user, $random_pass, $cur_loc),
+                    'checkout_step_user_registration',
+                    ['user_id' => $user->id]
+                );
 
                 Auth::attempt(['email' => $request['email'], 'password' => $random_pass]);
                 //$this->authenticated($request, $this->guard()->user()) ?: json_encode(['status' => 'ok'])

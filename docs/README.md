@@ -16,6 +16,9 @@
   basket add-endpoints, JS/Blade payloads и статусов проверки.
 - [`frontend-browser-smoke.md`](frontend-browser-smoke.md) — матрица запуска
   основных страниц и найденные браузером frontend-проблемы.
+- [`production-frontend-runbook.md`](production-frontend-runbook.md) — порядок
+  production-развёртывания, smoke-check, cache policy и rollback Laravel 13
+  frontend.
 - `upgrade-laravel13-filament5/` — архив прежнего направления; использовать
   только как справочные аудиты, не как активный план.
 

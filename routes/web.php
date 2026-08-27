@@ -274,7 +274,7 @@ Route::group(
         Route::post(
             'send_photo_form',
             [UserManageController::class, 'send_photo_form']
-        )->name('send_photo_form');
+        )->name('send_photo_form_legacy');
 
 
         Route::get('/', [IndexController::class, 'hbrender'])->name('home');
@@ -358,7 +358,7 @@ Route::group(
         Route::get('/set_genre', [GalleryController::class, 'hb_set_genre']);
         Route::get('/set_style', [GalleryController::class, 'hb_set_style']);
 
-        Route::get('/get/ram_search', [GalleryController::class, 'ram_search'])->name('hb.gallery.ram_search');
+        Route::get('/get/ram_search', [GalleryController::class, 'ram_search'])->name('hb.gallery.ram_search.get');
         Route::post('/get/ram_search', [GalleryController::class, 'ram_search'])->name('hb.gallery.ram_search');
         Route::get('/gallery/painters', [GalleryController::class, 'painters'])->name('hb.gallery.painters');
         Route::get('/gallery/painters/{letter}', [GalleryController::class, 'painters'])->name('hb.gallery.painters_letter');
@@ -386,7 +386,7 @@ Route::group(
         // Route::get('/gallery/{type}/item/{id}', [GalleryController::class, 'item_render_single']);
 
         Route::get('/google-ads.xml', [AdvertisingController::class, 'google'])->name('google.ads');
-        Route::get('/kurpirkt.xml', [AdvertisingController::class, 'kurpirkt'])->name('kurpirkt');
+        Route::get('/kurpirkt.xml', [AdvertisingController::class, 'kurpirkt'])->name('kurpirkt_legacy');
         Route::get('/salidzini.xml', [AdvertisingController::class, 'salidzini'])->name('kurpirkt');
         Route::get('/lv-google-ads.xml', [AdvertisingController::class, 'google_lv'])->name('google.ads.lv');
         Route::get('/lt-google-ads.xml', [AdvertisingController::class, 'google_lt'])->name('google.ads.lt');
@@ -435,7 +435,7 @@ Route::group(
 
         Route::post('/basket/remove', [BasketController::class, 'removeFromBasket'])->name('remove_item_from_basket');
 
-        Route::post('/basket/submitbonuses', [BasketController::class, 'submitBonuses'])->name('submit_bonuses');
+        Route::post('/basket/submitbonuses', [BasketController::class, 'submitBonuses'])->name('submit_bonuses_post');
 
         Route::get('/basket/submitbonuses', [BasketController::class, 'submitBonuses'])->name('submit_bonuses');
 

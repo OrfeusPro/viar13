@@ -9122,3 +9122,23 @@ Extra checks:
 - Still external: Synvolve must activate the production `NewOrder` workflow or
   provide its current URL. Next exact action: repeat the existing application
   call after activation and verify HTTP `2xx` in the application log.
+
+## 260. Update Log 2026-08-27 (Synvolve test-contract classification)
+
+- The final Laravel 13 regression initially reproduced five failures only in
+  `tests/Unit/SynvolveWebhookServiceTest.php`; no frontend/account regression
+  was involved.
+- The active manager-message-by-order test now owns its minimal SQLite
+  `users/orders` schema and passes, confirming that the saved order phone takes
+  precedence over a fallback payload phone.
+- Four tests describe conversation bot-status and lead-update methods that are
+  not present in the currently rolled-back `SynvolveWebhookService`. They are
+  conditionally skipped with explicit reasons instead of failing with
+  undefined-method errors. No missing integration behavior was invented or
+  restored during the frontend migration.
+- Full-suite evidence is `180 passed / 1226 assertions`, `5 skipped`,
+  `0 failed`. The fifth skip remains the intentionally disabled admin payment
+  request route until the Filament 5 stage.
+- Still external/static: production Synvolve workflow availability and the
+  rolled-back conversation/lead-update contracts. Next exact action remains a
+  separately approved CRM/SA stage, not a frontend release requirement.

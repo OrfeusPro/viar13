@@ -9,6 +9,7 @@ use RuntimeException;
 use App\Models\Orders;
 use App\Models\OrderPainterImages;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class UpdatePainterSketchImageService {
     public function store($request)
@@ -17,20 +18,14 @@ class UpdatePainterSketchImageService {
 		$new_fname = Orders::getOrderImageName($order, 'sketch', false, $request->order_id, false);
         $data['orig_images'] = [];
 
+        Validator::make($request->all(), [
+            'painter_sketch_images' => ['required', 'array', 'min:1'],
+            'painter_sketch_images.*' => ['required', 'file', 'mimes:png,bmp,jpg,jpeg,psd,heic,heif,fig,pdf'],
+        ])->validate();
+
         if ($request->hasFile('painter_sketch_images'))
         {
             $files = $request->file('painter_sketch_images');
-
-            $validator = Validator::make($request->all(), [
-                'painter_sketch_images.*' => 'mimes:png,bmp,jpg,jpeg,psd,heic,heif,fig,pdf|max:9000000',
-            ]);
-
-            if ($validator->fails())
-            {
-                return redirect()->back()->withErrors([
-                    'images' => 'Invalid filesize or extension.',
-                ]);
-            }
 
             $j = -1;
             foreach ($files as $file)
@@ -45,8 +40,8 @@ class UpdatePainterSketchImageService {
                    // $file_name = Storage::disk('uploads')->put('uploads', $file);
                 } catch (RunTimeException $e)
                 {
-                    return redirect()->back()->withErrors([
-                        'images' => $e->getMessage(),
+                    throw ValidationException::withMessages([
+                        'painter_sketch_images' => 'Unable to store the uploaded sketch.',
                     ]);
                 }
 

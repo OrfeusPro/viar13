@@ -77,6 +77,22 @@ class Laravel13FrontendBootTest extends TestCase
         $this->assertFalse(Route::has('verification.notice'));
     }
 
+    public function test_frontend_route_names_are_unique_and_keep_legacy_urls(): void
+    {
+        $duplicates = collect(Route::getRoutes()->getRoutes())
+            ->filter(fn ($route) => $route->getName() !== null)
+            ->groupBy(fn ($route) => $route->getName())
+            ->filter(fn ($routes) => $routes->count() > 1)
+            ->keys()
+            ->all();
+
+        $this->assertSame([], $duplicates);
+        $this->assertSame('user/send_photo_form', Route::getRoutes()->getByName('send_photo_form')->uri());
+        $this->assertSame('get/ram_search', Route::getRoutes()->getByName('hb.gallery.ram_search')->uri());
+        $this->assertSame('salidzini.xml', Route::getRoutes()->getByName('kurpirkt')->uri());
+        $this->assertSame('basket/submitbonuses', Route::getRoutes()->getByName('submit_bonuses')->uri());
+    }
+
     public function test_voyager_frontend_media_adapter_preserves_public_storage_url(): void
     {
         $this->assertStringEndsWith('/storage/example/image.jpg', \Voyager::image('example/image.jpg'));

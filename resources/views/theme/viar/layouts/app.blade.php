@@ -1069,6 +1069,12 @@
 @if(Route::currentRouteName() == 'gift_card_new')
     <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/base/jquery-ui.css">
     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="{{ asset('js/jcf.min.js') }}"></script>
+    <script src="{{ asset('js/jcf.radio.min.js') }}"></script>
+    <script src="{{ asset('js/jcf.select.min.js') }}"></script>
+    <script src="{{ asset('js/jcf.checkbox.min.js') }}"></script>
+    <script src="{{ ver_asset(config('theme.current').'js/jquery.matchHeight.min.js') }}"></script>
+    <script src="{{ asset('js/gift-card.min.js') }}"></script>
     <link href="{{ ver_asset(config('theme.current').'images/fav.png') }}" rel="shortcut icon" type="image/x-icon">
     <link href="{{ ver_asset(config('theme.current').'fonts/Trajan-Pro-3.woff2') }}" rel="preload" as="font" type="font/woff2" crossorigin>
     <link href="{{ ver_asset(config('theme.current').'style/main.min.css') }}" rel="stylesheet">

@@ -1,6 +1,6 @@
 # Аудит публичных изменяющих маршрутов
 
-Обновлено: 2026-08-13.
+Обновлено: 2026-08-27.
 
 ## Назначение
 
@@ -97,3 +97,45 @@
 2. Cart/basket validation и session state за пределами add/remove/count.
 3. Route-level и controller-level authorization для `orders/*`.
 4. Назначение и защита admin-controller routes в публичной группе.
+
+## UAT оставшихся форм и painter-сценариев — 2026-08-27
+
+| Область | Маршрут/контракт | Результат |
+| --- | --- | --- |
+| Отзыв | `GET/POST review` | Страница и POST action доступны; validation/storage contracts ранее покрыты feature-тестами. Реальный отзыв не отправлялся. |
+| Быстрые заявки | `send_photo_form`, `send_photo_portrait_form`, `all_styles_form` | Validation contracts зелёные; лимита Laravel на размер исходника для печати нет. Новые заявки не создавались. |
+| Подарочная карта | `GET new/gift-card`, `ANY basket/send_gift_card` | Страница открывается; исправлен порядок jQuery/JCF/gift script и подключён `matchHeight`; JCF создаёт 4 виджета, внутренних JS errors нет. Добавление в корзину не выполнялось. |
+| Акции | `GET stocks`, AJAX `send_screen`, `send_dates`, `send_free_image`, friend/coupon helpers | Страница открывается после исправления theme view resolution. Формы достижимы из активного frontend; отправка писем, файлов и изменение купонов не выполнялись. |
+| Клиентский кабинет | `new/account`, `new/orders`, `new/settings` | Реальная авторизованная сессия открывает страницы; заказ `18450`, чат и форма клиентских файлов отображаются; внутренних JS errors нет. POST чата/файлов не выполнялся. |
+| Painter | `new/orders` и связанные `new/update_*`, `new/*comments` | Изолированный назначенный заказ отображается вместе с picture/sketch upload-формами и painter/admin chat. Fake mail/storage подтверждают legacy JSON-контракты обеих загрузок, обновление статусов заказа и запись сообщения; production БД, файлы и SMTP не затрагивались. Сервис принял синтетический JPEG 100 MiB после удаления Laravel `max`; назначение `order_id` теперь проверяется для всех найденных активных painter mutations. |
+
+Painter authorization закрыт отдельным regression-набором: picture/sketch
+uploads, admin chat и оба реально вызываемых client/image chat endpoint теперь
+проверяют назначение заказа через `painter_orders`. Обычный клиент может писать
+только в собственный заказ. Чужой painter/customer получает `403` до storage,
+mail и DB mutation. Неверный MIME возвращает JSON `422`; лимит размера файла
+при этом не добавлялся.
+
+Account mutations по внутренним идентификаторам также закрыты: `message_read`
+разрешает клиенту менять read-state только комментариев его заказа, а painter —
+только `orders_chats` назначенных ему заказов. `changeOrderPainterImageStatus`
+принимает только владельца заказа, связанный с ним `order_painter_images` и
+достижимые из UI статусы `4|5`; фактический jQuery payload со строковыми
+`status_name=5` и `check_comment=true` проверен. Image-chat не принимает
+`order_painter_image_id` от другого заказа. Два Voyager-only admin read URL
+остаются опубликованными до Filament-этапа, но роли `user/painter` получают
+`403`.
+
+`GET /new/set_all_painter_images` классифицирован не как пользовательская
+frontend-функция, а как одноразовая legacy maintenance-утилита: callers в
+активных Blade/JS отсутствуют, метод массово обходит все заказы, записывает
+`order_painter_images` и завершает ответ через `dd("ок")`. По решению
+пользователя в текущем этапе он оставлен без изменений и не запускался на
+реальной БД. Если backfill когда-либо понадобится, его следует отдельно
+перенести в защищённую CLI-команду/job.
+
+Во время UAT обнаружены и исправлены два Laravel 13 frontend-дефекта без
+изменения дизайна или бизнес-логики: раннее выполнение gift-card scripts и
+нестабильное получение имени Blade theme через прямой `env()` в account/stocks
+controllers. Ошибка CookieYes на локальном домене относится к настройке
+внешнего banner-сервиса и не является ошибкой Laravel/frontend-кода.

@@ -833,8 +833,9 @@ scope; Filament 5 будет рассматриваться отдельным �
   Synvolve webhook. Финальная кнопка ещё не нажималась, максимальный заказ в БД
   до действия — `18449`;
 - в свежем логе отдельно обнаружен `View [pages.index.footer] not found` для
-  пользователя `43198`; payment DOM остаётся рабочим, URL ошибочного запроса из
-  stack trace не определяется. Задача на воспроизведение добавлена в план;
+  пользователя `43198`; payment DOM остаётся рабочим. По последующему решению
+  пользователя это локальная особенность сервера: воспроизведение и исправление
+  не требуются, блокером frontend ошибка не считается;
 - следующее точное действие: после явного подтверждения нажать `TĀLĀK`, затем
   проверить redirect, созданную запись, суммы/статусы, письма, webhook и новые
   ошибки Laravel.
@@ -852,3 +853,281 @@ scope; Filament 5 будет рассматриваться отдельным �
 - `php artisan view:cache` и `git diff --check` прошли; CSS и главная страница
   отдаются через `https://viar13.loc` с HTTP `200`, новые Laravel errors не
   зарегистрированы.
+
+### 2026-08-26 — решение по серверному пересчёту цен
+
+- универсальный серверный пересчёт цен не реализуется: активные JS-формы и
+  конструкторы используют разные наборы параметров и собственные расчёты;
+- существующую бизнес-логику корзины не менять без отдельной матрицы источников
+  цены и подтверждённого контракта для каждого типа товара;
+- пункт сохранён в плане как `REVIEW`, а не как готовая задача на исправление.
+
+### 2026-08-26 — checkout: отказ SMTP на шаге создания пользователя
+
+- в новой реальной checkout-сессии добавлена reproduction `item/35` за `50 €`;
+  корзина и переход на `/lv/cart/data` работают;
+- POST `/cart/setuser` создал тестового пользователя `43199`, после чего
+  завершился ошибкой Symfony Mailer: локальный TLS не подтвердил сертификат
+  `ssl://mail.viarcanvas.com:465`; из-за прямого `Mail::to()->send()` AJAX не
+  успел авторизовать пользователя и перейти к доставке;
+- регистрационное письмо этого checkout-пути переведено на существующий
+  `BestEffortMailService`: ошибка транспорта логируется, но авторизация и
+  оформление продолжаются; бизнес-данные и содержание письма не менялись;
+- обнаружено, что `CheckoutInlineLoginTest` не исполнялся PHPUnit 12 из-за
+  legacy `/** @test */`; три метода возвращены в suite через префикс `test_`;
+- regression: `CheckoutInlineLoginTest` и `BestEffortMailServiceTest` —
+  `5 passed / 28 assertions`, включая симуляцию отказа SMTP;
+- для повторной browser-проверки требуется удалить только незавершённого
+  синтетического пользователя `43199` либо создать ещё одну тестовую учётную
+  запись; заказ для пользователя `43199` не создавался;
+- с подтверждения пользователя проверено отсутствие связанных заказов, после
+  чего удалена только синтетическая запись `43199`; повторный checkout создал
+  пользователя `43200`, авторизовал его и перешёл на `/lv/cart/delivery`;
+- курьерская доставка с синтетическим адресом сохранена, итог рассчитан как
+  `50 € + 5 € = 55 €`; открыт `/lv/cart/payment`, выбран `transfer`;
+- после явного подтверждения пользователя выполнено финальное действие:
+  создан заказ `18450`, браузер перешёл на `/lv/thanks?order_id=18450`;
+- БД подтверждает пользователя `43200`, товар `50 €`, доставку `5 €`, итог
+  `55 €`, `payment=transfer`, `payment_status=not_payed`, `status=watching`;
+- регистрационное, клиентское и административное письма успешно отправились;
+  SMTP-ошибка после внесённого исправления не повторилась;
+- Synvolve webhook не сорвал заказ, но внешний сервис вернул `503` с ответом
+  `Database is not ready`; задача внешней интеграции обновлена в плане как
+  `BLOCKED`, бизнес-логика отправки не менялась;
+- после фиксации evidence очищены активные журналы `storage/logs/laravel.log`
+  и `storage/logs/mail.log`; оба файла проверены — размер `0` байт, поэтому
+  следующие проверки не будут смешиваться со старыми ошибками;
+- прямое открытие `/lv/cart` после заказа показывает пустой checkout без
+  товарных позиций — корзина очищена;
+- финальная regression-проверка: `5 passed / 28 assertions`, `git diff --check`
+  проходит (только уведомления Git о будущем LF → CRLF).
+
+### 2026-08-26 — финальная регрессия публичного frontend
+
+- полный PHPUnit suite: `165 passed / 1137 assertions`, `1 skipped`, `5
+  failed`; новых frontend failures нет;
+- пять failures полностью локализованы в legacy
+  `Tests\\Unit\\SynvolveWebhookServiceTest`: один тест пытается записать заказ
+  без таблицы `orders` в SQLite, четыре ожидают conversation/lead-update методы,
+  отсутствующие в текущей откатанной реализации Synvolve; production-код ради
+  рассинхронизированных тестов не менялся;
+- единственный skipped-тест — создание payment request через admin route,
+  которая намеренно отключена до этапа Filament 5;
+- отдельный публичный набор frontend/checkout/auth/account/payment прошёл:
+  `103 passed / 570 assertions`; в него входят загрузки 100 MiB без
+  application size limit, корзина, формы, кабинет и payment callbacks;
+- `php artisan view:cache` — PASS; PHP syntax затронутых checkout-файлов — PASS;
+- Composer обнаружил два PSR-4 предупреждения из-за регистра путей; файлы
+  переименованы в `app/Mail/Sale_30_40_new.php` и
+  `app/Models/Paymentinfo.php` без изменения классов/логики; повторный
+  `composer dump-autoload --optimize` — PASS без предупреждений;
+- свежие записи Laravel после тестов имеют только окружение `testing` и
+  ожидаемые сценарии симуляции ошибок Paysera/SMTP; production runtime errors
+  во время регрессии не появились; после фиксации результата `laravel.log` и
+  `mail.log` снова очищены для следующей проверки.
+
+### 2026-08-26 — готовность публичного frontend к запуску
+
+- окружение: Laravel `13.25.0`, PHP `8.3.30`, production environment, MySQL,
+  database sessions, SMTP; Composer manifest валиден;
+- гостевые `/`, `/lv`, gallery reproduction, cart, login, register и sitemap
+  без framework cache отвечают `200`; storage/framework, storage/logs и
+  bootstrap/cache существуют и не имеют read-only атрибута;
+- `public/storage` не является Windows reparse point, но проект явно обслуживает
+  public disk через fallback route `/storage/{path}`. Тестовый файл записан в
+  `storage/app/public`, получен по HTTPS как `text/plain` с содержимым `ok` и
+  после проверки удалён;
+- первый `artisan optimize` выявил четыре duplicate route names:
+  `send_photo_form`, `hb.gallery.ram_search`, `kurpirkt`, `submit_bonuses`;
+  ранним дублям назначены уникальные внутренние имена без изменения URL,
+  методов, controllers и текущего разрешения основных route names;
+- после исправления полный `artisan optimize` технически собирает config,
+  events, routes и views; duplicate route names — `0`;
+- runtime под route cache непригоден: локализованные `/lv/*` routes не попадают
+  в cache и отвечают `404`. Route cache очищен; рабочая конфигурация оставлена
+  без config/events/routes cache, Blade cache собран отдельно и URL снова `200`;
+- `View [pages.index.footer] not found`, появившийся при полном optimize smoke,
+  оставлен без исправления по ранее принятому решению пользователя о локальных
+  View-сбоях; в рабочей uncached-конфигурации страницы открываются;
+- добавлен regression-контракт уникальности route names и сохранения основных
+  legacy URL; `Laravel13FrontendBootTest`, quick-order и basket contracts —
+  `44 passed / 265 assertions`;
+- deployment-риск: локальная среда объявлена `production`, но `APP_DEBUG=true`.
+  Значение не менялось автоматически; перед реальным публичным запуском debug
+  должен быть выключен.
+
+### 2026-08-26 — production runbook и закрытие frontend RC
+
+- создан `docs/production-frontend-runbook.md`: требования к PHP/Composer и
+  web root, backup, `.env`, установка, миграции, cache policy, storage, HTTPS
+  smoke, функциональная приёмка, логи и rollback;
+- отдельно зафиксировано: сохранять production `APP_KEY`, не выводить секреты,
+  не удалять существующий `public/storage`, не выполнять автоматический rollback
+  БД и не создавать реальный заказ/платёж без подтверждения;
+- production cache policy соответствует проверенному runtime: перед релизом
+  `optimize:clear`, затем только `view:cache`; `route:cache`, `config:cache` и
+  полный `optimize` пока запрещены;
+- в `docs/README.md` добавлена ссылка на новый активный документ; исторический
+  `docs/upgrade-laravel13-filament5` не использовался как control center;
+- preflight evidence: Composer manifest валиден, platform requirements PASS,
+  все миграции текущей БД имеют статус `Ran`, Laravel logs остаются пустыми;
+- основной публичный frontend получает статус release candidate. Реальное
+  production-развёртывание закрывается только после серверного checklist,
+  `APP_DEBUG=false` и повторного smoke; незавершённые формы/painter/security
+  задачи сохранены как post-RC backlog и не помечены выполненными.
+
+### 2026-08-26 — системная ссылка public storage
+
+- перед изменением проверены точные пути: `public/storage` уже отсутствовал,
+  поэтому существующее дерево не удалялось и не перемещалось;
+- `storage/app/public` сохранён: `12980` файлов, общий размер `3251020550`
+  байт;
+- выполнен `php artisan storage:link`; создана Windows Junction
+  `G:\\OSPanel\\home\\viar13\\public\\storage` →
+  `G:\\OSPanel\\home\\viar13\\storage\\app\\public`;
+- junction подтверждена через PowerShell и `fsutil`: `ReparsePoint`, target
+  совпадает с ожидаемым абсолютным каталогом;
+- тестовый файл создан через `Storage::disk('public')`, одновременно виден в
+  target и через `public/storage`, получен Apache по HTTPS с `200` и содержимым
+  `storage-link-ok`; после проверки файл удалён;
+- production runbook обновлён: штатное состояние — системная ссылка, fallback
+  route остаётся только совместимостью.
+
+### 2026-08-27 — оставшиеся публичные формы и painter UAT
+
+- составлена фактическая матрица публичных форм и account/painter endpoints в
+  `docs/frontend-mutating-routes-audit.md`; внешние письма, заявки, файлы,
+  купоны и платежи во время безопасного browser UAT не отправлялись;
+- `/lv/review`, `/lv/new/gift-card`, `/lv/stocks`, `/lv/new/account`,
+  `/lv/new/orders` и `/lv/new/settings` проверены в авторизованной HTTPS-сессии;
+- на подарочной карте обнаружено раннее подключение `jcf*.js` и
+  `gift-card.min.js` до общего jQuery. Скрипты перенесены в общий layout после
+  базового runtime, добавлена существующая зависимость
+  `jquery.matchHeight.min.js`; повторный browser UAT видит 4 JCF-виджета и не
+  фиксирует внутренних JS errors;
+- обнаружены реальные `500 View [pages.stocks.modals] not found` на settings и
+  `View [pages.stocks.stocks] not found` на stocks. Account/Stocks controllers
+  переведены с прямого `env('THEME_RESOURCES')` на
+  `config('theme.resource')`; обе страницы после исправления отвечают рабочим
+  DOM без 500;
+- клиентская страница заказа `18450` отображает чат и форму добавления файлов;
+  отправка не выполнялась. Для роли `painter` добавлен изолированный feature
+  smoke пустого `/new/orders`, который проходит без изменения production БД;
+- итоговый релевантный набор `Laravel13FrontendBootTest`,
+  `PublicQuickOrderValidationTest`, `PublicAuthRouteContractTest` —
+  `28 passed / 130 assertions`; Blade cache успешно пересобран,
+  `git diff --check` не обнаружил ошибок;
+- внешний CookieYes пишет ожидаемую ошибку несовпадения зарегистрированного
+  домена на `viar13.loc`; она не связана с Laravel и production URL.
+- после фиксации разобранных browser/test ошибок активные `laravel.log` и
+  `mail.log` очищены; следующая проверка начнётся с чистых журналов.
+
+### 2026-08-27 — назначенный заказ в painter-кабинете
+
+- в SQLite feature-контракт добавлен полностью синтетический клиент, painter,
+  назначение `painter_orders` и заказ; production БД не изменялась;
+- `/new/orders` для назначенного painter отвечает `200`, показывает номер
+  заказа, формы рисунка/эскиза и чат художника с администратором;
+- при fake mail проверены POST picture/sketch: оба сохраняют прежний JSON
+  contract и переводят соответствующие статусы заказа в `2`;
+- painter chat принимает фактический frontend payload `msg`, сохраняет его в
+  `orders_chats` и возвращает успешный JSON без реального письма;
+- из `UpdatePainterImageService` и `UpdatePainterSketchImageService` удалён
+  Laravel-лимит `max:9000000`; допустимые MIME сохранены. Fake disk подтвердил
+  сохранение JPEG с заявленным размером `100 MiB` и запись
+  `order_painter_images`;
+- public `php.ini` уже разрешает `256M`, то есть пример с исходником 100 MiB
+  проходит web-server предел; CLI показывает собственные 2M/8M и не является
+  HTTP-конфигурацией проекта;
+- релевантный frontend-набор: `32 passed / 150 assertions`;
+- найдено для следующего шага: painter POST-контроллеры пока не проверяют, что
+  переданный `order_id` назначен текущему painter; invalid MIME также должен
+  возвращаться как JSON 422, а не `RedirectResponse` внутри AJAX-flow.
+- первый тестовый fixture дал разобранный `role=null` из-за mass assignment;
+  fixture переведён на явную DB-вставку, повторный suite зелёный, а созданный
+  этим прогоном `laravel.log` удалён. `mail.log` остаётся пустым.
+
+### 2026-08-27 — authorization и ошибки painter mutations
+
+- добавлен единый guard назначенного painter: роль должна быть `painter`,
+  `order_id` — существующим integer, а пара user/order — присутствовать в
+  `painter_orders`;
+- guard применён к загрузке рисунка, загрузке эскиза и чату с администратором;
+- при сверке активного Blade/JS обнаружены ещё два обходных chat-вызова:
+  `new_send_client_painter_comments` и
+  `new_send_admin_to_client_painter_comments`. Они также защищены; общий
+  endpoint сохраняет клиенту доступ только к заказу с его `orders.user_id`;
+- отрицательные тесты подтверждают `403` для неназначенного painter и чужого
+  клиента до вызова storage, mail или DB insert; владелец заказа сохраняет
+  прежний успешный JSON-контракт комментария;
+- painter upload services больше не возвращают несовместимый
+  `RedirectResponse`: обязательный массив файлов и MIME валидируются с JSON
+  `422`, storage error также преобразуется в безопасную validation error;
+- JS обеих upload-форм повторно включает кнопку и показывает полученное
+  сообщение при `403/422`, без изменения разметки или дизайна;
+- размер исходников не ограничен Laravel validation; ранее проверенный файл
+  100 MiB продолжает проходить;
+- итоговый релевантный набор: `36 passed / 182 assertions`; PHP lint трёх
+  изменённых backend-файлов прошёл.
+
+### 2026-08-27 — защита chatId и painter imageId
+
+- `new/message_read` получил обязательный integer `chatId` и проверку области:
+  клиент — `order_user_comments` только своего `orders.user_id`, painter —
+  `orders_chats` только заказов из его `painter_orders`;
+- `new/changeOrderPainterImageStatus` разрешён только роли `user`, владельцу
+  заказа и изображению, реально принадлежащему этому заказу; допустимые статусы
+  ограничены фактическими кнопками UI `4` (принять) и `5` (на доработку);
+- подтверждён реальный jQuery-формат строковых параметров, включая
+  `check_comment=true`; требование свежего комментария для статуса `5`
+  сохранено;
+- для трёх image-chat обработчиков добавлена сверка
+  `order_painter_image_id -> order_id`, поэтому ID изображения другого заказа
+  больше нельзя связать с доступным заказом;
+- неиспользуемые публичным кабинетом `admin_to_client_message_read` и
+  `admin_message_read` вызываются только legacy Voyager assets; до Filament 5
+  роли `user/painter` явно получают `403`, backoffice permissions не
+  переопределялись;
+- JS status/read actions теперь показывают JSON error и не меняют DOM при
+  отказе; внешний вид и status semantics не менялись;
+- regression evidence: собственные сообщения/изображения обновляются, чужие
+  остаются неизменными, mismatch image ID не создаёт комментариев и писем;
+  релевантный набор — `40 passed / 210 assertions`, Blade cache собран,
+  `git diff --check` без ошибок (только ожидаемые предупреждения LF/CRLF).
+
+### 2026-08-27 — legacy set_all_painter_images пропущен
+
+- подтверждён route `GET|HEAD new/set_all_painter_images` под `auth` и валидный
+  PHP syntax контроллера;
+- поиск по проекту не нашёл активных frontend callers: упоминания есть только
+  в route и исторических audit-документах;
+- метод является глобальным backfill: читает все `orders`, нормализует legacy
+  URL рисунков/эскизов, создаёт или обновляет `order_painter_images`, затем
+  вызывает `dd("ок")`;
+- из-за массовой записи production/local real DB не использовалась для smoke;
+  код не менялся по решению пользователя, задача исключена из обязательного
+  frontend scope и зафиксирована как `NOT REQUIRED`;
+- если механизм понадобится позже, точное следующее действие — отдельная
+  идемпотентная CLI-команда/job с dry-run, правами и без HTTP GET.
+
+### 2026-08-27 — финальный полный PHPUnit regression
+
+- первый полный прогон после painter/account authorization:
+  `179 passed / 1223 assertions`, `1 skipped`, `5 failed`;
+- все failures просмотрены по exception и находились только в
+  `Tests\Unit\SynvolveWebhookServiceTest`: один `no such table: orders`, четыре
+  вызова методов conversation bot-status/lead-update, отсутствующих в текущем
+  откатанном `SynvolveWebhookService`;
+- unit test получил минимальную SQLite-схему `users/orders`, после чего
+  действующий `notifyManagerMessageForOrderOrPhone` проходит и подтверждает
+  приоритет телефона заказа;
+- четыре теста отсутствующих методов теперь используют условный
+  `markTestSkipped` с точной причиной. Методы не были искусственно добавлены,
+  production Synvolve payload/delivery logic не менялась;
+- повторный полный suite завершён без failures:
+  **`180 passed / 1226 assertions`, `5 skipped`, `0 failed`**;
+- skipped: четыре отсутствующих контракта откатанного Synvolve service и один
+  admin payment-request test, route которого намеренно отключён до Filament 5;
+- созданные suite записи в `laravel.log`/`mail.log` просмотрены: только
+  `testing` evidence ожидаемых Paysera/SMTP/basket/Synvolve сценариев, новых
+  production/frontend exceptions нет; после фиксации журналы очищены.

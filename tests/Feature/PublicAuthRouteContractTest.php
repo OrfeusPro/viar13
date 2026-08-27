@@ -6,7 +6,11 @@ use App\Mail\SendUserRegister;
 use App\Models\User;
 use App\Notifications\BrandedResetPassword;
 use App\Repositories\BasketRepository;
+use App\Services\UpdatePainterImageService;
+use App\Services\UpdatePainterSketchImageService;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -15,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PublicAuthRouteContractTest extends TestCase
@@ -116,8 +121,94 @@ class PublicAuthRouteContractTest extends TestCase
         Schema::create('orders', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->nullable();
+            $table->string('status')->nullable();
+            $table->boolean('painter_payed')->nullable();
+            $table->decimal('price', 10, 2)->default(0);
+            $table->text('items')->nullable();
+            $table->text('delivery')->nullable();
+            $table->string('payment')->nullable();
+            $table->string('payment_status')->nullable();
+            $table->text('labels')->nullable();
+            $table->text('comment')->nullable();
+            $table->text('admin_comment')->nullable();
+            $table->text('client_comment')->nullable();
+            $table->text('client_images')->nullable();
+            $table->text('painter_images')->nullable();
+            $table->text('painter_sketch_images')->nullable();
+            $table->unsignedBigInteger('painter_images_status')->nullable();
+            $table->unsignedBigInteger('painter_sketch_images_status')->nullable();
+            $table->timestamp('painter_images_status_date')->nullable();
+            $table->timestamp('painter_sketch_images_status_date')->nullable();
+            $table->timestamp('painter_endtime')->nullable();
+            $table->boolean('is_show_painter_images')->default(false);
+            $table->boolean('has_pdf')->default(false);
             $table->timestamps();
         });
+        Schema::dropIfExists('painter_orders');
+        Schema::create('painter_orders', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('user_id');
+            $table->foreignId('order_id');
+            $table->timestamp('complete_until')->nullable();
+            $table->timestamps();
+        });
+        Schema::dropIfExists('order_painter_images');
+        Schema::create('order_painter_images', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->text('image')->nullable();
+            $table->text('small_image')->nullable();
+            $table->unsignedBigInteger('status')->nullable();
+            $table->boolean('is_img_painter')->default(false);
+            $table->boolean('is_img_sketch')->default(false);
+            $table->timestamps();
+        });
+        Schema::dropIfExists('orders_chats');
+        Schema::create('orders_chats', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('orders_id');
+            $table->text('comment')->nullable();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_read')->default(false);
+            $table->boolean('is_img_painter')->default(false);
+            $table->boolean('is_img_sketch')->default(false);
+            $table->unsignedBigInteger('order_painter_image_id')->nullable();
+            $table->timestamps();
+        });
+        Schema::dropIfExists('order_user_comments');
+        Schema::create('order_user_comments', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->foreignId('user_id')->nullable();
+            $table->text('comment')->nullable();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_read')->default(false);
+            $table->boolean('admin_is_read')->default(false);
+            $table->boolean('is_img_painter')->default(false);
+            $table->boolean('is_img_sketch')->default(false);
+            $table->unsignedBigInteger('order_painter_image_id')->nullable();
+            $table->timestamps();
+        });
+        Schema::dropIfExists('order_painter_comments');
+        Schema::create('order_painter_comments', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('order_id');
+            $table->text('comment')->nullable();
+            $table->timestamps();
+        });
+        Schema::dropIfExists('user_messages');
+        Schema::create('user_messages', function (Blueprint $table): void {
+            $table->id();
+            $table->string('admin_user_chat_title')->nullable();
+            $table->string('user_painter_mail_subject')->nullable();
+            $table->timestamps();
+        });
+        DB::table('user_messages')->insert([
+            'admin_user_chat_title' => 'Order {order_id}',
+            'user_painter_mail_subject' => 'Order message',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         Schema::dropIfExists('stocks');
         Schema::create('stocks', function (Blueprint $table): void {
             $table->id();
@@ -403,6 +494,449 @@ class PublicAuthRouteContractTest extends TestCase
         $client->get('/new/orders')->assertOk();
     }
 
+    public function test_authenticated_painter_can_open_empty_orders(): void
+    {
+        $roleId = DB::table('roles')->insertGetId([
+            'name' => 'painter',
+            'display_name' => 'Painter',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'role_id' => $roleId,
+            'email' => 'painter@example.test',
+            'password' => Hash::make('secret-pass'),
+            'inv_sale_code' => 'PAINTER1',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $painter = User::query()->where('email', 'painter@example.test')->firstOrFail();
+
+        $this->actingAs($painter)
+            ->withHeader('Accept-Language', 'ru')
+            ->get('/new/orders')
+            ->assertOk();
+    }
+
+    public function test_authenticated_painter_can_open_assigned_order(): void
+    {
+        [$painter, $orderId] = $this->createAssignedPainterOrder();
+
+        $this->actingAs($painter)
+            ->withHeader('Accept-Language', 'ru')
+            ->get('/new/orders')
+            ->assertOk()
+            ->assertSee('# ' . $orderId, false)
+            ->assertSee('js_painter_form_images_upd', false)
+            ->assertSee('js_painter_form_images_upd_sketch', false)
+            ->assertSee('js_painter_admin_chat', false);
+    }
+
+    public function test_assigned_painter_upload_endpoints_keep_the_legacy_json_contract(): void
+    {
+        Mail::fake();
+        [$painter, $orderId] = $this->createAssignedPainterOrder();
+
+        $this->mock(UpdatePainterImageService::class)
+            ->shouldReceive('store')
+            ->once()
+            ->andReturn('https://viar.test/orders/picture.jpg');
+
+        $this->actingAs($painter)
+            ->postJson('/new/update_painter_order_images', ['order_id' => $orderId])
+            ->assertOk()
+            ->assertJsonPath('status', 1)
+            ->assertJsonPath('order_id', $orderId);
+
+        $this->mock(UpdatePainterSketchImageService::class)
+            ->shouldReceive('store')
+            ->once()
+            ->andReturn('https://viar.test/orders/sketch.jpg');
+
+        $this->actingAs($painter)
+            ->postJson('/new/update_painter_sketch_order_images', ['order_id' => $orderId])
+            ->assertOk()
+            ->assertJsonPath('status', 1)
+            ->assertJsonPath('order_id', $orderId);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $orderId,
+            'painter_images_status' => 2,
+            'painter_sketch_images_status' => 2,
+        ]);
+    }
+
+    public function test_painter_can_send_admin_chat_message_for_assigned_order(): void
+    {
+        Mail::fake();
+        [$painter, $orderId] = $this->createAssignedPainterOrder();
+
+        $this->actingAs($painter)
+            ->postJson('/new/update_order_chat', [
+                'order_id' => $orderId,
+                'msg' => 'Synthetic painter message',
+            ])
+            ->assertOk()
+            ->assertJson([
+                'status' => true,
+                'comment' => 'Synthetic painter message',
+            ]);
+
+        $this->assertDatabaseHas('orders_chats', [
+            'orders_id' => $orderId,
+            'comment' => 'Synthetic painter message',
+            'is_admin' => 0,
+        ]);
+    }
+
+    public function test_unassigned_painter_cannot_mutate_another_painters_order(): void
+    {
+        Mail::fake();
+        [, $orderId] = $this->createAssignedPainterOrder();
+        $otherPainter = $this->createPainter('other-painter@example.test');
+
+        $this->mock(UpdatePainterImageService::class)
+            ->shouldNotReceive('store');
+        $this->mock(UpdatePainterSketchImageService::class)
+            ->shouldNotReceive('store');
+
+        $client = $this->actingAs($otherPainter);
+        $client->postJson('/new/update_painter_order_images', ['order_id' => $orderId])
+            ->assertForbidden();
+        $client->postJson('/new/update_painter_sketch_order_images', ['order_id' => $orderId])
+            ->assertForbidden();
+        $client->postJson('/new/update_order_chat', [
+            'order_id' => $orderId,
+            'msg' => 'Must not be stored',
+        ])->assertForbidden();
+        $client->postJson('/new/new_send_client_painter_comments', [
+            'order_id' => $orderId,
+            'client_comment' => 'Must not reach client chat',
+        ])->assertForbidden();
+        $client->postJson('/new/new_send_admin_to_client_painter_comments', [
+            'order_id' => $orderId,
+            'client_comment' => 'Must not reach image chat',
+        ])->assertForbidden();
+
+        $this->assertDatabaseMissing('orders_chats', [
+            'orders_id' => $orderId,
+            'comment' => 'Must not be stored',
+        ]);
+        Mail::assertNothingSent();
+    }
+
+    public function test_customer_can_only_send_comment_to_own_order(): void
+    {
+        Mail::fake();
+        [, $orderId, $owner] = $this->createAssignedPainterOrder();
+        $otherCustomer = $this->createAccountUser();
+
+        $this->actingAs($otherCustomer)
+            ->postJson('/new/new_send_client_painter_comments', [
+                'order_id' => $orderId,
+                'client_comment' => 'Must not be stored',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('order_user_comments', [
+            'order_id' => $orderId,
+            'comment' => 'Must not be stored',
+        ]);
+        Mail::assertNothingSent();
+        $this->assertNotSame($owner->id, $otherCustomer->id);
+
+        $this->actingAs($owner)
+            ->postJson('/new/new_send_client_painter_comments', [
+                'order_id' => $orderId,
+                'client_comment' => 'Owner message',
+            ])
+            ->assertOk()
+            ->assertJsonPath('status', true)
+            ->assertJsonPath('order_id', $orderId);
+
+        $this->assertDatabaseHas('order_user_comments', [
+            'order_id' => $orderId,
+            'user_id' => $owner->id,
+            'comment' => 'Owner message',
+        ]);
+    }
+
+    public function test_customer_cannot_call_painter_mutation_endpoint(): void
+    {
+        Mail::fake();
+        [, $orderId] = $this->createAssignedPainterOrder();
+        $customer = $this->createAccountUser();
+
+        $this->mock(UpdatePainterImageService::class)
+            ->shouldNotReceive('store');
+
+        $this->actingAs($customer)
+            ->postJson('/new/update_painter_order_images', ['order_id' => $orderId])
+            ->assertForbidden();
+
+        Mail::assertNothingSent();
+    }
+
+    public function test_invalid_painter_uploads_return_json_validation_errors_without_side_effects(): void
+    {
+        Mail::fake();
+        [$painter, $orderId] = $this->createAssignedPainterOrder();
+
+        $this->actingAs($painter)
+            ->postJson('/new/update_painter_order_images', [
+                'order_id' => $orderId,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['painter_images']);
+
+        $this->actingAs($painter)
+            ->postJson('/new/update_painter_order_images', [
+                'order_id' => $orderId,
+                'painter_images' => [
+                    UploadedFile::fake()->create('not-an-image.exe', 10, 'application/x-msdownload'),
+                ],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['painter_images.0']);
+
+        $this->actingAs($painter)
+            ->postJson('/new/update_painter_sketch_order_images', [
+                'order_id' => $orderId,
+                'painter_sketch_images' => [
+                    UploadedFile::fake()->create('not-a-sketch.exe', 10, 'application/x-msdownload'),
+                ],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['painter_sketch_images.0']);
+
+        $this->assertDatabaseCount('order_painter_images', 0);
+        $this->assertDatabaseHas('orders', [
+            'id' => $orderId,
+            'painter_images_status' => null,
+            'painter_sketch_images_status' => null,
+        ]);
+        Mail::assertNothingSent();
+    }
+
+    public function test_account_users_can_only_mark_messages_from_their_orders_as_read(): void
+    {
+        [$painter, $orderId, $owner] = $this->createAssignedPainterOrder();
+        $otherCustomer = $this->createAccountUser();
+        $foreignOrderId = $this->createOrderForCustomer($otherCustomer);
+
+        $ownUserChatId = DB::table('order_user_comments')->insertGetId([
+            'order_id' => $orderId,
+            'user_id' => $painter->id,
+            'comment' => 'Own order user chat',
+            'is_read' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $foreignUserChatId = DB::table('order_user_comments')->insertGetId([
+            'order_id' => $foreignOrderId,
+            'user_id' => $otherCustomer->id,
+            'comment' => 'Foreign order user chat',
+            'is_read' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $ownPainterChatId = DB::table('orders_chats')->insertGetId([
+            'orders_id' => $orderId,
+            'comment' => 'Own painter chat',
+            'is_read' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $foreignPainterChatId = DB::table('orders_chats')->insertGetId([
+            'orders_id' => $foreignOrderId,
+            'comment' => 'Foreign painter chat',
+            'is_read' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->postJson('/new/message_read', ['chatId' => $ownUserChatId])
+            ->assertOk()
+            ->assertJsonPath('status', 1);
+        $this->actingAs($owner)
+            ->postJson('/new/message_read', ['chatId' => $foreignUserChatId])
+            ->assertForbidden();
+
+        $this->actingAs($painter)
+            ->postJson('/new/message_read', ['chatId' => $ownPainterChatId])
+            ->assertOk()
+            ->assertJsonPath('status', 1);
+        $this->actingAs($painter)
+            ->postJson('/new/message_read', ['chatId' => $foreignPainterChatId])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('order_user_comments', ['id' => $ownUserChatId, 'is_read' => 1]);
+        $this->assertDatabaseHas('order_user_comments', ['id' => $foreignUserChatId, 'is_read' => 0]);
+        $this->assertDatabaseHas('orders_chats', ['id' => $ownPainterChatId, 'is_read' => 1]);
+        $this->assertDatabaseHas('orders_chats', ['id' => $foreignPainterChatId, 'is_read' => 0]);
+    }
+
+    public function test_customer_can_only_change_status_of_image_from_own_order(): void
+    {
+        [, $orderId, $owner] = $this->createAssignedPainterOrder();
+        $otherCustomer = $this->createAccountUser();
+        $imageId = DB::table('order_painter_images')->insertGetId([
+            'order_id' => $orderId,
+            'image' => 'orders/status-test.jpg',
+            'status' => 1,
+            'is_img_painter' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($otherCustomer)
+            ->postJson('/new/changeOrderPainterImageStatus', [
+                'order_id' => $orderId,
+                'order_painter_image_id' => $imageId,
+                'status_name' => 4,
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($owner)
+            ->postJson('/new/changeOrderPainterImageStatus', [
+                'order_id' => $orderId,
+                'order_painter_image_id' => $imageId,
+                'status_name' => 99,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['status_name']);
+
+        $this->actingAs($owner)
+            ->postJson('/new/changeOrderPainterImageStatus', [
+                'order_id' => $orderId,
+                'order_painter_image_id' => $imageId,
+                'status_name' => 4,
+            ])
+            ->assertOk()
+            ->assertJsonPath('info', true);
+
+        $this->assertDatabaseHas('order_painter_images', [
+            'id' => $imageId,
+            'order_id' => $orderId,
+            'status' => 4,
+        ]);
+
+        DB::table('order_user_comments')->insert([
+            'order_id' => $orderId,
+            'user_id' => $owner->id,
+            'comment' => 'Please revise',
+            'order_painter_image_id' => $imageId,
+            'is_img_painter' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->actingAs($owner)
+            ->postJson('/new/changeOrderPainterImageStatus', [
+                'order_id' => (string) $orderId,
+                'order_painter_image_id' => (string) $imageId,
+                'status_name' => '5',
+                'check_comment' => 'true',
+            ])
+            ->assertOk()
+            ->assertJsonPath('info', true)
+            ->assertJsonPath('check_comment', true);
+
+        $this->assertDatabaseHas('order_painter_images', [
+            'id' => $imageId,
+            'status' => 5,
+        ]);
+    }
+
+    public function test_image_chat_rejects_image_id_from_another_order(): void
+    {
+        Mail::fake();
+        [$painter, $orderId, $owner] = $this->createAssignedPainterOrder();
+        $otherCustomer = $this->createAccountUser();
+        $foreignOrderId = $this->createOrderForCustomer($otherCustomer);
+        $foreignImageId = DB::table('order_painter_images')->insertGetId([
+            'order_id' => $foreignOrderId,
+            'image' => 'orders/foreign.jpg',
+            'status' => 1,
+            'is_img_painter' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $payload = [
+            'order_id' => $orderId,
+            'order_painter_image_id' => $foreignImageId,
+            'is_img_painter' => 1,
+            'msg' => 'Must not be linked',
+        ];
+
+        $this->actingAs($owner)
+            ->postJson('/new/new_send_client_painter_comments', $payload)
+            ->assertForbidden();
+        $this->actingAs($painter)
+            ->postJson('/new/update_order_chat', $payload)
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('order_user_comments', [
+            'order_id' => $orderId,
+            'order_painter_image_id' => $foreignImageId,
+        ]);
+        $this->assertDatabaseMissing('orders_chats', [
+            'orders_id' => $orderId,
+            'order_painter_image_id' => $foreignImageId,
+        ]);
+        Mail::assertNothingSent();
+    }
+
+    public function test_public_account_roles_cannot_call_legacy_admin_read_endpoints(): void
+    {
+        [$painter, $orderId, $owner] = $this->createAssignedPainterOrder();
+        $userChatId = DB::table('order_user_comments')->insertGetId([
+            'order_id' => $orderId,
+            'user_id' => $owner->id,
+            'comment' => 'Admin unread',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $painterChatId = DB::table('orders_chats')->insertGetId([
+            'orders_id' => $orderId,
+            'comment' => 'Admin unread painter chat',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->postJson('/new/admin_to_client_message_read', ['chatId' => $userChatId])
+            ->assertForbidden();
+        $this->actingAs($painter)
+            ->postJson('/new/admin_message_read', ['chatId' => $painterChatId])
+            ->assertForbidden();
+    }
+
+    public function test_painter_image_service_accepts_large_print_file_without_application_size_limit(): void
+    {
+        Storage::fake('uploads');
+        [, $orderId] = $this->createAssignedPainterOrder();
+        $file = UploadedFile::fake()->image('print-source.jpg')->size(102400);
+        $request = new Request(
+            ['order_id' => $orderId],
+            [],
+            [],
+            [],
+            ['painter_images' => [$file]]
+        );
+
+        $result = app(UpdatePainterImageService::class)->store($request);
+
+        $this->assertIsString($result);
+        $this->assertDatabaseHas('order_painter_images', [
+            'order_id' => $orderId,
+            'is_img_painter' => 1,
+        ]);
+        $this->assertCount(1, Storage::disk('uploads')->allFiles('orders'));
+    }
+
     public function test_authenticated_customer_can_open_bonus_page_without_active_sales(): void
     {
         $user = $this->createAccountUser();
@@ -446,5 +980,75 @@ class PublicAuthRouteContractTest extends TestCase
         ]);
 
         return User::query()->where('email', 'account@example.test')->firstOrFail();
+    }
+
+    private function createPainter(string $email): User
+    {
+        $roleId = DB::table('roles')->insertGetId([
+            'name' => 'painter',
+            'display_name' => 'Painter',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('users')->insert([
+            'role_id' => $roleId,
+            'email' => $email,
+            'password' => Hash::make('secret-pass'),
+            'inv_sale_code' => 'PAINTER2',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return User::query()->where('email', $email)->firstOrFail();
+    }
+
+    private function createAssignedPainterOrder(): array
+    {
+        $painter = $this->createPainter('assigned-painter@example.test');
+        $customer = $this->createUser('assigned-customer@example.test', 'secret-pass');
+        $customerRoleId = DB::table('roles')->insertGetId([
+            'name' => 'user',
+            'display_name' => 'Customer',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('users')->where('id', $customer->id)->update([
+            'role_id' => $customerRoleId,
+        ]);
+        $customer->refresh();
+        $orderId = DB::table('orders')->insertGetId([
+            'user_id' => $customer->id,
+            'status' => 'watching',
+            'price' => 55,
+            'items' => '[]',
+            'delivery' => '{}',
+            'payment_status' => 'not_payed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('painter_orders')->insert([
+            'user_id' => $painter->id,
+            'order_id' => $orderId,
+            'complete_until' => now()->addDays(3),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return [$painter, $orderId, $customer];
+    }
+
+    private function createOrderForCustomer(User $customer): int
+    {
+        return DB::table('orders')->insertGetId([
+            'user_id' => $customer->id,
+            'status' => 'watching',
+            'price' => 10,
+            'items' => '[]',
+            'delivery' => '{}',
+            'payment_status' => 'not_payed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

@@ -67,7 +67,7 @@ class AccountController extends Controller
             ]);
         }
 
-        $modals = view(env('THEME_RESOURCES') . 'pages.stocks.modals')->with([
+        $modals = view(config('theme.resource') . 'pages.stocks.modals')->with([
             'invite_code' => $user_code,
         ]);
         //--------------
@@ -280,7 +280,7 @@ class AccountController extends Controller
             ]);
         }
 
-        $modals = view(env('THEME_RESOURCES') . 'pages.stocks.modals')   ->with([
+        $modals = view(config('theme.resource') . 'pages.stocks.modals')   ->with([
             'invite_code' => $user_code,
         ]);
         //--------------
@@ -561,7 +561,7 @@ class AccountController extends Controller
                 ]);
             }
 
-            $modals = view(env('THEME_RESOURCES') . 'pages.stocks.modals')   ->with([
+            $modals = view(config('theme.resource') . 'pages.stocks.modals')   ->with([
                 'invite_code' => $user_code,
             ]);
             $this->vars = Arr::add($this->vars, 'modals', $modals);
@@ -634,7 +634,7 @@ class AccountController extends Controller
             ]);
         }
 
-        $modals = view(env('THEME_RESOURCES') . 'pages.stocks.modals')   ->with([
+        $modals = view(config('theme.resource') . 'pages.stocks.modals')   ->with([
             'invite_code' => $user_code,
         ]);
         //--------------
@@ -663,9 +663,35 @@ class AccountController extends Controller
 
     public function changeOrderPainterImageStatus(\Illuminate\Http\Request $request)
     {
+        abort_unless(Auth::user()?->role?->name === 'user', 403);
+
+        $validated = $request->validate([
+            'order_id' => ['required', 'integer', 'exists:orders,id'],
+            'order_painter_image_id' => ['required', 'integer', 'exists:order_painter_images,id'],
+            'status_name' => ['required', 'integer', Rule::in([4, 5])],
+            'check_comment' => ['nullable', Rule::in([true, false, 1, 0, '1', '0', 'true', 'false'])],
+        ]);
+        $orderId = (int) $validated['order_id'];
+        $imageId = (int) $validated['order_painter_image_id'];
+
+        abort_unless(
+            DB::table('orders')
+                ->where('id', $orderId)
+                ->where('user_id', Auth::id())
+                ->exists(),
+            403
+        );
+        abort_unless(
+            DB::table('order_painter_images')
+                ->where('id', $imageId)
+                ->where('order_id', $orderId)
+                ->exists(),
+            403
+        );
+
         $order_painter_image = false;
         $order_user_comments = null;
-        if(isset($request->check_comment) && $request->check_comment)
+        if($request->boolean('check_comment'))
         {
             $order_user_comments = DB::table('order_user_comments')->where('user_id', Auth::id())->where('order_id', $request->order_id)->where('order_painter_image_id', $request->order_painter_image_id)->where('created_at', '>=', Carbon::now()->subMinutes(30))->first();
             $check_comment = $order_user_comments ? true : false;
@@ -679,9 +705,9 @@ class AccountController extends Controller
         {
             // dd($request->check_comment, $order_user_comments, $check_comment, $request->all());
 
-            $order_painter_image = OrderPainterImages::where("id", $request->order_painter_image_id)
-            ->where("order_id", $request->order_id)
-            ->update(['status' => $request->status_name, 'updated_at' => now()]);
+            $order_painter_image = OrderPainterImages::where("id", $imageId)
+            ->where("order_id", $orderId)
+            ->update(['status' => $validated['status_name'], 'updated_at' => now()]);
 
             // $order_painter_image= false; // удалить нужно после проверке на фронте
         }
@@ -922,6 +948,8 @@ class AccountController extends Controller
 
     public function update_painter_order_images(\Illuminate\Http\Request $request, UpdatePainterImageService $service)
     {
+        $this->authorizeAssignedPainterOrder($request);
+
         $uploaded_images = $service->store($request);
 
         $user = DB::table('painter_orders')->where('order_id', $request->order_id)->pluck('user_id')->first();
@@ -996,6 +1024,8 @@ class AccountController extends Controller
      */
     public function update_painter_sketch_order_images(\Illuminate\Http\Request $request, UpdatePainterSketchImageService $service)
     {
+        $this->authorizeAssignedPainterOrder($request);
+
         $uploaded_images = $service->store($request);
 
         $user = DB::table('painter_orders')->where('order_id', $request->order_id)->pluck('user_id')->first();
@@ -1104,6 +1134,9 @@ class AccountController extends Controller
      */
     public function send_client_painter_comments(\Illuminate\Http\Request $request, SendClientPainterImageService $service)
     {
+        $orderId = $this->authorizeOrderParticipant($request);
+        $this->authorizePainterImageThread($request, $orderId);
+
         $comment_images = null;
         $isImageThreadComment = (bool) (
             $request->order_painter_image_id
@@ -1200,6 +1233,9 @@ class AccountController extends Controller
      */
     public function send_admin_to_client_painter_comments(\Illuminate\Http\Request $request, SendClientPainterImageService $service)
     {
+        $orderId = $this->authorizeAssignedPainterOrder($request);
+        $this->authorizePainterImageThread($request, $orderId);
+
         $comment_images = null;
         $isImageThreadComment = (bool) (
             $request->order_painter_image_id
@@ -1297,6 +1333,9 @@ class AccountController extends Controller
      */
     public function update_order_chat(\Illuminate\Http\Request $request)
     {
+        $orderId = $this->authorizeAssignedPainterOrder($request);
+        $this->authorizePainterImageThread($request, $orderId);
+
         if(isset($request->msg) && $request->msg) {
             $request['painter_msg'] = $request->msg;
         }
@@ -1340,15 +1379,111 @@ class AccountController extends Controller
         return json_encode(['status' => $updated, 'comment' => $request->painter_msg]);
     }
 
+    private function authorizeAssignedPainterOrder(\Illuminate\Http\Request $request): int
+    {
+        abort_unless(Auth::user()?->role?->name === 'painter', 403);
+
+        $validated = $request->validate([
+            'order_id' => ['required', 'integer', 'exists:orders,id'],
+        ]);
+        $orderId = (int) $validated['order_id'];
+
+        abort_unless(
+            DB::table('painter_orders')
+                ->where('user_id', Auth::id())
+                ->where('order_id', $orderId)
+                ->exists(),
+            403
+        );
+
+        return $orderId;
+    }
+
+    private function authorizeOrderParticipant(\Illuminate\Http\Request $request): int
+    {
+        $roleName = Auth::user()?->role?->name;
+        abort_unless(in_array($roleName, ['user', 'painter'], true), 403);
+
+        $validated = $request->validate([
+            'order_id' => ['required', 'integer', 'exists:orders,id'],
+        ]);
+        $orderId = (int) $validated['order_id'];
+
+        $hasAccess = $roleName === 'painter'
+            ? DB::table('painter_orders')
+                ->where('user_id', Auth::id())
+                ->where('order_id', $orderId)
+                ->exists()
+            : DB::table('orders')
+                ->where('id', $orderId)
+                ->where('user_id', Auth::id())
+                ->exists();
+
+        abort_unless($hasAccess, 403);
+
+        return $orderId;
+    }
+
+    private function authorizePainterImageThread(\Illuminate\Http\Request $request, int $orderId): void
+    {
+        $isImageThread = (bool) (
+            $request->order_painter_image_id
+            || $request->is_img_painter
+            || $request->is_img_sketch
+        );
+
+        if (!$isImageThread) {
+            return;
+        }
+
+        $validated = $request->validate([
+            'order_painter_image_id' => ['required', 'integer', 'exists:order_painter_images,id'],
+            'is_img_painter' => ['nullable', 'boolean'],
+            'is_img_sketch' => ['nullable', 'boolean'],
+        ]);
+
+        abort_unless(
+            DB::table('order_painter_images')
+                ->where('id', (int) $validated['order_painter_image_id'])
+                ->where('order_id', $orderId)
+                ->exists(),
+            403
+        );
+    }
+
     public function message_read(\Illuminate\Http\Request $request)
     {
+        $validated = $request->validate([
+            'chatId' => ['required', 'integer'],
+        ]);
         $data = ['is_read' => 1];
-        $chatId = $request->input('chatId'); 
+        $chatId = (int) $validated['chatId'];
+        $roleName = Auth::user()?->role?->name;
 
-        if(Auth::user()->role->name == 'painter') {
+        if($roleName === 'painter') {
+            $chat = DB::table('orders_chats')->where('id', $chatId)->first();
+            abort_if(!$chat, 404);
+            abort_unless(
+                DB::table('painter_orders')
+                    ->where('user_id', Auth::id())
+                    ->where('order_id', $chat->orders_id)
+                    ->exists(),
+                403
+            );
             $updated = DB::table('orders_chats')->where('id', $chatId)->update($data);
-        } else {
+        } elseif($roleName === 'user') {
+            $chat = DB::table('order_user_comments')->where('id', $chatId)->first();
+            abort_if(!$chat, 404);
+            abort_unless(
+                DB::table('orders')
+                    ->where('id', $chat->order_id)
+                    ->where('user_id', Auth::id())
+                    ->exists(),
+                403
+            );
             $updated = DB::table('order_user_comments')->where('id', $chatId)->update($data);
+        } else {
+            abort(403);
         }
 
         return json_encode(['status' => $updated]);
@@ -1356,8 +1491,12 @@ class AccountController extends Controller
 
     public function admin_to_client_message_read(\Illuminate\Http\Request $request)
     {
+        abort_if(in_array(Auth::user()?->role?->name, ['user', 'painter'], true), 403);
+        $validated = $request->validate([
+            'chatId' => ['required', 'integer', 'exists:order_user_comments,id'],
+        ]);
         $data = ['admin_is_read' => 1];
-        $chatId = $request->input('chatId'); 
+        $chatId = (int) $validated['chatId'];
         $updated = DB::table('order_user_comments')->where('id', $chatId)->update($data);
 
         return json_encode(['status' => $updated]);
@@ -1366,8 +1505,12 @@ class AccountController extends Controller
 
     public function admin_message_read(\Illuminate\Http\Request $request)
     {
+        abort_if(in_array(Auth::user()?->role?->name, ['user', 'painter'], true), 403);
+        $validated = $request->validate([
+            'chatId' => ['required', 'integer', 'exists:orders_chats,id'],
+        ]);
         $data = ['admin_is_read' => 1];
-        $chatId = $request->input('chatId'); 
+        $chatId = (int) $validated['chatId'];
         $updated = DB::table('orders_chats')->where('id', $chatId)->update($data);
 
         return json_encode(['status' => $updated]);

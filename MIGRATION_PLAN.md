@@ -1,10 +1,22 @@
 # План миграции viar13 на Laravel 13
 
-Обновлено: 2026-08-13.
+Обновлено: 2026-08-27.
 
 ## Название задачи
 
 **Миграция viar13 на Laravel 13 — запуск и стабилизация публичного фронтенда**
+
+## Статус frontend release candidate
+
+- [x] [DONE] Основной публичный frontend RC поднят на Laravel 13: страницы,
+  каталог, загрузки, auth/account, корзина, checkout, письма и payment contracts
+  проверены.
+- [x] [DONE] Production runbook подготовлен в
+  `docs/production-frontend-runbook.md`.
+- [ ] [DEPLOYMENT] На реальном публичном сервере выполнить checklist runbook,
+  установить `APP_DEBUG=false` и подтвердить production smoke.
+- Оставшиеся TODO ниже считаются post-RC backlog и не отменяют готовность
+  основного frontend-контура; их нельзя автоматически считать выполненными.
 
 ## Правила ведения
 
@@ -57,15 +69,20 @@
   `not_payed` заказа: список скрывает `Pay now` при `status=completed`, однако
   прямые GET/POST payment routes сейчас проверяют владельца и `payment_status`,
   но не запрещают `completed`; без согласования бизнес-логику не менять.
-- [ ] Проверить отдельные painter-сценарии кабинета.
+- [~] Проверить отдельные painter-сценарии кабинета: browser UAT клиентской
+  стороны чата/загрузок и feature smoke пустого кабинета роли `painter`
+  выполнены; сценарии painter с назначенным заказом и реальные POST-действия
+  остаются отдельной проверкой с тестовыми данными.
 
 ## Этап 4. Формы и пользовательские сценарии
 
 - [x] Создать первичную инвентаризацию публичных POST/AJAX endpoints в
   `docs/frontend-mutating-routes-audit.md`.
 - [ ] Проверить CSRF, валидацию и единый вывод ошибок.
-- [~] Проверить формы контактов/заявок: review и photo/portrait/all-styles
-  проверены, остальные публичные формы остаются в backlog.
+- [~] Проверить формы контактов/заявок: review, photo/portrait/all-styles и
+  frontend подарочной карты проверены; промо-формы акций доступны, но их
+  реальные отправки писем/изменения купонов не выполнялись и остаются в
+  backlog.
 - [x] Добавить серверную валидацию формы отзыва, файлов и base64-аудио.
 - [x] Добавить общий validation contract для быстрых portrait/all-styles
   заявок: email, phone, количество и MIME файлов; размер печатного фото на
@@ -93,14 +110,14 @@
   переход к checkout; ошибок Laravel не обнаружено.
 - [x] Защитить удаление позиции от отсутствующего/некорректного `basketId`.
 - [x] Ограничить количество позиции диапазоном 1--99 и проверять индекс.
-- [~] Проверить создание заказа через полный реальный checkout без изменения
-  бизнес-логики `orders`; перед финальным созданием подтвердить данные и
-  возможную отправку писем. Шаги user data и courier delivery пройдены,
-  банковский перевод выбран; финальный POST ещё не отправлялся.
-- [ ] [TODO] Воспроизвести свежую ошибку авторизованного публичного запроса
-  `View [pages.index.footer] not found` (`2026-08-24 18:19:06`, user `43198`)
-  и определить URL-источник. Payment-страница checkout продолжает работать,
-  поэтому связь ошибки с текущим шагом пока не подтверждена.
+- [x] [DONE] Проверить создание заказа через полный реальный checkout без
+  изменения бизнес-логики `orders`: reproduction `item/35` за `50 €`, курьер
+  `5 €`, банковский перевод. Создан заказ `18450`, открыта страница «Спасибо»,
+  клиентское и административное письма отправлены; итог в БД — `55 €`.
+- [x] [NOT REQUIRED] Ошибку локального окружения
+  `View [pages.index.footer] not found` не воспроизводить и не исправлять:
+  отдельные View могут временно не загружаться из-за локального сервера;
+  по решению пользователя это не дефект frontend и не блокер миграции.
 - [ ] Проверить checkout и payment callbacks в sandbox.
 - [ ] Запланировать замену abandoned `paypal/paypal-checkout-sdk`.
 
@@ -117,11 +134,20 @@
 
 ## Этап 7. Регрессия и готовность к UAT
 
-- [ ] Устранить оставшиеся Composer/autoload warnings.
-- [ ] Сформировать стабильный frontend regression suite.
-- [ ] Выполнить полный доступный набор тестов и классифицировать legacy failures.
-- [ ] Выполнить frontend UAT без переключения production/test.
-- [ ] Зафиксировать известные ограничения и критерии следующего этапа.
+- [x] [DONE] Устранить оставшиеся Composer/autoload warnings: регистр файлов
+  `Sale_30_40_new.php` и `Paymentinfo.php` приведён к именам классов; повторный
+  optimized autoload создаётся без PSR-4 предупреждений.
+- [x] [DONE] Сформировать стабильный frontend regression suite: публичный
+  frontend/checkout/auth/account/payment набор — `103 passed / 570 assertions`.
+- [x] [DONE] Выполнить полный доступный набор тестов и классифицировать legacy
+  contracts: финальный прогон 2026-08-27 — `180 passed / 1226 assertions`,
+  `5 skipped`, `0 failed`. Один skip относится к отключённым admin routes,
+  четыре — к отсутствующим в текущем откатанном Synvolve service методам.
+- [x] [DONE] Выполнить frontend UAT без переключения production/test: пройдены
+  gallery/canvas/cart/auth/account/checkout и реальное создание заказа `18450`.
+- [x] [DONE] Зафиксировать известные ограничения и критерии следующего этапа:
+  внешний Synvolve `503`, отключённая admin-панель, отложенный аудит цен и
+  mutating GET/ANY routes остаются отдельными задачами.
 
 ## Отдельный будущий этап
 
@@ -142,17 +168,18 @@
   Voyager Extension (`{{en}}...` и `[[en]]...`).
 - [x] Защитить compatibility translator от пустых имён переводимых атрибутов,
   найденных в legacy-модели `GalleryPage`.
-- [ ] Исправить PSR-4/autoload предупреждения для `Sale_30_40_new` и
-  `Paymentinfo`.
+- [x] [DONE] Исправить PSR-4/autoload предупреждения для `Sale_30_40_new` и
+  `Paymentinfo` case-only переименованием файлов без изменения классов.
 - [ ] Решить судьбу legacy public endpoint `/admin/check-user`, который сейчас
   остаётся доступен вне отключённой Voyager route group.
 - [x] Проверить совместимость email verification с фактической моделью User.
 - [x] Передавать обычную строку в `Hash::check()` из
   `ConfirmPasswordController` под Laravel 13.
-- [ ] Классифицировать legacy-тесты, зависящие от отсутствующей SQLite-схемы и
-  устаревшего контракта `SynvolveWebhookService`: полный прогон 2026-08-17 —
-  72 passed / 5 failed; один failure из-за отсутствующей `orders` в SQLite и
-  четыре из-за отсутствующих методов conversation/lead update в сервисе.
+- [x] [DONE] Классифицировать legacy-тесты, зависящие от отсутствующей
+  SQLite-схемы и устаревшего контракта `SynvolveWebhookService`: добавлена
+  изолированная `users/orders` схема для действующего order-phone контракта;
+  четыре теста отсутствующих conversation/lead-update методов явно skipped.
+  Production Synvolve logic не восстанавливалась и не изменялась.
 - [ ] Провести отдельный аудит публичных служебных и изменяющих состояние
   GET-маршрутов (`mail/*`, генераторы, checkout helpers, admin controllers).
 - [ ] Проверить controller-level authorization для 20 `orders/*` POST routes,
@@ -170,8 +197,10 @@
 - [x] Добавить validation contract portrait uploads без size limit.
 - [x] Исправить modular payload mismatch: frontend отправляет файл `image`,
   repository проверяет и читает `activeImage`.
-- [ ] Исключить доверие к переданной frontend-цене: пересчитывать basket price
-  по серверным данным для каждого типа товара.
+- [ ] [REVIEW] Не внедрять универсальный серверный пересчёт цены без отдельного
+  аудита каждого JS-конструктора: разные формы передают собственные параметры
+  и используют разные расчёты. До согласования источника цены для каждого типа
+  товара существующую бизнес-логику не менять.
 - [x] Создать матрицу восьми basket add-endpoints и известных JS/Blade payload
   families в `docs/basket-add-payload-audit.md`.
 - [x] Классифицировать reachability legacy `graph_portrait.blade.php`: прямых
@@ -208,6 +237,92 @@
 
 ## Текущая задача
 
+- [x] [DONE] Выполнить финальный полный PHPUnit regression после
+  painter/account authorization: начать с чистых logs, разобрать каждый
+  failure по exception, отделить известные внешние Synvolve failures от новых
+  frontend-регрессий и обновить итоговый evidence. Результат:
+  `180 passed / 1226 assertions`, `5 skipped`, `0 failed`.
+- [x] [NOT REQUIRED] Не изменять legacy maintenance GET
+  `/new/set_all_painter_images` на текущем frontend-этапе по решению
+  пользователя. Route/controller существуют и проходят route/lint-проверку,
+  активных frontend callers нет; метод массово синхронизирует legacy поля всех
+  заказов в `order_painter_images` и завершает выполнение через `dd("ок")`.
+  На реальной БД не запускался из-за глобальной записи. Вернуться к переносу в
+  CLI/job только при отдельной задаче миграции данных.
+- [x] [DONE] Защитить account mutations с `chatId` и `imageId`:
+  сверить активные JS payloads и роли, запретить изменение чужих сообщений и
+  painter-изображений, сохранить текущие status/read contracts и покрыть
+  success/forbidden/validation feature-тестами. `message_read` теперь сверяет
+  заказ клиента/назначение painter, image status доступен только владельцу
+  заказа и статусам `4|5`, а image-chat проверяет принадлежность изображения
+  тому же заказу. Публичные роли закрыты от двух legacy admin read endpoints.
+- [x] [DONE] Проверить painter-кабинет с назначенным синтетическим
+  заказом: рендер списка, загрузку рисунка/эскиза и чат через изолированные
+  feature-тесты с fake storage/mail, без изменения production БД и без
+  реальных отправок. Назначенный заказ отображается, обе upload-формы и чат
+  присутствуют, JSON-контракты picture/sketch и запись painter-chat проходят;
+  сервис сохранения принял синтетический исходник 100 MiB. Laravel `max`
+  удалён из обеих painter-загрузок.
+- [x] [DONE] Защитить painter mutation endpoints от подмены `order_id`:
+  `new/update_painter_order_images`, sketch и chat сейчас находятся под
+  `auth`; controller теперь подтверждает роль `painter` и назначение заказа
+  текущему пользователю в `painter_orders`. Тем же guard защищены два
+  дополнительных chat endpoint, найденных в активном JS; клиентский вариант
+  разрешён только владельцу заказа или назначенному художнику.
+- [x] [DONE] Нормализовать ошибку painter upload: services при неверном MIME
+  возвращают `RedirectResponse`, хотя AJAX-controller ожидает строку/null;
+  теперь возвращается JSON 422, письма/файлы/статусы заказа не изменяются,
+  а существующие формы показывают текст ошибки и снова включают кнопку.
+- [x] [DONE] Проверить оставшиеся публичные формы и painter-сценарии
+  кабинета: сначала составить точную матрицу достижимых frontend forms/routes,
+  затем выполнить безопасный browser/feature UAT без отправки реальных заявок,
+  писем или платежей без отдельного подтверждения. Матрица и границы проверки
+  записаны в `docs/frontend-mutating-routes-audit.md`.
+- [x] [DONE] Исправить порядок загрузки JS на `/new/gift-card`:
+  `jcf*.js` и `gift-card.min.js` сейчас выполняются до общего jQuery и падают
+  с `jQuery/$ is not defined`; перенести только подключение скриптов после
+  базового frontend runtime, не меняя разметку, дизайн или basket-логику.
+  Дополнительно подключена отсутствовавшая зависимость `matchHeight`; в
+  browser UAT JCF-элементы инициализированы без внутренних JS errors.
+- [x] [DONE] Исправить `500 View [pages.stocks.modals] not found` на
+  `/new/settings` и страницах акций: runtime-выбор Blade theme брать из
+  `config('theme.resource')`, а не из прямого `env()` внутри controller;
+  также исправлен основной view `pages.stocks.stocks`. Обе страницы повторно
+  открыты по HTTPS без Laravel 500.
+- [x] [DONE] Создать системную ссылку Laravel `public/storage` →
+  `storage/app/public`: к моменту выполнения прежняя физическая директория уже
+  отсутствовала, целевое дерево было цело (`12980` файлов, `3.25 GB`); создана
+  Windows Junction, запись/видимость/HTTPS и удаление test probe проверены.
+- [x] [DONE] Подготовить production-инструкцию Laravel 13 frontend и закрыть
+  frontend RC: environment, install/update, cache policy, storage, smoke-check,
+  rollback и известные ограничения описаны в
+  `docs/production-frontend-runbook.md`; post-RC backlog сохранён в плане.
+- [x] [DONE] Выполнить итоговую проверку готовности публичного frontend к
+  запуску: Laravel/PHP environment, Composer, caches, public storage и ключевые
+  guest URL проверены. Дизайн, цены, basket semantics и admin не менялись.
+- [x] [DONE] Устранить все duplicate route names, блокировавшие сборку route
+  cache: уникализированы только внутренние имена четырёх более ранних routes;
+  URL, HTTP-методы, controllers и основные `route(...)` контракты сохранены.
+- [x] [DONE] Проверить публикацию новых файлов public disk: первоначально
+  использовался fallback `GET /storage/{path}`; затем создана стандартная
+  системная ссылка `public/storage` → `storage/app/public`. Новый runtime-probe
+  получен Apache по HTTPS с `200` и точным содержимым, затем удалён.
+- [x] [KNOWN LIMITATION] Не включать `route:cache`/полный `artisan optimize` в
+  текущем deployment: cache сохраняет только неперефиксованные routes, поэтому
+  `/lv/*` отвечает `404`. Рабочий fallback — config/events/routes без cache,
+  Blade views можно кэшировать отдельно через `php artisan view:cache`.
+- [ ] [DEPLOYMENT] Перед реальным публичным запуском установить
+  `APP_DEBUG=false`: текущая локальная `.env` использует `APP_ENV=production`,
+  но debug включён для миграционной диагностики.
+- [x] [DONE] Провести финальную регрессию публичного frontend: полный suite и
+  отдельные frontend/checkout/auth/account/payment проверки выполнены;
+  frontend полностью зелёный, legacy failures классифицированы, Blade cache и
+  Composer autoload проверены. Дизайн и бизнес-логика не менялись.
+- [x] [DONE] Исправить реальный checkout-сбой `/cart/setuser`: новый
+  пользователь сохраняется, но прямое регистрационное письмо при локальной
+  SMTP TLS-ошибке обрывает AJAX до авторизации и шага доставки. Перевести этот
+  вызов на существующую best-effort отправку и покрыть regression-тестом;
+  вернуть `CheckoutInlineLoginTest` в реальный запуск PHPUnit 12.
 - [x] [DONE] Перенести из `C:\OSPanel\domains\asoft\viar` коммит
   `dabb75f0`: заменить знак свёрнутого предложения с `+` на `%` и выровнять
   его по высоте в compact overlay; проверить Blade, diff и frontend assets.
@@ -299,11 +414,11 @@
 - [DONE] Перенести локализованную генерацию PDF-счёта из исходного проекта,
   коммит `f2feb24d`: добавлены расчёт НДС/итогов, сумма прописью, электронное
   уведомление и переводы; код адаптирован к Laravel 13/PHPUnit 12.
-- [ ] [BLOCKED] Восстановить приём Synvolve webhook `POST NewOrder`: и текущий
-  именованный URL, и прежний UUID URL отвечают `404` с явным сообщением, что
-  workflow не зарегистрирован/не активирован. Требуется активировать workflow
-  в Synvolve либо предоставить актуальный production URL; существующую логику
-  отправки в приложении не менять.
+- [ ] [BLOCKED] Восстановить приём Synvolve webhook `POST NewOrder`: ранее
+  именованный и UUID URL отвечали `404` из-за неактивного workflow; при создании
+  заказа `18450` текущий endpoint уже принят, но вернул `503 Database is not
+  ready`. Требуется исправить доступность БД/workflow на стороне Synvolve;
+  существующую логику отправки в приложении не менять.
 - [ ] После frontend interaction UAT вернуться к mutating GET/ANY basket routes.
 
 ## Задачи, найденные при server sync `72af3357`

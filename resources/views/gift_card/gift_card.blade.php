@@ -313,9 +313,4 @@
 
     @include(config('theme.resource') . 'pages.index.faq9')
 
-    <script src="{{ asset('js/jcf.min.js') }}"></script>
-    <script src="{{ asset('js/jcf.radio.min.js') }}"></script>
-    <script src="{{ asset('js/jcf.select.min.js') }}"></script>
-    <script src="{{ asset('js/jcf.checkbox.min.js') }}"></script>
-    <script src="{{ asset('js/gift-card.min.js') }}"></script>
 @endsection

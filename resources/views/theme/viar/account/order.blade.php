@@ -872,6 +872,10 @@
 			error: function (error) {
 				// th.find('.js_spinner').removeClass('spinner');
 				th.find('button').removeAttr('disabled');
+				var message = error.responseJSON && error.responseJSON.message
+					? error.responseJSON.message
+					: 'Error';
+				alert(message);
 			}
 		});
 
@@ -941,6 +945,10 @@
 			error: function (error) {
 				// th.find('.js_spinner').removeClass('spinner');
 				th.find('button').removeAttr('disabled');
+				var message = error.responseJSON && error.responseJSON.message
+					? error.responseJSON.message
+					: 'Error';
+				alert(message);
 			}
 		});
 
@@ -1144,6 +1152,12 @@
 						window.location.reload();
 					}
 				}
+			},
+			error: function(error) {
+				var message = error.responseJSON && error.responseJSON.message
+					? error.responseJSON.message
+					: 'Error';
+				alert(message);
 			}
 		});
 	}
@@ -1169,6 +1183,12 @@
 						element.classList.remove('active');
 					}
 				}
+			},
+			error: function(error) {
+				var message = error.responseJSON && error.responseJSON.message
+					? error.responseJSON.message
+					: 'Error';
+				alert(message);
 			}
 		});
 	}
