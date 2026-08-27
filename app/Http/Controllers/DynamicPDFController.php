@@ -336,13 +336,28 @@ class DynamicPDFController extends Controller
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <style>
             body { font-family: DejaVu Sans;font-size:12px; }
-            .nb_all{ border-bottom: none!important; } .tac{ text-align:center; } .tar{ text-align:right; } table{ max-width:100%; width:100%;} .table__1 tr{ border-bottom: 1px solid #000; } .tr__border{ border-bottom: 1px solid #000; } .table__2 tr{ border: 1px solid #000; }
+            .nb_all{ border-bottom: none!important; } .tac{ text-align:center; } .tar{ text-align:right; } table{ max-width:100%; width:100%;} .table__1 tr{ border-bottom: 1px solid #000; } .tr__border{ border-bottom: 1px solid #000; }
+            .invoice-header { border-collapse: collapse; table-layout: fixed; margin-bottom: 10px; }
+            .invoice-header td { border: 0; padding: 0; vertical-align: top; }
+            .invoice-header img { display: block; max-width: 70px; }
+            .invoice-header h3 { text-align: center; }
+            .invoice-header__title { margin: 18px 0 24px; }
+            .invoice-header__date { margin: 0; }
+            .table__2 tr { border: 0!important; }
+            .table__2 td { border-left: 0!important; border-right: 0!important; border-top: 0!important; }
         </style>
         </head>
         <body>
-        <img style="margin-left:auto;margin-right:auto;margin-bottom:20px;text-algin:center;max-width:70px;" src="data:image/png;base64,'.base64_encode(file_get_contents($logo_img)).'">
-        <h3 align="center;margin-bottom:25px;">'.$ord_strings['invoice']." ".$order_vr_id. '</h3>
-        <h3 class="tac" style="text-align: center;">' . $cur_date . '</h3>
+        <table class="invoice-header" width="100%">
+            <tr>
+                <td width="20%"><img src="data:image/png;base64,'.base64_encode(file_get_contents($logo_img)).'"></td>
+                <td width="60%">
+                    <h3 class="invoice-header__title">'.$ord_strings['invoice']." ".$order_vr_id. '</h3>
+                    <h3 class="invoice-header__date">' . $cur_date . '</h3>
+                </td>
+                <td width="20%"></td>
+            </tr>
+        </table>
         <table class="table__1" width="100%" style="border-collapse:collapse;max-width: 100%;width: 100%;">
 
 
@@ -477,7 +492,7 @@ class DynamicPDFController extends Controller
 
         $text .= '
         </table>
-        <br>
+        <div style="height:11px;"></div>
 
         <table class="table__2" width="100%" style="border-collapse: collapse;border: 0px;max-width: 100%;width: 100%;">
             <tr style="border: 1px solid #000;">

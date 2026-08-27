@@ -36,6 +36,7 @@ class InvoiceSummaryRendererTest extends TestCase
         $this->assertStringContainsString('Двести сорок три евро и пять центов', $html);
         $this->assertStringContainsString('Счёт подготовлен', $html);
         $this->assertStringNotContainsString('Dvesti', $html);
+        $this->assertStringNotContainsString('border:1px solid #000', $html);
     }
 
     public function test_dynamic_pdf_controller_dependencies_resolve_from_the_container()

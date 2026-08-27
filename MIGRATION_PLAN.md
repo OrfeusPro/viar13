@@ -1,6 +1,6 @@
 # План миграции viar13 на Laravel 13
 
-Обновлено: 2026-08-27.
+Обновлено: 2026-08-28.
 
 ## Название задачи
 
@@ -44,7 +44,9 @@
   requests. Изменение/замена/удаление VR00/BAW/VRR445/DS020 выполняется через
   permission и транзакционный сервис; создание payment request открывается
   отдельным Filament action. Генерация/подтверждение счёта и редактирование
-  фирмы остаются TODO этой же задачи.
+  фирмы перенесены в этой же задаче. PDF-подблок остаётся частью ADM-FIL-003:
+  визуальная совместимость legacy-шаблона с dompdf 3.x проверяется по PDF
+  Voyager для заказа 18451.
   Источником parity для «Номер» зафиксированы legacy Blade
   `voyager/orders/id.blade.php`, `invoice.blade.php`,
   `payment_request.blade.php` и `partials/orders/styles.blade.php`; ширина

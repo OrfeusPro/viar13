@@ -48,7 +48,7 @@ class InvoiceSummaryRenderer
 
     private function amountRow($label, $amount)
     {
-        return '<tr style="border:1px solid #000;">'
+        return '<tr style="border:0;">'
             . '<td>' . e($label) . '</td><td></td><td></td><td></td><td></td>'
             . '<td class="tar" style="text-align:right;">' . e($amount) . '&euro;</td></tr>';
     }
