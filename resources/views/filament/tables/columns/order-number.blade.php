@@ -69,6 +69,7 @@
                 <div>{{ $defaultFirm['bank'] }}</div>
                 @if($defaultFirm['account'])<div>{{ $defaultFirm['account'] }}</div>@endif
                 @if($defaultFirm['office'])<div>{{ $defaultFirm['office'] }}</div>@endif
+                <button type="button" x-on:click.stop="$wire.mountTableAction('editInvoiceFirm', '{{ $record->getKey() }}')" style="display: block; width: 100%; margin-top: 7px; padding: 4px 7px; border: 0; border-radius: 3px; background: #337ab7; color: white; font-size: 11px; cursor: pointer;">Изменить данные</button>
             </div>
         </details>
     @endif
@@ -77,9 +78,13 @@
         <div style="margin-top: 10px; padding: 10px 12px; border: 1px solid #e8e8e8; border-radius: 8px; background: white; text-align: center;">
             @if((int) $record->has_pdf === 1)
                 <div><a href="{{ asset('storage/pdf/' . $record->id . '.pdf') }}" target="_blank" style="color: #2563eb; text-decoration: underline;">Счет</a></div>
-                <div style="margin-top: 5px; color: #6b7280;">{{ (int) $record->pdf_approved === 1 ? 'Счет подтвержден' : 'Счет не подтвержден' }}</div>
+                <button type="button" x-on:click.stop="$wire.mountTableAction('generateInvoice', '{{ $record->getKey() }}')" style="margin-top: 6px; padding: 0; border: 0; background: transparent; color: #2563eb; font-size: 12px; text-decoration: underline; cursor: pointer;">Обновить счет</button>
             @elseif($vrNumber)
-                <div style="color: #6b7280;">Счет не создан</div>
+                <button type="button" x-on:click.stop="$wire.mountTableAction('generateInvoice', '{{ $record->getKey() }}')" style="padding: 0; border: 0; background: transparent; color: #2563eb; font-size: 12px; text-decoration: underline; cursor: pointer;">Генерировать счет</button>
+            @endif
+
+            @if((int) $record->has_pdf === 1)
+                <button type="button" x-on:click.stop="$wire.mountTableAction('approveInvoice', '{{ $record->getKey() }}')" style="display: block; width: 100%; margin-top: 6px; padding: 0; border: 0; background: transparent; color: #2563eb; font-size: 12px; text-decoration: underline; cursor: pointer;">{{ (int) $record->pdf_approved === 1 ? 'Повторно подтвердить счет' : 'Подтвердить счет' }}</button>
             @endif
 
             @if(filled($record->ur_name))

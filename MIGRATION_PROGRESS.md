@@ -34,7 +34,28 @@
 - тесты panel + authorization: 6 passed / 10 assertions;
 - browser smoke существующей сессией обычного пользователя подтвердил `403`.
 
-## ADM-FIL-003 — Список и фильтры заказов (IN PROGRESS, 2026-08-27)
+## ADM-FIL-003 — Список и фильтры заказов (IN PROGRESS, 2026-08-28)
+
+- 2026-08-28: начат подблок колонки «Номер» — безопасные Filament actions для
+  данных фирмы, генерации/обновления и подтверждения счёта; исходная логика
+  найдена в `OrdersController`, включая PDF, email и referral bonus side effects;
+- добавлен транзакционный `OrderInvoiceService`: формирует PDF, обновляет
+  `has_pdf/pdf_link`, валидирует наличие накладной и логирует операции;
+- редактирование восьми реквизитов фирмы выполняется в Filament modal и
+  перегенерирует PDF без вызова legacy POST/GET-контроллера;
+- подтверждение счёта сохраняет legacy `watching → pegging`, дату и
+  `pdf_approved`, отправляет `ApproveUserCheckoutMail` через логируемый
+  `BestEffortMailService`; referral-бонус защищён от повторного начисления;
+- добавлены подтверждающие модалки для генерации/обновления и отправки счёта;
+  browser smoke заказа 18425 проверил все три окна и закрыл их без submit;
+- `OrderInvoiceServiceTest`: успешная генерация после создания PDF, первое и
+  повторное подтверждение, rollback состояния при ошибке PDF, fake PDF/mail,
+  однократный referral-бонус — 3 passed / 12 assertions;
+- итоговый admin regression suite: 21 passed / 52 assertions, 1 legacy test
+  skipped по ранее зафиксированной причине отключённых admin routes;
+- риск: legacy mutating GET routes пока остаются зарегистрированы для старого
+  runtime-контракта; новые Filament actions их не используют, их закрытие нужно
+  выполнить после отдельной проверки публичных потребителей;
 
 - добавлен Orders Resource: ID, клиент, менеджер, status/payment badges, сумма,
   признак admin order, дата; поиск, сортировка и фильтры;

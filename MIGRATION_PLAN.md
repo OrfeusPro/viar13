@@ -49,6 +49,11 @@
   `voyager/orders/id.blade.php`, `invoice.blade.php`,
   `payment_request.blade.php` и `partials/orders/styles.blade.php`; ширина
   первого блока — 180px (минимум 170px), а не расширенная карточка Filament.
+  Подблок выполнен: legacy `generate_checkout`, `approve_user_checkout` и
+  `update_order_firm` заменены внутри таблицы на авторизованные Filament actions
+  через `OrderInvoiceService`; изменяющие GET routes этими actions не вызываются.
+  Отдельным следующим аудитом требуется закрыть сами legacy GET endpoints после
+  подтверждения отсутствия публичных потребителей.
 - [x] [DONE] **ADM-FIL-004 — Карточка и редактирование заказа**: добавлены
   read-only секции основных данных, доставки и позиций; редактирование основных
   административных полей выполняется валидируемым транзакционным сервисом.

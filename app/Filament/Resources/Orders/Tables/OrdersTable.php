@@ -7,6 +7,7 @@ use App\Models\CountryTel;
 use App\Models\User;
 use App\Http\Controllers\IndexController;
 use App\Services\Admin\UpdateOrderVrNumberService;
+use App\Services\Admin\OrderInvoiceService;
 use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
@@ -644,6 +645,54 @@ class OrdersTable
                         app(OrderPaymentRequestService::class)->createForOrder($record, $data, auth('filament')->user());
                         $record->unsetRelation('order_payment_requests');
                         Notification::make()->success()->title('Заявка на оплату создана')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('editInvoiceFirm')
+                    ->label('Данные фирмы')
+                    ->modalHeading(fn ($record): string => 'Данные фирмы для счёта №'.$record->id)
+                    ->modalSubmitActionLabel('Сохранить и обновить счёт')
+                    ->schema([
+                        TextInput::make('name')->label('Фирма')->required()->maxLength(255),
+                        TextInput::make('reg_num')->label('Рег. номер')->maxLength(255),
+                        TextInput::make('addr')->label('Адрес')->required()->maxLength(500),
+                        TextInput::make('bank')->label('Банк')->maxLength(255),
+                        TextInput::make('vat_num')->label('VAT номер')->maxLength(255),
+                        TextInput::make('bank_code')->label('Код банка')->maxLength(255),
+                        TextInput::make('office_addr')->label('Адрес офиса')->maxLength(500),
+                        TextInput::make('acc_num')->label('Номер счёта')->maxLength(255),
+                    ])
+                    ->fillForm(fn ($record): array => app(OrderInvoiceService::class)->defaultFirmData($record))
+                    ->action(function ($record, array $data): void {
+                        app(OrderInvoiceService::class)->generate($record, $data);
+                        Notification::make()->success()->title('Данные фирмы сохранены в PDF-счёте')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('generateInvoice')
+                    ->label('Сформировать счёт')
+                    ->modalHeading(fn ($record): string => ($record->has_pdf ? 'Обновить' : 'Сформировать').' счёт заказа №'.$record->id)
+                    ->modalDescription('PDF будет сформирован заново из текущих данных заказа.')
+                    ->modalSubmitActionLabel(fn ($record): string => $record->has_pdf ? 'Обновить счёт' : 'Сформировать счёт')
+                    ->requiresConfirmation()
+                    ->action(function ($record): void {
+                        app(OrderInvoiceService::class)->generate($record);
+                        Notification::make()->success()->title('PDF-счёт сформирован')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('approveInvoice')
+                    ->label('Подтвердить счёт')
+                    ->modalHeading(fn ($record): string => ($record->pdf_approved ? 'Повторно подтвердить' : 'Подтвердить').' счёт заказа №'.$record->id)
+                    ->modalDescription('Клиенту будет отправлено письмо с PDF-счётом. При первом подтверждении может быть начислен referral-бонус.')
+                    ->modalSubmitActionLabel(fn ($record): string => $record->pdf_approved ? 'Повторно подтвердить и отправить' : 'Подтвердить и отправить')
+                    ->requiresConfirmation()
+                    ->action(function ($record): void {
+                        $result = app(OrderInvoiceService::class)->approve($record);
+                        $notification = Notification::make()->title(
+                            $result['mail_sent'] ? 'Счёт подтверждён и отправлен' : 'Счёт подтверждён, но письмо не отправлено',
+                        );
+                        ($result['mail_sent'] ? $notification->success() : $notification->warning())->send();
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
