@@ -7,25 +7,32 @@ use App\Models\CountryTel;
 use App\Models\User;
 use App\Http\Controllers\IndexController;
 use App\Services\Admin\UpdateOrderVrNumberService;
+use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class OrdersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->recordUrl(null)
             ->modifyQueryUsing(fn (Builder $query): Builder => $query
                 ->with([
                     'vrNumber',
@@ -45,6 +52,12 @@ class OrdersTable
             ->paginated([13, 25, 50, 100])
             ->defaultPaginationPageOption(13)
             ->columns([
+                ViewColumn::make('number_controls')
+                    ->label('Номер')
+                    ->view('filament.tables.columns.order-number'),
+                ViewColumn::make('payment_controls')
+                    ->label('Оплата')
+                    ->view('filament.tables.columns.order-payment'),
                 TextColumn::make('id')
                     ->label('Номер')
                     ->description(function ($record): string {
@@ -62,26 +75,73 @@ class OrdersTable
                     })
                     ->action(
                         Action::make('manageVrNumber')
-                            ->label('Накладная / VR')
-                            ->modalHeading(fn ($record): string => 'Накладная заказа №'.$record->id)
+                            ->label('Номер, счёт и платежи')
+                            ->modalHeading(fn ($record): string => 'Номер, счёт и платежи заказа №'.$record->id)
+                            ->modalSubmitActionLabel('Выполнить')
                             ->schema([
+                                Select::make('operation')
+                                    ->label('Действие')
+                                    ->options([
+                                        'vr' => 'Обновить или удалить накладную',
+                                        'payment_request' => 'Создать заявку на оплату',
+                                    ])
+                                    ->default('vr')
+                                    ->live()
+                                    ->required(),
                                 TextInput::make('number')
                                     ->label('Номер накладной')
                                     ->placeholder('VR00…, BAW…, VRR445… или DS020…')
-                                    ->helperText('Оставьте пустым, чтобы удалить номер.'),
+                                    ->helperText('Оставьте пустым, чтобы удалить номер.')
+                                    ->visible(fn ($get): bool => $get('operation') === 'vr'),
+                                TextInput::make('amount')
+                                    ->label('Сумма, EUR')
+                                    ->numeric()
+                                    ->minValue(0.01)
+                                    ->maxValue(999999.99)
+                                    ->required(fn ($get): bool => $get('operation') === 'payment_request')
+                                    ->visible(fn ($get): bool => $get('operation') === 'payment_request'),
+                                TextInput::make('purpose')
+                                    ->label('Назначение платежа')
+                                    ->maxLength(255)
+                                    ->visible(fn ($get): bool => $get('operation') === 'payment_request'),
+                                Placeholder::make('invoice')
+                                    ->label('Счёт')
+                                    ->content(fn ($record): HtmlString => self::invoiceSummary($record)),
+                                Placeholder::make('company')
+                                    ->label('Данные юридического лица / фирмы')
+                                    ->content(fn ($record): string => self::companySummary($record)),
+                                Placeholder::make('payment_requests')
+                                    ->label('Последние заявки на оплату')
+                                    ->content(fn ($record): HtmlString => self::paymentRequestsSummary($record)),
                             ])
-                            ->fillForm(function ($record): array {
+                            ->fillForm(function ($record, array $arguments): array {
                                 $vr = $record->vrNumber;
 
-                                return ['number' => match (true) {
-                                    filled($vr?->vrv_1) => 'VR00'.$vr->vrv_1,
-                                    filled($vr?->vrv_2) => 'BAW'.$vr->vrv_2,
-                                    filled($vr?->vrv_3) => 'VRR445'.str_pad((string) $vr->vrv_3, 3, '0', STR_PAD_LEFT),
-                                    filled($vr?->vrv_4) => 'DS020'.$vr->vrv_4,
-                                    default => null,
-                                }];
+                                return [
+                                    'operation' => $arguments['operation'] ?? 'vr',
+                                    'number' => match (true) {
+                                        filled($vr?->vrv_1) => 'VR00'.$vr->vrv_1,
+                                        filled($vr?->vrv_2) => 'BAW'.$vr->vrv_2,
+                                        filled($vr?->vrv_3) => 'VRR445'.str_pad((string) $vr->vrv_3, 3, '0', STR_PAD_LEFT),
+                                        filled($vr?->vrv_4) => 'DS020'.$vr->vrv_4,
+                                        default => null,
+                                    },
+                                    'amount' => number_format((float) ($record->sale_price ?: $record->price), 2, '.', ''),
+                                ];
                             })
                             ->action(function ($record, array $data): void {
+                                if ($data['operation'] === 'payment_request') {
+                                    app(OrderPaymentRequestService::class)->createForOrder($record, [
+                                        'amount' => $data['amount'],
+                                        'purpose' => $data['purpose'] ?? null,
+                                    ], auth('filament')->user());
+                                    $record->unsetRelation('order_payment_requests');
+
+                                    Notification::make()->success()->title('Заявка на оплату создана')->send();
+
+                                    return;
+                                }
+
                                 app(UpdateOrderVrNumberService::class)->update($record, $data['number'] ?? null);
                                 $record->unsetRelation('vrNumber');
 
@@ -90,7 +150,36 @@ class OrdersTable
                             ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false),
                     )
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(false),
+                TextColumn::make('payment_request_action')
+                    ->action(
+                        Action::make('createPaymentRequest')
+                            ->modalHeading(fn ($record): string => 'Создать платёж для заказа №'.$record->id)
+                            ->modalSubmitActionLabel('Создать платёж')
+                            ->schema([
+                                TextInput::make('amount')
+                                    ->label('Сумма, EUR')
+                                    ->numeric()
+                                    ->minValue(0.01)
+                                    ->maxValue(999999.99)
+                                    ->required(),
+                                TextInput::make('purpose')
+                                    ->label('Назначение платежа')
+                                    ->maxLength(255),
+                            ])
+                            ->fillForm(fn ($record): array => [
+                                'amount' => number_format((float) ($record->sale_price ?: $record->price), 2, '.', ''),
+                            ])
+                            ->action(function ($record, array $data): void {
+                                app(OrderPaymentRequestService::class)->createForOrder($record, $data, auth('filament')->user());
+                                $record->unsetRelation('order_payment_requests');
+
+                                Notification::make()->success()->title('Заявка на оплату создана')->send();
+                            })
+                            ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false),
+                    )
+                    ->visible(false),
                 TextColumn::make('vr_number')
                     ->label('VR / запрос оплаты')
                     ->state(function ($record): string {
@@ -152,8 +241,16 @@ class OrdersTable
                             filled($delivery['when_send'] ?? null) ? 'Доставить: '.$delivery['when_send'] : null,
                         ])->filter()->implode("\n") ?: '—';
                     })
-                    ->wrap()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->wrap(),
+                ViewColumn::make('product_controls')
+                    ->label('Товар')
+                    ->view('filament.tables.columns.order-product'),
+                ViewColumn::make('comments_controls')
+                    ->label('Комментарии')
+                    ->view('filament.tables.columns.order-comments'),
+                ViewColumn::make('artist_controls')
+                    ->label('Художник')
+                    ->view('filament.tables.columns.order-artist'),
                 TextColumn::make('delivery_method')
                     ->label('Доставка')
                     ->state(function ($record): string {
@@ -213,7 +310,8 @@ class OrdersTable
                             filled($record->painter_endtime) ? 'Дедлайн: '.date('d.m.Y', strtotime((string) $record->painter_endtime)) : null,
                             $record->painter_payed ? 'Работа оплачена' : null,
                         ])->filter()->implode(' · ');
-                    }),
+                    })
+                    ->visible(false),
                 TextColumn::make('printingAssignment.user.email')
                     ->label('Печатник')
                     ->placeholder('Не назначен')
@@ -233,7 +331,8 @@ class OrdersTable
                             ->filter()->take(2)->implode(' · ');
                     })
                     ->badge()
-                    ->color(fn ($record): string => ($record->unread_client_messages_count || $record->unread_sa_messages_count) ? 'danger' : 'gray'),
+                    ->color(fn ($record): string => ($record->unread_client_messages_count || $record->unread_sa_messages_count) ? 'danger' : 'gray')
+                    ->visible(false),
                 TextColumn::make('product_summary')
                     ->label('Товар')
                     ->state(function ($record): string {
@@ -253,7 +352,7 @@ class OrdersTable
                         })->implode("\n").($products->count() > 2 ? "\n+".($products->count() - 2) : '');
                     })
                     ->wrap()
-                    ->toggleable(),
+                    ->visible(false),
                 TextColumn::make('status')
                     ->label('Заказ')
                     ->badge()
@@ -302,7 +401,8 @@ class OrdersTable
 
                         return implode(' · ', $parts);
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(false),
                 TextColumn::make('sale_price')
                     ->label('Сумма')
                     ->formatStateUsing(fn ($state, $record): string => number_format((float) ($state ?: $record->price), 2).' €')
@@ -508,8 +608,43 @@ class OrdersTable
                     ->label('Административный заказ'),
             ])
             ->recordActions([
-                ViewAction::make(),
-            ]);
+                Action::make('manageVrNumber')
+                    ->label('Накладная')
+                    ->modalHeading(fn ($record): string => 'Накладная заказа №'.$record->id)
+                    ->schema([
+                        TextInput::make('number')
+                            ->label('Номер накладной')
+                            ->placeholder('VR00…, BAW…, VRR445… или DS020…')
+                            ->helperText('Оставьте пустым, чтобы удалить номер.'),
+                    ])
+                    ->fillForm(fn ($record): array => ['number' => self::vrNumber($record)])
+                    ->action(function ($record, array $data): void {
+                        app(UpdateOrderVrNumberService::class)->update($record, $data['number'] ?? null);
+                        $record->unsetRelation('vrNumber');
+                        Notification::make()->success()->title('Номер накладной обновлён')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('createPaymentRequest')
+                    ->label('Создать платёж')
+                    ->modalHeading(fn ($record): string => 'Создать платёж для заказа №'.$record->id)
+                    ->modalSubmitActionLabel('Создать платёж')
+                    ->schema([
+                        TextInput::make('amount')->label('Сумма, EUR')->numeric()->minValue(0.01)->maxValue(999999.99)->required(),
+                        TextInput::make('purpose')->label('Назначение платежа')->maxLength(255),
+                    ])
+                    ->fillForm(fn ($record): array => [
+                        'amount' => number_format((float) ($record->sale_price ?: $record->price), 2, '.', ''),
+                    ])
+                    ->action(function ($record, array $data): void {
+                        app(OrderPaymentRequestService::class)->createForOrder($record, $data, auth('filament')->user());
+                        $record->unsetRelation('order_payment_requests');
+                        Notification::make()->success()->title('Заявка на оплату создана')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                ViewAction::make()->extraAttributes(['class' => 'hidden']),
+            ], position: RecordActionsPosition::AfterContent);
     }
 
     private static function statusLabels(): array
@@ -552,5 +687,65 @@ class OrdersTable
                 $category->id => trim(strip_tags((string) $category->getTranslatedAttribute('name'))),
             ])
             ->all();
+    }
+
+    private static function vrNumber($record): ?string
+    {
+        $vr = $record->vrNumber;
+
+        return match (true) {
+            filled($vr?->vrv_1) => 'VR00'.$vr->vrv_1,
+            filled($vr?->vrv_2) => 'BAW'.$vr->vrv_2,
+            filled($vr?->vrv_3) => 'VRR445'.str_pad((string) $vr->vrv_3, 3, '0', STR_PAD_LEFT),
+            filled($vr?->vrv_4) => 'DS020'.$vr->vrv_4,
+            default => null,
+        };
+    }
+
+    private static function invoiceSummary($record): HtmlString
+    {
+        if ((int) $record->has_pdf !== 1) {
+            return new HtmlString('<span class="text-gray-500">Счёт ещё не сгенерирован.</span>');
+        }
+
+        $url = asset('storage/pdf/'.$record->id.'.pdf');
+        $approval = (int) $record->pdf_approved === 1 ? 'подтверждён' : 'не подтверждён';
+
+        return new HtmlString('<a class="text-primary-600 underline" target="_blank" href="'.e($url).'">Открыть PDF-счёт</a> · '.e($approval));
+    }
+
+    private static function companySummary($record): string
+    {
+        if (! filled($record->ur_name)) {
+            return 'Данные юридического лица не заполнены.';
+        }
+
+        return collect([
+            $record->ur_name_l ?: $record->ur_name,
+            $record->ur_reg_num ? 'Рег. № '.$record->ur_reg_num : null,
+            $record->ur_pnr_nr ? 'VAT '.$record->ur_pnr_nr : null,
+            $record->ur_legal_addr,
+            $record->ur_bank_name,
+            $record->ur_bank_acc_code,
+        ])->filter()->implode(' · ');
+    }
+
+    private static function paymentRequestsSummary($record): HtmlString
+    {
+        $requests = $record->order_payment_requests;
+        if ($requests->isEmpty()) {
+            return new HtmlString('<span class="text-gray-500">Заявок ещё нет.</span>');
+        }
+
+        $html = $requests->map(function ($request): string {
+            $status = $request->status === 'paid' ? 'Оплачено' : 'Ожидает оплаты';
+
+            return '<div><strong>'.e($request->public_number).'</strong> · '
+                .e(number_format((float) $request->amount, 2).' '.$request->currency).' · '
+                .e($status).' · <a class="text-primary-600 underline" target="_blank" href="'
+                .e($request->publicUrl()).'">Открыть ссылку</a></div>';
+        })->implode('');
+
+        return new HtmlString($html);
     }
 }
