@@ -6,6 +6,8 @@ use App\Models\AOrderFrom;
 use App\Models\CountryTel;
 use App\Models\User;
 use App\Http\Controllers\IndexController;
+use App\Services\Admin\UpdateOrderVrNumberService;
+use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +18,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 
 class OrdersTable
@@ -43,7 +46,49 @@ class OrdersTable
             ->defaultPaginationPageOption(13)
             ->columns([
                 TextColumn::make('id')
-                    ->label('ID')
+                    ->label('Номер')
+                    ->description(function ($record): string {
+                        $vr = $record->vrNumber;
+                        $vrNumber = match (true) {
+                            filled($vr?->vrv_1) => 'VR00'.$vr->vrv_1,
+                            filled($vr?->vrv_2) => 'BAW'.$vr->vrv_2,
+                            filled($vr?->vrv_3) => 'VRR445'.str_pad((string) $vr->vrv_3, 3, '0', STR_PAD_LEFT),
+                            filled($vr?->vrv_4) => 'DS020'.$vr->vrv_4,
+                            default => null,
+                        };
+                        $request = $record->order_payment_requests->first()?->public_number;
+
+                        return collect([$vrNumber, $request])->filter()->implode(' · ') ?: 'Без накладной';
+                    })
+                    ->action(
+                        Action::make('manageVrNumber')
+                            ->label('Накладная / VR')
+                            ->modalHeading(fn ($record): string => 'Накладная заказа №'.$record->id)
+                            ->schema([
+                                TextInput::make('number')
+                                    ->label('Номер накладной')
+                                    ->placeholder('VR00…, BAW…, VRR445… или DS020…')
+                                    ->helperText('Оставьте пустым, чтобы удалить номер.'),
+                            ])
+                            ->fillForm(function ($record): array {
+                                $vr = $record->vrNumber;
+
+                                return ['number' => match (true) {
+                                    filled($vr?->vrv_1) => 'VR00'.$vr->vrv_1,
+                                    filled($vr?->vrv_2) => 'BAW'.$vr->vrv_2,
+                                    filled($vr?->vrv_3) => 'VRR445'.str_pad((string) $vr->vrv_3, 3, '0', STR_PAD_LEFT),
+                                    filled($vr?->vrv_4) => 'DS020'.$vr->vrv_4,
+                                    default => null,
+                                }];
+                            })
+                            ->action(function ($record, array $data): void {
+                                app(UpdateOrderVrNumberService::class)->update($record, $data['number'] ?? null);
+                                $record->unsetRelation('vrNumber');
+
+                                Notification::make()->success()->title('Номер накладной обновлён')->send();
+                            })
+                            ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false),
+                    )
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('vr_number')
@@ -61,30 +106,54 @@ class OrdersTable
 
                         return $paymentRequest ? "{$number} · {$paymentRequest}" : $number;
                     })
-                    ->wrap(),
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('user.email')
-                    ->label('Клиент')
-                    ->description(fn ($record): string => trim(($record->user?->first_name ?? '').' '.($record->user?->last_name ?? '')))
+                    ->label('Пользователь')
+                    ->description(function ($record): string {
+                        $name = trim(($record->user?->first_name ?? '').' '.($record->user?->last_name ?? ''));
+                        $manager = $record->manager?->nick ?: $record->manager?->email ?: 'Админ';
+                        $channel = AOrderFrom::query()->whereKey($record->a_order_from)->value('title');
+
+                        return collect([$name, $record->user?->phone, 'Менеджер: '.$manager, $channel ? 'Канал: '.$channel : null])
+                            ->filter()->implode(' · ');
+                    })
                     ->searchable(),
                 TextColumn::make('manager.email')
                     ->label('Менеджер')
                     ->placeholder('Не назначен')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('country')
                     ->label('Страна')
                     ->badge()
-                    ->toggleable(),
+                    ->visible(false),
                 TextColumn::make('recipient')
                     ->label('Получатель')
                     ->state(function ($record): string {
                         $delivery = json_decode((string) $record->delivery, true) ?: [];
                         $name = trim(($delivery['first_name'] ?? '').' '.($delivery['last_name'] ?? ''));
                         $phone = $delivery['phone'] ?? $record->user?->phone;
+                        $method = match ($delivery['sposob'] ?? null) {
+                            'to_the_door' => 'До двери',
+                            'pickup_at_viar_workshop' => 'Самовывоз Viar',
+                            'pickup' => 'Самовывоз',
+                            'parcel_terminal', 'post_machine' => 'Постамат',
+                            default => $delivery['sposob'] ?? null,
+                        };
 
-                        return trim($name.($phone ? "\n{$phone}" : '')) ?: '—';
+                        return collect([
+                            $name,
+                            $phone,
+                            trim(implode(', ', array_filter([$delivery['country'] ?? null, $delivery['city'] ?? null]))),
+                            $delivery['address'] ?? null,
+                            $delivery['postal_index'] ?? null,
+                            $method,
+                            filled($delivery['when_send'] ?? null) ? 'Доставить: '.$delivery['when_send'] : null,
+                        ])->filter()->implode("\n") ?: '—';
                     })
                     ->wrap()
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('delivery_method')
                     ->label('Доставка')
                     ->state(function ($record): string {
@@ -102,7 +171,7 @@ class OrdersTable
                         ? (string) data_get(self::decodeJson($record->delivery), 'city')
                         : null)
                     ->wrap()
-                    ->toggleable(),
+                    ->visible(false),
                 TextColumn::make('delivery_date')
                     ->label('Доставить')
                     ->state(function ($record): string {
@@ -121,12 +190,13 @@ class OrdersTable
                         $days = (int) floor(($date - today()->timestamp) / 86400);
                         return $days < 3 ? 'danger' : ($days < 8 ? 'warning' : 'success');
                     })
-                    ->badge(),
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('a_order_from')
                     ->label('Канал')
                     ->formatStateUsing(fn ($state): string => AOrderFrom::query()->whereKey($state)->value('title') ?? (string) $state)
                     ->placeholder('—')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('catid')
                     ->label('Категория')
                     ->formatStateUsing(fn ($state): string => filled($state) && (int) $state !== 0 ? '#'.$state : 'нет')
@@ -135,23 +205,37 @@ class OrdersTable
                 TextColumn::make('painterAssignment.user.email')
                     ->label('Художник')
                     ->placeholder('Не назначен')
-                    ->toggleable(),
+                    ->description(function ($record): string {
+                        $printing = $record->printingAssignment?->user?->email;
+
+                        return collect([
+                            $printing ? 'Печатник: '.$printing : 'Печатник не назначен',
+                            filled($record->painter_endtime) ? 'Дедлайн: '.date('d.m.Y', strtotime((string) $record->painter_endtime)) : null,
+                            $record->painter_payed ? 'Работа оплачена' : null,
+                        ])->filter()->implode(' · ');
+                    }),
                 TextColumn::make('printingAssignment.user.email')
                     ->label('Печатник')
                     ->placeholder('Не назначен')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('chats')
-                    ->label('Чаты')
+                    ->label('Комментарии')
                     ->state(fn ($record): string => implode(' · ', [
                         'К:'.$record->client_messages_count.($record->unread_client_messages_count ? '/'.$record->unread_client_messages_count.'!' : ''),
                         'А:'.$record->admin_messages_count,
                         'Х:'.$record->painter_messages_count,
                         'SA:'.$record->unread_sa_messages_count,
                     ]))
+                    ->description(function ($record): string {
+                        $deliveryComment = data_get(self::decodeJson($record->delivery), 'comment');
+
+                        return collect([$deliveryComment, $record->comment, $record->admin_comment, $record->painter_comment])
+                            ->filter()->take(2)->implode(' · ');
+                    })
                     ->badge()
                     ->color(fn ($record): string => ($record->unread_client_messages_count || $record->unread_sa_messages_count) ? 'danger' : 'gray'),
                 TextColumn::make('product_summary')
-                    ->label('Товары')
+                    ->label('Товар')
                     ->state(function ($record): string {
                         $items = self::decodeJson($record->items);
                         $products = collect($items)->filter(fn ($item, $key): bool => is_int($key) && is_array($item));
@@ -171,7 +255,7 @@ class OrdersTable
                     ->wrap()
                     ->toggleable(),
                 TextColumn::make('status')
-                    ->label('Статус')
+                    ->label('Заказ')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => self::statusLabels()[$state] ?? $state)
                     ->color(fn (string $state): string => match ($state) {
@@ -180,6 +264,12 @@ class OrdersTable
                         'in_production', 'pegging' => 'warning',
                         default => 'gray',
                     })
+                    ->description(fn ($record): string => collect([
+                        '№'.$record->id,
+                        $record->is_admin_order ? 'Админ-заказ' : null,
+                        $record->status_date ? 'Изменён: '.date('d.m.Y H:i', strtotime((string) $record->status_date)) : null,
+                        'Создан: '.$record->created_at?->format('d.m.Y H:i'),
+                    ])->filter()->implode(' · '))
                     ->sortable(),
                 TextColumn::make('payment_status')
                     ->label('Оплата')
@@ -199,9 +289,18 @@ class OrdersTable
                             default => (string) ($record->payment ?: 'Способ не указан'),
                         };
 
-                        return $record->payment_status === 'prepayment' && filled($record->prepayment_price)
-                            ? $method.' · '.number_format((float) $record->prepayment_price, 2).' €'
-                            : $method;
+                        $parts = [$method, 'Заказ: '.number_format((float) $record->price, 2).' €'];
+                        if (filled($record->sale_price) && (float) $record->sale_price !== (float) $record->price) {
+                            $parts[] = 'Итого: '.number_format((float) $record->sale_price, 2).' €';
+                        }
+                        if ($record->payment_status === 'prepayment' && filled($record->prepayment_price)) {
+                            $parts[] = 'Предоплата: '.number_format((float) $record->prepayment_price, 2).' €';
+                        }
+                        if (filled(trim((string) $record->labels, ','))) {
+                            $parts[] = 'Этикетки: '.trim((string) $record->labels, ',');
+                        }
+
+                        return implode(' · ', $parts);
                     })
                     ->sortable(),
                 TextColumn::make('sale_price')
@@ -213,15 +312,17 @@ class OrdersTable
                             ->using(fn ($query) => $query->sum('price'))
                             ->money('EUR'),
                     )
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_admin_order')
                     ->label('Админ-заказ')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('labels')
                     ->label('Этикетки')
                     ->formatStateUsing(fn ($state): string => filled(trim((string) $state, ',')) ? trim((string) $state, ',') : '—')
                     ->wrap()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->visible(false),
                 TextColumn::make('comments_summary')
                     ->label('Комментарии')
                     ->state(function ($record): string {
@@ -252,7 +353,8 @@ class OrdersTable
                 TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime('d.m.Y H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Filter::make('order_id')
