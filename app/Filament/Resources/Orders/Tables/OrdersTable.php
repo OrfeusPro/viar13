@@ -617,7 +617,11 @@ class OrdersTable
                             ->placeholder('VR00…, BAW…, VRR445… или DS020…')
                             ->helperText('Оставьте пустым, чтобы удалить номер.'),
                     ])
-                    ->fillForm(fn ($record): array => ['number' => self::vrNumber($record)])
+                    ->fillForm(fn ($record, array $arguments): array => [
+                        'number' => ($arguments['delete'] ?? false)
+                            ? null
+                            : (self::vrNumber($record) ?: ($arguments['prefix'] ?? null)),
+                    ])
                     ->action(function ($record, array $data): void {
                         app(UpdateOrderVrNumberService::class)->update($record, $data['number'] ?? null);
                         $record->unsetRelation('vrNumber');
