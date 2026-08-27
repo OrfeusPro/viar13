@@ -84,6 +84,24 @@ class OrdersTable
                     })
                     ->wrap()
                     ->toggleable(),
+                TextColumn::make('delivery_method')
+                    ->label('Доставка')
+                    ->state(function ($record): string {
+                        $delivery = self::decodeJson($record->delivery);
+
+                        return match ($delivery['sposob'] ?? null) {
+                            'to_the_door' => 'До двери',
+                            'pickup_at_viar_workshop' => 'Самовывоз Viar',
+                            'pickup' => 'Самовывоз',
+                            'parcel_terminal', 'post_machine' => 'Постамат',
+                            default => (string) ($delivery['sposob'] ?? '—'),
+                        };
+                    })
+                    ->description(fn ($record): ?string => filled(data_get(self::decodeJson($record->delivery), 'city'))
+                        ? (string) data_get(self::decodeJson($record->delivery), 'city')
+                        : null)
+                    ->wrap()
+                    ->toggleable(),
                 TextColumn::make('delivery_date')
                     ->label('Доставить')
                     ->state(function ($record): string {
@@ -131,6 +149,26 @@ class OrdersTable
                     ]))
                     ->badge()
                     ->color(fn ($record): string => ($record->unread_client_messages_count || $record->unread_sa_messages_count) ? 'danger' : 'gray'),
+                TextColumn::make('product_summary')
+                    ->label('Товары')
+                    ->state(function ($record): string {
+                        $items = self::decodeJson($record->items);
+                        $products = collect($items)->filter(fn ($item, $key): bool => is_int($key) && is_array($item));
+
+                        if ($products->isEmpty()) {
+                            return '—';
+                        }
+
+                        return $products->take(2)->map(function (array $item): string {
+                            $name = $item['name'] ?? $item['type'] ?? 'Товар';
+                            $size = $item['size_name'] ?? data_get($item, 'show.size') ?? null;
+                            $count = (int) ($item['count'] ?? 1);
+
+                            return trim($name.($size ? " · {$size}" : '').($count > 1 ? " ×{$count}" : ''));
+                        })->implode("\n").($products->count() > 2 ? "\n+".($products->count() - 2) : '');
+                    })
+                    ->wrap()
+                    ->toggleable(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
@@ -151,6 +189,19 @@ class OrdersTable
                         'prepayment' => 'warning',
                         default => 'danger',
                     })
+                    ->description(function ($record): string {
+                        $method = match ((string) $record->payment) {
+                            'transfer' => 'Перевод',
+                            'paypalOnetimePayment' => 'PayPal',
+                            'paysera' => 'Paysera',
+                            'cash' => 'Наличные',
+                            default => (string) ($record->payment ?: 'Способ не указан'),
+                        };
+
+                        return $record->payment_status === 'prepayment' && filled($record->prepayment_price)
+                            ? $method.' · '.number_format((float) $record->prepayment_price, 2).' €'
+                            : $method;
+                    })
                     ->sortable(),
                 TextColumn::make('sale_price')
                     ->label('Сумма')
@@ -165,6 +216,38 @@ class OrdersTable
                 IconColumn::make('is_admin_order')
                     ->label('Админ-заказ')
                     ->boolean(),
+                TextColumn::make('labels')
+                    ->label('Этикетки')
+                    ->formatStateUsing(fn ($state): string => filled(trim((string) $state, ',')) ? trim((string) $state, ',') : '—')
+                    ->wrap()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('comments_summary')
+                    ->label('Комментарии')
+                    ->state(function ($record): string {
+                        $deliveryComment = data_get(self::decodeJson($record->delivery), 'comment');
+
+                        return collect([
+                            filled($deliveryComment) ? 'Доставка: '.$deliveryComment : null,
+                            filled($record->comment) ? 'Заказ: '.$record->comment : null,
+                            filled($record->admin_comment) ? 'Админ: '.$record->admin_comment : null,
+                            filled($record->painter_comment) ? 'Художник: '.$record->painter_comment : null,
+                        ])->filter()->implode("\n") ?: '—';
+                    })
+                    ->wrap()
+                    ->limit(140)
+                    ->tooltip(fn ($record): string => collect([
+                        data_get(self::decodeJson($record->delivery), 'comment'),
+                        $record->comment,
+                        $record->admin_comment,
+                        $record->painter_comment,
+                    ])->filter()->implode("\n"))
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('painter_endtime')
+                    ->label('Дедлайн художника')
+                    ->date('d.m.Y')
+                    ->placeholder('—')
+                    ->color(fn ($state): string => filled($state) && strtotime((string) $state) <= today()->addDay()->timestamp ? 'danger' : 'gray')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label('Создан')
                     ->dateTime('d.m.Y H:i')
@@ -317,5 +400,16 @@ class OrdersTable
             'prepayment' => 'Предоплата',
             'payed' => 'Оплачено',
         ];
+    }
+
+    private static function decodeJson(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        $decoded = json_decode((string) $value, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 }
