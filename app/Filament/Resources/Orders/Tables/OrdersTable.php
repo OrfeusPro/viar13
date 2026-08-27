@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Models\AOrderFrom;
 use App\Models\CountryTel;
 use App\Models\User;
+use App\Http\Controllers\IndexController;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
@@ -326,7 +327,21 @@ class OrdersTable
                     ->options(self::paymentLabels()),
                 SelectFilter::make('manager_id')
                     ->label('Менеджер')
-                    ->relationship('manager', 'email')
+                    ->options(fn (): array => ['__admin__' => 'Админ / без менеджера'] + User::query()
+                        ->where('role_id', 4)
+                        ->orderBy('email')
+                        ->get()
+                        ->mapWithKeys(fn (User $user): array => [$user->id => trim(($user->nick ? $user->nick.' — ' : '').$user->email)])
+                        ->all())
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        filled($data['value'] ?? null),
+                        fn (Builder $query): Builder => $data['value'] === '__admin__'
+                            ? $query->where(function (Builder $query): void {
+                                $managerIds = User::query()->where('role_id', 4)->pluck('id');
+                                $query->whereNull('manager_id')->orWhereNotIn('manager_id', $managerIds);
+                            })
+                            : $query->where('manager_id', $data['value']),
+                    ))
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('painter')
@@ -343,6 +358,11 @@ class OrdersTable
                     ->label('Канал продаж')
                     ->options(fn (): array => AOrderFrom::query()->orderBy('sortorder')->pluck('title', 'id')->all())
                     ->searchable(),
+                SelectFilter::make('catid')
+                    ->label('Категория')
+                    ->options(fn (): array => self::categoryOptions())
+                    ->searchable()
+                    ->preload(),
                 SelectFilter::make('country')
                     ->label('Страна')
                     ->options(fn (): array => CountryTel::query()->orderBy('sort')->pluck('country_name', 'country_code')->all())
@@ -361,7 +381,17 @@ class OrdersTable
                     ->schema([TextInput::make('value')->label('Размер или ID размера')])
                     ->query(fn (Builder $query, array $data): Builder => $query->when(
                         filled($data['value'] ?? null),
-                        fn (Builder $query): Builder => $query->where('items', 'like', '%'.trim($data['value']).'%'),
+                        function (Builder $query) use ($data): Builder {
+                            $size = trim((string) $data['value']);
+
+                            return $query->where(function (Builder $query) use ($size): void {
+                                foreach (range(0, 9) as $index) {
+                                    $method = $index === 0 ? 'whereJsonContains' : 'orWhereJsonContains';
+                                    $query->{$method}("items->{$index}->sizeId", $size)
+                                        ->orWhereJsonContains("items->{$index}->size_name", $size);
+                                }
+                            });
+                        },
                     )),
                 Filter::make('created_at')
                     ->label('Дата создания')
@@ -411,5 +441,14 @@ class OrdersTable
         $decoded = json_decode((string) $value, true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    private static function categoryOptions(): array
+    {
+        return IndexController::get_styles_for_quiz('ru')
+            ->mapWithKeys(fn ($category): array => [
+                $category->id => trim(strip_tags((string) $category->getTranslatedAttribute('name'))),
+            ])
+            ->all();
     }
 }
