@@ -107,6 +107,36 @@
 - `OrderRecipientEmailServiceTest` проверяет UAT suppression, одноадресное
   уведомление и отсутствие пользователя; admin/invoice suite: 40 tests,
   148 assertions, 1 ожидаемый skip; Blade cache собран;
+- начат parity-подблок «Товар»: аудит `items.blade.php` и
+  `all_basket_order_items.blade.php` подтвердил, что текущая Filament-ячейка
+  теряет итоговый расчёт, акции/купоны, большую часть параметров legacy-типов,
+  дополнительные изображения/фоны и действие запроса отзыва;
+- точный объём переноса зафиксирован: расчёт заказа, coupon/bonus flags,
+  content-блок, все позиции с изображениями и параметрами, цена/подарок,
+  комментарий доставки и безопасный review request без реального письма во
+  время UAT;
+- колонка «Товар» перестроена по вертикальному layout Voyager: восстановлены
+  исходная/акционная стоимость, скидки, экспресс, доставка и итог, legacy
+  coupon/bonus flags, content-блок и все позиции, распознаваемые по `sumPrice`;
+- для каждой позиции снова выводятся active/saved/offset/background images,
+  подарок и полный `all_basket_order_items` с типовыми параметрами canvas,
+  портрета, модульной картины, подарочной карты и других legacy-типов; правило
+  Voyager не показывает дублирующий saved preview у canvas-like товаров;
+- добавлен permission-aware action «Запрос отзыва» через
+  `OrderReviewRequestService`; `ADMIN_REVIEW_REQUEST_ENABLED=false` подавляет
+  письмо до UAT, а логи содержат только order/user ID без адреса клиента;
+- browser-сверка общей БД по заказу 18451 с открытым Voyager подтвердила тот же
+  расчёт `22 + 5 + 0 = 27`, параметры Canvas/40x40/Foto Kanvas/Interjers,
+  placeholder отсутствующего изображения, комментарий и цену позиции;
+- визуально восстановлены центрирование и компактная ширина 235px, длинный
+  комментарий больше не заходит в «Комментарии»; лишний знак EUR у базовой
+  стоимости и дублирующий broken saved preview устранены;
+- modal запроса отзыва открыт для заказа 18451 и закрыт через «Отменить»;
+  отправки клиенту не было. `OrderReviewRequestServiceTest` проверяет UAT
+  suppression и отсутствие пользователя; Blade cache прошёл, admin/invoice
+  regression suite: 42 tests, 151 assertions, 1 ожидаемый skip;
+- parity-подблок «Товар» закрыт; ADM-FIL-003 остаётся IN PROGRESS, следующий
+  точный подблок — «Комментарии»;
 - 2026-08-28: выполнено точное сравнение PDF заказа 18451 из Voyager и
   Filament; данные совпадают, но dompdf 3.1.6 иначе обработал невалидный
   `align` в шапке и `border` на строках таблицы legacy-шаблона, созданного для

@@ -2,16 +2,18 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Http\Controllers\IndexController;
 use App\Models\AOrderFrom;
 use App\Models\CountryTel;
 use App\Models\User;
-use App\Http\Controllers\IndexController;
-use App\Services\Admin\UpdateOrderVrNumberService;
+use App\Models\UserType;
 use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\OrderPaymentService;
 use App\Services\Admin\OrderRecipientEmailService;
+use App\Services\Admin\OrderReviewRequestService;
 use App\Services\Admin\OrderUserService;
 use App\Services\Admin\OrderVenipakLabelService;
+use App\Services\Admin\UpdateOrderVrNumberService;
 use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
@@ -19,19 +21,20 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
-use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 
@@ -265,6 +268,7 @@ class OrdersTable
                         }
 
                         $days = (int) floor(($date - today()->timestamp) / 86400);
+
                         return $days < 3 ? 'danger' : ($days < 8 ? 'warning' : 'success');
                     })
                     ->badge()
@@ -800,7 +804,7 @@ class OrdersTable
                         $download = app(OrderVenipakLabelService::class)->print($record, (string) ($arguments['label'] ?? ''));
 
                         return response()->streamDownload(
-                            static fn () => print($download['content']),
+                            static fn () => print ($download['content']),
                             $download['filename'],
                             ['Content-Type' => 'application/pdf', 'Cache-Control' => 'no-store, no-cache'],
                         );
@@ -857,7 +861,7 @@ class OrdersTable
                     ->schema([
                         TextInput::make('subject')->label('Тема')->required()->maxLength(255),
                         TextInput::make('greetings')->label('Поздравление')->required()->maxLength(255),
-                        \Filament\Forms\Components\Textarea::make('line')->label('Основной текст')->required()->rows(8)->maxLength(10000),
+                        Textarea::make('line')->label('Основной текст')->required()->rows(8)->maxLength(10000),
                         TextInput::make('salutation')->label('Прощание')->required()->maxLength(255),
                     ])
                     ->fillForm([
@@ -869,6 +873,24 @@ class OrdersTable
                         $result = app(OrderRecipientEmailService::class)->send($record, $data);
                         $notification = Notification::make()->success()->title(
                             $result['suppressed'] ? 'Письмо проверено; внешняя почта отключена' : 'Письмо поставлено в очередь',
+                        );
+                        if ($result['suppressed']) {
+                            $notification->body('Во время UAT письмо клиенту не отправляется.');
+                        }
+                        $notification->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('requestReview')
+                    ->label('Запрос отзыва')
+                    ->modalHeading(fn ($record): string => 'Запрос отзыва по заказу №'.$record->id)
+                    ->modalDescription(fn ($record): string => 'Письмо будет адресовано только пользователю заказа: '.($record->user?->email ?: 'email отсутствует').'.')
+                    ->modalSubmitActionLabel('Отправить запрос')
+                    ->requiresConfirmation()
+                    ->action(function ($record): void {
+                        $result = app(OrderReviewRequestService::class)->send($record);
+                        $notification = Notification::make()->success()->title(
+                            $result['suppressed'] ? 'Запрос проверен; внешняя почта отключена' : 'Запрос отзыва отправлен',
                         );
                         if ($result['suppressed']) {
                             $notification->body('Во время UAT письмо клиенту не отправляется.');
@@ -993,7 +1015,7 @@ class OrdersTable
     {
         static $statuses;
 
-        return $statuses ??= \App\Models\UserType::query()->pluck('name', 'id')->all();
+        return $statuses ??= UserType::query()->pluck('name', 'id')->all();
     }
 
     public static function localeOptions(): array

@@ -10,4 +10,7 @@ return [
 
     // Keep one-recipient admin emails disabled until the Filament compose action passes UAT.
     'recipient_email_enabled' => (bool) env('ADMIN_RECIPIENT_EMAIL_ENABLED', false),
+
+    // Keep review-request emails disabled until the Filament product column passes UAT.
+    'review_request_enabled' => (bool) env('ADMIN_REVIEW_REQUEST_ENABLED', false),
 ];
