@@ -72,6 +72,26 @@
   выполнялись;
 - колонка «Оплата» закрыта как parity-подблок, но ADM-FIL-003 остаётся
   IN PROGRESS; следующий точный подблок — «Пользователь»;
+- начат аудит «Пользователь» по `user.blade.php` и `orders.blade.php`:
+  обязательный состав — имя/телефон/email/status, количество заказов, locale,
+  язык PDF, канал продаж, категория, менеджер и справочник статусов клиента;
+  изменяются только `users.pdf_locale` и `users.client_status`;
+- колонка «Пользователь» перестроена в отдельный вертикальный ViewColumn с
+  точным fallback Voyager: при пустом `client_status` имя берётся из delivery,
+  а телефон/email — прежде всего из связанного пользователя; добавлен
+  eager-loaded `orders_count`, чтобы не выполнять count для каждой строки;
+- канал берётся из `a_order_from`, категория — из существующего каталога
+  `get_styles_for_quiz('ru')`, менеджер сохраняет правило Voyager «role_id=4,
+  иначе Админ», статусы клиента — из реальной таблицы `user_types`;
+- добавлен транзакционный `OrderUserService` и два permission-aware actions для
+  `users.pdf_locale` и `users.client_status`; locale ограничен активным списком
+  `laravellocalization.supportedLocales`, client status — FK-справочником;
+- browser smoke заказа 18451 подтвердил поля и layout; modal статуса открыт и
+  закрыт через «Отменить», после проверки `pdf_locale` и `client_status` остались
+  `null`, внешние операции не выполнялись;
+- `OrderUserServiceTest` проверяет оба обновления и отклонение неизвестных
+  locale/status/пользователя; итоговый admin/invoice suite: 37 tests,
+  143 assertions, 1 ожидаемый skip; Blade cache собран;
 - 2026-08-28: выполнено точное сравнение PDF заказа 18451 из Voyager и
   Filament; данные совпадают, но dompdf 3.1.6 иначе обработал невалидный
   `align` в шапке и `border` на строках таблицы legacy-шаблона, созданного для

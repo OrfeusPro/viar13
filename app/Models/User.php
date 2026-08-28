@@ -15,6 +15,7 @@ use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 use Throwable;
 
@@ -223,6 +224,11 @@ class User extends \TCG\Voyager\Models\User implements FilamentUser, HasLocalePr
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_roles');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Orders::class, 'user_id');
     }
 
     public function hasPermission(string $permission): bool

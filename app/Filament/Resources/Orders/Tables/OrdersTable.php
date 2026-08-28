@@ -9,6 +9,7 @@ use App\Http\Controllers\IndexController;
 use App\Services\Admin\UpdateOrderVrNumberService;
 use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\OrderPaymentService;
+use App\Services\Admin\OrderUserService;
 use App\Services\Admin\OrderVenipakLabelService;
 use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Action;
@@ -41,6 +42,8 @@ class OrdersTable
             ->recordUrl(null)
             ->modifyQueryUsing(fn (Builder $query): Builder => $query
                 ->with([
+                    'user' => fn ($query) => $query->withCount('orders'),
+                    'manager',
                     'vrNumber',
                     'order_payment_requests' => fn ($query) => $query->latest('id')->limit(3),
                     'painterAssignment.user',
@@ -203,17 +206,9 @@ class OrdersTable
                     })
                     ->wrap()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('user.email')
+                ViewColumn::make('user_controls')
                     ->label('Пользователь')
-                    ->description(function ($record): string {
-                        $name = trim(($record->user?->first_name ?? '').' '.($record->user?->last_name ?? ''));
-                        $manager = $record->manager?->nick ?: $record->manager?->email ?: 'Админ';
-                        $channel = AOrderFrom::query()->whereKey($record->a_order_from)->value('title');
-
-                        return collect([$name, $record->user?->phone, 'Менеджер: '.$manager, $channel ? 'Канал: '.$channel : null])
-                            ->filter()->implode(' · ');
-                    })
-                    ->searchable(),
+                    ->view('filament.tables.columns.order-user'),
                 TextColumn::make('manager.email')
                     ->label('Менеджер')
                     ->placeholder('Не назначен')
@@ -833,6 +828,48 @@ class OrdersTable
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
+                Action::make('updateUserPdfLocale')
+                    ->label('Язык счёта')
+                    ->modalHeading(fn ($record): string => 'Язык счёта пользователя заказа №'.$record->id)
+                    ->modalSubmitActionLabel('Обновить язык')
+                    ->schema([
+                        Select::make('pdf_locale')
+                            ->label('Язык счёта')
+                            ->options(self::localeOptions())
+                            ->required(),
+                    ])
+                    ->fillForm(fn ($record, array $arguments): array => [
+                        'pdf_locale' => $arguments['pdf_locale']
+                            ?? $record->user?->pdf_locale
+                            ?? $record->user?->preferredLocale(),
+                    ])
+                    ->action(function ($record, array $data): void {
+                        app(OrderUserService::class)->updatePdfLocale($record, $data['pdf_locale']);
+                        $record->unsetRelation('user');
+                        Notification::make()->success()->title('Язык счёта обновлён')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('updateClientStatus')
+                    ->label('Статус клиента')
+                    ->modalHeading(fn ($record): string => 'Статус клиента заказа №'.$record->id)
+                    ->modalSubmitActionLabel('Обновить статус')
+                    ->schema([
+                        Select::make('client_status')
+                            ->label('Статус клиента')
+                            ->options(self::clientStatusOptions())
+                            ->required(),
+                    ])
+                    ->fillForm(fn ($record, array $arguments): array => [
+                        'client_status' => $arguments['client_status'] ?? $record->user?->client_status,
+                    ])
+                    ->action(function ($record, array $data): void {
+                        app(OrderUserService::class)->updateClientStatus($record, $data['client_status']);
+                        $record->unsetRelation('user');
+                        Notification::make()->success()->title('Статус клиента обновлён')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
                 Action::make('editInvoiceFirm')
                     ->label('Данные фирмы')
                     ->modalHeading(fn ($record): string => 'Данные фирмы для счёта №'.$record->id)
@@ -928,9 +965,43 @@ class OrdersTable
         return is_array($decoded) ? $decoded : [];
     }
 
+    public static function categoryLabel(int|string|null $categoryId): ?string
+    {
+        if (! $categoryId || (int) $categoryId === 0) {
+            return null;
+        }
+
+        return self::categoryOptions()[(int) $categoryId] ?? null;
+    }
+
+    public static function salesChannelLabel(int|string|null $channelId): ?string
+    {
+        static $channels;
+        $channels ??= AOrderFrom::query()->pluck('title', 'id')->all();
+
+        return $channels[$channelId] ?? null;
+    }
+
+    public static function clientStatusOptions(): array
+    {
+        static $statuses;
+
+        return $statuses ??= \App\Models\UserType::query()->pluck('name', 'id')->all();
+    }
+
+    public static function localeOptions(): array
+    {
+        return collect(config('laravellocalization.supportedLocales', []))
+            ->mapWithKeys(fn (array $properties, string $locale): array => [
+                $locale => $locale.' — '.($properties['native'] ?? $properties['name'] ?? $locale),
+            ])->all();
+    }
+
     private static function categoryOptions(): array
     {
-        return IndexController::get_styles_for_quiz('ru')
+        static $options;
+
+        return $options ??= IndexController::get_styles_for_quiz('ru')
             ->mapWithKeys(fn ($category): array => [
                 $category->id => trim(strip_tags((string) $category->getTranslatedAttribute('name'))),
             ])
