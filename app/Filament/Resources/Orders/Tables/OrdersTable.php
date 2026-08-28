@@ -7,6 +7,7 @@ use App\Models\AOrderFrom;
 use App\Models\CountryTel;
 use App\Models\User;
 use App\Models\UserType;
+use App\Services\Admin\OrderAdminChatService;
 use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\OrderPaymentService;
 use App\Services\Admin\OrderRecipientEmailService;
@@ -49,6 +50,11 @@ class OrdersTable
                     'user' => fn ($query) => $query->withCount('orders'),
                     'manager',
                     'vrNumber',
+                    'adminChats.user',
+                    'order_user_comments' => fn ($query) => $query->oldest('id'),
+                    'order_painter_comments' => fn ($query) => $query->oldest('id'),
+                    'orders_chats' => fn ($query) => $query->oldest('id'),
+                    'saMessages' => fn ($query) => $query->oldest('id'),
                     'order_payment_requests' => fn ($query) => $query->latest('id')->limit(3),
                     'painterAssignment.user',
                     'printingAssignment.user',
@@ -898,6 +904,56 @@ class OrdersTable
                         $notification->send();
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('viewClientChat')
+                    ->label('Чат с клиентом')
+                    ->modalHeading(fn ($record): string => 'Чат с клиентом · заказ №'.$record->id)
+                    ->modalWidth('4xl')
+                    ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'client']))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Закрыть')
+                    ->action(fn (): null => null)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('manageAdminChat')
+                    ->label('Чат для администраторов')
+                    ->modalHeading(fn ($record): string => 'Внутренний чат · заказ №'.$record->id)
+                    ->modalWidth('4xl')
+                    ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'admin']))
+                    ->modalSubmitActionLabel('Добавить сообщение')
+                    ->schema([
+                        Textarea::make('comment')
+                            ->label('Новое внутреннее сообщение')
+                            ->required()
+                            ->rows(4)
+                            ->maxLength(10000),
+                    ])
+                    ->action(function ($record, array $data): void {
+                        app(OrderAdminChatService::class)->add($record, auth('filament')->user(), $data['comment']);
+                        $record->unsetRelation('adminChats');
+                        Notification::make()->success()->title('Внутреннее сообщение добавлено')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('viewSaChat')
+                    ->label('WhatsApp чат (SA)')
+                    ->modalHeading(fn ($record): string => 'WhatsApp SA · заказ №'.$record->id)
+                    ->modalWidth('4xl')
+                    ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'sa']))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Закрыть')
+                    ->action(fn (): null => null)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('viewPainterChat')
+                    ->label('Чат с художником')
+                    ->modalHeading(fn ($record): string => 'Чат с художником · заказ №'.$record->id)
+                    ->modalWidth('4xl')
+                    ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'painter']))
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Закрыть')
+                    ->action(fn (): null => null)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
                 Action::make('editInvoiceFirm')
                     ->label('Данные фирмы')

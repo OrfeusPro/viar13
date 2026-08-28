@@ -145,6 +145,26 @@
   не считается parity. Точный порядок реализации: read-only layout и previews,
   DB-only admin chat, client/painter потоки с вложениями, затем SA WhatsApp/bot
   actions; изменяющие legacy POST/AJAX routes напрямую вызываться не будут;
+- колонка «Комментарии» перестроена по Voyager: вертикально выводятся
+  `orders.comment`, `admin_comment`, `painter_comment`, `client_comment`, три
+  последних client и painter comments, затем четыре синие/зелёные chat-кнопки
+  с общими и unread-счётчиками;
+- добавлена отдельная связь с реальным `order_painter_comments`; истории
+  client/admin/SA/painter eager-load без N+1 и открываются в Filament modal,
+  сохраняя автора, дату, тип «набросок/картина», SA status/attachments и bot mode;
+- внутренний чат больше не вызывает `update_admin_chat_ajax`: новый
+  permission-aware action валидирует сообщение и транзакционно сохраняет его
+  через `OrderAdminChatService` с текущим автором; остальные три потока пока
+  преднамеренно read-only;
+- browser smoke заказа 18451 подтвердил все четыре кнопки и совпадающее с
+  Voyager размещение восьми колонок на одной ширине; client/admin modal открыты,
+  admin modal закрыт без сохранения, количество сообщений заказа осталось 0;
+- реальная история заказа 18421 отрендерена read-only напрямую из общей БД и
+  содержит legacy-сообщение `order_admin_comments`; внешние письма, webhook и
+  SA API не вызывались;
+- `OrderAdminChatServiceTest` проверяет order/author binding, trim и валидацию;
+  Blade cache и PHP syntax прошли, admin/invoice suite: 44 tests,
+  156 assertions, 1 ожидаемый skip;
 - 2026-08-28: выполнено точное сравнение PDF заказа 18451 из Voyager и
   Filament; данные совпадают, но dompdf 3.1.6 иначе обработал невалидный
   `align` в шапке и `border` на строках таблицы legacy-шаблона, созданного для

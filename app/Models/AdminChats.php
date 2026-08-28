@@ -31,4 +31,9 @@ class AdminChats extends Model
 {
     public $timestamps = true;
     protected $table = 'order_admin_comments';
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

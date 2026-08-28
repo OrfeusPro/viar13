@@ -284,6 +284,11 @@ class Orders extends Model
         return $this->hasMany(OrderUserComments::class, "order_id");
     }
 
+    public function order_painter_comments()
+    {
+        return $this->hasMany(OrderPainterComment::class, 'order_id');
+    }
+
     public function order_payment_requests()
     {
         return $this->hasMany(OrderPaymentRequest::class, 'order_id');
