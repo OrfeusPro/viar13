@@ -47,12 +47,32 @@
         </div>
     @endif
 
-    @if(filled(trim((string) $record->labels, ',')))
-        <div style="margin-top: 10px; text-align: center;">
-            <div>Номера этикеток:</div>
-            @foreach(array_filter(explode(',', trim((string) $record->labels, ','))) as $label)
-                <div style="margin-top: 5px; overflow-wrap: anywhere;">{{ $label }}</div>
-            @endforeach
-        </div>
-    @endif
+    <button
+        type="button"
+        wire:click.stop="mountTableAction('createVenipakLabel', '{{ $record->getKey() }}')"
+        style="display: block; width: 100%; margin: 12px 0 8px; padding: 7px 4px; border: 0; background: transparent; color: #20242c; cursor: pointer; text-align: center;"
+        aria-label="Создать этикетку Venipak для заказа №{{ $record->id }}"
+    >
+        <img src="{{ asset('images/venipak.png') }}" alt="Venipak" style="display: block; width: 118px; max-width: 100%; height: auto; margin: 0 auto 4px;">
+        <span style="display: block; font-size: 11px; font-weight: 600; line-height: 1.2;">СОЗДАНИЕ ЭТИКЕТКИ</span>
+    </button>
+
+    <div style="margin-top: 8px; text-align: center;">
+        <div>Номера этикеток:</div>
+        @foreach(array_filter(explode(',', trim((string) $record->labels, ','))) as $label)
+            <div style="margin-top: 7px; overflow-wrap: anywhere;">
+                <span style="display: block;">{{ $label }}</span>
+                <button
+                    type="button"
+                    wire:click.stop="callTableAction('printVenipakLabel', '{{ $record->getKey() }}', [], { label: @js($label) })"
+                    style="margin-top: 3px; padding: 3px 8px; border: 1px solid #8d99a6; border-radius: 3px; background: #f8f9fa; color: #333; font-size: 11px; cursor: pointer;"
+                >
+                    На печать
+                </button>
+            </div>
+        @endforeach
+        @if(blank(trim((string) $record->labels, ',')))
+            <div style="margin-top: 4px; color: #8a8f98;">—</div>
+        @endif
+    </div>
 </div>

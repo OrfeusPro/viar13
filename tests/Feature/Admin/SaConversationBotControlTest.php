@@ -10,8 +10,7 @@ use Tests\TestCase;
 
 class SaConversationBotControlTest extends TestCase
 {
-    /** @test */
-    public function admin_bot_control_accepts_conversation_id_without_order_id()
+    public function test_admin_bot_control_accepts_conversation_id_without_order_id(): void
     {
         if (!Schema::hasTable('sa_conversations')) {
             $this->markTestSkipped('sa_conversations is not available in current test DB connection');

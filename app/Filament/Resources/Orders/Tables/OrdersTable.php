@@ -9,13 +9,17 @@ use App\Http\Controllers\IndexController;
 use App\Services\Admin\UpdateOrderVrNumberService;
 use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\OrderPaymentService;
+use App\Services\Admin\OrderVenipakLabelService;
 use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
@@ -690,6 +694,142 @@ class OrdersTable
                     ->action(function ($record, array $data): void {
                         app(OrderPaymentService::class)->updatePrepayment($record, $data['prepayment_price']);
                         Notification::make()->success()->title('Сумма предоплаты обновлена')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('createVenipakLabel')
+                    ->label('Создание этикетки')
+                    ->modalHeading(fn ($record): string => 'Этикетка Venipak для заказа №'.$record->id)
+                    ->modalSubmitActionLabel('Создать этикетку')
+                    ->modalWidth('5xl')
+                    ->schema([
+                        Section::make('Получатель')
+                            ->columns(3)
+                            ->schema([
+                                TextInput::make('doc_no')->label('№ документа на посылку')->maxLength(16),
+                                Select::make('destination')
+                                    ->label('Направление')
+                                    ->options(['address' => 'На адрес', 'pickup' => 'На отделение'])
+                                    ->required()
+                                    ->live(),
+                                TextInput::make('r_country')->label('Страна')->required()->length(2),
+                                TextInput::make('g_name')->label('Название / получатель')->required()->maxLength(60),
+                                TextInput::make('g_code')->label('Код компании')->maxLength(20),
+                                TextInput::make('g_contact_p')->label('Контактное лицо')->required()->maxLength(80),
+                                TextInput::make('g_contact_t')->label('Телефон')->tel()->required()->maxLength(30),
+                                TextInput::make('email_receiver')->label('Email')->email()->maxLength(100),
+                                TextInput::make('g_city')->label('Город')->required()->maxLength(40)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('g_address')->label('Улица')->required()->maxLength(100)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('g_house')->label('Дом')->maxLength(15)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('g_flat')->label('Квартира')->maxLength(15)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('g_post')->label('Почтовый индекс')->required()->maxLength(12)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('door_code')->label('Код двери')->maxLength(10)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('office_no')->label('Номер офиса')->maxLength(10)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('warehous_no')->label('Номер склада')->maxLength(10)
+                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
+                                TextInput::make('g_city_pickup')->label('Город отделения')->required()->maxLength(40)
+                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
+                                TextInput::make('g_address_pickup')->label('Адрес отделения')->required()->maxLength(120)
+                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
+                                TextInput::make('g_post_pickup')->label('Индекс отделения')->required()->maxLength(12)
+                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
+                                TextInput::make('g_name_pickup')
+                                    ->label('Название пункта Venipak')
+                                    ->helperText('Укажите название выбранного пункта выдачи Venipak.')
+                                    ->required()
+                                    ->maxLength(100)
+                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
+                                TextInput::make('g_code_pickup')
+                                    ->label('Код пункта Venipak')
+                                    ->required()
+                                    ->maxLength(30)
+                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
+                            ]),
+                        Section::make('Отправитель')
+                            ->columns(3)
+                            ->collapsible()
+                            ->schema([
+                                TextInput::make('s_name')->label('Название')->required()->maxLength(60),
+                                TextInput::make('s_code')->label('Код компании')->required()->maxLength(20),
+                                TextInput::make('s_country')->label('Страна')->required()->length(2),
+                                TextInput::make('s_city')->label('Город')->required()->maxLength(40),
+                                TextInput::make('s_address')->label('Адрес')->required()->maxLength(100),
+                                TextInput::make('s_post')->label('Почтовый индекс')->required()->maxLength(12),
+                                TextInput::make('s_contact_p')->label('Контактное лицо')->required()->maxLength(60),
+                                TextInput::make('s_contact_t')->label('Телефон')->tel()->required()->maxLength(30),
+                                TextInput::make('email_sender')->label('Email')->email()->maxLength(100),
+                            ]),
+                        Section::make('Доставка и услуги')
+                            ->columns(3)
+                            ->schema([
+                                Select::make('delivery_type')
+                                    ->label('Срок доставки')
+                                    ->options([
+                                        'nwd' => 'Следующий рабочий день',
+                                        'nwd10' => 'Следующий рабочий день до 10:00',
+                                        'nwd12' => 'Следующий рабочий день до 12:00',
+                                        'nwd8_14' => 'Следующий рабочий день 8:00–14:00',
+                                        'nwd14_17' => 'Следующий рабочий день 14:00–17:00',
+                                        'nwd18_22' => 'Следующий рабочий день 18:00–22:00',
+                                        'sat' => 'Суббота',
+                                    ])->required(),
+                                Select::make('delivery_express')
+                                    ->label('Экспресс')
+                                    ->options(['0' => '48 часов', '1' => '24 часа'])
+                                    ->required(),
+                                TextInput::make('cod')->label('Наложенный платёж')->numeric()->minValue(0),
+                                Select::make('cod_type')->label('Валюта COD')->options(['EUR' => 'EUR', 'PLN' => 'PLN', 'CZK' => 'CZK'])->required(),
+                                Toggle::make('comment_call')->label('Позвонить перед доставкой'),
+                                Toggle::make('four_hands')->label('Нужны четыре руки'),
+                            ]),
+                        Section::make('Посылки')
+                            ->schema([
+                                Repeater::make('packages')
+                                    ->label('')
+                                    ->minItems(1)
+                                    ->maxItems(20)
+                                    ->defaultItems(1)
+                                    ->addActionLabel('Добавить посылку')
+                                    ->columns(3)
+                                    ->schema([
+                                        TextInput::make('weight')->label('Вес, кг')->numeric()->minValue(0.01)->required(),
+                                        TextInput::make('volume')->label('Объём')->numeric()->minValue(0),
+                                        Select::make('pallet')->label('Паллет')->options([
+                                            '0' => 'Нет', '2' => '1.2m / 0.8m', '6' => '1.2m / 1m', '7' => '1.2m / 1.2m',
+                                            '3' => '0.8m / 0.6m', '4' => 'Другое',
+                                        ])->required(),
+                                    ]),
+                            ]),
+                    ])
+                    ->fillForm(fn ($record): array => app(OrderVenipakLabelService::class)->defaultData($record))
+                    ->action(function ($record, array $data): void {
+                        $labels = app(OrderVenipakLabelService::class)->create($record, $data);
+                        $record->refresh();
+                        Notification::make()
+                            ->success()
+                            ->title('Этикетка Venipak создана')
+                            ->body('Номера: '.implode(', ', $labels))
+                            ->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('printVenipakLabel')
+                    ->label('Печать этикетки')
+                    ->action(function ($record, array $arguments) {
+                        $download = app(OrderVenipakLabelService::class)->print($record, (string) ($arguments['label'] ?? ''));
+
+                        return response()->streamDownload(
+                            static fn () => print($download['content']),
+                            $download['filename'],
+                            ['Content-Type' => 'application/pdf', 'Cache-Control' => 'no-store, no-cache'],
+                        );
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
