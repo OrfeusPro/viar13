@@ -137,6 +137,14 @@
   regression suite: 42 tests, 151 assertions, 1 ожидаемый skip;
 - parity-подблок «Товар» закрыт; ADM-FIL-003 остаётся IN PROGRESS, следующий
   точный подблок — «Комментарии»;
+- начат аудит «Комментариев» по `comments.blade.php` и четырём chat partials:
+  подтверждены отдельные client/admin/SA/painter потоки, статические комментарии
+  order/admin/painter, previews клиентских и художественных комментариев,
+  вложения эскизов/картин, unread/read state и SA bot control;
+- текущая Filament-ячейка показывает только три счётчика и краткий текст, поэтому
+  не считается parity. Точный порядок реализации: read-only layout и previews,
+  DB-only admin chat, client/painter потоки с вложениями, затем SA WhatsApp/bot
+  actions; изменяющие legacy POST/AJAX routes напрямую вызываться не будут;
 - 2026-08-28: выполнено точное сравнение PDF заказа 18451 из Voyager и
   Filament; данные совпадают, но dompdf 3.1.6 иначе обработал невалидный
   `align` в шапке и `border` на строках таблицы legacy-шаблона, созданного для

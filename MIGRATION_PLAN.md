@@ -92,6 +92,17 @@
   Voyager подтвердила одинаковые данные, суммы и placeholder отсутствующего
   изображения. Следующий parity-подблок — «Комментарии»; ADM-FIL-003 остаётся
   IN PROGRESS.
+  Для «Комментарии» источником parity зафиксированы
+  `voyager/orders/comments.blade.php` и partials `admin/client_chat.blade.php`,
+  `admin/admin_chat.blade.php`, `admin/sa_chat.blade.php`,
+  `admin/order_chat.blade.php`. Перенос делится на четыре проверяемых действия:
+  клиентский поток с эскизами/картинами и read state; внутренний поток админов;
+  WhatsApp SA с unread/bot mode; поток художника с типами сообщений и read
+  state. В самой ячейке должны остаться комментарии order/admin/painter,
+  client/painter previews, четыре Voyager-подобные кнопки и их счётчики.
+  Legacy forms/routes напрямую не переиспользуются: DB-only внутренний чат
+  переносится первым, а действия с письмами, уведомлениями и SA API получают
+  отдельные permission-aware сервисы, внешние операции и fake-тесты.
 - [x] [DONE] **ADM-FIL-004 — Карточка и редактирование заказа**: добавлены
   read-only секции основных данных, доставки и позиций; редактирование основных
   административных полей выполняется валидируемым транзакционным сервисом.
