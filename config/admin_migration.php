@@ -7,4 +7,7 @@ return [
 
     // Keep payment emails and CRM webhooks isolated while Filament payment actions are under UAT.
     'payment_notifications_enabled' => (bool) env('ADMIN_PAYMENT_NOTIFICATIONS_ENABLED', false),
+
+    // Keep one-recipient admin emails disabled until the Filament compose action passes UAT.
+    'recipient_email_enabled' => (bool) env('ADMIN_RECIPIENT_EMAIL_ENABLED', false),
 ];

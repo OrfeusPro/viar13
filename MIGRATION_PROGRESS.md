@@ -92,6 +92,21 @@
 - `OrderUserServiceTest` проверяет оба обновления и отклонение неизвестных
   locale/status/пользователя; итоговый admin/invoice suite: 37 tests,
   143 assertions, 1 ожидаемый skip; Blade cache собран;
+- колонка «Получатель» перенесена в отдельный ViewColumn по
+  `user_data.blade.php`: сохранено различение payer/recipient phone, добавлены
+  Viber/WhatsApp, страна/город/адрес/индекс, валидная или красная дата доставки,
+  delivery locale, order image, подписи и существующие иконки оплаты/доставки;
+- неработающая без Voyager ссылка `/admin/email-sender` заменена Filament modal,
+  направленной только связанному пользователю заказа; исправлен риск legacy
+  controller, который игнорировал `users[]` и рассылал всем подписчикам;
+- добавлен `OrderRecipientEmailService`; до UAT письма подавляются через
+  `ADMIN_RECIPIENT_EMAIL_ENABLED=false` и логируются без адреса/текста, а тесты
+  используют `Notification::fake`;
+- browser smoke заказа 18451 подтвердил данные, PayPal/pickup icons и email
+  modal на `.invalid`; форма закрыта через «Отменить», отправки не было;
+- `OrderRecipientEmailServiceTest` проверяет UAT suppression, одноадресное
+  уведомление и отсутствие пользователя; admin/invoice suite: 40 tests,
+  148 assertions, 1 ожидаемый skip; Blade cache собран;
 - 2026-08-28: выполнено точное сравнение PDF заказа 18451 из Voyager и
   Filament; данные совпадают, но dompdf 3.1.6 иначе обработал невалидный
   `align` в шапке и `border` на строках таблицы legacy-шаблона, созданного для

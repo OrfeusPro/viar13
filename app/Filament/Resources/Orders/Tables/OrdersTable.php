@@ -9,6 +9,7 @@ use App\Http\Controllers\IndexController;
 use App\Services\Admin\UpdateOrderVrNumberService;
 use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\OrderPaymentService;
+use App\Services\Admin\OrderRecipientEmailService;
 use App\Services\Admin\OrderUserService;
 use App\Services\Admin\OrderVenipakLabelService;
 use App\Services\Payment\OrderPaymentRequestService;
@@ -218,31 +219,9 @@ class OrdersTable
                     ->label('Страна')
                     ->badge()
                     ->visible(false),
-                TextColumn::make('recipient')
+                ViewColumn::make('recipient_controls')
                     ->label('Получатель')
-                    ->state(function ($record): string {
-                        $delivery = json_decode((string) $record->delivery, true) ?: [];
-                        $name = trim(($delivery['first_name'] ?? '').' '.($delivery['last_name'] ?? ''));
-                        $phone = $delivery['phone'] ?? $record->user?->phone;
-                        $method = match ($delivery['sposob'] ?? null) {
-                            'to_the_door' => 'До двери',
-                            'pickup_at_viar_workshop' => 'Самовывоз Viar',
-                            'pickup' => 'Самовывоз',
-                            'parcel_terminal', 'post_machine' => 'Постамат',
-                            default => $delivery['sposob'] ?? null,
-                        };
-
-                        return collect([
-                            $name,
-                            $phone,
-                            trim(implode(', ', array_filter([$delivery['country'] ?? null, $delivery['city'] ?? null]))),
-                            $delivery['address'] ?? null,
-                            $delivery['postal_index'] ?? null,
-                            $method,
-                            filled($delivery['when_send'] ?? null) ? 'Доставить: '.$delivery['when_send'] : null,
-                        ])->filter()->implode("\n") ?: '—';
-                    })
-                    ->wrap(),
+                    ->view('filament.tables.columns.order-recipient'),
                 ViewColumn::make('product_controls')
                     ->label('Товар')
                     ->view('filament.tables.columns.order-product'),
@@ -867,6 +846,34 @@ class OrdersTable
                         app(OrderUserService::class)->updateClientStatus($record, $data['client_status']);
                         $record->unsetRelation('user');
                         Notification::make()->success()->title('Статус клиента обновлён')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('composeRecipientEmail')
+                    ->label('Написать email')
+                    ->modalHeading(fn ($record): string => 'Email пользователю заказа №'.$record->id)
+                    ->modalDescription(fn ($record): string => (string) ($record->user?->email ?: 'Email пользователя отсутствует'))
+                    ->modalSubmitActionLabel('Отправить')
+                    ->schema([
+                        TextInput::make('subject')->label('Тема')->required()->maxLength(255),
+                        TextInput::make('greetings')->label('Поздравление')->required()->maxLength(255),
+                        \Filament\Forms\Components\Textarea::make('line')->label('Основной текст')->required()->rows(8)->maxLength(10000),
+                        TextInput::make('salutation')->label('Прощание')->required()->maxLength(255),
+                    ])
+                    ->fillForm([
+                        'subject' => 'Скидки!',
+                        'greetings' => 'Привет от viarcanvas',
+                        'salutation' => 'Спасибо, что пользуетесь нашим ресурсом!',
+                    ])
+                    ->action(function ($record, array $data): void {
+                        $result = app(OrderRecipientEmailService::class)->send($record, $data);
+                        $notification = Notification::make()->success()->title(
+                            $result['suppressed'] ? 'Письмо проверено; внешняя почта отключена' : 'Письмо поставлено в очередь',
+                        );
+                        if ($result['suppressed']) {
+                            $notification->body('Во время UAT письмо клиенту не отправляется.');
+                        }
+                        $notification->send();
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
