@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Http\Controllers\IndexController;
 use App\Services\Admin\UpdateOrderVrNumberService;
 use App\Services\Admin\OrderInvoiceService;
+use App\Services\Admin\OrderPaymentService;
 use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
@@ -645,6 +646,50 @@ class OrdersTable
                         app(OrderPaymentRequestService::class)->createForOrder($record, $data, auth('filament')->user());
                         $record->unsetRelation('order_payment_requests');
                         Notification::make()->success()->title('Заявка на оплату создана')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('updatePaymentStatus')
+                    ->label('Статус оплаты')
+                    ->modalHeading(fn ($record): string => 'Статус оплаты заказа №'.$record->id)
+                    ->modalSubmitActionLabel('Обновить статус')
+                    ->schema([
+                        Select::make('payment_status')
+                            ->label('Статус оплаты')
+                            ->options(self::paymentLabels())
+                            ->required(),
+                    ])
+                    ->fillForm(fn ($record, array $arguments): array => [
+                        'payment_status' => $arguments['payment_status'] ?? $record->payment_status,
+                    ])
+                    ->action(function ($record, array $data): void {
+                        $result = app(OrderPaymentService::class)->updateStatus($record, $data['payment_status']);
+                        $notification = Notification::make()->success()->title('Статус оплаты обновлён');
+                        if ($result['notifications_suppressed']) {
+                            $notification->body('Внешние письма и CRM webhook отключены на период UAT; письмо записано в локальный лог.');
+                        }
+                        $notification->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+                Action::make('updatePrepayment')
+                    ->label('Сумма предоплаты')
+                    ->modalHeading(fn ($record): string => 'Предоплата заказа №'.$record->id)
+                    ->modalSubmitActionLabel('Обновить')
+                    ->schema([
+                        TextInput::make('prepayment_price')
+                            ->label('Сумма предоплаты, EUR')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(999999.99)
+                            ->required(),
+                    ])
+                    ->fillForm(fn ($record): array => [
+                        'prepayment_price' => number_format((float) $record->prepayment_price, 2, '.', ''),
+                    ])
+                    ->action(function ($record, array $data): void {
+                        app(OrderPaymentService::class)->updatePrepayment($record, $data['prepayment_price']);
+                        Notification::make()->success()->title('Сумма предоплаты обновлена')->send();
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
