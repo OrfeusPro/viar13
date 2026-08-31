@@ -934,6 +934,8 @@ class OrdersTable
                     ->extraAttributes(['class' => 'hidden']),
                 OrderSaChatActions::history(),
                 OrderSaChatActions::read(),
+                OrderSaChatActions::reply(),
+                OrderSaChatActions::bot(),
                 OrderPainterChatActions::history(),
                 OrderPainterChatActions::reply(),
                 OrderPainterChatActions::read(),

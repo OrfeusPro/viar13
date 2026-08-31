@@ -1,6 +1,8 @@
 <?php
 
 return [
+    // Explicit opt-in only after SA UAT. Suppressed commands never reach Synvolve.
+    'sa_commands_enabled' => (bool) env('ADMIN_SA_COMMANDS_ENABLED', false),
     // Legacy order artwork is served from production, without local copies.
     'order_media_base_url' => env('ADMIN_ORDER_MEDIA_BASE_URL', 'https://viarcanvas.com'),
 

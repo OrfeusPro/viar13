@@ -3,7 +3,9 @@
     $groups = $record->saMessages->groupBy('conversation_id');
     $conversations = $record->saConversations->keyBy('conversation_id');
     $ids = $groups->keys()->merge($conversations->keys())->unique();
-    $statuses = ['sent' => 'Отправлено', 'delivered' => 'Доставлено', 'read' => 'Прочитано', 'failed' => 'Ошибка', 'received' => 'Получено'];
+    $statuses = ['sent' => 'Отправлено', 'delivered' => 'Доставлено', 'read' => 'Прочитано', 'failed' => 'Ошибка', 'received' => 'Получено',
+        'pending' => 'Передаётся интеграции', 'queued' => 'Принято интеграцией, доставка не подтверждена',
+        'uat_suppressed' => 'Тест UAT — не отправлено', 'delivery_unknown' => 'Результат отправки неизвестен'];
 @endphp
 <div style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
     @forelse($ids as $conversationId)
@@ -27,6 +29,12 @@
                     <div style="font-size: 12px; color: #64748b;">Прочитан менеджером</div>
                 @else
                     <div style="font-size: 12px; color: #b45309;">Нет подтверждённой привязки диалога к этому заказу. История сохранена.</div>
+                @endif
+                @if($conversation && $canEdit)
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                        <x-filament::button size="sm" x-on:click="$wire.mountTableAction('sendSaMessage', '{{ $record->getKey() }}', { conversation_id: {{ (int) $conversation->id }} })">Ответить в WhatsApp</x-filament::button>
+                        <x-filament::button size="sm" color="gray" x-on:click="$wire.mountTableAction('controlSaBot', '{{ $record->getKey() }}', { conversation_id: {{ (int) $conversation->id }} })">Управление ботом</x-filament::button>
+                    </div>
                 @endif
             </div>
             @forelse($messages as $message)
@@ -69,5 +77,11 @@
     @empty
         <p>Нет истории сообщений WhatsApp.</p>
     @endforelse
-    <p style="font-size: 12px; color: #64748b;">Прочтение менеджером не меняет статусы доставки WhatsApp. Отправка и управление ботом будут подключены следующим подблоком.</p>
+    @if(isset($commands) && $commands->isNotEmpty())
+        <h3>Последние команды SA</h3>
+        @foreach($commands as $command)
+            <p style="font-size: 12px; overflow-wrap: anywhere;">{{ $command->created_at }} · {{ $command->event_type }} · {{ $command->status }} · {{ $command->event_id }}</p>
+        @endforeach
+    @endif
+    <p style="font-size: 12px; color: #64748b;">Прочтение менеджером не меняет статусы доставки WhatsApp. Команды UAT не отправляются; повтор той же команды не создаёт повторную отправку.</p>
 </div>

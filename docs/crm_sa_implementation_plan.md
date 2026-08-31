@@ -2,6 +2,49 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — WhatsApp/SA: отправка и управление ботом (2026-08-31)
+
+- Реализованы Filament reply, pause/resume/handoff и handoff после ответа.
+  Мутации требуют `edit_orders`, защищённый токен содержит автора, order_id,
+  conversation row/id, телефон, исходный режим, UUID и срок действия.
+  Несовпадение владельца возвращает 403; устаревшая форма/невалидные поля —
+  validation error без частичных записей. Новых HTTP API нет; X-Api-Key
+  существующих входящих API не менялся, panel actions используют auth/CSRF.
+- `sa_events` — журнал команды и idempotency: scoped dedupe_key + event_id,
+  fingerprint action/text/handoff. Повтор возвращает сохранённый статус без
+  повторного внешнего вызова, изменённый payload с тем же токеном отклоняется.
+  Новых таблиц/миграций нет. Незавершённый dispatching блокирует следующую
+  команду диалога до выяснения результата; automatic retry отсутствует.
+- Внешний transport сохраняет Synvolve payload manager_message / bot_status_changed,
+  но берёт телефон из выбранного связанного WhatsApp-диалога (не из доставки).
+  Контекст: order_id/lead_id, conversation_id, manager_id, event_id, message_id,
+  idempotency_key; добавлен HTTP Idempotency-Key. Только HTTPS с проверкой TLS.
+  Логи содержат ID/HTTP status/type ошибки без текста, телефона, токенов и URL.
+- Статусы новых сообщений: pending → queued при 2xx или delivery_unknown при
+  неподтверждённом результате. 2xx — приём интеграцией, не доставка WhatsApp.
+  Уже полученные callback statuses не понижаются. Принятый текст зеркалируется
+  в order_user_comments один раз с legacy read flags. Bot mode меняется после
+  принятой команды в conversation и основном order mirror, не затирая
+  конкурирующую смену состояния. Ошибка Handoff после принятого текста — partial.
+- UAT: `ADMIN_SA_COMMANDS_ENABLED=false` по умолчанию. Статус uat_suppressed,
+  без transport, client mirror и смены bot mode. Дополнительно prefix
+  `ADM-FIL-UAT-` жёстко блокирует dispatch даже при включённом флаге.
+- Проверки: 20 новых SQLite/Livewire/HTTP-fake тестов / 161 assertions;
+  admin/invoice/API regression — 188 passed / 870 assertions / 1 прежний skip.
+  Истёкшая форма показывает видимое предупреждение без записей/dispatch.
+  Targeted Pint и Blade view:cache прошли.
+- Browser UAT завершён только на указанном пользователем заказе 18451,
+  в новом тестовом диалоге ADM-FIL-UAT-18451 (row 39), не на реальных диалогах:
+  ответ с Handoff (message 140/event 147) и Resume (event 148) uat_suppressed.
+  История и журнал обновляются; bot mode остаётся paused, unread 0,
+  client-chat count 0, hash order row не изменился. Тестовые записи оставлены.
+  Runtime external flag false; никаких WhatsApp/webhook/email отправок.
+- Открыто до production enable: подтвердить сквозной delivery callback и
+  идемпотентность на стороне Synvolve; сверка uncertain/dispatching вручную.
+  Ранее найденная неатомарность legacy ingress/read остаётся отдельным TODO
+  до итоговой приёмки. Статические mappings и публичный frontend не менялись.
+  Следующая задача: ADM-FIL-003 — Приёмка чатов и синхронизация прочтения.
+
 ## ADM-FIL-003 — WhatsApp/SA-чат: история и прочтение (2026-08-31)
 
 - Реализовано (полный browser UAT остаётся IN PROGRESS): Filament история по диалогам, sender
