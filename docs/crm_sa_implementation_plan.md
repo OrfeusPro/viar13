@@ -2,6 +2,26 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Список и фильтры заказов: клиентский чат (2026-08-31)
+
+- Перенесены общий ответ и ответы по существующим изображениям в Filament.
+  Источник остаётся `order_user_comments`, `lead_id = orders.id`; схема БД,
+  публичные frontend routes и API-контракты не менялись.
+- После сохранения сообщения используется существующий
+  `SynvolveWebhookService::notifyManagerMessageForOrder` с `message_id` и
+  trigger `filament_admin_order_chat`. На период UAT email и webhook выключены
+  `ADMIN_CLIENT_CHAT_NOTIFICATIONS_ENABLED=false`; запись в реальный клиентский
+  чат для тестов не выполняется. Ошибка уведомления не теряет сохранённый текст.
+- Мутации требуют `edit_orders`; read state меняется явно и только в пределах
+  заказа. Проверено 22 SQLite/service/Livewire тестами (101 assertions), внешние
+  операции fake/mock. Новых интеграционных endpoint'ов нет.
+- Статические CRM/SA mappings не изменялись; SA modal пока read-only.
+  Дополнительный API regression run двух legacy-файлов
+  `CrmWebhooksSendMessageTest`/`SaWebhooksMessagesTest` вернул `No tests found`:
+  требуется заменить старые `@test` на PHPUnit 12 attributes до SA-подблока.
+  Следующий CRM-шаг: перенести SA send/read/bot-control с отдельной авторизацией
+  и изоляцией API; полный inbox остаётся задачей ADM-FIL-020.
+
 > Примечание от 2026-08-13: записи ниже о старом отдельном Laravel 13 target
 > сохранены как история. Актуальный план frontend-first миграции текущего
 > репозитория находится в корневом `MIGRATION_PROGRESS.md`.

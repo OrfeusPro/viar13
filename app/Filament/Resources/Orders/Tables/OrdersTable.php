@@ -905,16 +905,9 @@ class OrdersTable
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
-                Action::make('viewClientChat')
-                    ->label('Чат с клиентом')
-                    ->modalHeading(fn ($record): string => 'Чат с клиентом · заказ №'.$record->id)
-                    ->modalWidth('4xl')
-                    ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'client']))
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Закрыть')
-                    ->action(fn (): null => null)
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
-                    ->extraAttributes(['class' => 'hidden']),
+                OrderClientChatActions::history(),
+                OrderClientChatActions::reply(),
+                OrderClientChatActions::read(),
                 Action::make('manageAdminChat')
                     ->label('Чат для администраторов')
                     ->modalHeading(fn ($record): string => 'Внутренний чат · заказ №'.$record->id)

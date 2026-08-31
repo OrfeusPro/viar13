@@ -46,5 +46,10 @@ class OrderPainterImages extends Model
         return $this->hasMany(OrderUserComments::class, "order_painter_image_id");
     }
 
+    public function statusDefinition()
+    {
+        return $this->belongsTo(APainterImagesStatus::class, 'status');
+    }
+
     
 }

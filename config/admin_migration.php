@@ -13,4 +13,7 @@ return [
 
     // Keep review-request emails disabled until the Filament product column passes UAT.
     'review_request_enabled' => (bool) env('ADMIN_REVIEW_REQUEST_ENABLED', false),
+
+    // Keep client-chat email and CRM notifications disabled until chat UAT is complete.
+    'client_chat_notifications_enabled' => (bool) env('ADMIN_CLIENT_CHAT_NOTIFICATIONS_ENABLED', false),
 ];

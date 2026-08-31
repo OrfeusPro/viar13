@@ -31,4 +31,9 @@ class OrderUserComments extends Model
 {
     public $timestamps = true;
     protected $table = 'order_user_comments';
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
