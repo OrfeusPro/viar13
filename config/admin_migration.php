@@ -19,4 +19,7 @@ return [
 
     // Keep client-chat email and CRM notifications disabled until chat UAT is complete.
     'client_chat_notifications_enabled' => (bool) env('ADMIN_CLIENT_CHAT_NOTIFICATIONS_ENABLED', false),
+
+    // Keep painter-chat email and CRM notifications disabled during Filament UAT.
+    'painter_chat_notifications_enabled' => (bool) env('ADMIN_PAINTER_CHAT_NOTIFICATIONS_ENABLED', false),
 ];

@@ -65,6 +65,8 @@ class OrdersTable
                         ->where('is_admin', 0)->where('admin_is_read', 0),
                     'adminChats as admin_messages_count',
                     'orders_chats as painter_messages_count',
+                    'orders_chats as unread_painter_messages_count' => fn ($query) => $query
+                        ->where('is_admin', 0)->where('admin_is_read', 0),
                     'saMessages as unread_sa_messages_count' => fn ($query) => $query
                         ->where('status', '!=', 'read'),
                 ]))
@@ -939,16 +941,9 @@ class OrdersTable
                     ->action(fn (): null => null)
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
-                Action::make('viewPainterChat')
-                    ->label('Чат с художником')
-                    ->modalHeading(fn ($record): string => 'Чат с художником · заказ №'.$record->id)
-                    ->modalWidth('4xl')
-                    ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'painter']))
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Закрыть')
-                    ->action(fn (): null => null)
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
-                    ->extraAttributes(['class' => 'hidden']),
+                OrderPainterChatActions::history(),
+                OrderPainterChatActions::reply(),
+                OrderPainterChatActions::read(),
                 Action::make('editInvoiceFirm')
                     ->label('Данные фирмы')
                     ->modalHeading(fn ($record): string => 'Данные фирмы для счёта №'.$record->id)

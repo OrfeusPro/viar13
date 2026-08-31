@@ -1,5 +1,30 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Чат с художником: история, ответы и прочтение (2026-08-31)
+
+- DONE (подблок): сверены `admin/order_chat`, AJAX send/read и реальная схема
+  `orders_chats`. Общий ответ перенесён в OrderPainterChatService и отдельные
+  Filament actions. История сохраняет авторов, даты и flags набросок/картина;
+  unread подсвечен в истории и на кнопке колонки. Opening не меняет прочтение.
+- Запись требует `edit_orders`, просмотр — `read_orders`; read относится только
+  к выбранному заказу, идемпотентен и не меняет painter `is_read`/timestamps.
+  Нет новых таблиц, image FK или изменений frontend. Legacy разрешает общий
+  ответ без назначения и на закрытом заказе — это поведение сохранено.
+- Email использует текущее назначение, locale/перевод `admin_user_chat_title`,
+  текст экранируется. Mail/webhook после сохранения, ошибка не теряет текст.
+  `ADMIN_PAINTER_CHAT_NOTIFICATIONS_ENABLED=false` проверен в local runtime.
+- 15 новых SQLite/service/Livewire тестов / 88 assertions; итоговый regression:
+  `tests/Feature/Admin`, `tests/Feature/Invoice`, оба unit Invoice набора —
+  **133 passed / 461 assertions / 1 skipped** (прежний disabled legacy route).
+  Pint целевых файлов, `view:cache` и `git diff --check` прошли.
+- Chrome: заказ 18380 — empty history, nested reply/open/cancel, предупреждение
+  UAT; заказ 17946 — сообщение 2845, дата, unread badge и отдельная read-кнопка.
+  После просмотра `is_read=1`, `admin_is_read=0`, updated_at прежний;
+  у 18380 по-прежнему 0 painter messages. Реальных отправок/мутаций не было.
+- Риск: публичный image-specific handler ссылается на отсутствующий image FK;
+  отдельный TODO в плане. Далее — SA чат (пока read-only), восстановление
+  обнаружения legacy API-тестов PHPUnit 12. ADM-FIL-003 остаётся IN PROGRESS.
+
 ## ADM-FIL-000 — Инвентаризация и roadmap (DONE, 2026-08-27)
 
 - frontend принят как завершённый RC и остаётся regression baseline;

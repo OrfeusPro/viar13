@@ -8,6 +8,25 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-003 — Чат с художником: история, ответы и прочтение
+
+- [DONE] Общий ответ и явное прочтение по `admin/order_chat` и
+  `update_order_chat_ajax`; сохранить `orders_chats`, типы старых сообщений,
+  независимые read flags. Добавить unread на кнопку в колонке.
+- Запись с `edit_orders`, просмотр с `read_orders`. Email художнику и Synvolve
+  webhook выключены отдельным UAT-флагом. SQLite fake/mock и browser open/cancel.
+- В реальной `orders_chats` нет `order_painter_image_id`/`user_id`; Voyager
+  composer отправляет только общие ответы. Не менять schema и не выдумывать
+  image threads. [TODO] Отдельно сверить публичный painter image-specific
+  handler, который обращается к отсутствующему image FK.
+- Проверено: 15 новых тестов / 88 assertions; admin + invoice feature/unit
+  regression — 133 passed / 461 assertions / 1 прежний skip. Browser: 18380
+  empty/open/reply/cancel; 17946 existing history/unread, read flags неизменны.
+- Далее: SA чат в этой же колонке, сначала PHPUnit 12 legacy API-тесты.
+  ADM-FIL-003 целиком остаётся IN PROGRESS; внешняя доставка не принималась.
+
+### Основной backlog
+
 - Файлы заказов/картин читаются с production `https://viarcanvas.com`, как в
   Voyager (подтверждено пользователем 2026-08-31). Не создавать локальное зеркало
   файлов и не менять сохранённые DB paths; разрешение URL — в admin-слое.

@@ -2,6 +2,26 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Чат с художником: история, ответы и прочтение (2026-08-31)
+
+- Общий ответ в `orders_chats` перенесён в Filament через транзакционный сервис;
+  `lead_id = orders.id`, таблицы и входящие API не изменены. Мутации требуют
+  `edit_orders`, чтение истории — `read_orders`.
+- После сохранения используется существующий `notifyManagerMessageForOrder`:
+  source `orders_chats`, trigger `filament_admin_orders_chat`, message_id,
+  image_type null. Сохранён legacy-маршрут webhook по заказу, без изменения
+  выбора телефона внутри сервиса. Email адресуется текущему назначенному
+  художнику, а не клиенту. Оба канала выключены по умолчанию через
+  `ADMIN_PAINTER_CHAT_NOTIFICATIONS_ENABLED=false`.
+- 15 SQLite/service/Livewire проверок, 88 assertions: mock внешних сервисов,
+  права, targeted/idempotent read, сохранение при ошибках mail/webhook,
+  перевод темы письма и актуальное назначение. Реальных сообщений не отправлено.
+- Статические mappings, SA bot control и API не менялись. В реальной таблице
+  нет image FK; исторические flags показываются, общие ответы не создают
+  вымышленных привязок. Публичный image-specific handler вынесен в отдельный
+  TODO-аудит. Далее — вернуть legacy SA API-тесты в PHPUnit 12 и сверить
+  действия SA-чата; до этого SA modal остаётся read-only.
+
 ## ADM-FIL-003 — Список и фильтры заказов: production media (2026-08-31)
 
 - По подтверждённому правилу пользователя legacy-файлы картин/эскизов в админке

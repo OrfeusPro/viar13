@@ -72,5 +72,6 @@
 
     <button type="button" x-on:click.stop="$wire.mountTableAction('viewPainterChat', '{{ $record->getKey() }}')" style="display: block; width: 122px; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">
         Показать чат<br>с художником @if($record->painter_messages_count)<strong>({{ $record->painter_messages_count }})</strong>@endif
+        @if($record->unread_painter_messages_count)<span style="display: inline-block; margin-left: 3px; padding: 1px 5px; border-radius: 9px; background: #fff; color: #dc2626;">{{ $record->unread_painter_messages_count }}</span>@endif
     </button>
 </div>
