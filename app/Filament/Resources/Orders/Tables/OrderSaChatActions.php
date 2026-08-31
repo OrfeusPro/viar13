@@ -21,10 +21,11 @@ class OrderSaChatActions
             ->label('WhatsApp чат (SA)')
             ->modalHeading(fn ($record): string => 'WhatsApp SA · заказ №'.$record->id)
             ->modalWidth('4xl')
+            ->extraModalWindowAttributes(['class' => 'adm-chat-modal adm-chat-modal--wide'])
             ->registerModalActions([self::read(), self::reply(), self::bot()])
             ->modalContent(fn (Orders $record) => view('filament.tables.modals.order-sa-chat-panel', ['record' => $record]))
             ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Закрыть')
+            ->modalCancelAction(false)
             ->action(fn (): null => null)
             ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
             ->extraAttributes(['class' => 'hidden']);

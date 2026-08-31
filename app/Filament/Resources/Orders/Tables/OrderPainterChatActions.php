@@ -16,6 +16,7 @@ class OrderPainterChatActions
             ->label('Чат с художником')
             ->modalHeading(fn ($record): string => 'Чат с художником · заказ №'.$record->id)
             ->modalWidth('4xl')
+            ->extraModalWindowAttributes(['class' => 'adm-chat-modal adm-chat-modal--painter'])
             ->registerModalActions([self::reply(), self::read()])
             ->modalContent(function (Orders $record) {
                 $record->load(['orders_chats' => fn ($query) => $query->oldest('created_at')->orderBy('id')]);
@@ -23,7 +24,7 @@ class OrderPainterChatActions
                 return view('filament.tables.modals.order-painter-chat', ['record' => $record]);
             })
             ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Закрыть')
+            ->modalCancelAction(false)
             ->action(fn (): null => null)
             ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
             ->extraAttributes(['class' => 'hidden']);

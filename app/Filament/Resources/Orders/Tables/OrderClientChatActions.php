@@ -17,6 +17,7 @@ class OrderClientChatActions
             ->label('Чат с клиентом')
             ->modalHeading(fn ($record): string => 'Чат с клиентом · заказ №'.$record->id)
             ->modalWidth('4xl')
+            ->extraModalWindowAttributes(['class' => 'adm-chat-modal adm-chat-modal--wide'])
             ->registerModalActions([self::reply(), self::read()])
             ->modalContent(function (Orders $record) {
                 $record->load(['order_user_comments' => fn ($query) => $query->oldest('created_at')->orderBy('id'),
@@ -25,7 +26,7 @@ class OrderClientChatActions
                 return view('filament.tables.modals.order-client-chat', ['record' => $record]);
             })
             ->modalSubmitAction(false)
-            ->modalCancelActionLabel('Закрыть')
+            ->modalCancelAction(false)
             ->action(fn (): null => null)
             ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
             ->extraAttributes(['class' => 'hidden']);

@@ -8,7 +8,7 @@
     };
 @endphp
 
-<div style="max-height: 55vh; overflow-y: auto; padding-right: 6px;">
+<div class="adm-chat-compact-history">
     @if($stream === 'sa')
         <div style="margin-bottom: 12px; padding: 9px 12px; border-radius: 6px; background: #f3f4f6;">
             Режим бота SA: <strong>{{ strtoupper((string) ($record->sa_bot_mode ?: 'n/a')) }}</strong>
@@ -33,12 +33,12 @@
             $text = $stream === 'sa' ? $message->text : $message->comment;
             $kind = ! empty($message->is_img_sketch) ? 'набросок' : (! empty($message->is_img_painter) ? 'картина' : null);
         @endphp
-        <div style="margin-bottom: 10px; padding: 10px 12px; border: 1px solid #dbe2ea; border-radius: 7px; background: {{ ($stream !== 'sa' && ! empty($message->is_admin)) ? '#eff6ff' : '#fff' }};">
-            <div style="display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; color: #596579; font-size: 12px;">
-                <strong>{{ $sender }}@if($kind) ({{ $kind }})@endif</strong>
-                <span>{{ optional($message->sent_at ?? $message->created_at)->format('d.m.Y H:i') }}</span>
+        <div class="adm-chat-message">
+            <div class="adm-chat-message-head">
+                <strong>{{ $sender }}@if($stream === 'admin' && $message->user?->email && $sender !== $message->user->email) ({{ $message->user->email }})@endif @if($kind) ({{ $kind }})@endif</strong>
+                <span class="adm-chat-message-date">{{ optional($message->sent_at ?? $message->created_at)->format($stream === 'admin' ? 'Y/m/d' : 'd.m.Y H:i') }}</span>
             </div>
-            <div style="white-space: pre-wrap; overflow-wrap: anywhere; color: #273142;">{{ $text }}</div>
+            <div class="adm-chat-message-text">{{ $text }}</div>
             @if($stream === 'sa' && filled($message->status))
                 <div style="margin-top: 5px; color: #64748b; font-size: 11px;">Статус: {{ $message->status }}</div>
             @endif
@@ -51,7 +51,7 @@
             @endif
         </div>
     @empty
-        <div style="padding: 18px; text-align: center; color: #6b7280;">Сообщений нет</div>
+        <div style="padding: 8px 0; color: #6b7280;">Сообщений нет</div>
     @endforelse
 
     @if($stream !== 'admin')

@@ -251,6 +251,11 @@ class OrderPainterChatTest extends TestCase
         foreach (['Художник (набросок)', 'Художник (картина)', '&lt;script&gt;unsafe&lt;/script&gt;', 'Не прочитано администратором'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
+        $this->assertStringContainsString('aria-label="Прочитать сообщение художника №'.$message->id.'"', $html);
+        $this->assertStringContainsString('x-on:keydown.enter.prevent=', $html);
+        $this->assertStringContainsString('x-on:keydown.space.prevent=', $html);
+        $this->assertStringContainsString('Тип переписки', $html);
+        $this->assertStringContainsString('value="general"', $html);
         $this->assertStringNotContainsString('<script>unsafe</script>', $html);
         $this->assertSame(0, $message->fresh()->admin_is_read);
         $table->call('mountTableAction', 'sendPainterChatMessage', (string) $this->order->id)
@@ -271,6 +276,7 @@ class OrderPainterChatTest extends TestCase
         $html = $table->instance()->getMountedAction()->getModalContent()->render();
         $this->assertStringNotContainsString('Ответить художнику', $html);
         $this->assertStringNotContainsString('Отметить прочитанным', $html);
+        $this->assertStringNotContainsString('aria-label="Прочитать сообщение художника №', $html);
         Livewire::test(PainterChatTestTable::class)
             ->assertActionHidden(TestAction::make('sendPainterChatMessage')->table($this->order))
             ->assertActionHidden(TestAction::make('readPainterChatMessage')->table($this->order))

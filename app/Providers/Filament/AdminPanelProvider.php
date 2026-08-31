@@ -28,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('filament')
             ->brandName('Viar Admin')
+            ->renderHook('panels::head.end', fn () => view('filament.components.order-chat-styles'))
             ->maxContentWidth(Width::Full)
             ->sidebarCollapsibleOnDesktop()
             ->authGuard('filament')

@@ -9,12 +9,19 @@
         };
         $unread = ! $message->is_admin && ! $message->admin_is_read;
     @endphp
-    <article data-client-message-id="{{ $message->id }}" style="margin-bottom: 10px; padding: 10px 12px; border: 1px solid {{ $unread ? '#f59e0b' : '#dbe2ea' }}; border-radius: 7px;">
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-bottom: 5px; font-size: 12px;">
+    <article data-client-message-id="{{ $message->id }}" class="adm-chat-message {{ $unread ? 'is-unread' : '' }}">
+        <div class="adm-chat-message-head">
             <strong>{{ $sender }}</strong>
-            <span>{{ optional($message->created_at)->format('d.m.Y H:i') }}</span>
+            <span class="adm-chat-message-date">{{ optional($message->created_at)->format('Y-m-d H:i:s') }}</span>
         </div>
-        <div style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ \App\Support\Admin\ChatMessageText::render($message->comment) }}</div>
+        <div class="adm-chat-message-text"
+            @if($unread && $canEdit)
+                role="button" tabindex="0" aria-label="Прочитать сообщение №{{ $message->id }}"
+                x-on:click="if (!$event.target.closest('a, button')) $wire.mountTableAction('readClientChatMessage', '{{ $record->getKey() }}', { message_id: {{ (int) $message->id }} })"
+                x-on:keydown.enter.self.prevent="$wire.mountTableAction('readClientChatMessage', '{{ $record->getKey() }}', { message_id: {{ (int) $message->id }} })"
+                x-on:keydown.space.self.prevent="$wire.mountTableAction('readClientChatMessage', '{{ $record->getKey() }}', { message_id: {{ (int) $message->id }} })"
+            @endif
+        >{{ \App\Support\Admin\ChatMessageText::render($message->comment) }}</div>
         @if($message->is_admin)
             <div style="margin-top: 5px; font-size: 12px;">{{ $message->is_read ? 'Прочитано клиентом' : 'Ещё не прочитано клиентом' }}</div>
         @elseif($unread)

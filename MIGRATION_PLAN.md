@@ -8,6 +8,26 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-003 — Чаты: внешний вид и поведение попапов
+
+- [DONE: UI-подблок, 2026-08-31; полная parity чатов не принята] По запросу пользователя приблизить текущие Filament-попапы
+  к Voyager: client/SA 1100px, admin/painter 600px, компактный shell, история
+  и форма в одном контейнере, SA bot toolbar сверху, строка ответа снизу.
+- Сохранить accessible close/focus, permissions, UAT, read snapshot, idempotency;
+  не переносить legacy AJAX/GET mutations и raw HTML. Внутренний автор: имя+email.
+- Восстановить явное прочтение кликом/клавиатурой по непрочитанному тексту
+  client/painter, сохранив отдельную кнопку. Общий режим художника остаётся
+  единственным (как закомментированные image options в оригинале).
+- Проверки: screenshots всех 4 окон, SQLite/Livewire, browser только №18451,
+  без записей/отправок. Полная image/read/SA mode-after-send parity отдельно.
+- Evidence: 214 passed / 1100 assertions / 1 прежний skip (215 total).
+  Парные screenshots Voyager/Filament в `storage/app/chat-popup-20260831`;
+  SA draft сохраняется при polling, пустой painter send отклонён, DB hash/counts
+  прежние. Скриншоты не включаются в git: содержат данные общей локальной БД.
+- Следующее: ADM-FIL-003 — Чаты: приёмка прочтения и авторов. Populated image
+  threads, длинная история, mobile и ingress/read race остаются в приёмке;
+  отправка наружу не проверялась. К другим колонкам/модулям не переходить.
+
 ### ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки
 
 - [DONE: реализация, 2026-08-31; полная parity не принята] Обновлять открытый SA-чат каждые 5 секунд, как legacy,

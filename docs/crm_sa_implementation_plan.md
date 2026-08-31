@@ -2,6 +2,22 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Чаты: внешний вид и поведение попапов
+
+- DONE UI-подблок (2026-08-31), не полная parity: Voyager-like shell и layout
+  для четырёх Orders chats; SA toolbar сверху, поле ответа снизу; commands log
+  в details. Существующий защищённый service flow сохраняется.
+- API, lead_id, schema, mode-after-send и статические mappings не меняются.
+- Client/painter read по клику/клавиатуре требует прежних permissions; внутренний
+  автор показывает имя+email. XSS escaping и UAT guards сохранены.
+- Проверки: 214 passed / 1100 assertions / 1 legacy skip (215 total). Парные
+  Chrome screenshots всех окон: `storage/app/chat-popup-20260831` (вне git).
+  №18451: draft SA пережил polling, затем очищен; пустой painter send отклонён.
+  Hash/counts и два SA events прежние, внешние отправки отключены. Реальные
+  send/read/bot не вызывались. Фактическая доставка этим этапом не принимается.
+- Далее — ADM-FIL-003 — Чаты: приёмка прочтения и авторов; ingress/read race,
+  populated image threads, длинная история/mobile и финальная parity ещё открыты.
+
 ## ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки
 
 - DONE реализация (2026-08-31): отдельное обновление открытой истории SA каждые

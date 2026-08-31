@@ -916,11 +916,14 @@ class OrdersTable
                     ->label('Чат для администраторов')
                     ->modalHeading(fn ($record): string => 'Внутренний чат · заказ №'.$record->id)
                     ->modalWidth('4xl')
+                    ->extraModalWindowAttributes(['class' => 'adm-chat-modal adm-chat-modal--admin'])
                     ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'admin']))
-                    ->modalSubmitActionLabel('Добавить сообщение')
+                    ->modalSubmitActionLabel('Отправить')
+                    ->modalCancelAction(false)
                     ->schema([
                         Textarea::make('comment')
                             ->label('Новое внутреннее сообщение')
+                            ->placeholder('Комментарий')
                             ->required()
                             ->rows(4)
                             ->maxLength(10000),

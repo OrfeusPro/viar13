@@ -2,15 +2,22 @@
     $canEdit = auth('filament')->user()?->can('update', $record) ?? false;
 @endphp
 <div x-data x-on:order-chat-updated.window="if ($event.detail.orderId === {{ (int) $record->id }}) $wire.$refresh()">
-    <div style="max-height: 40vh; overflow-y: auto; padding-right: 8px;">
+    <div class="adm-chat-compact-history">
         @forelse($record->orders_chats as $message)
             @php($unread = ! $message->is_admin && ! $message->admin_is_read)
-            <article style="margin-bottom: 10px; padding: 10px 12px; border: 1px solid {{ $unread ? '#f59e0b' : '#dbe2ea' }}; border-radius: 6px;">
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
+            <article class="adm-chat-message {{ $unread ? 'is-unread' : '' }}">
+                <div class="adm-chat-message-head">
                     <strong>{{ $message->is_admin ? 'Администратор' : 'Художник' }}@if($message->is_img_sketch) (набросок)@elseif($message->is_img_painter) (картина)@endif</strong>
                     <span style="font-size: 12px; color: #64748b;">{{ optional($message->created_at)->format('Y-m-d H:i:s') }}</span>
                 </div>
-                <div style="white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0;">{{ $message->comment }}</div>
+                <div class="adm-chat-message-text"
+                    @if($unread && $canEdit)
+                        role="button" tabindex="0" aria-label="Прочитать сообщение художника №{{ $message->id }}"
+                        x-on:click="$wire.mountTableAction('readPainterChatMessage', '{{ $record->getKey() }}', { message_id: {{ (int) $message->id }} })"
+                        x-on:keydown.enter.prevent="$wire.mountTableAction('readPainterChatMessage', '{{ $record->getKey() }}', { message_id: {{ (int) $message->id }} })"
+                        x-on:keydown.space.prevent="$wire.mountTableAction('readPainterChatMessage', '{{ $record->getKey() }}', { message_id: {{ (int) $message->id }} })"
+                    @endif
+                >{{ $message->comment }}</div>
                 @if($unread)
                     <span style="font-size: 12px; color: #b45309;">Не прочитано администратором</span>
                     @if($canEdit)

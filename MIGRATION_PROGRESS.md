@@ -1,5 +1,45 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Чаты: внешний вид и поведение попапов
+
+- DONE UI-подблок (2026-08-31), не полная приёмка чатов. Сверены четыре текущих
+  Voyager-попапа с Filament в Chrome на №18451, пары screenshots просмотрены.
+- Новый scoped stylesheet `public/css/filament-order-chats.css`, подключённый
+  через panel head hook: client/SA 1100px, admin/painter 600px, центрирование,
+  затемнение, компактные отступы. Клиентский чат — округлая рамка и горизонтальный
+  ответ с оранжевой кнопкой; admin/painter — textarea 100px и голубая кнопка.
+- SA: mode и Resume/Pause/Handoff сверху, история/ответ в одном визуальном блоке,
+  Handoff checkbox отдельной читаемой строкой, журнал команд в details.
+  Сохранены номера заказов, доступные имена полей, focus trap/outline, UAT help,
+  статусы доставки, permissions и существующие сервисы отправки/прочтения.
+- Client/painter: клик, Enter/Space по непрочитанному тексту вызывают прежнее
+  защищённое read-action; ссылки клиента не запускают прочтение. Отдельная кнопка
+  остаётся. Read-only не получает shortcut/composer. Просто открытие не читает.
+- Внутренний автор: имя + email, дата Y/m/d как legacy, текст экранирован,
+  удалённый автор имеет fallback. Общий selector художника отражает единственный
+  доступный вариант оригинала, не добавляет несуществующие image reply actions.
+- Regression: Admin + Invoice + invoice units + ChatMessageText + CRM send + SA
+  ingress: **214 passed / 1100 assertions / 1 прежний skip**, 215 total, exit 0.
+  Targeted Pint, view:cache и git diff --check пройдены. После финальной правки
+  панели кнопок admin: 3 targeted tests / 11 assertions и повторное открытие UI.
+  Добавлены проверки markup shortcuts/reader и автора/escaping/fallback.
+  На промежуточном прогоне исправлены устаревшее ожидание заголовка и ошибочное
+  место нового test assertion; это не ошибки отправки приложения.
+- Chrome: все четыре окна открываются/закрываются; SA draft сохранился между
+  тиками 16:47:22 → 16:47:47 и очищен без send; пустой painter send показал
+  «Обязательное поле Сообщение» без записи. Bot/read/send реальных текстов не
+  выполнялись. API/schema/frontend/пути prod-файлов не менялись.
+- Evidence: `storage/app/chat-popup-20260831`: `01-old-sa.jpg`, `02-old-client.jpg`,
+  `03-old-admin.jpg`, `04-old-painter.jpg`, `05-new-client.jpg`, `06-new-sa.jpg`,
+  `07-new-painter.jpg`, `08-new-admin.jpg`. `01-old-client.jpg` — отвергнутый
+  неверно именованный ранний снимок SA, не evidence. Снимки локальные, вне git.
+- Order18451 SHA256 `5375ac19709396c850912d986878a6042c64fc137aad9d7462dcca3df50ca70b`,
+  counts client/admin/painter/images/SA = 0/0/0/0/1, SA events 2, все три флага
+  внешних отправок false. Совпадают с baseline до работы.
+- Осталось: populated image threads, mobile/длинные истории, race ingress/read,
+  окончательная функциональная приёмка всех чатов. Следующая задача:
+  ADM-FIL-003 — Чаты: приёмка прочтения и авторов. Общая ADM-FIL-003 IN PROGRESS.
+
 ## ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки
 
 - DONE реализация (2026-08-31), не полная parity чатов. Legacy interval 5000ms

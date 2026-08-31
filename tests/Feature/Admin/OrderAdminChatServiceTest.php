@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Models\Orders;
 use App\Models\User;
 use App\Services\Admin\OrderAdminChatService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -55,6 +56,27 @@ class OrderAdminChatServiceTest extends TestCase
         $this->expectException(ValidationException::class);
 
         app(OrderAdminChatService::class)->add(Orders::query()->create(), $this->createUser(), '');
+    }
+
+    public function test_popup_preserves_author_email_date_and_escaped_text(): void
+    {
+        $order = Orders::query()->create();
+        $author = $this->createUser();
+        $message = app(OrderAdminChatService::class)->add($order, $author, '<script>unsafe</script>');
+        $author->forceFill(['first_name' => 'Test', 'last_name' => 'Manager']);
+        $message->setRelation('user', $author);
+        $order->setRelation('adminChats', new Collection([$message]));
+
+        $html = view('filament.tables.modals.order-chat-history', ['record' => $order, 'stream' => 'admin'])->render();
+        $this->assertStringContainsString('Test Manager (admin-chat@example.invalid)', $html);
+        $this->assertStringContainsString($message->created_at->format('Y/m/d'), $html);
+        $this->assertStringContainsString('&lt;script&gt;unsafe&lt;/script&gt;', $html);
+        $this->assertStringNotContainsString('<script>unsafe</script>', $html);
+
+        $message->setRelation('user', null);
+        $html = view('filament.tables.modals.order-chat-history', ['record' => $order, 'stream' => 'admin'])->render();
+        $this->assertStringContainsString('Администратор', $html);
+        $this->assertStringNotContainsString('admin-chat@example.invalid', $html);
     }
 
     private function createUser(): User

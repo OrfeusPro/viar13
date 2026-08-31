@@ -306,9 +306,14 @@ class OrderClientChatTest extends TestCase
         $table = Livewire::test(ClientChatTestTable::class)
             ->mountAction(TestAction::make('viewClientChat')->table($this->order));
         $html = $table->instance()->getMountedAction()->getModalContent()->render();
-        $this->assertStringContainsString('Общая переписка', $html);
+        $this->assertStringContainsString('Дополнительные комментарии к заказу', $html);
         $this->assertStringContainsString('Тестовое входящее', $html);
         $this->assertSame(0, $message->fresh()->admin_is_read);
+        $this->assertStringContainsString('aria-label="Прочитать сообщение №'.$message->id.'"', $html);
+        $this->assertStringContainsString('x-on:keydown.enter.self.prevent=', $html);
+        $this->assertStringContainsString('x-on:keydown.space.self.prevent=', $html);
+        $this->assertStringContainsString("closest('a, button')", $html);
+        $this->assertStringContainsString('adm-chat-card', $html);
         $table->call('mountTableAction', 'sendClientChatMessage', (string) $this->order->id)
             ->assertActionDataSet(['thread_type' => 'general'])
             ->fillForm(['comment' => 'Ответ через Livewire'])
@@ -346,6 +351,11 @@ class OrderClientChatTest extends TestCase
     {
         $this->actingAs($this->userWithPermissions(['browse_admin', 'read_orders']), 'filament');
         $message = $this->incoming();
+        $history = Livewire::test(ClientChatTestTable::class)
+            ->mountAction(TestAction::make('viewClientChat')->table($this->order));
+        $html = $history->instance()->getMountedAction()->getModalContent()->render();
+        $this->assertStringNotContainsString('aria-label="Прочитать сообщение №', $html);
+        $this->assertStringNotContainsString('data-chat-composer', $html);
         Livewire::test(ClientChatTestTable::class)
             ->assertActionHidden(TestAction::make('sendClientChatMessage')->table($this->order))
             ->assertActionHidden(TestAction::make('readClientChatMessage')->table($this->order))
