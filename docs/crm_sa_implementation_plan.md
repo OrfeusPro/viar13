@@ -2,6 +2,24 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Сравнение всех чатов с оригиналом (2026-08-31)
+
+- DONE browser audit, НЕ DONE функциональная parity. Только заказ 18451,
+  четыре order chats, open/form/cancel; никаких отправок/read/bot mutations.
+  Матрица и локальные снимки: `docs/crm-sa/10_orders_chat_browser_comparison.md`.
+- Выявлены дополнительные формы вместо inline ответа (client/painter/SA),
+  пустой обязательный выбор изображения, отсутствие SA polling и client linkify,
+  отличия авторов внутреннего чата. Последние три подтверждены кодом,
+  не сквозным populated browser test на пустом тестовом заказе.
+- SA режим Voyager N/A из order mirror против Filament PAUSED из UAT conversation;
+  это подтверждённое отличие источника, не повреждение данных. Без Handoff
+  legacy send задаёт active, новый сохраняет режим: требуется явное согласование.
+- Counts и order hash до/после прежние; нет новых SA events. Код/API/schema,
+  X-Api-Key, статические mappings и данные не менялись. Permissions для всех
+  ролей, вложения, callback и одновременный ingress/read этим аудитом не приняты.
+- Следующее действие — ADM-FIL-003 — Чаты: ответ рядом с историей и доступные
+  команды SA; затем live refresh/read и безопасные populated fixtures.
+
 ## ADM-FIL-003 — WhatsApp/SA: отправка и управление ботом (2026-08-31)
 
 - Реализованы Filament reply, pause/resume/handoff и handoff после ответа.
