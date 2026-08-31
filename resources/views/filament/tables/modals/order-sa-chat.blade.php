@@ -7,13 +7,14 @@
         'pending' => 'Передаётся интеграции', 'queued' => 'Принято интеграцией, доставка не подтверждена',
         'uat_suppressed' => 'Тест UAT — не отправлено', 'delivery_unknown' => 'Результат отправки неизвестен'];
 @endphp
-<div x-data x-on:order-chat-updated.window="if ($event.detail.orderId === {{ (int) $record->id }}) $wire.$refresh()" style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
+<div wire:poll.5s.visible x-data x-on:order-chat-updated.window="if ($event.detail.orderId === {{ (int) $record->id }}) $wire.$refresh()" style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
+    <p style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Автообновление: каждые 5 секунд, пока чат виден. Обновлено: {{ $refreshedAt }}</p>
     @forelse($ids as $conversationId)
         @php
             $conversation = $conversations->get($conversationId);
             $messages = $groups->get($conversationId, collect());
         @endphp
-        <section style="margin-bottom: 18px;">
+        <section wire:key="sa-conversation-{{ $record->id }}-{{ md5((string) $conversationId) }}" style="margin-bottom: 18px;">
             <div style="padding: 10px; margin-bottom: 10px; border: 1px solid #dbe2ea; border-radius: 6px; overflow-wrap: anywhere;">
                 <strong>Диалог: {{ $conversationId ?: 'Без привязки' }}</strong>
                 <div>Режим бота SA: <strong>{{ strtoupper((string) ($conversation?->bot_mode ?: 'n/a')) }}</strong></div>
@@ -23,7 +24,7 @@
                         @php
                             $snapshot = app(\App\Services\Admin\OrderSaChatService::class)->readToken($record, $conversation);
                         @endphp
-                        <x-filament::button size="xs" color="gray" x-on:click="$wire.mountTableAction('readSaConversation', '{{ $record->getKey() }}', { snapshot: @js($snapshot) })">Отметить диалог прочитанным</x-filament::button>
+                        <x-filament::button type="button" size="xs" color="gray" x-on:click="$wire.acknowledge({{ \Illuminate\Support\Js::from($snapshot) }})" wire:loading.attr="disabled">Отметить диалог прочитанным</x-filament::button>
                     @endif
                 @elseif($conversation)
                     <div style="font-size: 12px; color: #64748b;">Прочитан менеджером</div>
@@ -40,7 +41,7 @@
                     };
                     $attachments = json_decode((string) $message->attachments_json, true);
                 @endphp
-                <article style="margin-bottom: 9px; padding: 10px 12px; border: 1px solid #dbe2ea; border-radius: 6px;">
+                <article wire:key="sa-message-{{ $message->id }}" style="margin-bottom: 9px; padding: 10px 12px; border: 1px solid #dbe2ea; border-radius: 6px;">
                     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
                         <strong>{{ $sender }}</strong>
                         <span style="font-size: 12px; color: #64748b;">{{ optional($message->sent_at ?? $message->created_at)->format('d.m.Y H:i:s') }}</span>

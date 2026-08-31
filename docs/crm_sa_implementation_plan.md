@@ -2,6 +2,22 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки
+
+- DONE реализация (2026-08-31): отдельное обновление открытой истории SA каждые
+  5 секунд, новые сообщения/статусы/unread/bot mode без автоматического read/send.
+- lead_id = orders.id, X-Api-Key, API/schema, статические mappings неизменны.
+- Isolate/Locked context + повторная panel/view authorization; acknowledge
+  требует edit и прежний snapshot, уведомляет родительскую таблицу о read.
+  Draft дочернего composer сохраняется. Mode-after-send не менялся.
+- 17 новых cases; regression 213 passed / 1081 assertions / 1 legacy skip.
+  Chrome №18451: несколько тиков таймера с неизменным draft, очистка без send;
+  order hash/counts и 2 SA events прежние, флаги отправок false.
+- HTTP(S) client linkify безопасен для HTML/атрибутов; публичный frontend,
+  данные и пути вложений не менялись. Внешняя доставка этим шагом не принималась.
+- Далее: ADM-FIL-003 — Чаты: приёмка прочтения и авторов. Ingress/read race,
+  populated browser, длинная история/нагрузка и internal read-only права открыты.
+
 ## ADM-FIL-003 — Чаты: ответ рядом с историей и доступные команды SA
 
 - DONE UI-подблок (2026-08-31): inline Livewire composer для client/painter/SA, видимые команды

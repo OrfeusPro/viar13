@@ -14,7 +14,7 @@
             <strong>{{ $sender }}</strong>
             <span>{{ optional($message->created_at)->format('d.m.Y H:i') }}</span>
         </div>
-        <div style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ $message->comment }}</div>
+        <div style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ \App\Support\Admin\ChatMessageText::render($message->comment) }}</div>
         @if($message->is_admin)
             <div style="margin-top: 5px; font-size: 12px;">{{ $message->is_read ? 'Прочитано клиентом' : 'Ещё не прочитано клиентом' }}</div>
         @elseif($unread)

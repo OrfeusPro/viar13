@@ -389,6 +389,20 @@ class OrderClientChatTest extends TestCase
         $this->assertDatabaseCount('order_user_comments', 0);
     }
 
+    public function test_client_history_renders_clickable_links_without_executing_message_html(): void
+    {
+        $this->incoming(['comment' => '<script>bad</script> https://example.test/file?a=1&b=2']);
+        $this->actingAs($this->editor, 'filament');
+        $html = view('filament.tables.modals.order-client-messages', [
+            'messages' => $this->order->order_user_comments()->with('author')->get(),
+            'record' => $this->order, 'canEdit' => true,
+        ])->render();
+        $this->assertStringContainsString('href="https://example.test/file?a=1&amp;b=2"', $html);
+        $this->assertStringContainsString('&lt;script&gt;bad&lt;/script&gt;', $html);
+        $this->assertStringNotContainsString('<script>bad</script>', $html);
+        $this->assertStringContainsString('rel="noopener noreferrer"', $html);
+    }
+
     private function send(array $input = []): array
     {
         return app(OrderClientChatService::class)->send($this->order, $this->editor, array_merge(['comment' => 'Ответ', 'thread_type' => 'general'], $input));

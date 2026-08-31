@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Filament\Resources\Orders\Tables\OrderSaChatActions;
+use App\Livewire\Admin\OrderSaChatHistory;
 use App\Models\Orders;
 use App\Models\Permission;
 use App\Models\Role;
@@ -25,10 +26,12 @@ use Filament\Tables\Table;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -205,6 +208,82 @@ class OrderSaChatTest extends TestCase
             [['path' => '//example.com/a.jpg'], null, false], [['path' => 'sa/%2e%2e/a.jpg'], null, false],
             [['status' => 'rejected', 'local_path' => 'storage/sa/a.jpg'], null, false], ['malformed', null, false],
         ];
+    }
+
+    public function test_poll_refreshes_new_messages_status_mode_and_unread_without_writes(): void
+    {
+        $message = $this->message(['text' => 'Before refresh', 'status' => 'sent']);
+        $this->actingAs($this->editor, 'filament');
+        $history = Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id])
+            ->assertSee('Before refresh')->assertSee('PAUSED')->assertSee('wire:poll.5s.visible', false);
+        $message->update(['status' => 'delivered']);
+        $this->message(['text' => 'New inbound']);
+        $this->message(['text' => 'Other order secret', 'orders_id' => $this->order->id + 1]);
+        $this->conversation->update(['bot_mode' => 'active']);
+        $before = $this->conversation->fresh()->getAttributes();
+        $history->call('$refresh')->assertSee('New inbound')->assertSee('Доставлено')
+            ->assertSee('ACTIVE')->assertSee('Не прочитан менеджером')->assertDontSee('Other order secret');
+        $this->assertSame($before, $this->conversation->fresh()->getAttributes());
+        $this->assertSame('delivered', $message->fresh()->status);
+        $this->assertDatabaseCount('sa_events', 0);
+        $this->assertDatabaseCount('order_user_comments', 0);
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
+    public function test_poll_keeps_the_existing_composer_instance(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $history = Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id]);
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($history->html());
+        $composer = (new \DOMXPath($dom))->query('//*[@data-chat-composer="sa"]')->item(0);
+        $this->assertNotNull($composer);
+        $id = $composer->getAttribute('wire:id');
+        $this->assertNotSame('', $id);
+        $this->message(['text' => 'Refresh without remount']);
+        $history->call('$refresh')->assertSee('Refresh without remount');
+        $this->assertStringContainsString('wire:id="'.$id.'"', $history->html());
+        $this->assertStringNotContainsString('@js($snapshot)', $history->html());
+    }
+
+    public function test_poll_reader_can_view_but_cannot_acknowledge_and_revocation_blocks_refresh(): void
+    {
+        $this->actingAs($this->user(['browse_admin', 'read_orders']), 'filament');
+        $history = Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id])
+            ->assertSee('PAUSED')->assertDontSee('Отметить диалог прочитанным')->assertDontSee('Ответить клиенту в WhatsApp');
+        $history->call('acknowledge', $this->token())->assertForbidden();
+        $this->assertTrue($this->conversation->fresh()->unread_for_manager);
+        $this->actingAs($this->editor, 'filament');
+        $history = Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id]);
+        $this->actingAs($this->user([]), 'filament');
+        $history->call('$refresh')->assertForbidden();
+        Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id])->assertForbidden();
+    }
+
+    public function test_history_acknowledgement_rejects_stale_token_then_updates_only_unread(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $this->message();
+        $stale = $this->token();
+        $message = $this->message(['text' => 'Later message', 'status' => 'delivered']);
+        $history = Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id]);
+        $history->call('acknowledge', $stale)->assertNotDispatched('order-sa-read');
+        $this->assertTrue($this->conversation->fresh()->unread_for_manager);
+        $history->call('acknowledge', $this->token())->assertHasNoErrors()
+            ->assertDispatched('order-sa-read', orderId: $this->order->id)->assertSee('Прочитан менеджером');
+        $this->assertFalse($this->conversation->fresh()->unread_for_manager);
+        $this->assertSame('delivered', $message->fresh()->status);
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
+    public function test_poll_order_id_cannot_be_changed(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $history = Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id]);
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+        $history->set('orderId', $this->order->id + 1);
     }
 
     private function message(array $attributes = []): SaMessage

@@ -1,5 +1,40 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки
+
+- DONE реализация (2026-08-31), не полная parity чатов. Legacy interval 5000ms
+  подтверждён в `vendor/voyager/partials/orders/bot_scripts.blade.php:1724`.
+- Новый `OrderSaChatHistory` — отдельный Isolate/Locked Livewire-компонент.
+  `wire:poll.5s.visible` обновляет сообщения, существующие delivery statuses,
+  conversation mode/unread и журнал. Вне видимости polling приостанавливается,
+  фоновые вкладки ограничиваются стандартным Livewire throttling (код runtime).
+  Таблица заказов не перечитывается на каждом тике. Auth panel + view проверяются
+  на каждом render; acknowledge дополнительно требует update и старый snapshot.
+- Вложенные composer имеют стабильные IDs и не перемонтируются при polling.
+  Явное acknowledge вызывает прежний сервис и событие для обновления таблицы;
+  polling не вызывает acknowledge/send/bot. Исправлена компиляция аргумента
+  snapshot кнопки через Js::from вместо нераскрывшегося @js в component attribute.
+- `ChatMessageText` делает HTTP(S) links, экранируя отдельно текст/URL/атрибуты.
+  HTML остаётся текстом; javascript/data/ftp и некорректные URL не становятся
+  ссылками, rel=noopener noreferrer, переносы сохранены. Сырые данные БД прежние.
+- 17 новых test cases: 5 Livewire refresh/ownership/read/403/locked, 11 linkify
+  cases (XSS, кавычки, entities, query, Unicode, пунктуация), 1 Blade integration.
+  Первая проверка нашла только test assertion stripping wire:id; проверка
+  исправлена на raw test HTML. Финальные targeted: 58 tests / 386 assertions.
+- Regression: прямой PHPUnit Admin + Invoice + invoice units + ChatMessageText
+  + CRM send + SA ingress: **213 passed / 1081 assertions / 1 прежний skip**,
+  214 total, exit 0, 19.43s. Targeted Pint, view:cache и diff-check пройдены.
+- Chrome только №18451: timestamp 16:29:51 → 16:30:16 → 16:30:42 без закрытия;
+  draft и фокус textarea сохранены, потом поле очищено без отправки.
+  Просмотренный снимок: `storage/app/chat-poll-20260831/sa-draft-after-poll.jpg`.
+  Browser входящее сообщение/смена delivery/read не имитировались в общей БД.
+- Counts client/admin/painter/images/SA = 0/0/0/0/1; SA events 2; флаги отправок
+  false; order SHA256 `5375ac19709396c850912d986878a6042c64fc137aad9d7462dcca3df50ca70b`.
+  API, schema, mode-after-send, публичный frontend не менялись.
+- Далее: ADM-FIL-003 — Чаты: приёмка прочтения и авторов. Ingress/read race,
+  internal email/read-only access, длинная история/нагрузка и populated browser
+  ещё открыты. Полная колонка «Комментарии» и ADM-FIL-003 остаются IN PROGRESS.
+
 ## ADM-FIL-003 — Чаты: ответ рядом с историей и доступные команды SA
 
 - DONE UI-подблок (2026-08-31), не полная приёмка колонки: новый вложенный

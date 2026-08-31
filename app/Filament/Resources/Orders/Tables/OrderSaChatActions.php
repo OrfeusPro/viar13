@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Models\Orders;
-use App\Models\SaEvent;
 use App\Services\Admin\OrderSaChatService;
 use App\Services\Admin\OrderSaCommandService;
 use Filament\Actions\Action;
@@ -23,13 +22,7 @@ class OrderSaChatActions
             ->modalHeading(fn ($record): string => 'WhatsApp SA · заказ №'.$record->id)
             ->modalWidth('4xl')
             ->registerModalActions([self::read(), self::reply(), self::bot()])
-            ->modalContent(function (Orders $record) {
-                $record->load(['saConversations', 'saMessages' => fn ($query) => $query
-                    ->orderByRaw('COALESCE(sent_at, created_at) asc')->orderBy('id')]);
-
-                return view('filament.tables.modals.order-sa-chat', ['record' => $record,
-                    'commands' => SaEvent::query()->where('dedupe_key', 'like', 'filament-sa:'.$record->id.':%')->latest('id')->limit(10)->get()]);
-            })
+            ->modalContent(fn (Orders $record) => view('filament.tables.modals.order-sa-chat-panel', ['record' => $record]))
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Закрыть')
             ->action(fn (): null => null)
