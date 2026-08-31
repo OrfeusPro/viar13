@@ -8,6 +8,10 @@
 
 ## Этап админки Filament 5
 
+- Файлы заказов/картин читаются с production `https://viarcanvas.com`, как в
+  Voyager (подтверждено пользователем 2026-08-31). Не создавать локальное зеркало
+  файлов и не менять сохранённые DB paths; разрешение URL — в admin-слое.
+
 - [x] [DONE] **ADM-FIL-000 — Инвентаризация и roadmap**: frontend зафиксирован
   как завершённый RC; legacy Voyager routes остаются выключенными; принят
   временный URL `/filament`; составлена матрица переноса ниже.
@@ -127,13 +131,18 @@
   Явные pdf_locale/client_status имеют приоритет. 9 новых тестов / 35 assertions;
   admin/invoice/auth/delay regression: 93 tests / 424 assertions / 1 skip.
   Browser UAT подтвердил поиск №18380 без ID-фильтра и отображение ru/Новый.
-  TODO — media parity: локальные файлы картин №7356–7358 отсутствуют; история
-  показывает явное предупреждение вместо ссылки «Открыть файл» на placeholder.
-  Аудит 2026-08-31 подтвердил: их нет также в legacy public, а оригинальный
-  `admin/o_chat_img.blade.php` использует `https://viarcanvas.com/{image}`.
-  Следующий точный шаг — проверить доступность исходных remote файлов и
-  восстановить admin-only разрешение ссылок без изменения DB paths; массовую
-  синхронизацию не выполнять в рамках визуальной сверки.
+  DONE (2026-08-31) — «Изображения с production-хранилища»: пользователь
+  подтвердил использование файлов с production, локальные копии не нужны из-за
+  объёма. Источник legacy `admin/o_chat_img.blade.php` —
+  `https://viarcanvas.com/{image}`. В клиентском чате восстановлены admin-only URL
+  для оригиналов и small_image через `OrderMediaUrl`, без проверки локального
+  файла и без изменения DB paths. PDF/PSD используют иконки, изображения — lazy
+  loading. Адрес задаётся `ADMIN_ORDER_MEDIA_BASE_URL`, по умолчанию production.
+  Не скачивать, не синхронизировать и не кэшировать эти файлы в репозитории/storage.
+  Browser UAT №18380: три картины №7356–7358 загружены с production, ссылки на
+  оригиналы корректны. Media suite: 17 tests / 41 assertions; admin/invoice:
+  92 tests / 334 assertions / 1 skip. Следующий шаг — поток художника в колонке
+  «Комментарии» и применение того же media-правила при переносе его файлов.
   TODO — перед SA-подблоком восстановить discovery legacy API-тестов:
   `CrmWebhooksSendMessageTest` и `SaWebhooksMessagesTest` используют `@test`,
   который PHPUnit 12 не распознаёт; сейчас эти два файла не выполняют тесты.

@@ -326,7 +326,8 @@ class OrderClientChatTest extends TestCase
         $html = $table->instance()->getMountedAction()->getModalContent()->render();
         $this->assertStringContainsString('Наброски', $html);
         $this->assertStringContainsString('Проверка изображения', $html);
-        $this->assertStringContainsString('Файл отсутствует в локальном хранилище', $html);
+        $this->assertStringContainsString('https://viarcanvas.com/chat-test.jpg', $html);
+        $this->assertStringNotContainsString('Файл отсутствует в локальном хранилище', $html);
         $this->assertStringContainsString('Тестовое входящее', $html);
         $table->call('mountTableAction', 'sendClientChatMessage', (string) $this->order->id, ['thread_type' => 'sketch', 'image_id' => $imageId])
             ->assertActionDataSet(['thread_type' => 'sketch', 'image_id' => $imageId])

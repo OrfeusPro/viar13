@@ -36,6 +36,24 @@
 
 ## ADM-FIL-003 — Список и фильтры заказов (IN PROGRESS, 2026-08-28)
 
+- 2026-08-31: DONE подблок «Изображения с production-хранилища». Пользователь
+  подтвердил legacy-правило: изображения читаются с production, локальная
+  синхронизация не нужна. В клиентском чате локальная exists-проверка заменена
+  admin-only `OrderMediaUrl`: production base + сохранённый путь, существующие
+  HTTP(S)-ссылки сохраняются, небезопасные schemes/traversal отклоняются.
+  Превью использует small_image либо оригинал; PDF/PSD — локальные иконки,
+  ссылки открывают production-файл. Добавлены lazy loading и placeholder при
+  ошибке загрузки; отсутствие локального файла больше не считается ошибкой.
+  PHP не делает HTTP probes/download/cache, DB paths и public frontend не менялись.
+- Browser UAT через открытый Chrome: три изображения №7356–7358 заказа №18380
+  загружены с `viarcanvas.com` (`complete=true`, `naturalWidth=5500`), оригиналы
+  ведут на те же production paths. Чат открыт/закрыт без отправки/read mutation.
+- `OrderMediaUrlTest`: 17 tests / 41 assertions, включая small_image, original,
+  PDF/PSD, конфигурацию host, unsafe URLs и отсутствие HTTP-запросов из PHP.
+  Admin/invoice regression: 92 tests / 334 assertions / 1 skip; Pint, Blade cache
+  и `git diff --check` прошли. Следующий точный шаг ADM-FIL-003 — чат художника;
+  production-media правило используется дальше без локального зеркалирования.
+
 - 2026-08-31: DONE подблок «Поиск по номеру и данные клиента». Подтверждено
   чтением legacy `TCG/Voyager/Models/User.php`: `locale` хранится в settings,
   accessor отсутствует в compatibility-модели. У пользователя заказа №18380

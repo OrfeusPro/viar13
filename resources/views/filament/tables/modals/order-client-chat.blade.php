@@ -21,31 +21,30 @@
             <h3 style="font-weight: 700; margin: 20px 0 10px; border-top: 1px solid #dbe2ea; padding-top: 12px;">{{ $title }}</h3>
             @foreach($threadImages as $artwork)
                 @php
-                    $url = order_image_url($artwork->image);
-                    $fileAvailable = order_image_exists($artwork->image);
+                    $url = \App\Support\Admin\OrderMediaUrl::resolve($artwork->image);
                     $extension = strtolower(pathinfo((string) $artwork->image, PATHINFO_EXTENSION));
                     $preview = match ($extension) {
                         'pdf' => asset('img/pdf.svg'),
                         'psd' => asset('img/psd.svg'),
-                        default => order_image_url($artwork->small_image ?: $artwork->image),
+                        default => \App\Support\Admin\OrderMediaUrl::resolve($artwork->small_image) ?: $url ?: order_image_placeholder(),
                     };
                     $status = $artwork->statusDefinition;
                     $threadType = $flag === 'is_img_sketch' ? 'sketch' : 'painter';
                 @endphp
                 <section style="margin-bottom: 18px; padding: 12px; border: 1px solid #dbe2ea; border-radius: 7px;">
                     <div style="display: flex; flex-wrap: wrap; align-items: start; gap: 12px; margin-bottom: 10px;">
-                        <a @if($fileAvailable) href="{{ $url }}" target="_blank" rel="noopener noreferrer" @endif>
-                            <img src="{{ $preview }}" alt="{{ $title }} #{{ $artwork->id }}" style="width: 150px; height: 150px; object-fit: contain;">
+                        <a @if($url) href="{{ $url }}" target="_blank" rel="noopener noreferrer" @endif>
+                            <img src="{{ $preview }}" alt="{{ $title }} #{{ $artwork->id }}" loading="lazy" referrerpolicy="no-referrer" x-on:error.once="$el.src = @js(order_image_placeholder())" style="width: 150px; height: 150px; object-fit: contain;">
                         </a>
                         <div style="overflow-wrap: anywhere; max-width: 360px;">
                             <strong>{{ $flag === 'is_img_sketch' ? 'Набросок' : 'Картина' }} #{{ $artwork->id }}</strong>
                             <div>{{ optional($artwork->created_at)->format('d.m.Y H:i') }}</div>
                             <div>Статус: {{ $status?->getTranslatedAttribute('title') ?: 'Без статуса' }}</div>
                             <div>{{ $artwork->is_show ? 'Показывается клиенту' : 'Скрыто от клиента' }}</div>
-                            @if($fileAvailable)
+                            @if($url)
                                 <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Открыть файл</a>
                             @else
-                                <div style="color: #b45309; font-size: 12px;">Файл отсутствует в локальном хранилище: {{ basename((string) $artwork->image) }}</div>
+                                <div style="color: #b45309; font-size: 12px;">Путь к файлу не указан или некорректен.</div>
                             @endif
                         </div>
                     </div>
