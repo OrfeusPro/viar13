@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Filament\Resources\Orders\Tables\OrderSaChatActions;
+use App\Livewire\Admin\OrderChatComposer;
 use App\Models\Orders;
 use App\Models\Permission;
 use App\Models\Role;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -334,6 +336,54 @@ class OrderSaCommandTest extends TestCase
         $this->assertSame('paused', $this->conversation->fresh()->bot_mode);
         Http::assertNothingSent();
         Mail::assertNothingSent();
+    }
+
+    public function test_inline_sa_uat_reply_and_visible_bot_commands_preserve_draft(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $component = Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'sa', 'conversationId' => $this->conversation->id]);
+        $component->assertSee('Resume — включить')->assertSee('Pause — пауза')->assertSee('Handoff — менеджер')
+            ->set('text', 'SA draft')->call('bot', 'resume_bot')->assertHasNoErrors()->assertSet('text', 'SA draft')
+            ->set('handoff', true)->call('send')->assertHasNoErrors()->assertSet('text', '')
+            ->assertDispatched('order-chat-updated', orderId: $this->order->id);
+        $this->assertDatabaseHas('sa_messages', ['text' => 'SA draft', 'status' => 'uat_suppressed']);
+        $this->assertDatabaseCount('order_user_comments', 0);
+        $this->assertSame('paused', $this->conversation->fresh()->bot_mode);
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
+    public function test_inline_sa_uncertain_outcome_keeps_draft_and_blocks_resend(): void
+    {
+        config(['admin_migration.sa_commands_enabled' => true]);
+        Http::fake(['*' => Http::response([], 503)]);
+        $this->actingAs($this->editor, 'filament');
+        Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'sa', 'conversationId' => $this->conversation->id])
+            ->set('text', 'Do not resend')->call('send')->assertHasErrors('command')
+            ->assertSet('text', 'Do not resend')->assertSet('requiresReview', true)
+            ->call('send')->assertHasErrors('command')->call('bot', 'resume_bot')->assertHasErrors('command');
+        $this->assertDatabaseCount('sa_events', 1);
+        Http::assertSentCount(1);
+    }
+
+    public function test_inline_sa_stale_form_and_revoked_permissions_cannot_send(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $component = Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'sa', 'conversationId' => $this->conversation->id])->set('text', 'Draft');
+        $this->conversation->update(['bot_mode' => 'active']);
+        $component->call('send')->assertHasErrors('command')->assertSet('text', 'Draft');
+        $this->actingAs($this->user(['browse_admin', 'read_orders']), 'filament');
+        $component->call('send')->assertForbidden();
+        $this->assertDatabaseCount('sa_events', 0);
+        Http::assertNothingSent();
+    }
+
+    public function test_inline_sa_conversation_property_is_locked(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $component = Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'sa', 'conversationId' => $this->conversation->id]);
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+        $component->set('conversationId', 999);
     }
 
     private function execute(array $input = []): array

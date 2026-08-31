@@ -1,8 +1,8 @@
 @php
     $canEdit = auth('filament')->user()?->can('update', $record) ?? false;
 @endphp
-<div>
-    <div style="max-height: 55vh; overflow-y: auto; padding-right: 8px;">
+<div x-data x-on:order-chat-updated.window="if ($event.detail.orderId === {{ (int) $record->id }}) $wire.$refresh()">
+    <div style="max-height: 40vh; overflow-y: auto; padding-right: 8px;">
         @forelse($record->orders_chats as $message)
             @php($unread = ! $message->is_admin && ! $message->admin_is_read)
             <article style="margin-bottom: 10px; padding: 10px 12px; border: 1px solid {{ $unread ? '#f59e0b' : '#dbe2ea' }}; border-radius: 6px;">
@@ -25,6 +25,6 @@
         @endforelse
     </div>
     @if($canEdit)
-        <x-filament::button size="sm" x-on:click="$wire.mountTableAction('sendPainterChatMessage', '{{ $record->getKey() }}')">Ответить художнику</x-filament::button>
+        @livewire('admin.order-chat-composer', ['orderId' => (int) $record->id, 'stream' => 'painter'], key('painter-general-'.$record->id))
     @endif
 </div>

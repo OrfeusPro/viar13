@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Filament\Resources\Orders\Tables\OrderPainterChatActions;
+use App\Livewire\Admin\OrderChatComposer;
 use App\Mail\AdminToPainterComment;
 use App\Models\Orders;
 use App\Models\OrdersChats;
@@ -279,6 +280,16 @@ class OrderPainterChatTest extends TestCase
         $this->assertSame(0, $message->fresh()->admin_is_read);
         $this->actingAs($this->user([]), 'filament');
         Livewire::test(PainterChatTestTable::class)->assertActionHidden(TestAction::make('viewPainterChat')->table($this->order));
+    }
+
+    public function test_inline_painter_composer_preserves_general_flags_without_notifications(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'painter'])
+            ->set('text', 'Inline painter')->call('send')->assertHasNoErrors()
+            ->assertSet('text', '')->assertDispatched('order-chat-updated', orderId: $this->order->id);
+        $this->assertDatabaseHas('orders_chats', ['orders_id' => $this->order->id, 'comment' => 'Inline painter', 'is_admin' => 1, 'is_img_painter' => 0, 'is_img_sketch' => 0]);
+        Mail::assertNothingSent();
     }
 
     private function send(array $input = []): array

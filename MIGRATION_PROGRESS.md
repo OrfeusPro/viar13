@@ -1,5 +1,35 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Чаты: ответ рядом с историей и доступные команды SA
+
+- DONE UI-подблок (2026-08-31), не полная приёмка колонки: новый вложенный
+  `OrderChatComposer` для client/general, каждой картины/наброска, painter/general,
+  SA/conversation. История рядом; её высота ограничена. Нет вложенных HTML forms.
+- SA Pause/Resume/Handoff — видимые кнопки с wire:confirm, Handoff после ответа
+  остаётся checkbox. Сервисы/режимы/источники данных не изменены. Locked IDs,
+  проверка panel/edit на каждом действии; UUID/UAT-защита прежнего сервиса.
+- Событие после сохранения обновляет родительскую историю; стабильные keys
+  сохраняют другие composer. Ошибка сохраняет draft, uncertain/partial/conflict
+  блокируют повтор в текущей форме. Пустое сообщение даёт русскую ошибку.
+- Добавлено 8 Livewire-тестов: client/image ownership/closed order, painter,
+  SA UAT, revoked permission, stale token, uncertain без повторов, locked ID.
+- Проверено прямым PHPUnit: Admin + Invoice + invoice units + CRM send/SA ingress:
+  **196 passed / 939 assertions / 1 прежний skip** (197 total), exit 0, 15.46s.
+  `artisan test --compact` зависал без итогового вывода и был прерван; тот же
+  набор через прямой PHPUnit завершился, в том числе диагностический --debug.
+  Первый targeted run выявил guarded status в новом test fixture; исправлен
+  только fixture через forceFill, production model не менялась.
+- Browser Chrome только №18451: client/painter/SA history + inline textarea,
+  empty send validation, ввод/очистка без отправки, три видимые bot-кнопки.
+  3 просмотренных снимка: `storage/app/chat-inline-20260831` (не в Git).
+  Bot confirmation/результат сохранения в браузере без записи не проверялись;
+  отправка и ошибки проверены SQLite/HTTP fake. На №18451 по-прежнему нет artwork.
+- Реальная БД неизменна: counts client/admin/painter/images/SA = 0/0/0/0/1,
+  SA events = 2, все три флага отправок false; order row SHA256
+  `5375ac19709396c850912d986878a6042c64fc137aad9d7462dcca3df50ca70b`.
+- Следующее: ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки.
+  Populated UAT, bot mode-after-send и permissions parity остаются открытыми.
+
 ## ADM-FIL-003 — Сравнение всех чатов с оригиналом (2026-08-31)
 
 - DONE (аудит, не приёмка parity): открыты четыре чата Voyager/Filament только №18451,

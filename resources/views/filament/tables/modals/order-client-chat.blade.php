@@ -6,11 +6,13 @@
     $grouped = $allMessages->groupBy(fn ($message) => (int) $message->order_painter_image_id);
 @endphp
 
-<div style="max-height: 60vh; overflow-y: auto; padding-right: 8px;">
+<div x-data x-on:order-chat-updated.window="if ($event.detail.orderId === {{ (int) $record->id }}) $wire.$refresh()" style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
     <h3 style="font-weight: 700; margin-bottom: 10px;">Общая переписка</h3>
-    @include('filament.tables.modals.order-client-messages', ['messages' => $grouped->get(0, collect())])
+    <div style="max-height: 32vh; overflow-y: auto;" role="region" aria-label="История общего клиентского чата" tabindex="0">
+        @include('filament.tables.modals.order-client-messages', ['messages' => $grouped->get(0, collect())])
+    </div>
     @if($canEdit)
-        <x-filament::button size="sm" x-on:click="$wire.mountTableAction('sendClientChatMessage', '{{ $record->getKey() }}')">Ответить в общий чат</x-filament::button>
+        @livewire('admin.order-chat-composer', ['orderId' => (int) $record->id, 'stream' => 'client'], key('client-general-'.$record->id))
     @endif
 
     @foreach(['is_img_painter' => 'Картины', 'is_img_sketch' => 'Наброски'] as $flag => $title)
@@ -48,9 +50,11 @@
                             @endif
                         </div>
                     </div>
-                    @include('filament.tables.modals.order-client-messages', ['messages' => $grouped->get((int) $artwork->id, collect())])
+                    <div style="max-height: 30vh; overflow-y: auto;" role="region" aria-label="История по изображению #{{ $artwork->id }}" tabindex="0">
+                        @include('filament.tables.modals.order-client-messages', ['messages' => $grouped->get((int) $artwork->id, collect())])
+                    </div>
                     @if($canEdit && $imageThreadsOpen)
-                        <x-filament::button size="sm" x-on:click="$wire.mountTableAction('sendClientChatMessage', '{{ $record->getKey() }}', { thread_type: '{{ $threadType }}', image_id: {{ (int) $artwork->id }} })">Ответить по изображению</x-filament::button>
+                        @livewire('admin.order-chat-composer', ['orderId' => (int) $record->id, 'stream' => 'client', 'threadType' => $threadType, 'imageId' => (int) $artwork->id], key('client-'.$threadType.'-'.$record->id.'-'.$artwork->id))
                     @elseif(! $imageThreadsOpen)
                         <p style="font-size: 12px; color: #64748b;">Ответы по изображениям закрыты для отправленного или завершённого заказа.</p>
                     @endif

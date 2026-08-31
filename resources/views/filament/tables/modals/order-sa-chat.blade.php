@@ -7,7 +7,7 @@
         'pending' => 'Передаётся интеграции', 'queued' => 'Принято интеграцией, доставка не подтверждена',
         'uat_suppressed' => 'Тест UAT — не отправлено', 'delivery_unknown' => 'Результат отправки неизвестен'];
 @endphp
-<div style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
+<div x-data x-on:order-chat-updated.window="if ($event.detail.orderId === {{ (int) $record->id }}) $wire.$refresh()" style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
     @forelse($ids as $conversationId)
         @php
             $conversation = $conversations->get($conversationId);
@@ -30,13 +30,8 @@
                 @else
                     <div style="font-size: 12px; color: #b45309;">Нет подтверждённой привязки диалога к этому заказу. История сохранена.</div>
                 @endif
-                @if($conversation && $canEdit)
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-                        <x-filament::button size="sm" x-on:click="$wire.mountTableAction('sendSaMessage', '{{ $record->getKey() }}', { conversation_id: {{ (int) $conversation->id }} })">Ответить в WhatsApp</x-filament::button>
-                        <x-filament::button size="sm" color="gray" x-on:click="$wire.mountTableAction('controlSaBot', '{{ $record->getKey() }}', { conversation_id: {{ (int) $conversation->id }} })">Управление ботом</x-filament::button>
-                    </div>
-                @endif
             </div>
+            <div style="max-height: 30vh; overflow-y: auto;" role="region" aria-label="История WhatsApp {{ $conversationId }}" tabindex="0">
             @forelse($messages as $message)
                 @php
                     $from = json_decode((string) $message->from_json, true);
@@ -73,6 +68,10 @@
             @empty
                 <p>Нет истории сообщений WhatsApp.</p>
             @endforelse
+            </div>
+            @if($conversation && $canEdit)
+                @livewire('admin.order-chat-composer', ['orderId' => (int) $record->id, 'stream' => 'sa', 'conversationId' => (int) $conversation->id], key('sa-composer-'.$record->id.'-'.$conversation->id))
+            @endif
         </section>
     @empty
         <p>Нет истории сообщений WhatsApp.</p>

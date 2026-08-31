@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Filament\Resources\Orders\Tables\OrderClientChatActions;
+use App\Livewire\Admin\OrderChatComposer;
 use App\Mail\AdminToUserComment;
 use App\Models\Orders;
 use App\Models\OrderUserComments;
@@ -351,6 +352,41 @@ class OrderClientChatTest extends TestCase
             ->call('mountTableAction', 'readClientChatMessage', (string) $this->order->id, ['message_id' => $message->id]);
         $this->assertSame(0, $message->fresh()->admin_is_read);
         $this->assertDatabaseCount('order_user_comments', 1);
+    }
+
+    public function test_inline_client_composer_validation_send_and_image_binding(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $component = Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'client']);
+        $component->call('send')->assertHasErrors(['text' => 'required']);
+        $component->set('text', 'Inline reply')->call('send')->assertHasNoErrors()
+            ->assertSet('text', '')->assertDispatched('order-chat-updated', orderId: $this->order->id);
+        $this->assertDatabaseHas('order_user_comments', ['comment' => 'Inline reply', 'order_painter_image_id' => 0]);
+        $imageId = $this->image('sketch');
+        Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'client', 'threadType' => 'sketch', 'imageId' => $imageId])
+            ->set('text', 'Inline sketch')->call('send')->assertHasNoErrors();
+        $this->assertDatabaseHas('order_user_comments', ['comment' => 'Inline sketch', 'order_painter_image_id' => $imageId, 'is_img_sketch' => 1]);
+        Mail::assertNothingSent();
+    }
+
+    public function test_inline_composer_rejects_reader_and_foreign_image(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $foreignImage = $this->image('sketch', Orders::query()->create()->id);
+        Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'client', 'threadType' => 'sketch', 'imageId' => $foreignImage])->assertForbidden();
+        $this->actingAs($this->userWithPermissions(['browse_admin', 'read_orders']), 'filament');
+        Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'client'])->assertForbidden();
+        $this->assertDatabaseCount('order_user_comments', 0);
+    }
+
+    public function test_inline_image_composer_keeps_draft_if_order_closes(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $component = Livewire::test(OrderChatComposer::class, ['orderId' => $this->order->id, 'stream' => 'client', 'threadType' => 'sketch', 'imageId' => $this->image('sketch')])
+            ->set('text', 'Keep this draft');
+        $this->order->forceFill(['status' => 'completed'])->save();
+        $component->call('send')->assertHasErrors('command')->assertSet('text', 'Keep this draft');
+        $this->assertDatabaseCount('order_user_comments', 0);
     }
 
     private function send(array $input = []): array

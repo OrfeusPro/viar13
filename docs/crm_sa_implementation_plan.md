@@ -2,6 +2,24 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Чаты: ответ рядом с историей и доступные команды SA
+
+- DONE UI-подблок (2026-08-31): inline Livewire composer для client/painter/SA, видимые команды
+  бота с подтверждением. Текущие сервисы отправки и UAT-защита неизменны.
+- Без новых API/schema; lead_id = orders.id. SA без Handoff сохраняет режим
+  как до этого UI-подблока; согласование legacy active остаётся открытым.
+- Проверено: 8 новых Livewire-тестов; общий admin/invoice/chat API набор
+  196 passed / 939 assertions / 1 legacy skip. Browser №18451: inline формы,
+  пустая отправка отклонена, режим PAUSED и старый UAT текст рядом с ответом.
+  Новых сообщений/SA events, внешних запросов и изменений order row нет.
+- Locked context + прежний авторизующий сервис; после успешного UAT/accepted
+  форма очищается, после неопределённого результата draft сохранён и повтор
+  блокируется. Bot-команда не стирает draft. Другие composer имеют stable keys.
+- Статические mappings, X-Api-Key, API response/error contracts, schema и
+  lead_id = orders.id не менялись. Архивные hidden modal actions пока сохранены.
+- Далее — ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки;
+  populated browser-проверка обновления истории/draft, callbacks и read-race.
+
 ## ADM-FIL-003 — Сравнение всех чатов с оригиналом (2026-08-31)
 
 - DONE browser audit, НЕ DONE функциональная parity. Только заказ 18451,
