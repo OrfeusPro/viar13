@@ -8,6 +8,31 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-003 — WhatsApp/SA-чат: история и прочтение
+
+- [IN PROGRESS: код и автотесты готовы, populated browser UAT ожидает данные]
+  Перенесены sender labels, sent_at, delivery status, вложения,
+  bot mode и явное прочтение. Источник unread —
+  `sa_conversations.unread_for_manager`, не `sa_messages.status`.
+- [DONE] Восстановлено выполнение `CrmWebhooksSendMessageTest` и
+  `SaWebhooksMessagesTest` под PHPUnit 12 на SQLite с fake/mock: 19 passed.
+  Новые service/Livewire/media — 16 tests; совместный regression 168 passed /
+  709 assertions / 1 прежний skip. Без изменений API и реальных отправок.
+- [TODO] Аудит связности импортированных SA-данных: 38 conversations и 139
+  messages; JOIN с существующими orders возвращает 0. Нельзя переносить ссылки
+  на другие заказы автоматически. Populated browser UAT требует согласованного
+  тестового диалога/корректного snapshot БД; пока проверены fixtures и empty UI.
+- [TODO] Перед итоговой приёмкой закрыть гонку ingress/read: legacy webhook
+  обновляет conversation и message отдельными операциями. Новый snapshot
+  защищает от уже сохранённых изменений, но не заменяет атомарный ingress.
+- Следующий отдельный подблок: ответы и pause/resume/handoff с транзакцией,
+  идемпотентностью и UAT-изоляцией. Аудит обнаружил: legacy пишет `sent` до
+  внешней доставки, подставляет `CONV-*`/`+0000000`, а send/handoff обновляет
+  conversation, но не обязательно `orders.sa_bot_mode`. Сначала зафиксировать
+  действующие контракты тестами; не выдавать локальное сохранение за доставку.
+- Никаких записей/внешних отправок на общей БД при browser UAT. Не загружать
+  файлы с production в локальное хранилище. ADM-FIL-003 остаётся IN PROGRESS.
+
 ### ADM-FIL-003 — Чат с художником: история, ответы и прочтение
 
 - [DONE] Общий ответ и явное прочтение по `admin/order_chat` и

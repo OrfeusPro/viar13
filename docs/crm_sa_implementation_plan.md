@@ -2,6 +2,34 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — WhatsApp/SA-чат: история и прочтение (2026-08-31)
+
+- Реализовано (полный browser UAT остаётся IN PROGRESS): Filament история по диалогам, sender
+  client/bot/system/manager, даты и delivery status. Режим бота берётся из
+  `sa_conversations.bot_mode`, не из потенциально устаревшего order mirror.
+- Прочтение менеджером меняет только `sa_conversations.unread_for_manager`:
+  `edit_orders`, транзакция, проверка orders_id и защищённого snapshot истории.
+  Уже появившиеся после открытия сообщения отклоняют stale read. Статусы
+  WhatsApp и зеркальный `order_user_comments` не меняются. Новых API нет.
+- Отображаются `attachments_json.local_path` (реальный API) и legacy `path`.
+  Ссылки старых файлов идут на production без скачивания; входящий API-контракт
+  локального хранения не меняется. Rejected/source_url не превращаются в ссылки.
+- Восстановлены 19 API-тестов PHPUnit 12: SQLite schema из существующих SA
+  миграций + минимальный orders/users/client-chat fixture; mail/webhook fake/mock,
+  cache/limiter array. Проверены API-key, validation, duplicate и read semantics.
+- 16 новых service/Livewire/media тестов. Совместный admin/invoice/API regression:
+  168 passed / 709 assertions / 1 прежний skipped. Реальных отправок не было.
+- Далее: исходящий ответ, pause/resume/handoff. Сохранённые legacy риски:
+  sent выставляется до подтверждения доставки; фиктивные адресаты CONV-*/+0000000;
+  изменение bot mode в conversation может расходиться с order mirror.
+  Входящий legacy webhook обновляет conversation и message неатомарно: строгую
+  гарантию против одновременного ingress/read нужно закрыть в следующем
+  интеграционном подблоке. API/статические mappings/lead_id пока не менялись.
+- Browser data blocker: 38 conversations / 139 messages, JOIN по orders_id с
+  существующими orders возвращает 0. Реальные связи не менялись; пустая история
+  проверяется на 18380, populated history/read — в Livewire fixtures. Для полной
+  browser приёмки нужен согласованный связанный тестовый диалог или snapshot.
+
 ## ADM-FIL-003 — Чат с художником: история, ответы и прочтение (2026-08-31)
 
 - Общий ответ в `orders_chats` перенесён в Filament через транзакционный сервис;

@@ -1,5 +1,30 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — WhatsApp/SA-чат: история и прочтение (2026-08-31)
+
+- Реализованы отдельная история SA по диалогам, четыре типа авторов, даты,
+  статусы доставки, bot mode из conversation, вложения local_path/path и
+  явное прочтение через permission-aware транзакционный сервис.
+- Badge теперь считает unread conversations, не delivery status сообщений.
+  Protected snapshot не позволяет отметить уже изменившуюся историю;
+  проверяются order ownership и edit_orders. Message status, timestamps,
+  client-chat flags и bot mode прочтением не меняются. Новых endpoint/schema нет.
+- 19 ранее не обнаруживаемых API-тестов восстановлены на SQLite через реальные
+  SA migrations и минимальные fixtures. Исправлены только тесты: PHPUnit 12
+  attributes, missing schema, изоляция cache/limiter, mocks внешних отправок.
+  Duplicate исходящего запроса теперь явно проверяет одну запись/один webhook.
+- 16 новых service/Livewire/media проверок. Общий admin/invoice/API regression:
+  **168 passed / 709 assertions / 1 прежний skipped**. Targeted Pint,
+  `view:cache`, `git diff --check` проходят. Запись только SQLite; писем и
+  внешних webhook вызовов на реальных заказах не было.
+- Browser UAT ограничен пустым чатом 18380: в импортированной БД 38 SA
+  conversations / 139 messages, но оба JOIN с orders дают 0 записей.
+  Заполненная история/права/nested read проверены Livewire fixtures; полная
+  browser приёмка остаётся IN PROGRESS до согласованных связанных данных.
+- Далее — отправка и bot control: убрать фиктивную адресацию и ложное sent,
+  предусмотреть UAT-флаг и идемпотентность; закрыть атомарность ingress/read.
+  Риски занесены в план, существующие данные/привязки не исправлялись автоматически.
+
 ## ADM-FIL-003 — Чат с художником: история, ответы и прочтение (2026-08-31)
 
 - DONE (подблок): сверены `admin/order_chat`, AJAX send/read и реальная схема

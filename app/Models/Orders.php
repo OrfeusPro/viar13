@@ -173,6 +173,11 @@ class Orders extends Model
         return $this->hasMany(SaMessage::class, 'orders_id');
     }
 
+    public function saConversations()
+    {
+        return $this->hasMany(SaConversation::class, 'orders_id');
+    }
+
     // This function is used to get a delivery data form orders table
     public static function getDeliveryData($id, $data)
     {

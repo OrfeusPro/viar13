@@ -1,0 +1,73 @@
+@php
+    $canEdit = auth('filament')->user()?->can('update', $record) ?? false;
+    $groups = $record->saMessages->groupBy('conversation_id');
+    $conversations = $record->saConversations->keyBy('conversation_id');
+    $ids = $groups->keys()->merge($conversations->keys())->unique();
+    $statuses = ['sent' => 'Отправлено', 'delivered' => 'Доставлено', 'read' => 'Прочитано', 'failed' => 'Ошибка', 'received' => 'Получено'];
+@endphp
+<div style="max-height: 65vh; overflow-y: auto; padding-right: 8px;">
+    @forelse($ids as $conversationId)
+        @php
+            $conversation = $conversations->get($conversationId);
+            $messages = $groups->get($conversationId, collect());
+        @endphp
+        <section style="margin-bottom: 18px;">
+            <div style="padding: 10px; margin-bottom: 10px; border: 1px solid #dbe2ea; border-radius: 6px; overflow-wrap: anywhere;">
+                <strong>Диалог: {{ $conversationId ?: 'Без привязки' }}</strong>
+                <div>Режим бота SA: <strong>{{ strtoupper((string) ($conversation?->bot_mode ?: 'n/a')) }}</strong></div>
+                @if($conversation?->unread_for_manager)
+                    <div style="color: #b45309; margin: 6px 0;">Не прочитан менеджером</div>
+                    @if($canEdit)
+                        @php
+                            $snapshot = app(\App\Services\Admin\OrderSaChatService::class)->readToken($record, $conversation);
+                        @endphp
+                        <x-filament::button size="xs" color="gray" x-on:click="$wire.mountTableAction('readSaConversation', '{{ $record->getKey() }}', { snapshot: @js($snapshot) })">Отметить диалог прочитанным</x-filament::button>
+                    @endif
+                @elseif($conversation)
+                    <div style="font-size: 12px; color: #64748b;">Прочитан менеджером</div>
+                @else
+                    <div style="font-size: 12px; color: #b45309;">Нет подтверждённой привязки диалога к этому заказу. История сохранена.</div>
+                @endif
+            </div>
+            @forelse($messages as $message)
+                @php
+                    $from = json_decode((string) $message->from_json, true);
+                    $sender = $message->direction === 'inbound' ? 'Клиент' : match(strtolower((string) data_get($from, 'type', ''))) {
+                        'bot' => 'Бот', 'system' => 'Система', default => 'Менеджер',
+                    };
+                    $attachments = json_decode((string) $message->attachments_json, true);
+                @endphp
+                <article style="margin-bottom: 9px; padding: 10px 12px; border: 1px solid #dbe2ea; border-radius: 6px;">
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;">
+                        <strong>{{ $sender }}</strong>
+                        <span style="font-size: 12px; color: #64748b;">{{ optional($message->sent_at ?? $message->created_at)->format('d.m.Y H:i:s') }}</span>
+                    </div>
+                    <div style="white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0;">{{ $message->text }}</div>
+                    @if($message->status)
+                        <div style="font-size: 12px; color: {{ $message->status === 'failed' ? '#dc2626' : '#64748b' }};">Статус WhatsApp: {{ $statuses[$message->status] ?? $message->status }}</div>
+                    @endif
+                    @foreach(is_array($attachments) ? $attachments : [] as $attachment)
+                        @php
+                            $file = \App\Support\Admin\SaChatAttachment::describe($attachment);
+                        @endphp
+                        @if($file['url'])
+                            <a href="{{ $file['url'] }}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin: 8px 8px 0 0; color: #2563eb; overflow-wrap: anywhere;">
+                                @if($file['image'])
+                                    <img src="{{ $file['url'] }}" alt="{{ $file['name'] }}" loading="lazy" referrerpolicy="no-referrer" style="max-width: 200px; max-height: 180px; object-fit: contain;" x-on:error.once="$el.src = @js(order_image_placeholder())">
+                                @endif
+                                <span>{{ $file['name'] }}</span>
+                            </a>
+                        @else
+                            <div style="font-size: 12px; color: #b45309;">{{ $file['name'] }} — файл недоступен или отклонён.</div>
+                        @endif
+                    @endforeach
+                </article>
+            @empty
+                <p>Нет истории сообщений WhatsApp.</p>
+            @endforelse
+        </section>
+    @empty
+        <p>Нет истории сообщений WhatsApp.</p>
+    @endforelse
+    <p style="font-size: 12px; color: #64748b;">Прочтение менеджером не меняет статусы доставки WhatsApp. Отправка и управление ботом будут подключены следующим подблоком.</p>
+</div>

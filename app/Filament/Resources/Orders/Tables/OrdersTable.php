@@ -55,6 +55,7 @@ class OrdersTable
                     'order_painter_comments' => fn ($query) => $query->oldest('id'),
                     'orders_chats' => fn ($query) => $query->oldest('id'),
                     'saMessages' => fn ($query) => $query->oldest('id'),
+                    'saConversations',
                     'order_payment_requests' => fn ($query) => $query->latest('id')->limit(3),
                     'painterAssignment.user',
                     'printingAssignment.user',
@@ -67,8 +68,8 @@ class OrdersTable
                     'orders_chats as painter_messages_count',
                     'orders_chats as unread_painter_messages_count' => fn ($query) => $query
                         ->where('is_admin', 0)->where('admin_is_read', 0),
-                    'saMessages as unread_sa_messages_count' => fn ($query) => $query
-                        ->where('status', '!=', 'read'),
+                    'saConversations as unread_sa_conversations_count' => fn ($query) => $query
+                        ->where('unread_for_manager', 1),
                 ]))
             ->paginated([13, 25, 50, 100])
             ->defaultPaginationPageOption(13)
@@ -315,7 +316,7 @@ class OrdersTable
                         'К:'.$record->client_messages_count.($record->unread_client_messages_count ? '/'.$record->unread_client_messages_count.'!' : ''),
                         'А:'.$record->admin_messages_count,
                         'Х:'.$record->painter_messages_count,
-                        'SA:'.$record->unread_sa_messages_count,
+                        'SA:'.$record->unread_sa_conversations_count,
                     ]))
                     ->description(function ($record): string {
                         $deliveryComment = data_get(self::decodeJson($record->delivery), 'comment');
@@ -324,7 +325,7 @@ class OrdersTable
                             ->filter()->take(2)->implode(' · ');
                     })
                     ->badge()
-                    ->color(fn ($record): string => ($record->unread_client_messages_count || $record->unread_sa_messages_count) ? 'danger' : 'gray')
+                    ->color(fn ($record): string => ($record->unread_client_messages_count || $record->unread_sa_conversations_count) ? 'danger' : 'gray')
                     ->visible(false),
                 TextColumn::make('product_summary')
                     ->label('Товар')
@@ -931,16 +932,8 @@ class OrdersTable
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
-                Action::make('viewSaChat')
-                    ->label('WhatsApp чат (SA)')
-                    ->modalHeading(fn ($record): string => 'WhatsApp SA · заказ №'.$record->id)
-                    ->modalWidth('4xl')
-                    ->modalContent(fn ($record) => view('filament.tables.modals.order-chat-history', ['record' => $record, 'stream' => 'sa']))
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Закрыть')
-                    ->action(fn (): null => null)
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false)
-                    ->extraAttributes(['class' => 'hidden']),
+                OrderSaChatActions::history(),
+                OrderSaChatActions::read(),
                 OrderPainterChatActions::history(),
                 OrderPainterChatActions::reply(),
                 OrderPainterChatActions::read(),
