@@ -119,15 +119,21 @@
   22 новых service/Livewire теста, 101 assertions; admin/invoice baseline:
   66 tests / 257 assertions / 1 skip. Загрузка новых файлов и изменение статусов
   изображений этим подблоком не закрыты; хранилище не синхронизировалось.
-  TODO — устранить найденную browser-сверкой регрессию общего поиска номера:
-  `18380` не находится строкой «Поиск», но доступен через фильтр «ID заказа».
-  Проверить searchable-поля после замены скрытых TextColumn на ViewColumn.
-  TODO — повторная сверка «Пользователь» по №18380: Voyager показывает язык
-  счёта `ru` и статус «Новый», Filament — `lv` и пустой статус. Проверить источники
-  полей/defaults, не исправлять данные общей БД ради визуального совпадения.
+  DONE (2026-08-31) — «Поиск по номеру и данные клиента»: searchable ID перенесён
+  на видимый ViewColumn, поиск больше не зависит от скрытого TextColumn.
+  В compatibility User восстановлен legacy getter `locale` из `settings.locale`;
+  язык пользователя/счёта №18380 снова `ru`. Пустой client_status отображает
+  первый справочный option, как Voyager («Новый»), без записи default в БД.
+  Явные pdf_locale/client_status имеют приоритет. 9 новых тестов / 35 assertions;
+  admin/invoice/auth/delay regression: 93 tests / 424 assertions / 1 skip.
+  Browser UAT подтвердил поиск №18380 без ID-фильтра и отображение ru/Новый.
   TODO — media parity: локальные файлы картин №7356–7358 отсутствуют; история
   показывает явное предупреждение вместо ссылки «Открыть файл» на placeholder.
-  Сверить legacy remote paths и согласовать синхронизацию, не менять DB paths.
+  Аудит 2026-08-31 подтвердил: их нет также в legacy public, а оригинальный
+  `admin/o_chat_img.blade.php` использует `https://viarcanvas.com/{image}`.
+  Следующий точный шаг — проверить доступность исходных remote файлов и
+  восстановить admin-only разрешение ссылок без изменения DB paths; массовую
+  синхронизацию не выполнять в рамках визуальной сверки.
   TODO — перед SA-подблоком восстановить discovery legacy API-тестов:
   `CrmWebhooksSendMessageTest` и `SaWebhooksMessagesTest` используют `@test`,
   который PHPUnit 12 не распознаёт; сейчас эти два файла не выполняют тесты.

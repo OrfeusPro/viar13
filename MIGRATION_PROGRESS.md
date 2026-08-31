@@ -36,6 +36,31 @@
 
 ## ADM-FIL-003 — Список и фильтры заказов (IN PROGRESS, 2026-08-28)
 
+- 2026-08-31: DONE подблок «Поиск по номеру и данные клиента». Подтверждено
+  чтением legacy `TCG/Voyager/Models/User.php`: `locale` хранится в settings,
+  accessor отсутствует в compatibility-модели. У пользователя заказа №18380
+  settings.locale=ru, pdf_locale=null, client_status=null. «Новый» в Voyager —
+  первый option при пустом статусе, а не записанный статус. Общий поиск потерял
+  ID после скрытия TextColumn. Добавлен `searchable(['id'])` видимой колонке
+  «Номер», restored getter locale в compatibility User, display-only default
+  статуса из первого элемента справочника; явные сохранённые значения остаются
+  приоритетными. Реальные данные не менялись.
+- `OrdersDisplayParityTest`: 9 tests / 35 assertions — Livewire поиск по номеру
+  и части номера, очистка поиска, сохранение query scope, порядок восьми колонок,
+  settings locale и отображение PDF/status без DB writes. Admin/invoice/auth/
+  delay regression: 93 tests / 424 assertions / 1 skip; Blade cache и Pint passed.
+- Дополнительно public auth/basket и Symfony mailer regression: 64 tests /
+  808 assertions, все прошли. `git diff --check` прошёл. Публичные views/routes
+  не менялись; восстановлено только прежнее чтение языка из settings.
+- Browser UAT на открытой вкладке: №18380 найден общим поиском без ID-фильтра,
+  пользователь/счёт показывают ru, статус — «Новый». Read-only повторная проверка
+  БД подтвердила pdf_locale=null и client_status=null; никаких писем/сообщений.
+- Media-аудит №7356–7358: пути сохранены как `orders/...jpg`, файлы отсутствуют
+  в public и viar13, и legacy `C:/OSPanel/domains/asoft/viar`. Исходный чат
+  строит remote URL через `https://viarcanvas.com/{image}`. Синхронизация и
+  загрузка не выполнялись; следующий шаг ADM-FIL-003 — remote media resolution,
+  затем оставшиеся функции колонок/чатов. Весь ADM-FIL-003 не закрыт.
+
 - 2026-08-31: DONE подблок «Клиентский чат: сообщения, изображения и read state».
   Добавлены `OrderClientChatService` и три production Filament actions: история,
   ответ и явное прочтение одного сообщения. История разделена на общий поток,

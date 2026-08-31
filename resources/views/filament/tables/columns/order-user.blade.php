@@ -12,6 +12,9 @@
     $email = $user?->email ?: ($delivery['email'] ?? null);
     $userLocale = $user?->preferredLocale();
     $pdfLocale = $user?->pdf_locale ?: $userLocale;
+    $clientStatuses = OrdersTable::clientStatusOptions();
+    // Legacy selects the first option when no status has been saved. Display only: no DB write.
+    $displayClientStatus = $user?->client_status ?? array_key_first($clientStatuses);
     $channel = OrdersTable::salesChannelLabel($record->a_order_from);
     $category = OrdersTable::categoryLabel($record->catid);
     $manager = $record->manager && (int) $record->manager->role_id === 4
@@ -80,12 +83,11 @@
         @if($user)
             <select
                 aria-label="Статус клиента заказа №{{ $record->id }}"
-                x-on:change.stop="$wire.mountTableAction('updateClientStatus', '{{ $record->getKey() }}', { client_status: $el.value }); $el.value = @js($user->client_status)"
+                x-on:change.stop="$wire.mountTableAction('updateClientStatus', '{{ $record->getKey() }}', { client_status: $el.value }); $el.value = @js($displayClientStatus)"
                 style="width: 100%; padding: 3px 5px; border: 1px solid #9ca3af; border-radius: 3px; background: white; color: #374151; font-size: 12px;"
             >
-                <option value="" @selected($user->client_status === null)>Выберите статус</option>
-                @foreach(OrdersTable::clientStatusOptions() as $statusId => $statusName)
-                    <option value="{{ $statusId }}" @selected((int) $user->client_status === (int) $statusId)>{{ $statusName }}</option>
+                @foreach($clientStatuses as $statusId => $statusName)
+                    <option value="{{ $statusId }}" @selected((int) $displayClientStatus === (int) $statusId)>{{ $statusName }}</option>
                 @endforeach
             </select>
         @else

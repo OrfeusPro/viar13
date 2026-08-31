@@ -24,4 +24,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function getLocaleAttribute(): ?string
+    {
+        // Voyager stores this virtual attribute in settings, not a users.locale column.
+        $locale = data_get($this->settings, 'locale');
+
+        return is_string($locale) ? $locale : null;
+    }
 }
