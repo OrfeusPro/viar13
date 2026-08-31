@@ -8,6 +8,34 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-003 — Чаты: приёмка прочтения и авторов
+
+- [DONE: автоматизированный подэтап; полная приёмка IN PROGRESS] Проверить заполненные client image/general/orphan ветки,
+  стабильность длинной истории, авторов и изоляцию прочтения.
+- Проверить реальный SA ingress → stale snapshot → fresh read и повтор ingress
+  в SQLite с fake внешних вызовов. Не выдавать последовательный SQLite-тест
+  за многопроцессную проверку блокировок MySQL.
+- Проверено 13 новых cases: изоляция general/painting/sketch/orphan/foreign,
+  три закрытых статуса, 120 сообщений с одинаковым timestamp и адресное read,
+  шесть вариантов автора, PDF/PSD/hidden, реальный SA webhook + stale/fresh/duplicate.
+- Regression: 227 passed / 1432 assertions / 1 прежний skip (228 total).
+  Только SQLite :memory: и fake внешних операций; общая БД не использовалась.
+  Browser populated/mobile пока не принят. Следующий шаг — атомарность SA ниже.
+
+### ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения
+
+- [TODO, риск по аудиту кода] `SaIntegrationController::persistMessagePayload`
+  сначала вызывает `upsertSaConversation` (unread=1), затем отдельно сохраняет
+  sa_messages и клиентское зеркало. Общей транзакции нет. Между этими записями
+  read может сбросить unread, особенно при совпадении timestamp до секунды.
+- Событие dedupe сейчас получает processed_at до persist (status=received); при ошибке записи
+  повтор может получить duplicate без восстановленного сообщения. Учесть вместе
+  с атомарностью, не ограничиваться только lock в `OrderSaChatService`.
+- Следующее: единая транзакция для receipt/состояния/сообщения/зеркала и общий
+  порядок блокировок с read; внешнюю загрузку вложений не держать под DB lock.
+  Нужны rollback/retry/duplicate tests и изолированный concurrency-тест MySQL.
+  В текущей приёмке проверены только последовательные ingress/read сценарии.
+
 ### ADM-FIL-003 — Чаты: внешний вид и поведение попапов
 
 - [DONE: UI-подблок, 2026-08-31; полная parity чатов не принята] По запросу пользователя приблизить текущие Filament-попапы

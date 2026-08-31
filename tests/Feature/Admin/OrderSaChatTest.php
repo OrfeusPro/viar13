@@ -286,6 +286,36 @@ class OrderSaChatTest extends TestCase
         $history->set('orderId', $this->order->id + 1);
     }
 
+    public function test_real_ingress_invalidates_snapshot_and_duplicate_does_not_reopen_read(): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $this->message();
+        $history = Livewire::test(OrderSaChatHistory::class, ['orderId' => $this->order->id]);
+        $stale = $this->token();
+        $payload = [
+            'event_id' => 'e8772392-a43a-4f4b-9351-e50fc127b724', 'event_type' => 'message.created',
+            'idempotency_key' => 'read-acceptance-new-message', 'occurred_at' => now()->toIso8601String(), 'source' => 'SA',
+            'data' => ['lead_id' => $this->order->id, 'conversation_id' => $this->conversation->conversation_id, 'channel' => 'whatsapp',
+                'message' => ['message_id' => 'READ-ACCEPTANCE-NEW', 'direction' => 'inbound', 'from' => ['type' => 'client'],
+                    'to' => ['type' => 'agent'], 'text' => 'New message after opening', 'attachments' => [],
+                    'sent_at' => now()->toIso8601String(), 'status' => 'received']],
+        ];
+        $this->postJson('/api/sa/webhooks/messages', $payload, ['X-Api-Key' => 'test-key'])->assertOk()->assertJsonPath('status', 'ok');
+        $history->call('acknowledge', $stale)->assertNotDispatched('order-sa-read')->assertSee('New message after opening');
+        $this->assertTrue($this->conversation->fresh()->unread_for_manager);
+        $history->call('acknowledge', $this->token())->assertDispatched('order-sa-read', orderId: $this->order->id);
+        $this->assertFalse($this->conversation->fresh()->unread_for_manager);
+        $this->assertDatabaseHas('sa_messages', ['message_id' => 'READ-ACCEPTANCE-NEW', 'status' => 'received']);
+        // The public client mirror has its own independent read flag.
+        $this->assertDatabaseHas('order_user_comments', ['sa_message_id' => 'READ-ACCEPTANCE-NEW', 'admin_is_read' => 0]);
+        $this->postJson('/api/sa/webhooks/messages', $payload, ['X-Api-Key' => 'test-key'])->assertOk()->assertJsonPath('status', 'duplicate');
+        $this->assertFalse($this->conversation->fresh()->unread_for_manager);
+        $this->assertDatabaseCount('sa_messages', 2);
+        $this->assertDatabaseCount('order_user_comments', 1);
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
     private function message(array $attributes = []): SaMessage
     {
         return SaMessage::query()->create(array_merge(['orders_id' => $this->order->id,

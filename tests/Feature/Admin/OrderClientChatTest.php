@@ -413,6 +413,119 @@ class OrderClientChatTest extends TestCase
         $this->assertStringContainsString('rel="noopener noreferrer"', $html);
     }
 
+    public function test_populated_threads_keep_messages_and_composers_separate(): void
+    {
+        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        $painting = $this->image('painter');
+        $sketch = $this->image('sketch');
+        $this->incoming(['comment' => 'GENERAL-ONLY']);
+        $this->incoming(['comment' => 'PAINTING-ONLY', 'order_painter_image_id' => $painting, 'is_img_painter' => 1]);
+        $this->incoming(['comment' => 'SKETCH-ONLY', 'order_painter_image_id' => $sketch, 'is_img_sketch' => 1]);
+        $this->incoming(['comment' => 'ORPHAN-ONLY', 'order_painter_image_id' => 999]);
+        $foreign = Orders::query()->create();
+        $this->incoming(['comment' => 'FOREIGN-SECRET', 'order_id' => $foreign->id]);
+        $this->actingAs($this->editor, 'filament');
+        $table = Livewire::test(ClientChatTestTable::class)->mountAction(TestAction::make('viewClientChat')->table($this->order));
+        $html = $table->instance()->getMountedAction()->getModalContent()->render();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+        foreach (['История общего клиентского чата' => 'GENERAL-ONLY', 'История по изображению #'.$painting => 'PAINTING-ONLY', 'История по изображению #'.$sketch => 'SKETCH-ONLY'] as $label => $message) {
+            $region = $xpath->query('//*[@aria-label="'.$label.'"]')->item(0);
+            $this->assertNotNull($region);
+            $this->assertStringContainsString($message, $region->textContent);
+            foreach (array_diff(['GENERAL-ONLY', 'PAINTING-ONLY', 'SKETCH-ONLY', 'ORPHAN-ONLY'], [$message]) as $other) {
+                $this->assertStringNotContainsString($other, $region->textContent);
+            }
+        }
+        $this->assertSame(3, $xpath->query('//*[@data-chat-composer="client"]')->length);
+        $this->assertSame(1, substr_count($html, 'ORPHAN-ONLY'));
+        $this->assertStringNotContainsString('FOREIGN-SECRET', $html);
+        $this->assertSame(0, OrderUserComments::query()->sum('admin_is_read'));
+        Mail::assertNothingSent();
+    }
+
+    #[DataProvider('closedStatuses')]
+    public function test_closed_image_history_stays_visible_but_only_general_reply_remains(string $status): void
+    {
+        $image = $this->image('sketch');
+        $this->incoming(['comment' => 'Preserved closed sketch', 'order_painter_image_id' => $image, 'is_img_sketch' => 1]);
+        $this->order->forceFill(['status' => $status])->save();
+        $this->actingAs($this->editor, 'filament');
+        $table = Livewire::test(ClientChatTestTable::class)->mountAction(TestAction::make('viewClientChat')->table($this->order));
+        $html = $table->instance()->getMountedAction()->getModalContent()->render();
+        $this->assertStringContainsString('Preserved closed sketch', $html);
+        $this->assertStringContainsString('Ответы по изображениям закрыты', $html);
+        $this->assertSame(1, substr_count($html, 'data-chat-composer="client"'));
+        $this->assertStringContainsString('Ответ клиенту в общий чат', $html);
+        $this->assertSame(0, OrderUserComments::query()->sum('admin_is_read'));
+    }
+
+    public function test_long_history_keeps_chronology_and_read_targets_only_one_message(): void
+    {
+        $messages = collect();
+        for ($i = 0; $i < 120; $i++) {
+            $messages->push($this->incoming(['comment' => sprintf('HISTORY-%03d', $i), 'created_at' => '2026-01-01 12:00:00']));
+        }
+        $this->actingAs($this->editor, 'filament');
+        $table = Livewire::test(ClientChatTestTable::class)->mountAction(TestAction::make('viewClientChat')->table($this->order));
+        $html = $table->instance()->getMountedAction()->getModalContent()->render();
+        $this->assertSame(120, substr_count($html, 'data-client-message-id='));
+        $lastPosition = -1;
+        foreach ($messages as $message) {
+            $position = strpos($html, $message->comment);
+            $this->assertNotFalse($position);
+            $this->assertGreaterThan($lastPosition, $position);
+            $lastPosition = $position;
+        }
+        $target = $messages[60];
+        $table->call('mountTableAction', 'readClientChatMessage', (string) $this->order->id, ['message_id' => $target->id]);
+        $this->assertSame(1, (int) $target->fresh()->admin_is_read);
+        $this->assertEquals($target->created_at, $target->fresh()->created_at);
+        $this->assertSame(1, (int) OrderUserComments::query()->sum('admin_is_read'));
+        $this->assertDatabaseCount('order_user_comments', 120);
+        Mail::assertNothingSent();
+    }
+
+    #[DataProvider('clientAuthors')]
+    public function test_client_author_labels_follow_legacy_precedence(bool $self, ?int $roleId, bool $isAdmin, string $label): void
+    {
+        $this->actingAs($this->editor, 'filament');
+        $message = $this->incoming(['user_id' => $self ? $this->editor->id : 999, 'is_admin' => $isAdmin]);
+        $message->setRelation('author', $roleId === null ? null : (new User)->forceFill(['id' => $message->user_id, 'role_id' => $roleId]));
+        $html = view('filament.tables.modals.order-client-messages', ['messages' => collect([$message]), 'record' => $this->order, 'canEdit' => true])->render();
+        $this->assertStringContainsString('<strong>'.$label.'</strong>', $html);
+        $this->assertSame(0, (int) $message->fresh()->admin_is_read);
+    }
+
+    public static function clientAuthors(): array
+    {
+        return [
+            'self wins over role' => [true, 3, true, 'Вы'],
+            'painter wins over admin flag' => [false, 3, true, 'Художник'],
+            'administrator' => [false, 1, true, 'Администратор'],
+            'client' => [false, 2, false, 'Клиент'],
+            'deleted client' => [false, null, false, 'Клиент'],
+            'deleted administrator' => [false, null, true, 'Администратор'],
+        ];
+    }
+
+    public function test_pdf_psd_and_hidden_image_threads_keep_production_links(): void
+    {
+        config(['admin_migration.order_media_base_url' => 'https://viarcanvas.com']);
+        $pdf = $this->image('sketch');
+        $psd = $this->image('painter');
+        DB::table('order_painter_images')->where('id', $pdf)->update(['image' => 'storage/artwork/test.pdf', 'is_show' => false]);
+        DB::table('order_painter_images')->where('id', $psd)->update(['image' => 'storage/artwork/test.psd']);
+        $this->actingAs($this->editor, 'filament');
+        $table = Livewire::test(ClientChatTestTable::class)->mountAction(TestAction::make('viewClientChat')->table($this->order));
+        $html = $table->instance()->getMountedAction()->getModalContent()->render();
+        foreach (['https://viarcanvas.com/storage/artwork/test.pdf', 'https://viarcanvas.com/storage/artwork/test.psd', '/img/pdf.svg', '/img/psd.svg', 'Скрыто от клиента'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
+        $this->assertDatabaseCount('order_user_comments', 0);
+    }
+
     private function send(array $input = []): array
     {
         return app(OrderClientChatService::class)->send($this->order, $this->editor, array_merge(['comment' => 'Ответ', 'thread_type' => 'general'], $input));

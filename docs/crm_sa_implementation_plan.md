@@ -2,6 +2,24 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Чаты: приёмка прочтения и авторов
+
+- DONE автоматизированный подэтап (2026-08-31), не полная приёмка. End-to-end SA
+  ingress/stale read/fresh read/duplicate на SQLite, заполненные client image/general
+  ветки, 120 сообщений, закрытые статусы, авторы и PDF/PSD: 13 новых cases.
+- Regression: 227 passed / 1432 assertions / 1 прежний skip (228 total).
+  Targeted: 60 tests / 644 assertions. Внешние операции fake/mock, общая БД не использовалась.
+- Проверяется существующий POST /api/sa/webhooks/messages, X-Api-Key, success/duplicate
+  200; stale snapshot не снимает unread, fresh read не меняет клиентский mirror или
+  статус доставки. API/schema/lead_id и статические mappings не менялись.
+- Риск по коду: `persistMessagePayload` обновляет conversation до sa_messages без
+  общей транзакции; `isDuplicateEvent` сохраняет receipt/processed_at до persist.
+  Возможны lost-unread при конкурентном read и unrecoverable duplicate после ошибки.
+  Последовательные tests не являются проверкой конкурентных MySQL блокировок.
+- Далее: **ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения**: единая
+  транзакция receipt/state/message/mirror, downloads вне lock, rollback/retry и
+  отдельный MySQL concurrency test. Populated browser/mobile ещё не приняты.
+
 ## ADM-FIL-003 — Чаты: внешний вид и поведение попапов
 
 - DONE UI-подблок (2026-08-31), не полная parity: Voyager-like shell и layout
