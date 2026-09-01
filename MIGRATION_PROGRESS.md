@@ -1,5 +1,35 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения
+
+- DONE (2026-09-01): `SaMessageIngressService` атомарно резервирует receipt,
+  выполняет business persist и переводит receipt `received` → `processed`.
+  Откат удаляет receipt вместе с conversation/order/message/mirror/status writes,
+  поэтому тот же event можно безопасно повторить после `503 PERSISTENCE_ERROR`.
+- Dedupe: одинаковый event_id или scoped idempotency_key → 200 duplicate; legacy
+  receipts признаются без переписывания; unrelated unique violation пробрасывается.
+  Никакой cache reservation для messages webhook больше не создаётся.
+- `persistMessagePayload` работает внутри этой транзакции и блокирует order, затем
+  conversation. `upsertSaConversation` читает актуальное состояние под lock, чтобы
+  message.status не возвращал уже снятый менеджером unread.
+- Вложения подготовлены до DB locks, имеют уникальный attempt suffix. Rollback или
+  concurrent duplicate удаляет только созданный этой попыткой public-файл по строго
+  ограниченному `sa/attachments/...` пути. Cleanup failure логируется без секретов.
+- Новые SQLite checks: 9 tests / 132 assertions — rollback после receipt/message/
+  mirror/status, retry, event/key duplicate, legacy receipt, unrelated constraint,
+  attachment preparation/cleanup. Targeted SA: 42 / 408.
+- Реальный concurrency test: отдельная MariaDB `admfil_sa_test_<random>`, два PHP
+  процесса; read был заблокирован ingress transaction и после commit получил stale.
+  1 test / 11 assertions / 2.49s; временная БД удалена, рабочая БД не менялась.
+- Regression: **236 passed / 1564 assertions / 1 прежний skip**, 237 total,
+  exit 0, 21.70s. PHP lint, targeted Pint новых файлов и diff-check пройдены.
+  Массовое форматирование legacy controller отменено; остался scoped diff 75 строк.
+- API route/auth/request и success/duplicate response совместимы; новая временная
+  ошибка persist: 503 JSON `PERSISTENCE_ERROR`, предназначена для повтора.
+  Schema/migrations, lead_id, public frontend и bot mode не менялись.
+- Следующее: ADM-FIL-003 — Чаты: browser-UAT заполненных веток на №18451.
+  Полная приёмка чатов остаётся IN PROGRESS.
+
 ## ADM-FIL-003 — Чаты: приёмка прочтения и авторов
 
 - DONE автоматизированный подэтап (2026-08-31), не полная визуальная/функциональная

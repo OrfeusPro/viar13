@@ -2,6 +2,24 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения
+
+- DONE (2026-09-01): POST `/api/sa/webhooks/messages` атомарно сохраняет receipt,
+  conversation/order fields, sa_message, client mirror и status. Receipt `processed`
+  ставится после persist; rollback оставляет событие доступным для retry.
+- Dedupe: event_id и scoped idempotency_key; 200 duplicate для обоих, legacy receipt
+  совместим. Ошибка persist: 503, `PERSISTENCE_ERROR`, единый JSON error envelope.
+- Lock order order → conversation общий с Filament commands; manager read ждёт
+  ingress и валидирует snapshot после commit. MariaDB two-process: 1/11, stale
+  подтверждён, unread не потерян; временная БД удалена.
+- Вложения скачиваются до lock, attempt paths уникальны; rollback/duplicate cleanup
+  удаляет только новый файл. Ошибка удаления логируется без секретов.
+- SQLite atomicity: 9/132; targeted SA 42/408; regression 236 passed / 1564
+  assertions / 1 legacy skip (237 total). Http/Mail fake, рабочая БД не менялась.
+- API request/success/duplicate, X-Api-Key, lead_id, schema и mappings неизменны.
+- Далее: ADM-FIL-003 — browser-UAT заполненных веток на тестовом №18451;
+  общая функциональная приёмка чатов ещё IN PROGRESS.
+
 ## ADM-FIL-003 — Чаты: приёмка прочтения и авторов
 
 - DONE автоматизированный подэтап (2026-08-31), не полная приёмка. End-to-end SA

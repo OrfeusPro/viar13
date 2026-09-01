@@ -1,6 +1,6 @@
 # План миграции viar13 на Laravel 13
 
-Обновлено: 2026-08-31.
+Обновлено: 2026-09-01.
 
 ## Название задачи
 
@@ -24,17 +24,25 @@
 
 ### ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения
 
-- [TODO, риск по аудиту кода] `SaIntegrationController::persistMessagePayload`
-  сначала вызывает `upsertSaConversation` (unread=1), затем отдельно сохраняет
-  sa_messages и клиентское зеркало. Общей транзакции нет. Между этими записями
-  read может сбросить unread, особенно при совпадении timestamp до секунды.
-- Событие dedupe сейчас получает processed_at до persist (status=received); при ошибке записи
-  повтор может получить duplicate без восстановленного сообщения. Учесть вместе
-  с атомарностью, не ограничиваться только lock в `OrderSaChatService`.
-- Следующее: единая транзакция для receipt/состояния/сообщения/зеркала и общий
-  порядок блокировок с read; внешнюю загрузку вложений не держать под DB lock.
-  Нужны rollback/retry/duplicate tests и изолированный concurrency-тест MySQL.
-  В текущей приёмке проверены только последовательные ingress/read сценарии.
+- [DONE, 2026-09-01] POST `/api/sa/webhooks/messages`: receipt, conversation,
+  order integration fields, sa_message, client mirror и delivery status теперь
+  коммитятся одной транзакцией. Receipt получает `processed` только после persist.
+- Dedupe проверяет оба контрактных ключа: глобальный `event_id` и scoped
+  `idempotency_key`; конкурентный unique конфликт возвращает duplicate только
+  после проверки существующего receipt. Другие constraint ошибки не скрываются.
+- Порядок блокировок ingress совпадает с командами: order → conversation; read
+  блокирует conversation и после ожидания проверяет snapshot. Проверено двумя
+  PHP-процессами на отдельной временной MariaDB: старый snapshot возвращает stale,
+  новое сообщение остаётся unread. Тестовая БД удалена после проверки.
+- Загрузка вложений происходит до транзакции. Для попытки создаётся уникальный
+  путь; после rollback/проигранного duplicate удаляется только файл этой попытки.
+  Ошибка cleanup логируется и не скрывает исходный ответ.
+- Failure injection: после receipt/message/mirror/status — полный rollback, `503`
+  `PERSISTENCE_ERROR`, повтор того же события успешен. SQLite: 9 tests / 132
+  assertions; MariaDB: 1 / 11. Regression: 236 passed / 1564 assertions /
+  1 прежний skip (237 total). API auth/lead_id/schema не менялись.
+- Следующее: ADM-FIL-003 — Чаты: browser-UAT заполненных веток на тестовом №18451.
+  Общая приёмка ADM-FIL-003 остаётся IN PROGRESS до визуальной проверки.
 
 ### ADM-FIL-003 — Чаты: внешний вид и поведение попапов
 

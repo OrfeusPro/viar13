@@ -89,17 +89,31 @@ class SaIntegrationController extends Controller
         }
 
         $eventId = (string) $request->input('event_id');
-        if ($this->isDuplicateEvent('sa:webhooks:messages:event', $eventId, [
-            'event_id' => $eventId,
-            'idempotency_key' => (string) $request->input('idempotency_key'),
-            'event_type' => $eventType,
-            'source' => (string) $request->input('source'),
-            'payload' => $request->all(),
-        ])) {
-            return response()->json(['status' => 'duplicate'], 200);
+        try {
+            $ingress = app(\App\Services\SaMessageIngressService::class);
+            if ($ingress->isDuplicate($eventId, (string) $request->input('idempotency_key'))) {
+                return response()->json(['status' => 'duplicate'], 200);
+            }
+            // Network/filesystem operations must not hold DB locks.
+            $attachments = $eventType === 'message.created'
+                ? $this->processMessageAttachments((array) $request->input('data.message.attachments', []), (string) $request->input('data.message.message_id'), true)
+                : [];
+            $stored = $ingress->process($request->all(), function () use ($request, $eventType, $eventId, $attachments): void {
+                $this->persistMessagePayload($request, $eventType, $eventId, $attachments);
+            });
+            if (!$stored) {
+                $this->removePreparedAttachments($attachments);
+                return response()->json(['status' => 'duplicate'], 200);
+            }
+        } catch (\Throwable $exception) {
+            $this->removePreparedAttachments($attachments ?? []);
+            Log::error('SA message ingress failed; event may be retried.', [
+                'event_id' => $eventId, 'event_type' => $eventType, 'exception_class' => get_class($exception),
+            ]);
+            return response()->json(['status' => 'error', 'error' => [
+                'code' => 'PERSISTENCE_ERROR', 'message' => 'Message was not committed. Retry the same event.', 'details' => [],
+            ]], 503);
         }
-
-        $this->persistMessagePayload($request, $eventType, $eventId);
 
         $result = ['stored' => true];
         if ($eventType === 'message.status') {
@@ -1661,10 +1675,10 @@ class SaIntegrationController extends Controller
         return !Cache::add($cacheKey, 1, now()->addDay());
     }
 
-    private function persistMessagePayload(Request $request, string $eventType, string $eventId): void
+    private function persistMessagePayload(Request $request, string $eventType, string $eventId, array $storedAttachments): void
     {
         if (!Schema::hasTable('sa_messages') || !Schema::hasTable('sa_conversations')) {
-            return;
+            throw new \RuntimeException('SA message storage is unavailable.');
         }
 
         $data = (array) $request->input('data', []);
@@ -1681,6 +1695,12 @@ class SaIntegrationController extends Controller
             $resolvedOrderId = (int) $existingMessage->orders_id;
         }
 
+        // Same lock order as Filament SA commands: order, then conversation.
+        if ($resolvedOrderId !== null) {
+            Orders::query()->whereKey($resolvedOrderId)->lockForUpdate()->first();
+        }
+        SaConversation::query()->where('conversation_id', $conversationId)->lockForUpdate()->first();
+
         $this->upsertSaConversation(
             $conversationId,
             $resolvedOrderId,
@@ -1690,7 +1710,8 @@ class SaIntegrationController extends Controller
             null,
             now(),
             (string) data_get($data, 'message.direction', ''),
-            (string) data_get($data, 'message.from.type', '')
+            (string) data_get($data, 'message.from.type', ''),
+            true
         );
         $this->syncOrderIntegrationFields(
             $resolvedOrderId,
@@ -1701,10 +1722,6 @@ class SaIntegrationController extends Controller
 
         if ($eventType === 'message.created') {
             $direction = (string) data_get($data, 'message.direction', 'inbound');
-            $storedAttachments = $this->processMessageAttachments(
-                (array) data_get($data, 'message.attachments', []),
-                $messageId
-            );
             $chatText = trim((string) data_get($data, 'message.text', ''));
             $chatText = $this->buildChatTextWithAttachments($chatText, $storedAttachments);
             $messageModel = SaMessage::query()->updateOrCreate(
@@ -2004,7 +2021,8 @@ class SaIntegrationController extends Controller
         ?string $botMode = null,
         ?Carbon $lastMessageAt = null,
         ?string $lastDirection = null,
-        ?string $lastSenderType = null
+        ?string $lastSenderType = null,
+        bool $lock = false
     ): void {
         if ($conversationId === '' || !Schema::hasTable('sa_conversations')) {
             return;
@@ -2012,6 +2030,7 @@ class SaIntegrationController extends Controller
 
         $existing = SaConversation::query()
             ->where('conversation_id', $conversationId)
+            ->when($lock, fn ($query) => $query->lockForUpdate())
             ->first();
 
         $attributes = [
@@ -4460,7 +4479,7 @@ class SaIntegrationController extends Controller
      * @param array<int, mixed> $attachments
      * @return array<int, array<string, mixed>>
      */
-    private function processMessageAttachments(array $attachments, string $messageId): array
+    private function processMessageAttachments(array $attachments, string $messageId, bool $uniqueAttempt = false): array
     {
         if (empty($attachments)) {
             return [];
@@ -4526,6 +4545,10 @@ class SaIntegrationController extends Controller
             }
 
             $relativePath = $this->buildAttachmentRelativePath($messageId, (int) $index, $mime, $sourceUrl);
+            if ($uniqueAttempt) {
+                $extension = pathinfo($relativePath, PATHINFO_EXTENSION);
+                $relativePath = substr($relativePath, 0, -(strlen($extension) + 1)).'_'.bin2hex(random_bytes(8)).'.'.$extension;
+            }
             Storage::disk('public')->put($relativePath, $binary);
 
             $stored[] = [
@@ -4540,6 +4563,24 @@ class SaIntegrationController extends Controller
         }
 
         return $stored;
+    }
+
+    private function removePreparedAttachments(array $attachments): void
+    {
+        foreach ($attachments as $attachment) {
+            if (($attachment['status'] ?? null) !== 'stored' || ($attachment['disk'] ?? null) !== 'public') {
+                continue;
+            }
+            $path = (string) ($attachment['local_path'] ?? '');
+            if (!preg_match('#^storage/(sa/attachments/[A-Za-z0-9_./-]+)$#', $path, $matches)) {
+                continue;
+            }
+            try {
+                Storage::disk('public')->delete($matches[1]);
+            } catch (\Throwable $exception) {
+                Log::warning('Failed to remove uncommitted SA attachment.', ['path' => $matches[1], 'exception_class' => get_class($exception)]);
+            }
+        }
     }
 
     /**
