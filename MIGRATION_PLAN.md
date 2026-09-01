@@ -8,6 +8,33 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-010 — Создание и копирование заказа менеджером
+
+- [IN PROGRESS, 2026-09-01] Проверен legacy route/controller/Blade
+  `create_admin_order`: форма содержит клиента, оплату, доставку, скидки,
+  юридическое лицо и повторяемые позиции с файлами.
+- Legacy `from_order_id` фактически предзаполняет только пользователя: передача
+  и разбор заказа в Blade закомментированы. В Filament переносим ожидаемое
+  копирование клиента, доставки, оплаты, скидок и всех позиций.
+- Создание должно выполняться валидируемым сервисом и одной DB-транзакцией;
+  пользователь, списание бонусов и заказ не могут остаться частично созданными.
+- Регистрационное письмо, письмо о заказе и Synvolve webhook остаются только
+  opt-in и выключены во время UAT. Browser-проверка — только предзаполнение из
+  №18451; создание дополнительно проверяется на изолированной тестовой БД.
+- [IMPLEMENTED, 2026-09-01] Добавлена custom create page, доступная по
+  `add_orders`, поиск существующего клиента, полный набор legacy-полей,
+  повторяемые позиции и загрузка исходников с прежним filename contract.
+- Общий `OrderItemPresentationService` теперь используется и Voyager, и
+  Filament для canvas/box/decoration/express presentation; старые payload keys
+  (`sizeId`, `savedImage`, `formId`, effect/execution и другие) не теряются.
+- Реальный UAT: из №18451 временно создан №18452, обе админки подтвердили
+  admin-order, PayPal, VIAR pickup, Canvas 40x40, исходник, V2 и express. Запись
+  удалена, AUTO_INCREMENT возвращён к 18452, count/max/bonus восстановлены.
+- [OPEN] Перед DONE визуально принять форму и отдельно проверить создание нового
+  клиента и реальную загрузку файла; эти ветки уже покрыты isolated tests.
+- Проверки шага: targeted 25/127; полный suite 402 passed / 2860 assertions /
+  6 baseline skips. Pint, Blade cache и diff-check прошли.
+
 ### ADM-FIL-003 — Финальная попарная сверка восьми колонок
 
 - [IN PROGRESS, 2026-09-01] После reload №18451 попарно сверены все восемь
@@ -55,8 +82,8 @@
 - Удаление требует `delete_orders`, подтверждения и транзакционно возвращает
   использованные бонусы. Browser-delete намеренно не запускался. Edit, client
   modal, related/all-user filters и outgoing label работают без Voyager routes.
-- «Создать заказ» явно недоступен до **ADM-FIL-010**, чтобы не создавать
-  частичные заказы через generic Filament form.
+- «Создать заказ» теперь ведёт на custom page ADM-FIL-010; generic Filament
+  create не используется, сохранение выполняет атомарный business service.
 - Browser-UAT только №18451: status `pegging → watching → pegging`, delivery
   `2026-08-12 → 2026-09-21 → 2026-08-12`; baseline status dates восстановлен
   в null, письмо не отправлялось. Tests: lifecycle 5/36; полный suite 392 passed /
@@ -461,7 +488,7 @@
 - [ ] [TODO] **ADM-FIL-007 — Чаты заказа**.
 - [ ] [TODO] **ADM-FIL-008 — Оплата и платёжные ссылки**.
 - [ ] [TODO] **ADM-FIL-009 — Доставка и Venipak**.
-- [ ] [TODO] **ADM-FIL-010 — Создание заказа менеджером**.
+- [ ] [IN PROGRESS] **ADM-FIL-010 — Создание заказа менеджером**.
 - [ ] [TODO] **ADM-FIL-011 — Приёмка модуля заказов**.
 - [ ] [TODO] **ADM-FIL-020 — CRM-SA inbox**.
 - [ ] [TODO] **ADM-FIL-021 — Пользователи, роли и скидки**.

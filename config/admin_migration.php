@@ -30,4 +30,7 @@ return [
 
     // Keep sent/pickup status emails disabled during Filament UAT.
     'order_status_notifications_enabled' => (bool) env('ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED', false),
+
+    // Keep registration/order emails and CRM webhook disabled during manager-order UAT.
+    'order_creation_notifications_enabled' => (bool) env('ADMIN_ORDER_CREATION_NOTIFICATIONS_ENABLED', false),
 ];

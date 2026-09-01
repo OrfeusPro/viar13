@@ -1,5 +1,30 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-010 — Создание и копирование заказа менеджером
+
+- IN PROGRESS (2026-09-01): выполнен аудит legacy `create_admin_order` и формы.
+  Найдены невалидируемые входные данные, внешние отправки до/после insert и
+  возможность частичного создания пользователя/списания бонусов.
+- `from_order_id` в Voyager передавал в Blade только найденного пользователя;
+  код разбора самого заказа был закомментирован. Для Filament принят полный
+  copy-prefill без автоматического сохранения.
+- В работе: отдельная create schema, атомарный сервис, permission `add_orders`,
+  opt-in уведомления и isolated tests.
+- Реализованы custom create page и действие из колонки «Заказ». Поля повторяют
+  legacy client/payment/delivery/discount/legal/items form; существующий клиент
+  ищется отдельно, новый создаётся только внутри общей транзакции с заказом.
+- Legacy item presentation вынесена в общий сервис для Voyager/Filament. Copy
+  сохраняет raw payload, `sizeId/show.size`, `savedImage`, effect/execution,
+  ручные коды и express, а не только современные `size_name/orig_images`.
+- Browser UAT на основе №18451: временный №18452 создан без mail/webhook,
+  просмотрен в Filament и Voyager, затем удалён. Восстановлены `count=14894`,
+  `max=18451`, `AUTO_INCREMENT=18452`, bonuses пользователя 43201 = 0.
+- Targeted creation/lifecycle/display: 25 tests / 127 assertions. Full suite:
+  402 passed / 2860 assertions / 6 baseline skips; Pint, Blade cache и
+  diff-check прошли.
+- Осталось до DONE: визуальная приёмка пользователем, browser UAT нового клиента
+  и физического upload. Эти ветки уже проверяются isolated с rollback/storage fake.
+
 ## ADM-FIL-003 — Финальная попарная сверка восьми колонок
 
 - IN PROGRESS только из-за зависимости ADM-FIL-010 (2026-09-01): все восемь

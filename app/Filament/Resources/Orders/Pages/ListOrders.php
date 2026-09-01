@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Pages;
 use App\Filament\Resources\Orders\OrdersResource;
 use App\Http\Controllers\OrdersController;
 use App\Models\Orders;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +17,7 @@ class ListOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            CreateAction::make()->label('Создать заказ'),
         ];
     }
 

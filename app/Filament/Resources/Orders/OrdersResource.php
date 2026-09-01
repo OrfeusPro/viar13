@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\Orders;
 
-use App\Filament\Resources\Orders\Pages\ListOrders;
+use App\Filament\Resources\Orders\Pages\CreateOrders;
 use App\Filament\Resources\Orders\Pages\EditOrders;
+use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrders;
 use App\Filament\Resources\Orders\Schemas\OrdersForm;
 use App\Filament\Resources\Orders\Schemas\OrdersInfolist;
@@ -57,6 +58,7 @@ class OrdersResource extends Resource
     {
         return [
             'index' => ListOrders::route('/'),
+            'create' => CreateOrders::route('/create'),
             'view' => ViewOrders::route('/{record}'),
             'edit' => EditOrders::route('/{record}/edit'),
         ];

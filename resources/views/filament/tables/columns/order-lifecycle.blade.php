@@ -92,7 +92,9 @@
     </div>
 
     <div style="margin-top:16px;padding-top:8px;border-top:1px solid #e5e7eb;">
-        <span title="Будет реализовано в ADM-FIL-010" aria-disabled="true" style="{{ $button }}background:#94a3b8;cursor:not-allowed;">Создать заказ</span>
+        @if(OrdersResource::canCreate())
+            <a href="{{ OrdersResource::getUrl('create', ['from_order_id' => $record->id]) }}" style="{{ $button }}background:#337ab7;">Создать заказ</a>
+        @endif
         @if($canEdit)
             <a href="{{ OrdersResource::getUrl('edit', ['record' => $record]) }}" style="{{ $button }}background:#f59e0b;">Редактировать заказ</a>
         @endif

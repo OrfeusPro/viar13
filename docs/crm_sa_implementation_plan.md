@@ -2,6 +2,21 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-010 — Создание заказа менеджером и CRM snapshot
+
+- IN PROGRESS (2026-09-01): Filament создаёт manager order через отдельный
+  валидируемый транзакционный сервис; `orders.id`/`lead_id` контракт не менялся.
+- Legacy `admin_order_created` Synvolve snapshot сохранён, но вместе с двумя
+  email защищён opt-in `ADMIN_ORDER_CREATION_NOTIFICATIONS_ENABLED=false`.
+  При выключенном флаге ни HTTP, ни mail не вызываются.
+- Browser UAT создал только временную копию №18452 из тестового №18451. Voyager
+  прочитал order/items/delivery без адаптеров; затем №18452 удалён и DB counter
+  восстановлен. SA conversations/messages/bot state №18451 не изменялись.
+- Следующее CRM/SA-действие: после общей приёмки формы отдельно включать webhook
+  только в fake/mock test; production вызов до согласованного UAT запрещён.
+- Regression: targeted 25/127, full 402/2860 с 6 baseline skips. Browser UAT
+  подтвердил suppression notification; реального CRM/SA HTTP не было.
+
 ## ADM-FIL-003 — Колонка «Заказ»: статусы, сроки и действия
 
 - DONE (2026-09-01): lifecycle/status/delivery/delete перенесены из Voyager в

@@ -156,6 +156,7 @@ class OrderLifecycleServiceTest extends TestCase
 
     public function test_column_renders_legacy_status_dates_delivery_actions_and_outgoing_label(): void
     {
+        $this->actingAs($this->admin(['add_orders']), 'filament');
         $user = User::query()->forceCreate(['email' => 'client@example.test']);
         $order = Orders::query()->forceCreate([
             'user_id' => $user->id,
@@ -178,7 +179,7 @@ class OrderLifecycleServiceTest extends TestCase
         foreach (['Статус заказа:', 'В процессе', 'История статусов', 'номер заказа:', 'желаемая дата доставки:', 'Создать заказ', 'Просмотр клиента', 'Все заказы ранее', 'Исходящая накладная', 'Скачать'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
-        $this->assertStringContainsString('ADM-FIL-010', $html);
+        $this->assertStringContainsString('/filament/orders/create?from_order_id='.$order->id, $html);
         $this->assertStringContainsString('Другие активные заказы:', $html);
         $this->assertSame(2, substr_count($html, 'background:#16a34a;'));
     }
@@ -205,6 +206,13 @@ class OrderLifecycleServiceTest extends TestCase
             ->callMountedAction()
             ->assertHasNoErrors();
         $this->assertDatabaseMissing('orders', ['id' => $order->id]);
+    }
+
+    public function test_create_page_rejects_user_without_add_orders_permission(): void
+    {
+        $this->actingAs($this->admin(['browse_orders', 'read_orders']), 'filament');
+
+        $this->get('/filament/orders/create')->assertForbidden();
     }
 
     private function admin(array $permissions): User
