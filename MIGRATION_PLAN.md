@@ -8,6 +8,14 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-003 — Финальная сверка списка: сортировка колонки «Номер»
+
+- [DONE, 2026-09-01] Видимая колонка «Номер» сортирует `orders.id` asc/desc,
+  как заголовок Voyager; скрытая дублирующая колонка не используется.
+- Targeted display tests: 11 passed / 43 assertions. Browser после reload
+  подтвердил action-кнопку сортировки в заголовке; БД не изменялась. Полный
+  suite: 393 passed / 2809 assertions / 6 baseline skips.
+
 ### ADM-FIL-003 — Колонка «Заказ»: статусы, сроки и действия
 
 - [DONE, 2026-09-01] В одну parity-колонку перенесены status select/timeline,

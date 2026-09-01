@@ -70,6 +70,21 @@ class OrdersDisplayParityTest extends TestCase
             ->searchTable('')->assertCountTableRecords(2);
     }
 
+    public function test_visible_number_column_sorts_by_order_id_like_voyager(): void
+    {
+        DB::table('orders')->insert([
+            ['id' => 18380, 'status' => 'watching'],
+            ['id' => 18382, 'status' => 'watching'],
+            ['id' => 18381, 'status' => 'watching'],
+        ]);
+
+        Livewire::test(OrderNumberSearchTable::class)
+            ->sortTable('number_controls', 'asc')
+            ->assertCanSeeTableRecords(Orders::query()->orderBy('id')->get(), inOrder: true)
+            ->sortTable('number_controls', 'desc')
+            ->assertCanSeeTableRecords(Orders::query()->orderByDesc('id')->get(), inOrder: true);
+    }
+
     public function test_production_columns_remain_in_the_same_eight_column_order(): void
     {
         $component = Livewire::test(OrderNumberSearchTable::class)->instance();

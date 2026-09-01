@@ -79,6 +79,7 @@ class OrdersTable
                 ViewColumn::make('number_controls')
                     ->label('Номер')
                     ->searchable(['id'])
+                    ->sortable(['id'])
                     ->view('filament.tables.columns.order-number'),
                 ViewColumn::make('payment_controls')
                     ->label('Оплата')
