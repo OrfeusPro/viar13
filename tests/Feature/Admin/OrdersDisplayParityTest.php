@@ -95,6 +95,38 @@ class OrdersDisplayParityTest extends TestCase
         $this->assertSame(['Номер', 'Оплата', 'Пользователь', 'Получатель', 'Товар', 'Комментарии', 'Художник', 'Заказ'], $names);
     }
 
+    public function test_orders_row_is_top_aligned_without_affecting_other_filament_tables(): void
+    {
+        $css = file_get_contents(public_path('css/filament-order-chats.css'));
+
+        $this->assertStringContainsString(
+            '.fi-ta-table tbody:has(.adm-fil-order-lifecycle) > tr > td { vertical-align:top; }',
+            $css,
+        );
+        $this->assertStringNotContainsString('.fi-ta-table tbody > tr > td { vertical-align:top; }', $css);
+    }
+
+    public function test_recipient_payment_and_delivery_indicators_keep_legacy_vertical_size(): void
+    {
+        $order = (new Orders)->forceFill([
+            'id' => 18451,
+            'payment' => 'paypalOnetimePayment',
+            'delivery' => json_encode([
+                'email' => 'client@example.test', 'first_name' => 'Client',
+                'last_name' => 'Test', 'phone' => '+37120000000', 'country' => 'LV',
+                'address' => 'Riga', 'postal_index' => '-', 'sposob' => 'pickup_at_viar_workshop',
+            ]),
+        ]);
+        $order->setRelation('user', null);
+
+        $html = view('filament.tables.columns.order-recipient', ['getRecord' => fn () => $order])->render();
+        $this->assertStringContainsString('class="adm-fil-recipient-indicators"', $html);
+        $this->assertStringContainsString('alt="PayPal"', $html);
+        $this->assertStringContainsString('alt="Забрать в мастерской VIAR"', $html);
+        $this->assertSame(2, substr_count($html, 'display: block; max-width: 60px; height: auto;'));
+        $this->assertStringNotContainsString('max-height: 38px', $html);
+    }
+
     public function test_comments_column_keeps_the_complete_voyager_previews(): void
     {
         $order = (new Orders)->forceFill([

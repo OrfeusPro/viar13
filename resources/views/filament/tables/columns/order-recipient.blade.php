@@ -81,8 +81,8 @@
     @if($method)<div style="margin-top: 7px;">{{ $method }}</div>@endif
     @if($payment[0])<div>{{ $payment[0] }}</div>@endif
 
-    <div style="margin-top: 8px; text-align: center;">
-        @if($payment[1])<img src="{{ asset($payment[1]) }}" title="{{ $payment[0] }}" alt="{{ $payment[0] }}" style="display: inline-block; max-width: 60px; max-height: 38px; margin: 2px;">@endif
-        @if($deliveryIcon)<img src="{{ asset($deliveryIcon) }}" title="{{ $method }}" alt="{{ $method }}" style="display: inline-block; max-width: 60px; max-height: 38px; margin: 2px;">@endif
+    <div class="adm-fil-recipient-indicators" style="margin-top: 8px; text-align: center;">
+        @if($payment[1])<img src="{{ asset($payment[1]) }}" title="{{ $payment[0] }}" alt="{{ $payment[0] }}" style="display: block; max-width: 60px; height: auto; margin: 8px auto;">@endif
+        @if($deliveryIcon)<img src="{{ asset($deliveryIcon) }}" title="{{ $method }}" alt="{{ $method }}" style="display: block; max-width: 60px; height: auto; margin: 8px auto;">@endif
     </div>
 </div>

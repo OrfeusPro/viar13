@@ -96,9 +96,9 @@
         @if($canEdit)
             <a href="{{ OrdersResource::getUrl('edit', ['record' => $record]) }}" style="{{ $button }}background:#f59e0b;">Редактировать заказ</a>
         @endif
-        <button type="button" x-on:click.stop="$wire.mountTableAction('viewOrderClient', '{{ $record->getKey() }}')" style="{{ $button }}background:#f59e0b;">Просмотр клиента</button>
+        <button type="button" x-on:click.stop="$wire.mountTableAction('viewOrderClient', '{{ $record->getKey() }}')" style="{{ $button }}background:#16a34a;">Просмотр клиента</button>
         @if($record->user_id)
-            <a href="{{ OrdersResource::getUrl('index', ['activeTab' => 'all', 'tableFilters' => ['user_id' => ['value' => $record->user_id]]]) }}" style="{{ $button }}background:#f59e0b;">Все заказы ранее</a>
+            <a href="{{ OrdersResource::getUrl('index', ['activeTab' => 'all', 'tableFilters' => ['user_id' => ['value' => $record->user_id]]]) }}" style="{{ $button }}background:#16a34a;">Все заказы ранее</a>
         @endif
         @if($canDelete)
             <button type="button" x-on:click.stop="$wire.mountTableAction('deleteOrder', '{{ $record->getKey() }}')" style="{{ $button }}background:#dc2626;">Удалить</button>

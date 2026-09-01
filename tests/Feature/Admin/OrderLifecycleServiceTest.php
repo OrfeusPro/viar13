@@ -180,6 +180,7 @@ class OrderLifecycleServiceTest extends TestCase
         }
         $this->assertStringContainsString('ADM-FIL-010', $html);
         $this->assertStringContainsString('Другие активные заказы:', $html);
+        $this->assertSame(2, substr_count($html, 'background:#16a34a;'));
     }
 
     public function test_livewire_lifecycle_actions_enforce_voyager_permissions(): void

@@ -1,5 +1,20 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Финальная попарная сверка восьми колонок
+
+- IN PROGRESS только из-за зависимости ADM-FIL-010 (2026-09-01): все восемь
+  колонок №18451 попарно сверены после reload; семь закрыты полностью, в
+  «Заказе» единственным отсутствующим action остаётся create/copy order.
+- Исправлено: все ячейки top-aligned; PayPal и pickup icons снова отдельные,
+  вертикальные и без height clamp; client/history buttons зелёные как Voyager.
+- Осознанно не перенесены два legacy-дефекта: пустой `На печать` при `labels=''`
+  и повторные raw delivery date/address. Рабочая печать существующих labels есть.
+- Browser audit read-only, общая БД и №18451 не менялись. Targeted display +
+  lifecycle: 18 passed / 87 assertions; full: 395 passed / 2817 assertions /
+  6 baseline skips. Pint, Blade cache и diff-check прошли.
+- Далее: **ADM-FIL-010 — Создание заказа менеджером**, начиная с аудита
+  `create_admin_order?from_order_id=18451`; ADM-FIL-004 пока не начинать.
+
 ## ADM-FIL-003 — Финальная сверка списка: сортировка колонки «Номер»
 
 - DONE (2026-09-01): `number_controls` получила сортировку по `orders.id` в обе
