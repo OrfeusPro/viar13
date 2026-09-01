@@ -2,6 +2,20 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Колонка «Заказ»: статусы, сроки и действия
+
+- DONE (2026-09-01): lifecycle/status/delivery/delete перенесены из Voyager в
+  защищённые Filament actions. CRM/SA endpoints, `lead_id`, conversation/bot
+  state, schema и message streams не менялись.
+- Legacy email на статусах `sended`/`send_lubanas` сохранён, но до отдельной UAT
+  включается только `ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED=true`; текущий
+  runtime false. Статусный browser-test №18451 не вызывал внешних операций.
+- После UAT №18451 восстановлен: `status=pegging`, status timestamps null,
+  `delivery.when_send=2026-08-12`. Delete не запускался; SA row не менялся.
+- Изменение статуса пока не добавляет новый CRM webhook: legacy `changeOrder`
+  отправлял только два email. Следующее — финальная приёмка ADM-FIL-003;
+  CRM-SA API остаётся без изменений. Full suite: 392/2807, 6 baseline skips.
+
 ## ADM-FIL-003 — Колонка «Художник»: данные, назначения и действия
 
 - DONE (2026-09-01): legacy artist/printing assignments, deadline, paid flag,

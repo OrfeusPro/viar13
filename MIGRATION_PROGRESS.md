@@ -1,5 +1,24 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Колонка «Заказ»: статусы, сроки и действия
+
+- DONE (2026-09-01): последняя колонка теперь повторяет состав Voyager: status
+  select/history, три связанных заказа №18451/18439/18440 по legacy identity
+  matching, номер/дата, delivery deadline/days/urgency, label и действия.
+- `OrderLifecycleService` валидирует и блокирует заказ; status/delivery/delete
+  выполняются транзакционно. Action permissions: update=`edit_orders`,
+  delete=`delete_orders`, client view=`read_orders`; удаление подтверждается.
+- Sent/pickup mail сохранён как opt-in и выключен через
+  `ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED=false`. Browser UAT не отправлял
+  mail и не тестировал delete. Generic create отключён до ADM-FIL-010.
+- Реальный UAT только №18451: status и delivery обновлены через modal и
+  восстановлены в `pegging`, status dates `null`, `when_send=2026-08-12`.
+  Client modal, edit/filter links и связанный legacy список проверены в Chrome.
+- Isolated tests: 5 passed / 36 assertions, включая Livewire permission checks;
+  полный suite: 392 passed / 2807 assertions / 6 baseline skips. Pint, Blade
+  cache и diff-check прошли. Следующее: финальная визуальная приёмка восьми
+  колонок ADM-FIL-003.
+
 ## ADM-FIL-003 — Колонка «Художник»: данные, назначения и действия
 
 - DONE (2026-09-01): legacy-состав перенесён в компактную ячейку и modal:

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Tables;
 use App\Http\Controllers\IndexController;
 use App\Models\AOrderFrom;
 use App\Models\CountryTel;
+use App\Models\Orders;
 use App\Models\User;
 use App\Models\UserType;
 use App\Services\Admin\OrderAdminChatService;
@@ -348,23 +349,14 @@ class OrdersTable
                     })
                     ->wrap()
                     ->visible(false),
-                TextColumn::make('status')
+                ViewColumn::make('lifecycle_controls')
                     ->label('Заказ')
-                    ->badge()
+                    ->view('filament.tables.columns.order-lifecycle'),
+                TextColumn::make('status')
+                    ->label('Статус')
                     ->formatStateUsing(fn (string $state): string => self::statusLabels()[$state] ?? $state)
-                    ->color(fn (string $state): string => match ($state) {
-                        'completed' => 'success',
-                        'sended', 'send_lubanas' => 'info',
-                        'in_production', 'pegging' => 'warning',
-                        default => 'gray',
-                    })
-                    ->description(fn ($record): string => collect([
-                        '№'.$record->id,
-                        $record->is_admin_order ? 'Админ-заказ' : null,
-                        $record->status_date ? 'Изменён: '.date('d.m.Y H:i', strtotime((string) $record->status_date)) : null,
-                        'Создан: '.$record->created_at?->format('d.m.Y H:i'),
-                    ])->filter()->implode(' · '))
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(false),
                 TextColumn::make('payment_status')
                     ->label('Оплата')
                     ->badge()
@@ -502,6 +494,13 @@ class OrdersTable
                                 })->orWhere('delivery', 'like', "%{$value}%");
                             });
                         },
+                    )),
+                Filter::make('user_id')
+                    ->label('ID клиента')
+                    ->schema([TextInput::make('value')->label('ID клиента')->numeric()])
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        filled($data['value'] ?? null),
+                        fn (Builder $query): Builder => $query->where('user_id', (int) $data['value']),
                     )),
                 Filter::make('phone')
                     ->label('Телефон')
@@ -944,6 +943,10 @@ class OrdersTable
                 OrderPainterChatActions::reply(),
                 OrderPainterChatActions::read(),
                 OrderArtistActions::manage()->extraAttributes(['class' => 'hidden']),
+                OrderLifecycleActions::updateStatus()->extraAttributes(['class' => 'hidden']),
+                OrderLifecycleActions::updateDeliveryDate()->extraAttributes(['class' => 'hidden']),
+                OrderLifecycleActions::viewClient()->extraAttributes(['class' => 'hidden']),
+                OrderLifecycleActions::delete()->extraAttributes(['class' => 'hidden']),
                 Action::make('editInvoiceFirm')
                     ->label('Данные фирмы')
                     ->modalHeading(fn ($record): string => 'Данные фирмы для счёта №'.$record->id)
@@ -1069,6 +1072,43 @@ class OrdersTable
             ->mapWithKeys(fn (array $properties, string $locale): array => [
                 $locale => $locale.' — '.($properties['native'] ?? $properties['name'] ?? $locale),
             ])->all();
+    }
+
+    public static function relatedActiveOrderIds(Orders $order): array
+    {
+        static $activeOrders;
+
+        $activeOrders ??= Orders::query()
+            ->where('status', '!=', 'completed')
+            ->get(['id', 'user_id', 'delivery'])
+            ->map(function (Orders $activeOrder): array {
+                $delivery = self::decodeJson($activeOrder->delivery);
+
+                return [
+                    'id' => (int) $activeOrder->id,
+                    'user_id' => (int) $activeOrder->user_id,
+                    'email' => strtolower(trim((string) ($delivery['email'] ?? ''))),
+                    'phone' => self::normalizePhone($delivery['phone'] ?? ''),
+                    'payer_phone' => self::normalizePhone($delivery['payer_phone'] ?? ''),
+                ];
+            });
+
+        $delivery = self::decodeJson($order->delivery);
+        $email = strtolower(trim((string) ($delivery['email'] ?? $order->user?->email ?? '')));
+        $phone = self::normalizePhone($delivery['phone'] ?? $order->user?->phone ?? '');
+        $payerPhone = self::normalizePhone($delivery['payer_phone'] ?? '');
+
+        return $activeOrders->filter(function (array $active) use ($order, $email, $phone, $payerPhone): bool {
+            return $active['user_id'] === (int) $order->user_id
+                || ($email !== '' && $active['email'] !== '' && $active['email'] === $email)
+                || ($phone !== '' && ($active['phone'] === $phone || $active['payer_phone'] === $phone))
+                || ($payerPhone !== '' && ($active['phone'] === $payerPhone || $active['payer_phone'] === $payerPhone));
+        })->pluck('id')->values()->all();
+    }
+
+    private static function normalizePhone(mixed $phone): string
+    {
+        return preg_replace('/\D+/', '', (string) $phone) ?: '';
     }
 
     private static function categoryOptions(): array

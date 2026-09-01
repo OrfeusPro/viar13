@@ -27,4 +27,7 @@ return [
 
     // Keep painter assignment and client artwork emails disabled during Filament UAT.
     'artist_notifications_enabled' => (bool) env('ADMIN_ARTIST_NOTIFICATIONS_ENABLED', false),
+
+    // Keep sent/pickup status emails disabled during Filament UAT.
+    'order_status_notifications_enabled' => (bool) env('ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED', false),
 ];

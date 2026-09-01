@@ -8,6 +8,26 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-003 — Колонка «Заказ»: статусы, сроки и действия
+
+- [DONE, 2026-09-01] В одну parity-колонку перенесены status select/timeline,
+  связанные активные заказы, номер/дата, delivery deadline/days/urgency,
+  исходящая накладная и Voyager-набор действий.
+- Поиск связанных активных заказов повторяет legacy matching: `user_id`, email,
+  phone и payer_phone доставки; снимок активных заказов загружается один раз.
+- Статус и дата доставки изменяются через `edit_orders`, валидацию, row lock и
+  транзакцию. Legacy sent/pickup emails сохранены, но UAT закрыт opt-in
+  `ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED=false`.
+- Удаление требует `delete_orders`, подтверждения и транзакционно возвращает
+  использованные бонусы. Browser-delete намеренно не запускался. Edit, client
+  modal, related/all-user filters и outgoing label работают без Voyager routes.
+- «Создать заказ» явно недоступен до **ADM-FIL-010**, чтобы не создавать
+  частичные заказы через generic Filament form.
+- Browser-UAT только №18451: status `pegging → watching → pegging`, delivery
+  `2026-08-12 → 2026-09-21 → 2026-08-12`; baseline status dates восстановлен
+  в null, письмо не отправлялось. Tests: lifecycle 5/36; полный suite 392 passed /
+  2807 assertions / 6 baseline skips. Следующее: финальная приёмка всей страницы.
+
 ### ADM-FIL-003 — Колонка «Художник»: данные, назначения и действия
 
 - [DONE, 2026-09-01] В ячейку возвращены художник, печатник, срок, оплата
