@@ -1,5 +1,25 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Колонка «Комментарии»: финальная визуальная приёмка
+
+- DONE (2026-09-01): после reload открытых Voyager/Filament страниц №18451
+  попарно сверены основная ячейка и обычный client modal.
+- В обеих ячейках совпадают order/admin comments, полный список `test`/`test2`,
+  заголовки, четыре chat action и client count `(2)`. Filament визуально
+  компактнее, но не скрывает данные Voyager и сохраняет порядок действий.
+- Client modal Filament содержит обе строки, автора `Вы`, даты, delivery/read
+  state и общий composer. Voyager показывает тот же поток без новых статусов.
+  Ни одна send/read/bot action не запускалась.
+- DB read-only evidence: client ids `3992`, `3993`, оба admin/general; painter,
+  internal admin и images `0`, SA `1`. Строки появились вне этого подэтапа и
+  намеренно сохранены без изменений.
+- Парные page screenshots: ignored
+  `storage/app/chat-column-acceptance-20260901/{voyager,filament}-comments-column.png`.
+  Захват открытого modal через Chrome завершился timeout, но live DOM и
+  accessibility подтвердили видимость/состав после ожидания Livewire.
+- Колонка «Комментарии» закрыта как parity-подблок. Далее: ADM-FIL-003 — колонка
+  «Художник». Общая ADM-FIL-003 всё ещё IN PROGRESS.
+
 ## ADM-FIL-003 — Чаты: browser-UAT заполненных веток на №18451
 
 - DONE (2026-09-01): Voyager/Filament сравнены на заполненных general, painting,

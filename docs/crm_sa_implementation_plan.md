@@ -2,6 +2,20 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Колонка «Комментарии»: финальная визуальная приёмка
+
+- DONE (2026-09-01): обычная ячейка и client modal №18451 сверены в открытых
+  Voyager/Filament после reload. Полные previews, четыре действия и `(2)`
+  совпадают; Filament не обрезает поток.
+- Существующие client rows `3992`/`3993` (`test`/`test2`) использованы только для
+  read-only проверки и сохранены. External send, read mutation и bot commands не
+  выполнялись; production SA row также не менялся.
+- Filament modal дополнительно показывает delivery/read state; это безопасное
+  расширение над Voyager, API/schema/lead_id и bot mode не изменяет.
+- Page screenshot evidence сохранён в ignored storage; modal screenshot capture
+  получил timeout, live DOM/accessibility подтвердили автора, даты, две строки и
+  composer. Колонка принята; далее проверяется «Художник».
+
 ## ADM-FIL-003 — Чаты: browser-UAT заполненных веток на №18451
 
 - DONE (2026-09-01): заполненные Voyager/Filament чаты сравнены на общей БД и
