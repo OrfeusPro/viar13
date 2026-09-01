@@ -1,5 +1,28 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Чаты: browser-UAT заполненных веток на №18451
+
+- DONE (2026-09-01): Voyager/Filament сравнены на заполненных general, painting,
+  sketch, orphan, painter, internal admin и существующей SA ветках заказа №18451.
+- Временный набор: 29 client comments, 4 painter, 2 internal, 2 images. Вставка и
+  cleanup выполнены транзакциями по уникальному marker и точным ID. Ни один
+  application send/Mail/HTTP/WhatsApp/webhook не вызывался.
+- После cleanup восстановлен baseline: `0/0/0/0`, marker `0`, SA `1`; order hash
+  `5375ac19709396c850912d986878a6042c64fc137aad9d7462dcca3df50ca70b`.
+  Удалены только временные UAT-строки; они намеренно не восстанавливаются.
+- Filament сохранил правильную изоляцию веток и авторов; explicit read поменял
+  только временный id `3963`. На 390px body не получил horizontal overflow.
+- Исправлена найденная browser-разница: `order-comments` больше не обрезает
+  client/painter/internal previews до трёх, а показывает полный Voyager stream.
+  Browser после исправления подтвердил все 29 client previews.
+- Новый parity-test проверяет первый и пятый элементы каждого из трёх preview
+  streams. Targeted: 113/999. Full: 381 passed / 2738 assertions / 6 skipped,
+  failed tests отсутствуют; runner вернул exit 1 даже с
+  `--do-not-fail-on-skipped`, причину baseline exit code нужно проверить отдельно.
+- Screenshot Chrome дважды завершился timeout; Windows capture был остановлен,
+  поскольку helper не смог надёжно определить URL. DOM/action/mobile evidence
+  получены, но нового screenshot-артефакта нет. Общая ADM-FIL-003 IN PROGRESS.
+
 ## ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения
 
 - DONE (2026-09-01): `SaMessageIngressService` атомарно резервирует receipt,

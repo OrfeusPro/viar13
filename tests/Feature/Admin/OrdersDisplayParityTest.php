@@ -3,7 +3,10 @@
 namespace Tests\Feature\Admin;
 
 use App\Filament\Resources\Orders\Tables\OrdersTable;
+use App\Models\AdminChats;
+use App\Models\OrderPainterComment;
 use App\Models\Orders;
+use App\Models\OrderUserComments;
 use App\Models\User;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -13,6 +16,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
@@ -74,6 +78,37 @@ class OrdersDisplayParityTest extends TestCase
             ->filter(fn ($column): bool => ! $column->isHidden() && ! $column->isToggledHiddenByDefault())
             ->map(fn ($column): string => $column->getLabel())->values()->all();
         $this->assertSame(['Номер', 'Оплата', 'Пользователь', 'Получатель', 'Товар', 'Комментарии', 'Художник', 'Заказ'], $names);
+    }
+
+    public function test_comments_column_keeps_the_complete_voyager_previews(): void
+    {
+        $order = (new Orders)->forceFill([
+            'id' => 18451,
+            'client_messages_count' => 5,
+            'unread_client_messages_count' => 0,
+            'admin_messages_count' => 5,
+            'painter_messages_count' => 0,
+            'unread_painter_messages_count' => 0,
+        ]);
+        $messages = fn (string $prefix, string $class) => collect(range(1, 5))
+            ->map(fn (int $number) => (new $class)->forceFill([
+                'comment' => $prefix.' '.$number,
+                'created_at' => Carbon::parse("2026-09-01 10:0{$number}:00"),
+            ]));
+
+        $adminMessages = $messages('ADMIN PREVIEW', AdminChats::class);
+        $adminMessages->each(fn (AdminChats $message) => $message->setRelation('user', null));
+        $order->setRelation('order_user_comments', $messages('CLIENT PREVIEW', OrderUserComments::class));
+        $order->setRelation('order_painter_comments', $messages('PAINTER PREVIEW', OrderPainterComment::class));
+        $order->setRelation('adminChats', $adminMessages);
+        $order->setRelation('saConversations', collect());
+
+        $html = view('filament.tables.columns.order-comments', ['getRecord' => fn () => $order])->render();
+
+        foreach (['CLIENT', 'PAINTER', 'ADMIN'] as $prefix) {
+            $this->assertStringContainsString("{$prefix} PREVIEW 1", $html);
+            $this->assertStringContainsString("{$prefix} PREVIEW 5", $html);
+        }
     }
 
     #[DataProvider('locales')]

@@ -2,6 +2,22 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Чаты: browser-UAT заполненных веток на №18451
+
+- DONE (2026-09-01): заполненные Voyager/Filament чаты сравнены на общей БД и
+  только №18451. Временные 29 client + 4 painter + 2 internal + 2 image records
+  удалены по точным ID; marker отсутствует, baseline/hash полностью восстановлены.
+- Внешние отправки не вызывались. Существующий SA-диалог проверен read-only:
+  Filament показывает реальный conversation mode `PAUSED`; legacy берёт пустой
+  `orders.sa_bot_mode` и показывает `N/A`. Send/bot commands не запускались.
+- Explicit client read затронул только временную строку `3963`; после cleanup она
+  удалена вместе с остальными UAT fixtures. Production SA message сохранён.
+- UI parity fix: колонка Filament показывает полные client/painter/internal
+  preview streams вместо последних трёх. Targeted chat tests 113/999; общий suite
+  381 passed / 2738 assertions / 6 existing skips, без failed tests.
+- Дальше: пользовательская визуальная приёмка колонки после reload; API, auth,
+  lead_id, bot control и SA schema этим подэтапом не менялись.
+
 ## ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения
 
 - DONE (2026-09-01): POST `/api/sa/webhooks/messages` атомарно сохраняет receipt,

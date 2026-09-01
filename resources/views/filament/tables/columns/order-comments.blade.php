@@ -1,8 +1,9 @@
 @php
     $record = $getRecord();
-    $clientPreviews = $record->order_user_comments->take(-3);
-    $painterPreviews = $record->order_painter_comments->take(-3);
-    $adminPreviews = $record->adminChats->take(-3);
+    // Voyager shows the complete comment streams directly in this column.
+    $clientPreviews = $record->order_user_comments;
+    $painterPreviews = $record->order_painter_comments;
+    $adminPreviews = $record->adminChats;
     $saUnread = $record->saConversations->where('unread_for_manager', true)->count();
 @endphp
 

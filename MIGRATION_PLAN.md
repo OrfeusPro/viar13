@@ -8,6 +8,27 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-003 — Чаты: browser-UAT заполненных веток на №18451
+
+- [DONE, 2026-09-01] На общей тестовой БД и только №18451 сравнены Voyager и
+  Filament: general, painting, sketch, orphan, painter, internal admin и SA.
+- Атомарно создано и затем удалено по точным ID: 29 client comments, 4 painter,
+  2 internal и 2 images. Mail/HTTP/WhatsApp/webhook не вызывались. После cleanup:
+  client/painter/admin/images `0/0/0/0`, UAT marker `0`, SA `1`, hash заказа
+  `5375ac19709396c850912d986878a6042c64fc137aad9d7462dcca3df50ca70b`.
+- Browser: все ветки и авторы совпадают; orphan дополнительно явно виден в
+  Filament; targeted read изменил только message `3963`. SA не мутировался:
+  Filament показывает фактический `PAUSED`, legacy Voyager — устаревший `N/A`.
+- Найден и исправлен разрыв колонки: вместо последних трёх теперь выводятся все
+  client/painter/internal previews, как в Voyager. Добавлен regression test.
+- Проверки: browser DOM подтвердил 29/29 previews и mobile без горизонтального
+  overflow; targeted chats `113 passed / 999 assertions`; полный suite —
+  `381 passed / 2738 assertions / 6 skipped`, без failed tests. Встроенный Chrome
+  screenshot capture завершился timeout, Windows fallback остановлен политикой
+  из-за невозможности надёжно определить URL; данные/код при этом не менялись.
+- Следующее: визуальная приёмка пользователем обычной колонки «Комментарии» после
+  reload; общая ADM-FIL-003 остаётся IN PROGRESS до финальной приёмки всех колонок.
+
 ### ADM-FIL-003 — Чаты: приёмка прочтения и авторов
 
 - [DONE: автоматизированный подэтап; полная приёмка IN PROGRESS] Проверить заполненные client image/general/orphan ветки,
