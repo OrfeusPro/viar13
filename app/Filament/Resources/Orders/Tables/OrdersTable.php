@@ -59,6 +59,7 @@ class OrdersTable
                     'order_payment_requests' => fn ($query) => $query->latest('id')->limit(3),
                     'painterAssignment.user',
                     'printingAssignment.user',
+                    'order_painter_images.statusDefinition',
                 ])
                 ->withCount([
                     'order_user_comments as client_messages_count',
@@ -942,6 +943,7 @@ class OrdersTable
                 OrderPainterChatActions::history(),
                 OrderPainterChatActions::reply(),
                 OrderPainterChatActions::read(),
+                OrderArtistActions::manage()->extraAttributes(['class' => 'hidden']),
                 Action::make('editInvoiceFirm')
                     ->label('Данные фирмы')
                     ->modalHeading(fn ($record): string => 'Данные фирмы для счёта №'.$record->id)

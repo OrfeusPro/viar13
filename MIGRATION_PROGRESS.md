@@ -1,5 +1,23 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-003 — Колонка «Художник»: данные, назначения и действия
+
+- DONE (2026-09-01): legacy-состав перенесён в компактную ячейку и modal:
+  painter/printing assignment, срок, оплата работы, show-to-client, previews и
+  индивидуальные статусы новых `order_painter_images`; legacy comma paths видны.
+- `OrderArtistService` валидирует role 3/6 и image ownership, блокирует заказ,
+  синхронизирует ровно одно назначение каждого типа и откатывает все изменения
+  при ошибке. Action требует `edit_orders`; reader не может его вызвать.
+- Assignment/client-artwork email остаётся совместимым, но защищён новым opt-in
+  `ADMIN_ARTIST_NOTIFICATIONS_ENABLED=false`. Mail fake/suppression проверены.
+- Реальный UAT №18451: назначены Саня АРТ/Артур, срок 15.09.2026 и paid=да;
+  Voyager показал те же значения. Затем через тот же action восстановлены:
+  painter 0, printing 0, deadline null, paid null, show=1, images 0.
+- Tests: artist 6 passed / 29 assertions; full 387 passed / 2769 assertions /
+  6 baseline skips. Blade cache, Pint и diff-check прошли.
+- Далее: ADM-FIL-003 — колонка «Заказ» и её inline actions; модуль заказов ещё
+  не считается принятым целиком.
+
 ## ADM-FIL-003 — Колонка «Комментарии»: финальная визуальная приёмка
 
 - DONE (2026-09-01): после reload открытых Voyager/Filament страниц №18451

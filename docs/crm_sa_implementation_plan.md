@@ -2,6 +2,17 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-FIL-003 — Колонка «Художник»: данные, назначения и действия
+
+- DONE (2026-09-01): legacy artist/printing assignments, deadline, paid flag,
+  artwork visibility/previews/statuses перенесены в защищённый Filament action.
+- CRM/SA API, `lead_id`, conversation/bot state и schema не менялись. Email при
+  назначении/показе сохранён, но UAT закрыт opt-in флагом; две реальные операции
+  №18451 попали только в suppression log, Mail/HTTP/WhatsApp не вызывались.
+- После парного Filament/Voyager UAT точный baseline №18451 восстановлен:
+  assignments/images `0/0/0`, deadline/paid null, show=1. Full suite 387/2769,
+  6 прежних skips. Далее — колонка «Заказ»; CRM-SA изменений нет.
+
 ## ADM-FIL-003 — Колонка «Комментарии»: финальная визуальная приёмка
 
 - DONE (2026-09-01): обычная ячейка и client modal №18451 сверены в открытых
