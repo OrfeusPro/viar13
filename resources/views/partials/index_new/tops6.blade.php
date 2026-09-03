@@ -30,8 +30,8 @@
                                         loading="lazy">
                                 </picture>
                             </a>
-                            <a href="{{ $item->getTranslatedAttribute('link') }}" class="top-item__title">{{  $item->getTranslatedAttribute('title') }}</a>
-                            <a href="{{ $item->getTranslatedAttribute('link') }}" class="top-btn">{!! trans('homepage_new.top_sales_btn_title') !!}</a>
+                            <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="top-item__title">{{  $item->getTranslatedAttribute('title') }}</a>
+                            <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="top-btn">{!! trans('homepage_new.top_sales_btn_title') !!}</a>
                         </div>
                     @endforeach
                 @endif

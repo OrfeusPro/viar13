@@ -1919,3 +1919,28 @@ scope; Filament 5 будет рассматриваться отдельным �
 - созданные suite записи в `laravel.log`/`mail.log` просмотрены: только
   `testing` evidence ожидаемых Paysera/SMTP/basket/Synvolve сценариев, новых
   production/frontend exceptions нет; после фиксации журналы очищены.
+
+### 2026-09-03 — аудит legacy commits c1805f0b и 9a72e4b9
+
+- в read-only source `C:\OSPanel\domains\asoft\viar` разобраны оба коммита по
+  файлам и фактическим callers;
+- из `c1805f0b` перенесены `StorefrontLocale::url()`, helpers
+  `storefront_url()`/`storefront_html()` и их применение в публичных Blade:
+  динамические внутренние ссылки теперь сохраняют `lv|lt|pl|de|en|ee`, а
+  русский storefront остаётся без префикса; внешние, `mailto:`, `tel:` и
+  fragment-ссылки не переписываются;
+- gallery адаптирована к уже существующей Laravel 13 логике: именованные
+  маршруты для `photo|module|reproduction` сохранены, locale helper применяется
+  только к произвольному fallback URL;
+- SQL из legacy-коммита не переносился и БД не изменялась: он исправлял только
+  конкретные production rows Voyager translations, тогда как runtime helper
+  корректно нормализует эти ссылки независимо от сохранённого домена/locale;
+- `9a72e4b9` меняет выбор телефона только в Voyager label view. Публичный
+  checkout уже отдельно сохраняет `delivery.phone` и `delivery.payer_phone`;
+  перенос отложен до проверки курьерских этикеток в Filament;
+- проверки: locale unit `5 passed / 13 assertions`; frontend focused suite
+  `39 passed / 208 assertions`; Blade templates cached; полный PHPUnit suite
+  `407 passed / 2873 assertions`, `6 skipped`, `0 failed`; `git diff --check`
+  без ошибок (только предупреждения о локальных LF/CRLF);
+- после просмотра ожидаемых `testing`-записей `laravel.log` и `mail.log`
+  очищены для следующей ручной проверки.

@@ -77,7 +77,7 @@
                             @foreach ($menu_items1_bot as $item)
 								@if($item->is_show)
                                 <li>
-                                    <a href="{{ $item->getTranslatedAttribute('link') }}">
+                                    <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">
                                         {{ $item->getTranslatedAttribute('title') }}
                                     </a>
                                 </li>
@@ -93,7 +93,7 @@
                             @foreach ($menu_items2_bot as $item)
 								@if($item->is_show)
                                 <li>
-                                    <a href="{{ $item->getTranslatedAttribute('link') }}">
+                                    <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">
                                         {{ $item->getTranslatedAttribute('title') }}
                                     </a>
                                 </li>
@@ -109,7 +109,7 @@
                             @foreach ($menu_items3_bot as $item)
 								@if($item->is_show)
                                     <li>
-                                        <a href="{{ $item->getTranslatedAttribute('link') }}">
+                                        <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">
                                             {{ $item->getTranslatedAttribute('title') }}
                                         </a>
                                     </li>

@@ -121,7 +121,7 @@
                             @foreach ($menu_items1_bot as $item)
 								@if($item->is_show)
                                 <li>
-                                    <a href="{{ $item->getTranslatedAttribute('link') }}">
+                                    <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">
                                         {{ $item->getTranslatedAttribute('title') }}
                                     </a>
                                 </li>
@@ -137,7 +137,7 @@
                             @foreach ($menu_items2_bot as $item)
 								@if($item->is_show)
                                 <li>
-                                    <a href="{{ $item->getTranslatedAttribute('link') }}">
+                                    <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">
                                         {{ $item->getTranslatedAttribute('title') }}
                                     </a>
                                 </li>
@@ -153,7 +153,7 @@
                             @foreach ($menu_items3_bot as $item)
 								@if($item->is_show)
                                     <li>
-                                        <a href="{{ $item->getTranslatedAttribute('link') }}">
+                                        <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">
                                             {{ $item->getTranslatedAttribute('title') }}
                                         </a>
                                     </li>
@@ -177,7 +177,7 @@
                 <div class="vz-art footer-copy__content">
                     <p class="vz-art copy-title">© {{ now()->year }} VIARCANVAS ® @if(!is_null($footerCopyright2) && $footerCopyright2 === "1") <span style="font-size: 14px; text-transform: initial;">| {{ trans('header_footer_new.footer_copyright2') }}</span>@endif
                   <br>
-                    <a href="{{ asset('condition') }}" style="color:white; text-decoration: underline;">{{ trans('header_footer_new.terms_and_conditions') }}</a>  </p>
+                    <a href="{{ storefront_url('/condition') }}" style="color:white; text-decoration: underline;">{{ trans('header_footer_new.terms_and_conditions') }}</a>  </p>
 
                     @if(Route::currentRouteName() == 'home')
                     <a href="https://www.salidzini.lv/" target="_blank" style="padding-right: 5px"><img border="0" alt="Salidzini.lv logotips" title="Interneta veikali. Labākā cena" src="https://static.salidzini.lv/images/logo_button.gif"/></a>

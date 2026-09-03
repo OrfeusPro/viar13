@@ -41,7 +41,7 @@
 							{{-- <a href="{{ route('blog') }}">
 								<span>{{ trans('header_footer_new.header_col4_name') }}</span>
 							</a> --}}
-							<a class="mainl" href="{{ asset('page/contacts') }}">
+							<a class="mainl" href="{{ storefront_url('/page/contacts') }}">
 								<span>{{ trans('header_footer_new.contacts') }}</span>
 							</a>
 						</li>
@@ -111,7 +111,7 @@
 												$menu_def_img = Voyager::image($item['png']);
 
 												}
-											@endphp <a href="{{ $item->getTranslatedAttribute('link') }}" class="header-new-drop__item"
+										@endphp <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
 												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
@@ -143,7 +143,7 @@
 												$menu_def_img = Voyager::image($item['png']);
 												}
 											@endphp
-											<a href="{{ $item->getTranslatedAttribute('link') }}" class="header-new-drop__item"
+											<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
 												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
@@ -175,7 +175,7 @@
 												$menu_def_img = Voyager::image($item['png']);
 												}
 											@endphp
-											<a href="{{ $item->getTranslatedAttribute('link') }}" class="header-new-drop__item"
+											<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
 												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>

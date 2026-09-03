@@ -30,7 +30,7 @@
                                         @foreach ($menu_items1 as $item)
 											@if($item->is_show)
 											   <div class="menu__product-tab @if ($loop->first) menu__product-tab-first menu__product-tab--activeTab @else menu__product-tab-second @endif">
-													<a href="{{ $item['link'] }}">{{ $item['title'] }}</a>
+											<a href="{{ storefront_url($item['link']) }}">{{ $item['title'] }}</a>
 													<img loading="lazy" src="{{ asset('img/icons/angle-arrow.svg') }}" alt=""
 														class="img-svg lozad">
 												</div>
@@ -86,7 +86,7 @@
                                         @foreach ($menu_items2 as $item)
 											@if($item->is_show)
 												<div class="menu__product-tab @if ($loop->first) menu__product-tab-first menu__product-tab--activeTab @endif">
-													<a href="{{ $item['link'] }}">{{ $item['title'] }}</a>
+											<a href="{{ storefront_url($item['link']) }}">{{ $item['title'] }}</a>
 													<img loading="lazy" src="{{ asset('img/icons/angle-arrow.svg') }}" alt=""
 														class="img-svg lozad">
 												</div>
@@ -138,7 +138,7 @@
                                         @foreach ($menu_items3 as $item)
 											@if($item->is_show)
 												<div class="menu__product-tab @if ($loop->first) menu__product-tab-first menu__product-tab--activeTab @endif">
-													<a href="{{ $item['link'] }}">{{ $item['title'] }}</a>
+											<a href="{{ storefront_url($item['link']) }}">{{ $item['title'] }}</a>
 													<img loading="lazy" src="{{ asset('img/icons/angle-arrow.svg') }}" alt=""
 														class="img-svg lozad">
 												</div>

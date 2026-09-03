@@ -1114,6 +1114,32 @@ if (!function_exists('translated_value')) {
     }
 }
 
+if (!function_exists('storefront_url')) {
+    /**
+     * Generate a locale-aware internal storefront URL.
+     */
+    function storefront_url(string $url, ?string $locale = null): string
+    {
+        return \App\Support\StorefrontLocale::url($url, $locale);
+    }
+}
+
+if (!function_exists('storefront_html')) {
+    /**
+     * Localize internal anchor targets embedded in trusted translated HTML.
+     */
+    function storefront_html(string $html, ?string $locale = null): string
+    {
+        return preg_replace_callback(
+            '#\bhref=("|\')([^"\']+)\1#i',
+            function (array $matches) use ($locale) {
+                return 'href=' . $matches[1] . storefront_url($matches[2], $locale) . $matches[1];
+            },
+            $html
+        );
+    }
+}
+
 if (! function_exists('setting')) {
     function setting(string $key, mixed $default = null): mixed
     {

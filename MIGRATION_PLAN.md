@@ -745,6 +745,23 @@
 
 ## Текущая задача
 
+- [x] [DONE] Проверить legacy source commits `c1805f0b` и `9a72e4b9`
+  из `C:\OSPanel\domains\asoft\viar`:
+  - frontend-часть `c1805f0b` перенесена и адаптирована: внутренние ссылки
+    меню, карточек, breadcrumbs, модальных форм и trusted translated HTML
+    получают текущий locale prefix; существующий route-based fallback слайдера
+    gallery сохранён;
+  - legacy SQL с точечными production-значениями `translations` не переносился:
+    runtime-нормализация устраняет зависимость от захардкоженного домена и
+    неправильного locale в данных без мутации БД;
+  - `9a72e4b9` относится только к Voyager-форме курьерской этикетки и не влияет
+    на публичный frontend/checkout, поэтому в текущем scope не переносился;
+  - Blade cache успешно собран; focused regression — `39 passed / 208
+    assertions`, locale unit — `5 passed / 13 assertions`; полный suite —
+    `407 passed / 2873 assertions`, `6 skipped`, `0 failed`.
+- [ ] [TODO][FILAMENT] При переносе/проверке курьерских этикеток применить
+  правило из `9a72e4b9`: телефон получателя брать из `delivery.phone`, затем
+  `delivery.payer_phone`, и только после этого из профиля пользователя.
 - [x] [DONE] Выполнить финальный полный PHPUnit regression после
   painter/account authorization: начать с чистых logs, разобрать каждый
   failure по exception, отделить известные внешние Synvolve failures от новых

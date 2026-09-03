@@ -30,7 +30,7 @@
                 $slideType = strtolower((string) basename($slidePath));
                 $slideLink = in_array($slideType, ['photo', 'module', 'reproduction'], true)
                     ? route('hb.gallery.module', ['type' => $slideType])
-                    : $item['link'];
+                    : storefront_url($item['link']);
             @endphp
             <div class="gallery-main__inner">
                 <div class="gallery-main__content">

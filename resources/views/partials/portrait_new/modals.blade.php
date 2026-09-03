@@ -300,7 +300,7 @@
                         <use xlink:href="{{ asset(env('THEME').'sprite.svg#lock') }}"></use>
                     </svg>
                     <p>
-                        {!! trans('homepage_new_login_reg.create_acc_policy_text') !!}
+                        {!! storefront_html(trans('homepage_new_login_reg.create_acc_policy_text')) !!}
                     </p>
                 </div>
             </div>

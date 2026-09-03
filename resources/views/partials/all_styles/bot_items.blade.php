@@ -3,7 +3,7 @@
     <div class="arts__title h2_old">
         {{ $item['title'] }}
     </div>
-    <a href="{{ $item['link'] }}">
+    <a href="{{ storefront_url($item['link']) }}">
         <div class="arts__image arts__image_vertical">
             <picture>
                 <source srcset="{{ asset('img/vertical.webp') }}" type="image/webp">
@@ -33,7 +33,7 @@
     <p class="arts__price">
         {{ $data['from_text'] }} <span>{{ $item['price'] }}{{ $data['price_val'] }}</span>
     </p>
-    <a class="arts__btn btn" href="{{ $item['link'] }}">
+    <a class="arts__btn btn" href="{{ storefront_url($item['link']) }}">
         {{ $data['order_btn_text'] }}
     </a>
 </div>

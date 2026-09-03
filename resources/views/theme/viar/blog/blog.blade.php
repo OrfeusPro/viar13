@@ -5,7 +5,7 @@
 
 				<div class="breadcrumbs breadcrumbs__block" itemscope itemtype="https://schema.org/BreadcrumbList">
 					<div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-						<a href="https://viarcanvas.com" class="breadcrumbs__link breadcrumbs__link_main" itemprop="item">
+						<a href="{{ storefront_url('/') }}" class="breadcrumbs__link breadcrumbs__link_main" itemprop="item">
 							<span itemprop="name">@lang('breadcrumbs.home')</span>
 						</a>
 						<meta itemprop="position" content="1" />

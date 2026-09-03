@@ -42,7 +42,7 @@
                             <span>{{ trans('header_footer_new.header_col4_name') }}</span>
                         </a>
 					--}}
-                        <a class="mainl" href="{{ asset('page/contacts')}}">
+                        <a class="mainl" href="{{ storefront_url('/page/contacts') }}">
                             <span>{{ trans('header_footer_new.contacts') }}</span>
                         </a>
                     </li>

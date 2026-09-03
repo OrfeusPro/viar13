@@ -19,7 +19,7 @@
             <div class="section-frame">
                 <div class="breadcrumbs">
                     <div class="breadcrumbs__block">
-                        <a href="https://viarcanvas.com" class="breadcrumbs__link breadcrumbs__link_main">
+                        <a href="{{ storefront_url('/') }}" class="breadcrumbs__link breadcrumbs__link_main">
                             @lang('account.index1') </a>
                         <svg xmlns="http://www.w3.org/2000/svg" width="6" height="11" viewBox="0 0 6 11" fill="none" class="img-svg breadcrumbs__arrow replaced-svg">
                             <path

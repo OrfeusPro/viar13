@@ -9,7 +9,7 @@
                         @foreach ($menu_items1 as $item)
 							@if($item->is_show)
 								<li>
-									<a href="{{ $item->getTranslatedAttribute('link') }}" data-link="{{ $loop->iteration }}">
+					<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" data-link="{{ $loop->iteration }}">
 										<span>{{ $item->getTranslatedAttribute('title') }}</span>
 										<i class="fa-arrow-next"></i>
 									</a>
@@ -72,7 +72,7 @@
                         @foreach ($menu_items2 as $item)
 							@if($item->is_show)
 								<li>
-									<a href="{{ $item->getTranslatedAttribute('link') }}" data-link="{{ $loop->iteration }}">
+					<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" data-link="{{ $loop->iteration }}">
 										<span>{{ $item->getTranslatedAttribute('title') }}</span>
 										<i class="fa-arrow-next"></i>
 									</a>
@@ -118,7 +118,7 @@
                         @foreach ($menu_items3 as $item)
 							@if($item->is_show)
 								<li>
-									<a href="{{ $item->getTranslatedAttribute('link') }}" data-link="{{ $loop->iteration }}">
+					<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" data-link="{{ $loop->iteration }}">
 										<span>{{ $item->getTranslatedAttribute('title') }}</span>
 										<i class="fa-arrow-next"></i>
 									</a>
@@ -186,7 +186,7 @@
                     @foreach ($menu_items1 as $item)
 						@if($item->is_show)
 							<li>
-								<a href="{{ $item->getTranslatedAttribute('link') }}">{{ $item->getTranslatedAttribute('title') }}</a>
+								<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">{{ $item->getTranslatedAttribute('title') }}</a>
 							</li>
 						@endif
                     @endforeach
@@ -201,7 +201,7 @@
                     @foreach ($menu_items2 as $item)
 						@if($item->is_show)
 							<li>
-								<a href="{{ $item->getTranslatedAttribute('link') }}">{{ $item->getTranslatedAttribute('title') }}</a>
+								<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">{{ $item->getTranslatedAttribute('title') }}</a>
 							</li>
 						@endif
                     @endforeach
@@ -216,7 +216,7 @@
                     @foreach ($menu_items3 as $item)
 						@if($item->is_show)
 							<li>
-								<a href="{{ $item->getTranslatedAttribute('link') }}">{{ $item->getTranslatedAttribute('title') }}</a>
+								<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">{{ $item->getTranslatedAttribute('title') }}</a>
 							</li>
 						@endif
                     @endforeach
@@ -225,7 +225,7 @@
         </div>
         <div class="vz-art burge-menu__item">
 		{{--<h3><a href="{{ route('blog') }}">{{ trans('header_footer_new.header_col4_name') }}</a></h3>--}}
-            <h3><a class="mainl" href="{{ asset('page/contacts')}}">{{ trans('header_footer_new.contacts') }}</a></h3>
+            <h3><a class="mainl" href="{{ storefront_url('/page/contacts') }}">{{ trans('header_footer_new.contacts') }}</a></h3>
         </div>
         <div class="vz-art burge-menu__item">
             <h3><a class="mainl" href="{{ route('sizesprices') }}">{{ trans('header_footer_new.prices') }}</a></h3>

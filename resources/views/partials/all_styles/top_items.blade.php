@@ -7,7 +7,7 @@
             {{ $item['title'] }}
 
         </div>
-        <a href="{{ $item['link'] }}">
+        <a href="{{ storefront_url($item['link']) }}">
             <div class="arts__image arts__image_vertical">
 
                 <picture>
@@ -57,7 +57,7 @@
 
         </p>
 
-        <a class="arts__btn btn" href="{{ $item['link'] }}">
+        <a class="arts__btn btn" href="{{ storefront_url($item['link']) }}">
 
             {{ $data['order_btn_text'] }}
 

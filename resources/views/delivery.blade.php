@@ -60,7 +60,7 @@
             <div class="section-frame">
                 <div class="breadcrumbs">
                     <div class="breadcrumbs__block">
-                        <a href="https://viarcanvas.com" class="breadcrumbs__link breadcrumbs__link_main">@lang('breadcrumbs.home')</a>
+                        <a href="{{ storefront_url('/') }}" class="breadcrumbs__link breadcrumbs__link_main">@lang('breadcrumbs.home')</a>
                         <svg xmlns="http://www.w3.org/2000/svg" width="6" height="11" viewBox="0 0 6 11" fill="none"
                              class="img-svg breadcrumbs__arrow replaced-svg">
                             <path
@@ -472,7 +472,7 @@
                                     </div>
                                 </div>
                                 <div class="payment-about">
-                                    @lang('pages.delivery_third_block_text2')
+                                    {!! storefront_html(trans('pages.delivery_third_block_text2')) !!}
                                 </div>
                             </div>
                         </div>

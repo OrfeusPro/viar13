@@ -302,7 +302,7 @@
 						<use xlink:href="{{ asset(env('THEME') . '/sprite.svg') }}#lock"></use>
 					</svg>
 					<p>
-						@lang('cart_new.create_acc_policy_text')
+						{!! storefront_html(trans('cart_new.create_acc_policy_text')) !!}
 
 					</p>
 				</div>
@@ -321,7 +321,7 @@
 						</div>
 					</label>
 					<div class="cart-payments-sidebar__personal-data--text">
-						@lang('cart_new.step_4_personal-data-text1') <a href="{{ asset('condition') }}" target="_blank">@lang('cart_new.step_4_personal-data-text2')</a>
+						@lang('cart_new.step_4_personal-data-text1') <a href="{{ storefront_url('/condition') }}" target="_blank">@lang('cart_new.step_4_personal-data-text2')</a>
 					</div>
 				</div>
 			@endif
