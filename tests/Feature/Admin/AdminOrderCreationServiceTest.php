@@ -8,6 +8,7 @@ use App\Services\Admin\AdminOrderCreationService;
 use App\Services\Admin\OrderItemPresentationService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
@@ -215,8 +216,7 @@ class AdminOrderCreationServiceTest extends TestCase
         $item = json_decode($order->items, true)[0];
         $path = parse_url($item['orig_images'][0], PHP_URL_PATH);
 
-        $this->assertStringStartsWith('/orders/N'.$order->id.'-1_40x60-X1_V1_Portrait_', $path);
-        $this->assertStringEndsWith('_0.jpg', $path);
+        $this->assertSame('/orders/N'.$order->id.'-1_40x60-X1_E0_D_LV_C_L0_G0_P0_B0_V2.jpg', $path);
         Storage::disk('uploads')->assertExists(ltrim($path, '/'));
         Mail::assertNothingSent();
     }
@@ -266,6 +266,8 @@ class AdminOrderCreationServiceTest extends TestCase
         $this->assertCount(3, Storage::disk('uploads')->allFiles('orders'));
         foreach ($urls as $index => $url) {
             $path = ltrim(parse_url($url, PHP_URL_PATH), '/');
+            $this->assertStringStartsWith('orders/N'.$order->id.'-2_40x60-X1_', $path);
+            $this->assertStringEndsWith('-'.($index + 1).'.jpg', $path);
             $this->assertSame($files[$index]->getContent(), Storage::disk('uploads')->get($path));
         }
         $this->assertDatabaseCount('users', 1);
@@ -299,9 +301,12 @@ class AdminOrderCreationServiceTest extends TestCase
         $user = User::query()->forceCreate(['email' => 'client@example.test', 'bonuses' => 15]);
         $data = $this->validData(['email' => $user->email, 'bonus' => 5]);
         $data['items'][0]['images'] = [UploadedFile::fake()->image('source.jpg')];
-        $presentation = Mockery::mock(OrderItemPresentationService::class);
-        $presentation->shouldReceive('apply')->once()->andThrow(new RuntimeException('after upload'));
-        $this->app->instance(OrderItemPresentationService::class, $presentation);
+        Event::listen('eloquent.saving: '.Orders::class, function (Orders $order): void {
+            if ($order->exists) {
+                $this->assertCount(2, Storage::disk('uploads')->allFiles('orders'));
+                throw new RuntimeException('after upload');
+            }
+        });
 
         try {
             app(AdminOrderCreationService::class)->create($data);
@@ -314,6 +319,28 @@ class AdminOrderCreationServiceTest extends TestCase
         $this->assertSame('keep', Storage::disk('uploads')->get('orders/existing.jpg'));
         $this->assertSame(15.0, (float) $user->fresh()->bonuses);
         $this->assertDatabaseCount('orders', 0);
+        Mail::assertNothingSent();
+    }
+
+    public function test_production_codes_and_collision_preserve_existing_and_remote_files(): void
+    {
+        Storage::fake('uploads');
+        $data = $this->validData();
+        $data['items'][0]['express'] = true;
+        $data['items'][0]['terms'] = 'Экспресс';
+        $data['items'][0]['images'] = [UploadedFile::fake()->image('source.jpg')];
+        $remote = 'https://example.invalid/orders/existing.jpg';
+        $data['items'][0]['existing_images'] = [$remote];
+        $occupied = 'orders/N1-1_40x60-X1_E1_D_LV_C_L2_G1_P0_B1_V2.jpg';
+        Storage::disk('uploads')->put($occupied, 'preserve existing file');
+
+        $order = app(AdminOrderCreationService::class)->create($data);
+        $images = json_decode($order->items, true)[0]['orig_images'];
+
+        $this->assertSame($remote, $images[0]);
+        $this->assertSame('/orders/N1-1_40x60-X1_E1_D_LV_C_L2_G1_P0_B1_V2-1.jpg', parse_url($images[1], PHP_URL_PATH));
+        $this->assertSame('preserve existing file', Storage::disk('uploads')->get($occupied));
+        $this->assertCount(2, Storage::disk('uploads')->allFiles('orders'));
         Mail::assertNothingSent();
     }
 

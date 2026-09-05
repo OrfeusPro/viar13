@@ -166,7 +166,7 @@ class AdminOrderCreationService
                 $basket = [];
                 $hasExpress = (bool) ($data['is_manual_express'] ?? false);
                 foreach (array_values($data['items']) as $index => $item) {
-                    $basket[$index] = $this->basketItem($order, $user, $item, $index, $storedPaths);
+                    $basket[$index] = $this->basketItem($item);
                     $basket[$index] = app(OrderItemPresentationService::class)->apply(
                         $basket[$index],
                         $user->preferredLocale() ?: 'ru',
@@ -181,6 +181,10 @@ class AdminOrderCreationService
                 $order->forceFill([
                     'items' => json_encode($basket, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                     'delivery' => json_encode($delivery, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                ]);
+                $basket = $this->storeSources($order, $basket, $data['items'], $storedPaths);
+                $order->forceFill([
+                    'items' => json_encode($basket, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 ])->save();
 
                 return $order->refresh()->load('user');
@@ -315,26 +319,11 @@ class AdminOrderCreationService
     }
 
     /** @param array<string, mixed> $item
-     * @param  array<int, string>  $storedPaths
      * @return array<string, mixed>
      */
-    private function basketItem(Orders $order, User $user, array $item, int $index, array &$storedPaths): array
+    private function basketItem(array $item): array
     {
         $images = array_values($item['existing_images'] ?? []);
-        foreach ($item['images'] ?? [] as $file) {
-            if (! $file instanceof UploadedFile) {
-                continue;
-            }
-            $base = Orders::getOrderImageName('', '', false, $order->id, $item['size'], $user, $item['name']);
-            $extension = mb_strtolower($file->getClientOriginalExtension() ?: $file->extension());
-            // Number sources across the entire order, not item index + file index.
-            $path = Storage::disk('uploads')->putFileAs('orders', $file, $base.'_'.count($storedPaths).'.'.$extension);
-            if (! $path) {
-                throw ValidationException::withMessages(['items.'.$index.'.images' => 'Не удалось сохранить файл позиции.']);
-            }
-            $storedPaths[] = $path;
-            $images[] = url('/'.$path);
-        }
 
         $decoration = (int) $item['decoration_id'];
         $codes = [1 => ['L2', 'P0'], 2 => ['L0', 'P1'], 3 => ['L1', 'P0'], 5 => ['L0', 'P0']][$decoration];
@@ -366,6 +355,42 @@ class AdminOrderCreationService
             'is_manual_baget' => $item['baget_code'] === 'B1' ? 1 : 0,
             'is_manual_express' => ! empty($item['express']) ? 1 : 0,
         ]);
+    }
+
+    /**
+     * @param  array<string|int, mixed>  $basket
+     * @param  array<int, array<string, mixed>>  $items
+     * @param  array<int, string>  $storedPaths
+     * @return array<string|int, mixed>
+     */
+    private function storeSources(Orders $order, array $basket, array $items, array &$storedPaths): array
+    {
+        $disk = Storage::disk('uploads');
+        $multiple = collect($items)->sum(fn (array $item): int => count($item['images'] ?? [])) > 1;
+        $sequence = 1;
+
+        foreach (array_values($items) as $index => $item) {
+            foreach ($item['images'] ?? [] as $file) {
+                if (! $file instanceof UploadedFile) {
+                    continue;
+                }
+                // Same business-code generator used by Laravel 6 renameUploadsPhoto.
+                $base = Orders::generateImageName($order, $basket[$index], $basket[$index]['count']);
+                $extension = mb_strtolower($file->getClientOriginalExtension() ?: $file->extension());
+                $name = $base.($multiple ? '-'.$sequence++ : '').'.'.$extension;
+                while ($disk->exists('orders/'.$name)) {
+                    $name = $base.'-'.$sequence++.'.'.$extension;
+                }
+                $path = $disk->putFileAs('orders', $file, $name);
+                if (! $path) {
+                    throw ValidationException::withMessages(['items.'.$index.'.images' => 'Не удалось сохранить файл позиции.']);
+                }
+                $storedPaths[] = $path;
+                $basket[$index]['orig_images'][] = url('/'.$path);
+            }
+        }
+
+        return $basket;
     }
 
     /** @return array<string, mixed> */
