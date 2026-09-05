@@ -1,6 +1,10 @@
 ﻿# CRM-SA Real Data Source Audit (2026-03-02)
 
 ## Goal
+
+Original Laravel 6 code location confirmed by user on 2026-09-05:
+`C:\OSPanel\domains\asoft\viar` (read-only source for business-logic comparisons).
+Migration changes belong in `G:\OSPanel\home\viar13`; do not use `viar_filament`.
 Determine from existing code and DB which real tables/statuses should be used instead of static hardcoded data in SA integration endpoints.
 
 ## Confirmed Existing Tables (DB: `viar`)

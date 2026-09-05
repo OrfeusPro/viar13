@@ -91,10 +91,11 @@ class AdminOrderCreationServiceTest extends TestCase
         }
     }
 
-    public function test_copy_defaults_preserve_client_delivery_payment_discounts_and_items(): void
+    public function test_source_order_prefills_only_client_data_as_in_voyager(): void
     {
         $user = User::query()->forceCreate([
             'email' => 'client@example.test', 'first_name' => 'Client', 'phone' => '+371 20-00',
+            'country' => 'EE', 'address' => 'Client address', 'bonuses' => 20,
         ]);
         $source = Orders::query()->forceCreate([
             'user_id' => $user->id,
@@ -107,9 +108,9 @@ class AdminOrderCreationServiceTest extends TestCase
                 'totalPrice' => 42,
             ]),
             'country' => 'LV',
-            'delivery' => json_encode(['city' => 'Riga', 'phone' => '+3712999', 'sposob' => 'venipak', 'deliv_price' => 5]),
+            'delivery' => json_encode(['city' => 'Riga', 'phone' => '+3712999', 'sposob' => 'venipak', 'deliv_price' => 5, 'bonus' => 10]),
             'payment' => 'paypalOnetimePayment',
-            'payment_status' => 'prepayment',
+            'payment_status' => 'payed',
             'price' => 42,
             'sale_price' => 42,
             'sale_eur' => 3,
@@ -123,16 +124,17 @@ class AdminOrderCreationServiceTest extends TestCase
         $this->assertSame($user->id, $defaults['client_id']);
         $this->assertNull($defaults['manager_id']);
         $this->assertSame('client@example.test', $defaults['email']);
-        $this->assertSame('venipak', $defaults['delivery_method']);
-        $this->assertSame('paypalOnetimePayment', $defaults['payment']);
-        $this->assertSame(3.0, $defaults['sale_eur']);
-        $this->assertSame('Portrait', $defaults['items'][0]['name']);
-        $this->assertSame('40x60', $defaults['items'][0]['size']);
-        $this->assertSame('G1', $defaults['items'][0]['gift_code']);
-        $this->assertSame('V2', $defaults['items'][0]['orientation_code']);
-        $this->assertTrue($defaults['items'][0]['express']);
-        $this->assertSame(['https://viarcanvas.com/orders/source.jpg'], $defaults['items'][0]['existing_images']);
-        $this->assertSame(7, $defaults['items'][0]['legacy_payload']['effectId']);
+        $this->assertSame('to_the_door', $defaults['delivery_method']);
+        $this->assertSame('cash_in_office', $defaults['payment']);
+        $this->assertSame('not_payed', $defaults['payment_status']);
+        $this->assertSame(0.0, $defaults['bonus']);
+        $this->assertSame(0.0, $defaults['sale_eur']);
+        $this->assertSame('EE', $defaults['country']);
+        $this->assertSame('Client address', $defaults['address']);
+        $this->assertSame($user->phone, $defaults['recipient_phone']);
+        $this->assertSame(app(AdminOrderCreationService::class)->defaults()['items'], $defaults['items']);
+        $this->assertSame(20.0, (float) $user->fresh()->bonuses);
+        $this->assertSame('payed', $source->fresh()->payment_status);
     }
 
     public function test_existing_client_order_uses_legacy_shape_and_debits_bonus_atomically_without_notifications(): void
@@ -224,6 +226,21 @@ class AdminOrderCreationServiceTest extends TestCase
         $this->expectException(ValidationException::class);
 
         app(AdminOrderCreationService::class)->create($this->validData(['sale_eur' => 10, 'sale_percent' => 10]));
+    }
+
+    public function test_new_client_and_delivery_use_recipient_phone_with_payer_fallback(): void
+    {
+        foreach (['+371 (29) 999-999', '', null] as $index => $recipient) {
+            $order = app(AdminOrderCreationService::class)->create($this->validData([
+                'email' => 'phone'.$index.'@example.test', 'recipient_phone' => $recipient,
+            ]));
+            $delivery = json_decode($order->delivery, true);
+            $expected = $index === 0 ? '+37129999999' : '+37120000000';
+            $this->assertSame($expected, $delivery['phone']);
+            $this->assertSame($expected, $order->user->phone);
+            $this->assertSame('+37120000000', $delivery['payer_phone']);
+        }
+        Mail::assertNothingSent();
     }
 
     public function test_identical_positions_keep_all_uploaded_sources_without_overwriting(): void

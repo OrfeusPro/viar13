@@ -8,7 +8,6 @@ use App\Models\Orders;
 use App\Models\User;
 use App\Services\SynvolveWebhookService;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -34,49 +33,40 @@ class AdminOrderCreationService
     /** @return array<string, mixed> */
     public function defaults(?Orders $source = null): array
     {
-        $delivery = $source ? $this->decodeObject($source->delivery) : [];
-        $user = $source?->user;
-        $items = $source ? $this->copyItems($source->items) : [];
+        // Voyager starts a fresh order for this client; it does not clone the order.
+        if ($source) {
+            $user = $source->user;
+
+            return array_replace($this->defaults(), [
+                'source_order_id' => $source->id,
+                'client_id' => $user?->id,
+                'email' => $user?->email,
+                'first_name' => $user?->first_name,
+                'last_name' => $user?->last_name,
+                'phone' => $user?->phone,
+                'recipient_phone' => $user?->phone,
+                'country' => $user?->country ?: 'LV',
+                'city' => $user?->city,
+                'address' => $user?->address,
+                'postal_index' => $user?->postal_index,
+            ]);
+        }
 
         return [
-            'source_order_id' => $source?->id,
-            'client_id' => $user?->id,
-            'manager_id' => $source?->manager_id && User::query()->whereKey($source->manager_id)->where('role_id', 4)->exists()
-                ? (int) $source->manager_id
-                : null,
-            'admin_comment' => $source?->admin_comment,
-            'email' => $user?->email ?? Arr::get($delivery, 'email'),
-            'first_name' => Arr::get($delivery, 'first_name', $user?->first_name),
-            'last_name' => Arr::get($delivery, 'last_name', $user?->last_name),
-            'phone' => Arr::get($delivery, 'payer_phone', $user?->phone),
-            'recipient_phone' => Arr::get($delivery, 'phone', $user?->phone),
-            'comment' => $source?->comment,
-            'a_order_from' => $source?->a_order_from,
-            'catid' => $source?->catid ?? 0,
-            'payment' => $source?->payment ?? 'cash_in_office',
-            'payment_status' => $source?->payment_status ?? 'not_payed',
-            'delivery_method' => Arr::get($delivery, 'sposob', 'to_the_door'),
-            'country' => $source?->country ?? Arr::get($delivery, 'country', 'LV'),
-            'pickup_workshop_id' => Arr::get($delivery, 'pickup_workshop_id'),
-            'delivery_town_id' => Arr::get($delivery, 'delivery_town_id'),
-            'city' => Arr::get($delivery, 'city'),
-            'address' => Arr::get($delivery, 'address', $user?->address),
-            'postal_index' => Arr::get($delivery, 'postal_index', $user?->postal_index),
-            'when_send' => Arr::get($delivery, 'when_send'),
-            'delivery_price' => (float) Arr::get($delivery, 'deliv_price', 0),
-            'bonus' => (float) Arr::get($delivery, 'bonus', 0),
-            'sale_eur' => (float) ($source?->sale_eur ?? 0),
-            'sale_percent' => (float) ($source?->sale_percent ?? 0),
-            'is_manual_express' => (bool) Arr::get($delivery, 'is_manual_express', false),
-            'is_legal_entity' => ($source?->ur_name ?? '') === 'on',
-            'legal_name' => $source?->ur_name_l,
-            'legal_registration_number' => $source?->ur_reg_num,
-            'legal_address' => $source?->ur_legal_addr,
-            'legal_vat_number' => $source?->ur_pnr_nr,
-            'legal_bank_name' => $source?->ur_bank_name,
-            'legal_bank_code' => $source?->ur_bank_code,
-            'legal_bank_account' => $source?->ur_bank_acc_code,
-            'items' => $items ?: [$this->emptyItem()],
+            'source_order_id' => null, 'client_id' => null, 'manager_id' => null,
+            'admin_comment' => null, 'email' => null, 'first_name' => null,
+            'last_name' => null, 'phone' => null, 'recipient_phone' => null,
+            'comment' => null, 'a_order_from' => null, 'catid' => 0,
+            'payment' => 'cash_in_office', 'payment_status' => 'not_payed',
+            'delivery_method' => 'to_the_door', 'country' => 'LV',
+            'pickup_workshop_id' => null, 'delivery_town_id' => null,
+            'city' => null, 'address' => null, 'postal_index' => null, 'when_send' => null,
+            'delivery_price' => 0.0, 'bonus' => 0.0, 'sale_eur' => 0.0, 'sale_percent' => 0.0,
+            'is_manual_express' => false, 'is_legal_entity' => false,
+            'legal_name' => null, 'legal_registration_number' => null, 'legal_address' => null,
+            'legal_vat_number' => null, 'legal_bank_name' => null,
+            'legal_bank_code' => null, 'legal_bank_account' => null,
+            'items' => [$this->emptyItem()],
         ];
     }
 
@@ -108,7 +98,8 @@ class AdminOrderCreationService
                         'first_name' => trim($data['first_name']),
                         'last_name' => trim((string) ($data['last_name'] ?? '')),
                         'email' => $email,
-                        'phone' => $this->normalizePhone($data['phone'] ?? null),
+                        'phone' => $this->normalizePhone($data['recipient_phone'] ?? null)
+                            ?: $this->normalizePhone($data['phone'] ?? null),
                         'address' => trim((string) ($data['address'] ?? '')),
                         'postal_index' => trim((string) ($data['postal_index'] ?? '')),
                         'country' => strtoupper($data['country']),
@@ -286,7 +277,8 @@ class AdminOrderCreationService
             'email' => mb_strtolower(trim($data['email'])),
             'first_name' => trim($data['first_name']),
             'last_name' => trim((string) ($data['last_name'] ?? '')),
-            'phone' => $this->normalizePhone($data['recipient_phone'] ?? $data['phone'] ?? null),
+            'phone' => $this->normalizePhone($data['recipient_phone'] ?? null)
+                ?: $this->normalizePhone($data['phone'] ?? null),
             'payer_phone' => $this->normalizePhone($data['phone'] ?? null),
             'address' => $this->nullableString($data['address'] ?? null),
             'postal_index' => $this->nullableString($data['postal_index'] ?? null),
@@ -376,30 +368,6 @@ class AdminOrderCreationService
         ]);
     }
 
-    /** @return array<int, array<string, mixed>> */
-    private function copyItems(mixed $json): array
-    {
-        $decoded = $this->decodeObject($json);
-
-        return collect($decoded)->filter(fn (mixed $item, mixed $key): bool => is_numeric($key) && is_array($item))
-            ->map(fn (array $item): array => [
-                'name' => $item['name'] ?? '',
-                'price' => (float) ($item['price'] ?? $item['sumPrice'] ?? 0),
-                'size' => $item['size_name'] ?? data_get($item, 'show.size') ?? $item['sizeId'] ?? '',
-                'terms' => $item['terms'] ?? '',
-                'comment' => $item['userComment'] ?? '',
-                'canvas_id' => (int) ($item['manual_canvas_id'] ?? $item['canvasId'] ?? 2),
-                'gift_code' => $this->copiedGiftCode($item),
-                'decoration_id' => $this->copiedDecorationId($item),
-                'orientation_code' => $this->copiedOrientationCode($item),
-                'baget_code' => $item['manual_baget_code'] ?? (! empty($item['is_manual_baget']) ? 'B1' : 'B0'),
-                'express' => $this->copiedExpress($item),
-                'existing_images' => $this->copiedImages($item),
-                'images' => [],
-                'legacy_payload' => $item,
-            ])->values()->all();
-    }
-
     /** @return array<string, mixed> */
     private function emptyItem(): array
     {
@@ -409,92 +377,6 @@ class AdminOrderCreationService
             'orientation_code' => 'V0', 'baget_code' => 'B0', 'express' => false,
             'existing_images' => [], 'images' => [], 'legacy_payload' => [],
         ];
-    }
-
-    /** @param array<string, mixed> $item */
-    private function copiedGiftCode(array $item): string
-    {
-        $code = strtoupper((string) ($item['manual_gift_code'] ?? ''));
-        if (in_array($code, ['G0', 'G1', 'G2'], true)) {
-            return $code;
-        }
-        foreach ((array) ($item['boxIds'] ?? []) as $boxId) {
-            if ((int) $boxId === 1) {
-                return 'G2';
-            }
-            if ((int) $boxId === 2) {
-                $code = 'G1';
-            }
-        }
-
-        return $code === 'G1' ? $code : match ((int) ($item['compl_id'] ?? 0)) {
-            1 => 'G2', 2 => 'G1', default => 'G0',
-        };
-    }
-
-    /** @param array<string, mixed> $item */
-    private function copiedDecorationId(array $item): int
-    {
-        foreach (['manual_decoration_id', 'decorationId', 'decor_id', 'decorId'] as $key) {
-            $id = (int) ($item[$key] ?? 0);
-            if (in_array($id, [1, 2, 3, 5], true)) {
-                return $id;
-            }
-        }
-
-        return 5;
-    }
-
-    /** @param array<string, mixed> $item */
-    private function copiedOrientationCode(array $item): string
-    {
-        $code = strtoupper((string) ($item['manual_orientation_code'] ?? ''));
-        if (in_array($code, ['V0', 'V1', 'V2', 'V3', 'V4'], true)) {
-            return $code;
-        }
-        $formId = (int) ($item['formId'] ?? $item['forma_id'] ?? $item['form_id'] ?? 0);
-
-        return $formId >= 1 && $formId <= 4 ? 'V'.$formId : 'V0';
-    }
-
-    /** @param array<string, mixed> $item
-     * @return array<int, string>
-     */
-    private function copiedImages(array $item): array
-    {
-        $images = array_values(array_filter((array) ($item['orig_images'] ?? []), 'is_string'));
-        if (is_string($item['savedImage'] ?? null) && trim($item['savedImage']) !== '') {
-            $images[] = $item['savedImage'];
-        }
-
-        return array_values(array_unique($images));
-    }
-
-    /** @param array<string, mixed> $item */
-    private function copiedExpress(array $item): bool
-    {
-        if (array_key_exists('is_manual_express', $item)) {
-            return (bool) $item['is_manual_express'];
-        }
-        $terms = mb_strtolower((string) ($item['terms'] ?? ''));
-        foreach (['express', 'ekspress', 'ekspresowy', 'экспресс', 'kiirsaadetis', 'ekspres'] as $needle) {
-            if (mb_stripos($terms, $needle) !== false) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /** @return array<string, mixed> */
-    private function decodeObject(mixed $value): array
-    {
-        if (is_array($value)) {
-            return $value;
-        }
-        $decoded = json_decode((string) $value, true);
-
-        return is_array($decoded) ? $decoded : [];
     }
 
     private function normalizePhone(mixed $phone): ?string

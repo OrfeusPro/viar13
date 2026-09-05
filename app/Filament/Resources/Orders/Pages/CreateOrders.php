@@ -60,6 +60,6 @@ class CreateOrders extends CreateRecord
     {
         $sourceId = request()->integer('from_order_id');
 
-        return $sourceId ? 'Создание заказа на основе №'.$sourceId : 'Создание заказа менеджером';
+        return $sourceId ? 'Новый заказ для клиента заказа №'.$sourceId : 'Создание заказа менеджером';
     }
 }

@@ -1,5 +1,27 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-FIL-010 — Соответствие копирования заказа бизнес-логике Voyager
+
+- 2026-09-05: подтверждено по `OrdersController::create` и
+  `resources/views/vendor/voyager/order_create.blade.php`: `from_order_id`
+  подставляет пользователя, не содержимое заказа. Ранее реализованный полный
+  copy-prefill был расширением, а не legacy parity; теперь он заменён client-only.
+- Оплата нового заказа `not_payed`, бонусы/скидки нулевые, позиции пустые.
+  Контакты/адрес берутся из пользователя, не из старого delivery; старый заказ
+  и баланс не изменяются. Заголовок уточнён: новый заказ для клиента заказа №…
+- Подтверждён и перенесён fallback телефона получателя на телефон заказчика;
+  новый пользователь получает этот же телефон, как в legacy create_admin_order.
+- Targeted PHP 8.4.1: 16 tests / 107 assertions, exit 0; Pint OK.
+  SQLite in-memory, Mail fake и запрет HTTP; общей базы не касались.
+- Full PHPUnit: 417 tests / 2903 assertions / 6 skips; failures нет, exit 1
+  из-за прежних 11 discovery warnings. По вопросу пользователя проверен `git grep`
+  по HEAD: семь удалённых private copy/decode helpers имели ссылки только внутри
+  AdminOrderCreationService. В app/routes/resources/tests других ссылок нет.
+  Изменения пока не закоммичены: пользователю объясняется объём удаления.
+- IN PROGRESS для ADM-FIL-010: production filename ещё не приведён к итоговому
+  legacy `renameUploadsPhoto`; следующий точный шаг — безопасно использовать
+  бизнес-коды без скачивания удалённых исходников. Визуальная приёмка отдельно.
+
 ## ADM-FIL-010 — Безопасное сохранение исходников при создании заказа
 
 - 2026-09-05: воспроизведена коллизия `itemIndex + fileIndex`: три файла двух
