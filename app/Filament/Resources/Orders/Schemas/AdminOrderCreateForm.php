@@ -107,8 +107,18 @@ class AdminOrderCreateForm
                     DatePicker::make('when_send')->label('Желаемая дата доставки'),
                     TextInput::make('delivery_price')->label('Цена доставки')->numeric()->minValue(0)->default(0)->live(),
                     TextInput::make('bonus')->label('Использовать бонусы')->numeric()->minValue(0)->default(0)->live(),
-                    TextInput::make('sale_eur')->label('Скидка, EUR')->numeric()->minValue(0)->default(0)->live(),
-                    TextInput::make('sale_percent')->label('Скидка, %')->numeric()->minValue(0)->maxValue(100)->default(0)->live(),
+                    TextInput::make('sale_eur')->label('Скидка, EUR')->numeric()->minValue(0)->default(0)->live()
+                        ->afterStateUpdated(function ($state, $set): void {
+                            if ((float) $state > 0) {
+                                $set('sale_percent', 0);
+                            }
+                        }),
+                    TextInput::make('sale_percent')->label('Скидка, %')->numeric()->minValue(0)->maxValue(100)->default(0)->live()
+                        ->afterStateUpdated(function ($state, $set): void {
+                            if ((float) $state > 0) {
+                                $set('sale_eur', 0);
+                            }
+                        }),
                     Toggle::make('is_manual_express')->label('Экспресс для заказа'),
                     Placeholder::make('order_total')->label('Итого к оплате')
                         ->content(fn ($get): string => number_format(self::total($get), 2, '.', ' ').' €'),
@@ -139,22 +149,22 @@ class AdminOrderCreateForm
                             TextInput::make('price')->label('Цена, EUR')->numeric()->minValue(0)->required()->live(),
                             TextInput::make('size')->label('Размер')->required()->maxLength(255),
                             TextInput::make('terms')->label('Изготовление / срок')->maxLength(255),
-                            Select::make('canvas_id')->label('Вид холста')->required()->options([
+                            Select::make('canvas_id')->label('Вид холста')->required()->default(2)->options([
                                 1 => 'Эконом (S)', 2 => 'Интерьерный (S)', 3 => 'Синтетический (S)',
                                 4 => 'Хлопковый (C)', 5 => 'Глянцевый (G)',
                             ]),
-                            Select::make('gift_code')->label('Упаковка')->required()->options([
+                            Select::make('gift_code')->label('Упаковка')->required()->default('G0')->options([
                                 'G0' => 'Обычная (G0)', 'G1' => 'Подарочная (G1)', 'G2' => 'Эксклюзивная (G2)',
                             ]),
-                            Select::make('decoration_id')->label('Лак / мазки')->required()->options([
+                            Select::make('decoration_id')->label('Лак / мазки')->required()->default(5)->options([
                                 5 => 'Без дополнений (L0, P0)', 1 => 'Арт-гель (L2, P0)',
                                 2 => 'Художественные мазки (L0, P1)', 3 => 'Даммарный лак (L1, P0)',
                             ]),
-                            Select::make('orientation_code')->label('Ориентация')->required()->options([
+                            Select::make('orientation_code')->label('Ориентация')->required()->default('V0')->options([
                                 'V0' => 'Авто (V0)', 'V1' => 'Вертикальная (V1)', 'V2' => 'Горизонтальная (V2)',
                                 'V3' => 'Квадрат (V3)', 'V4' => 'Панорама (V4)',
                             ]),
-                            Select::make('baget_code')->label('Оформление')->required()->options([
+                            Select::make('baget_code')->label('Оформление')->required()->default('B0')->options([
                                 'B0' => 'Без рамки (B0)', 'B1' => 'Рамка (B1)', 'B2' => 'На бумаге, в рамке (B2)',
                             ]),
                             Toggle::make('express')->label('Экспресс'),
