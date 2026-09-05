@@ -329,13 +329,14 @@ class AdminOrderCreationService
     private function basketItem(Orders $order, User $user, array $item, int $index, array &$storedPaths): array
     {
         $images = array_values($item['existing_images'] ?? []);
-        foreach ($item['images'] ?? [] as $fileIndex => $file) {
+        foreach ($item['images'] ?? [] as $file) {
             if (! $file instanceof UploadedFile) {
                 continue;
             }
             $base = Orders::getOrderImageName('', '', false, $order->id, $item['size'], $user, $item['name']);
             $extension = mb_strtolower($file->getClientOriginalExtension() ?: $file->extension());
-            $path = Storage::disk('uploads')->putFileAs('orders', $file, $base.'_'.($index + $fileIndex).'.'.$extension);
+            // Number sources across the entire order, not item index + file index.
+            $path = Storage::disk('uploads')->putFileAs('orders', $file, $base.'_'.count($storedPaths).'.'.$extension);
             if (! $path) {
                 throw ValidationException::withMessages(['items.'.$index.'.images' => 'Не удалось сохранить файл позиции.']);
             }

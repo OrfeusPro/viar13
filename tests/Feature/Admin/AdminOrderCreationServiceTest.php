@@ -8,6 +8,7 @@ use App\Services\Admin\AdminOrderCreationService;
 use App\Services\Admin\OrderItemPresentationService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +24,7 @@ class AdminOrderCreationServiceTest extends TestCase
         parent::setUp();
         config(['admin_migration.order_creation_notifications_enabled' => false]);
         Mail::fake();
+        Http::preventStrayRequests();
 
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
@@ -222,6 +224,80 @@ class AdminOrderCreationServiceTest extends TestCase
         $this->expectException(ValidationException::class);
 
         app(AdminOrderCreationService::class)->create($this->validData(['sale_eur' => 10, 'sale_percent' => 10]));
+    }
+
+    public function test_identical_positions_keep_all_uploaded_sources_without_overwriting(): void
+    {
+        Storage::fake('uploads');
+        $data = $this->validData();
+        $item = $data['items'][0];
+        $files = [
+            UploadedFile::fake()->image('first.jpg', 10, 10),
+            UploadedFile::fake()->image('second.jpg', 20, 20),
+            UploadedFile::fake()->image('third.jpg', 30, 30),
+        ];
+        $data['items'] = [
+            array_replace($item, ['images' => [$files[0], $files[1]]]),
+            array_replace($item, ['images' => [$files[2]]]),
+        ];
+
+        $order = app(AdminOrderCreationService::class)->create($data);
+        $basket = json_decode($order->items, true);
+        $urls = array_merge($basket[0]['orig_images'], $basket[1]['orig_images']);
+
+        $this->assertCount(3, array_unique($urls));
+        $this->assertCount(3, Storage::disk('uploads')->allFiles('orders'));
+        foreach ($urls as $index => $url) {
+            $path = ltrim(parse_url($url, PHP_URL_PATH), '/');
+            $this->assertSame($files[$index]->getContent(), Storage::disk('uploads')->get($path));
+        }
+        $this->assertDatabaseCount('users', 1);
+        Mail::assertNothingSent();
+    }
+
+    public function test_image_with_executable_client_extension_is_rejected_before_writes(): void
+    {
+        Storage::fake('uploads');
+        $image = UploadedFile::fake()->image('source.jpg');
+        $data = $this->validData();
+        $data['items'][0]['images'] = [new UploadedFile($image->getPathname(), 'source.php', null, null, true)];
+
+        try {
+            app(AdminOrderCreationService::class)->create($data);
+            $this->fail('ValidationException was not thrown.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items.0.images.0', $exception->errors());
+        }
+
+        $this->assertSame([], Storage::disk('uploads')->allFiles());
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 0);
+        Mail::assertNothingSent();
+    }
+
+    public function test_failure_after_upload_removes_files_and_rolls_back_bonus_and_order(): void
+    {
+        Storage::fake('uploads');
+        Storage::disk('uploads')->put('orders/existing.jpg', 'keep');
+        $user = User::query()->forceCreate(['email' => 'client@example.test', 'bonuses' => 15]);
+        $data = $this->validData(['email' => $user->email, 'bonus' => 5]);
+        $data['items'][0]['images'] = [UploadedFile::fake()->image('source.jpg')];
+        $presentation = Mockery::mock(OrderItemPresentationService::class);
+        $presentation->shouldReceive('apply')->once()->andThrow(new RuntimeException('after upload'));
+        $this->app->instance(OrderItemPresentationService::class, $presentation);
+
+        try {
+            app(AdminOrderCreationService::class)->create($data);
+            $this->fail('RuntimeException was not thrown.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('after upload', $exception->getMessage());
+        }
+
+        $this->assertSame(['orders/existing.jpg'], Storage::disk('uploads')->allFiles('orders'));
+        $this->assertSame('keep', Storage::disk('uploads')->get('orders/existing.jpg'));
+        $this->assertSame(15.0, (float) $user->fresh()->bonuses);
+        $this->assertDatabaseCount('orders', 0);
+        Mail::assertNothingSent();
     }
 
     /** @param array<string, mixed> $overrides

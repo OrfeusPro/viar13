@@ -8,6 +8,20 @@
 
 ## Этап админки Filament 5
 
+### ADM-FIL-010 — Безопасное сохранение исходников при создании заказа
+
+- [DONE, 2026-09-05] Устранена коллизия имён между позициями сквозным индексом
+  исходника. Проверены отказ для `.php` и очистка файлов при откате транзакции.
+- Сохранить каталог `orders`, legacy-префикс и `orig_images`; проверки только
+  на SQLite in-memory и fake storage/mail/HTTP, без изменений общей базы.
+- Отдельно остаются приёмка формы и сверка бизнес-семантики копирования с Voyager.
+- Проверки: PHP 8.4.1 targeted 9/58 (exit 0); полный PHPUnit: 416 tests,
+  2892 assertions, 6 skips, без test failures, но exit 1 из-за 11 warnings
+  `No tests found` в существующих test classes. Pint и diff-check пройдены.
+- [TODO] Отдельно восстановить discovery старых тестов PHPUnit (11 классов,
+  включая BlogIntegrationReadApiTest с docblock `@test`); полный suite пока
+  не считать полностью зелёным. Эти классы в текущем шаге не менялись.
+
 ### ADM-FIL-010 — Создание и копирование заказа менеджером
 
 - [IN PROGRESS, 2026-09-01] Проверен legacy route/controller/Blade
