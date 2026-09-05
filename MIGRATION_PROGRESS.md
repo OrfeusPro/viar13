@@ -17,7 +17,11 @@
   из-за прежних 11 discovery warnings. По вопросу пользователя проверен `git grep`
   по HEAD: семь удалённых private copy/decode helpers имели ссылки только внутри
   AdminOrderCreationService. В app/routes/resources/tests других ссылок нет.
-  Изменения пока не закоммичены: пользователю объясняется объём удаления.
+- После уточнения пути выполнена read-only сверка с оригиналом Laravel 6:
+  `C:\OSPanel\domains\asoft\viar`. Controller::create и order_create Blade
+  подтверждают client-only; create_admin_order подтверждает fallback телефона.
+  Удалённых copy helpers в app/resources/routes оригинала нет. Изменения сохранены
+  коммитом `4abb352`; исходный проект не изменялся.
 - IN PROGRESS для ADM-FIL-010: production filename ещё не приведён к итоговому
   legacy `renameUploadsPhoto`; следующий точный шаг — безопасно использовать
   бизнес-коды без скачивания удалённых исходников. Визуальная приёмка отдельно.

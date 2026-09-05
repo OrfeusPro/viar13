@@ -8,13 +8,20 @@
 
 ## Этап админки Filament 5
 
+Оригинал Laravel 6: `C:\OSPanel\domains\asoft\viar` (путь подтверждён
+пользователем 2026-09-05). Сверять бизнес-логику там, read-only; изменения
+миграции вносить только в `G:\OSPanel\home\viar13`.
+
 ### ADM-FIL-010 — Соответствие копирования заказа бизнес-логике Voyager
 
-- [IN PROGRESS, 2026-09-05] Legacy `OrdersController::create` передаёт в
+- [DONE для client-only prefill, 2026-09-05] Оригинальный Laravel 6
+  `OrdersController::create` передаёт в
   `vendor.voyager.order_create` только пользователя. Возвращаем client-only
   prefill: старые оплата, бонусы, позиции, скидки и реквизиты не переносятся.
   Это заменяет ранее записанное предположение о полном copy-prefill.
 - Подтверждённый fallback `delivery.phone`: телефон получателя либо заказчика.
+- Подтверждено в controller и Blade оригинала; targeted 16/107, exit 0;
+  full 417/2903, 6 skips, без failures, exit 1 из-за 11 прежних discovery warnings.
 - Проверки — только SQLite/fake integrations. Имена production-файлов требуют
   отдельного шага: legacy после создания вызывает `renameUploadsPhoto`, новый
   сервис пока использует предварительное имя. Удалённые файлы не скачивать.
