@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Filament\Bread\BreadRegistry;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Public runtime bindings are registered by their dedicated providers.
+        $this->app->scoped(BreadRegistry::class);
     }
 
     /**
