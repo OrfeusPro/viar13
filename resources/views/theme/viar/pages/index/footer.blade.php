@@ -4,7 +4,7 @@
                 <div class="vz-art footer-info" style="position: relative">
                     <div class="vz-art footer-logo">
                         <a href="{{ route('home') }}" class="vz-art footer-logo__item" aria-label="footer logo">
-                            <img src="{{ asset('images/logo.svg') }}" alt="viarcanvas" loading="lazy">
+                            <img src="{{ asset('images/logo.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('images/logo.svg')), 'viarcanvas', '')>
                         </a>
                         <div class="vz-art footer-social footer-social_mob">
                             <ul>
@@ -39,45 +39,45 @@
                     <div class="vz-art footer-contact">
 
                         <a href="tel:{{ trans('header_footer_new.footer_phone_clean') }}" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/phone-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/phone-footer.svg') }}"  class="img-svg" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('img/icons/phone-footer.svg')), '', '')>
                             <span>
                                 <b>{{ trans('header_footer_new.footer_phone') }}</b>
                             </span>
                         </a>
 
                         <a href="tel:{{ trans('header_footer_new.footer_phone_clean2') }}" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/mail-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/mail-footer.svg') }}"  class="img-svg" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('img/icons/mail-footer.svg')), '', '')>
                             <span>
                                 <b>{{ trans('header_footer_new.footer_phone2') }}</b>
                             </span>
                         </a>
 
                         <a href="tel:+37064749413" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/phone-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/phone-footer.svg') }}"  class="img-svg" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('img/icons/phone-footer.svg')), '', '')>
                             <span style="font-size: 13px;">
                                 Lithuania: <b>+370 64749413</b>
                             </span>
                         </a>
 
                         <a href="tel:+37255553615" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/phone-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/phone-footer.svg') }}"  class="img-svg" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('img/icons/phone-footer.svg')), '', '')>
                             <span style="font-size: 13px;">
                                 Estonia: <b>+372 55553615</b>
                             </span>
                         </a>
 
                         <a href="mailto:orders@viarcanvas.com" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/mail-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/mail-footer.svg') }}"  class="img-svg" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('img/icons/mail-footer.svg')), '', '')>
                             <span>orders@viarcanvas.com</span>
                         </a>
 
                         <a href="{{ trans('header_footer_new.footer_addr1_link') }}" target="_blank" class="vz-art footer-contact__item" rel="noopener noreferrer">
-                            <img src="{{ asset('img/icons/location.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/location.svg') }}"  class="img-svg" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('img/icons/location.svg')), '', '')>
                             <span>{{ trans('header_footer_new.footer_addr1') }}</span>
                         </a>
 
                         <a href="{{ trans('header_footer_new.footer_addr2_link') }}" target="_blank" class="vz-art footer-contact__item" rel="noopener noreferrer">
-                            <img src="{{ asset('img/icons/location.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/location.svg') }}"  class="img-svg" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('img/icons/location.svg')), '', '')>
                             <span>{{ trans('header_footer_new.footer_addr2') }}</span>
                         </a>
                     </div>
@@ -180,13 +180,12 @@
                     <a href="{{ storefront_url('/condition') }}" style="color:white; text-decoration: underline;">{{ trans('header_footer_new.terms_and_conditions') }}</a>  </p>
 
                     @if(Route::currentRouteName() == 'home')
-                    <a href="https://www.salidzini.lv/" target="_blank" style="padding-right: 5px"><img border="0" alt="Salidzini.lv logotips" title="Interneta veikali. Labākā cena" src="https://static.salidzini.lv/images/logo_button.gif"/></a>
-
-                    <a href="https://www.kurpirkt.lv" title="Meklē preces Latvijas interneta veikalos" style="padding-right: 5px"><img style="Border:none;" alt="Meklē preces Latvijas interneta veikalos" src="//www.kurpirkt.lv/media/kurpirkt120.gif" width=120 height=40></a>
+                        <a href="https://www.salidzini.lv/" target="_blank" style="padding-right: 5px"><img border="0" src="https://static.salidzini.lv/images/logo_button.webp" @frontendAlt('theme/viar/pages/index/footer.blade.php', 'https://static.salidzini.lv/images/logo_button.webp', 'Salidzini.lv logotips', 'Interneta veikali. Labākā cena')/></a>
+                        <a href="https://www.kurpirkt.lv" title="Meklē preces Latvijas interneta veikalos" style="padding-right: 5px"><img style="Border:none;"  src="//www.kurpirkt.lv/media/kurpirkt120.gif" width=120 height=40 @frontendAlt('theme/viar/pages/index/footer.blade.php', '//www.kurpirkt.lv/media/kurpirkt120.gif', 'Meklē preces Latvijas interneta veikalos', '')></a>
                     @endif
                     <div class="vz-art footer-pay">
-                        <img style="height: 40px;" src="{{ asset('images/icon/visa_logo_white.svg') }}" alt="visa" loading="lazy">
-                        <img style="height: 76px;" src="{{ asset('images/icon/mc_symbol.svg') }}" alt="mastercard" loading="lazy">
+                        <img style="height: 40px;" src="{{ asset('images/icon/visa_logo_white.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('images/icon/visa_logo_white.svg')), 'visa', '')>
+                        <img style="height: 76px;" src="{{ asset('images/icon/mc_symbol.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/footer.blade.php', (asset('images/icon/mc_symbol.svg')), 'mastercard', '')>
                     </div>
                 </div>
             </div>

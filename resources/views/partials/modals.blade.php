@@ -10,7 +10,7 @@
 		<span class="close-content"><i class="icon-icon4"></i></span>
 		<div class="p__mod__title green__text">{{ trans('gl.suc') }}
 			<span>
-				<img src="{{ asset('img/checkmark_circle.1.png') }}" alt="">
+				<img src="{{ asset('img/checkmark_circle.1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/checkmark_circle.1.png')), '', '')>
 			</span>
 		</div>
 	</div>
@@ -23,7 +23,7 @@
 		<span class="close-content"><i class="icon-icon4"></i></span>
 		<div class="p__mod__title green__text">Ваш отзыв будет добавлен
 			<span>
-				<img src="{{ asset('img/checkmark_circle.1.png') }}" alt="">
+				<img src="{{ asset('img/checkmark_circle.1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/checkmark_circle.1.png')), '', '')>
 			</span>
 		</div>
 	</div>
@@ -34,7 +34,7 @@
     <span class="close-popup"></span>
     <div class="popup-content">
 			<span class="close-content" style="display: flex; flex-direction: row-reverse; cursor: pointer ">
-            <img src="{{ asset(env('THEME').'img/cross1.png') }}" alt="" style="width:15px; height: 15px">
+            <img src="{{ asset(env('THEME').'img/cross1.png') }}"  style="width:15px; height: 15px" @frontendAlt('partials/modals.blade.php', (asset(env('THEME').'img/cross1.png')), '', '')>
             </span>
         <div class="p__mod__title red__text h3_old" id="err_msgs">
             <span style="display:block;">{{ trans('gl.inv_filesize_or_ext') }}</span>
@@ -50,7 +50,7 @@
 		<div class="p__mod__title red__text h3_old" id="err_msgs">
 			<span style="display:block;">{{ trans('gl.inv_size') }}</span>
 			<span>
-				<img src="{{ asset('img/cross1.png') }}" alt="">
+				<img src="{{ asset('img/cross1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/cross1.png')), '', '')>
 			</span>
 		</div>
 	</div>
@@ -63,7 +63,7 @@
 		<span class="close-content"><i class="icon-icon4"></i></span>
 		<div class="p__mod__title green__text"><span></span>
 			<span>
-				<img src="{{ asset('img/checkmark_circle.1.png') }}" alt="">
+				<img src="{{ asset('img/checkmark_circle.1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/checkmark_circle.1.png')), '', '')>
 			</span>
 		</div>
 	</div>
@@ -76,7 +76,7 @@
 		<span class="close-content"><i class="icon-icon4"></i></span>
 		<div class="p__mod__title green__text"><span class="js_mod_text">Действие подтверждено.</span>
 			<span>
-				<img src="{{ asset('img/checkmark_circle.1.png') }}" alt="">
+				<img src="{{ asset('img/checkmark_circle.1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/checkmark_circle.1.png')), '', '')>
 			</span>
 		</div>
 	</div>
@@ -89,7 +89,7 @@
 		<span class="close-content"><i class="icon-icon4"></i></span>
 		<div class="p__mod__title red__text h3_old">{{ trans('gl.media_missing') }}
 			<span>
-				<img src="{{ asset('img/cross1.png') }}" alt="">
+				<img src="{{ asset('img/cross1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/cross1.png')), '', '')>
 			</span>
 		</div>
 	</div>
@@ -102,7 +102,7 @@
 		<span class="close-content"><i class="icon-icon4"></i></span>
 		<div class="p__mod__title green__text">Ваша скидка подтверждена.
 			<span>
-				<img src="{{ asset('img/checkmark_circle.1.png') }}" alt="">
+				<img src="{{ asset('img/checkmark_circle.1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/checkmark_circle.1.png')), '', '')>
 			</span>
 		</div>
 	</div>
@@ -115,7 +115,7 @@
 		<span class="close-content"><i class="icon-icon4"></i></span>
 		<div class="p__mod__title red__text h3_old">Нужно выбрать размер
 			<span>
-				<img src="{{ asset('img/cross1.png') }}" alt="">
+				<img src="{{ asset('img/cross1.png') }}"  @frontendAlt('partials/modals.blade.php', (asset('img/cross1.png')), '', '')>
 			</span>
 		</div>
 	</div>

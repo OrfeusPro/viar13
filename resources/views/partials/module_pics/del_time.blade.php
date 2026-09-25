@@ -3,11 +3,11 @@
         <div class="tabs-height shipping-time-content">
             <div class="shipping-item1">
                 <div class="title">
-                    <img src="{{ asset('img/shipping-title-icon1.png') }}" alt="">
+                    <img src="{{ asset('img/shipping-title-icon1.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/shipping-title-icon1.png')), '', '')>
                     <h2>{{ $canvas_del_time['f_title'] }}</h2>
                 </div>
                 <div class="item-content clearfix">
-                    <img src="{{ asset('img/shipping-item-img1.png') }}" alt="">
+                    <img src="{{ asset('img/shipping-item-img1.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/shipping-item-img1.png')), '', '')>
                     <div class="text">
                         {!! $canvas_del_time['f_text'] !!}
                     </div>
@@ -15,11 +15,11 @@
             </div>
             <div class="shipping-item2">
                 <div class="title">
-                    <img src="{{ asset('img/shipping-title-icon2.png') }}" alt="">
+                    <img src="{{ asset('img/shipping-title-icon2.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/shipping-title-icon2.png')), '', '')>
                     <h2> {!! $canvas_del_time['s_title'] !!}</h2>
                 </div>
                 <div class="item-content clearfix">
-                    <img src="{{ asset('img/shipping-item-img2.png') }}" alt="">
+                    <img src="{{ asset('img/shipping-item-img2.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/shipping-item-img2.png')), '', '')>
                     <div class="text">
                         {!! $canvas_del_time['s_text_left'] !!}
                     </div>
@@ -30,19 +30,19 @@
             </div>
             <div class="shipping-item3">
                 <div class="title">
-                    <img src="{{ asset('img/shipping-title-icon3.png') }}" alt="">
+                    <img src="{{ asset('img/shipping-title-icon3.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/shipping-title-icon3.png')), '', '')>
                     <h2>{!! $canvas_del_time['th_title'] !!}</h2>
                 </div>
                 <h5>{!! $canvas_del_time['th_sub_title'] !!}</h5>
                 <div class="shipping-sum clearfix">
                     <div class="sum-item">
-                        <img src="{{ asset('img/sum-item-img1.png') }}" alt="">
+                        <img src="{{ asset('img/sum-item-img1.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/sum-item-img1.png')), '', '')>
                         <div>
                             {!! $canvas_del_time['th_left_text'] !!}
                         </div>
                     </div>
                     <div class="sum-item">
-                        <img src="{{ asset('img/sum-item-img2.png') }}" alt="">
+                        <img src="{{ asset('img/sum-item-img2.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/sum-item-img2.png')), '', '')>
                         <div>
                             {!! $canvas_del_time['th_right_text'] !!}
                         </div>
@@ -50,18 +50,18 @@
                 </div>
                 {!! $canvas_del_time['th_bot_text'] !!}
                 <div class="partner clearfix">
-                    <img src="{{ asset('img/partner-img1.png') }}" alt="">
-                    <img src="{{ asset('img/partner-img2.png') }}" alt="">
+                    <img src="{{ asset('img/partner-img1.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/partner-img1.png')), '', '')>
+                    <img src="{{ asset('img/partner-img2.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/partner-img2.png')), '', '')>
                     {!! $canvas_del_time['th_partners_list'] !!}
                 </div>
             </div>
             <div class="shipping-item4">
                 <div class="title">
-                    <img src="{{ asset('img/shipping-title-icon4.png') }}" alt="">
+                    <img src="{{ asset('img/shipping-title-icon4.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/shipping-title-icon4.png')), '', '')>
                     <h2>{!! $canvas_del_time['for_title'] !!}</h2>
                 </div>
                 <div class="item-content clearfix">
-                    <img src="{{ asset('img/shipping-item-img3.png') }}" alt="">
+                    <img src="{{ asset('img/shipping-item-img3.png') }}"  @frontendAlt('partials/module_pics/del_time.blade.php', (asset('img/shipping-item-img3.png')), '', '')>
                     <div class="text">
                         <h5>{!! $canvas_del_time['for_top_text'] !!}</h5>
                         {!! $canvas_del_time['for_bot_text'] !!}

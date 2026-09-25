@@ -97,7 +97,7 @@
                 </div> --}}
             </div>
             <div class="ellipse ellipse_black custom-ellipse">
-                <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" decoding="async">
+                <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  decoding="async" @frontendAlt('canvas_new.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
             </div>
             @include('partials.canvas_new.sizes')
 
@@ -106,12 +106,12 @@
                 <a href="#formalizaton" class="anchor ellipse-arrow ellipse-arrow_white" aria-label="anchor link">
                     <i class="fa-arrow-down"></i>
                 </a>
-                <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" decoding="async">
+                <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  decoding="async" @frontendAlt('canvas_new.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
             </div>
              @include('partials.canvas_new.steps')
 
             <div class="ellipse ellipse_black">
-                <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+                <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('canvas_new.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
             </div>
             @include('partials.canvas_new.also_like_examples')
         </main>
@@ -139,7 +139,7 @@
                 <span class="close-content"><i class="icon-icon4"></i></span>
                 <div class="p__mod__title green__text">{{ trans('gl.suc') }}
                     <span>
-                    <img src="{{ asset(env('THEME').'img/checkmark_circle.1.png') }}" alt="">
+                    <img src="{{ asset(env('THEME').'img/checkmark_circle.1.png') }}"  @frontendAlt('canvas_new.blade.php', (asset(env('THEME').'img/checkmark_circle.1.png')), '', '')>
                     </span>
                 </div>
             </div>
@@ -156,7 +156,7 @@
             <span class="close-popup"></span>
             <div class="popup-content">
 			<span class="close-content" style="display: flex; flex-direction: row-reverse; cursor: pointer ">
-            <img src="{{ asset(env('THEME').'img/cross1.png') }}" alt="" style="width:15px; height: 15px">
+            <img src="{{ asset(env('THEME').'img/cross1.png') }}"  style="width:15px; height: 15px" @frontendAlt('canvas_new.blade.php', (asset(env('THEME').'img/cross1.png')), '', '')>
             </span>
                 <div class="p__mod__title red__text h3_old" id="err_msgs">
                     <span style="display:block;">{{ trans('gl.inv_filesize_or_ext') }}</span>

@@ -18,7 +18,7 @@
 							<picture>
 								<source media="(max-width: 576px)" srcset="{{ $item->src }}" type="image/webp">
 								<source srcset="{{ $item->src }}">
-								<img width="315" height="451" src="{{ $item->src }}" alt="">
+								<img width="315" height="451" src="{{ $item->src }}"  @frontendAlt('theme/viar/pages/portrait/style_example.blade.php', ($item->src), '', '')>
 							</picture>
 							<a href="#" class="default-btn js-image-calc"
 								onclick="$('input[name=obraz_img]').val('{{ $item->src }}'); $('input[name=obraz_title]').val('{{ $item->id }}'); $('.popup-dyn-image').attr('src','{{ $item->src }}')" data-name="{{ $loop->iteration }}" obg="@lang("cart_new.obraz") #{{ $item->id }}">{{ trans('portrait_royal.btn_order_portrait') }}</a>

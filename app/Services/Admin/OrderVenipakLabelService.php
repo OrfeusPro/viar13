@@ -45,7 +45,7 @@ class OrderVenipakLabelService
             'office_no' => '',
             'warehous_no' => '',
             'g_contact_p' => $order->id.' ('.$sizes.')',
-            'g_contact_t' => (string) ($order->user?->phone ?: ($delivery['payer_phone'] ?? $delivery['phone'] ?? '')),
+            'g_contact_t' => Orders::getShippingRecipientPhone($delivery, $order->user),
             'email_receiver' => (string) ($order->user?->email ?: ($delivery['email'] ?? '')),
             'g_city_pickup' => (string) ($delivery['city'] ?? ''),
             'g_address_pickup' => (string) ($delivery['address'] ?? ''),

@@ -96,5 +96,5 @@
     <!-- ellipse -->
 
     <div class="ellipse ellipse_black">
-      <img src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg" alt="img" loading="lazy">
+      <img src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"  loading="lazy" @frontendAlt('theme/viar/pages/collage/order_screen.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
     </div>

@@ -61,7 +61,7 @@
 						type="image/jpeg">
 					{{-- <source srcset="{{ asset(env('THEME').'images') }}/reproduction/1.webp" type="image/webp"> --}}
 					<source srcset="{{ asset(env('THEME') . 'images') }}/reproduction/1.jpg" type="image/jpeg">
-					<img width="1350" height="381" src="{{ asset(env('THEME') . 'images') }}/reproduction/1.jpg" alt="">
+					<img width="1350" height="381" src="{{ asset(env('THEME') . 'images') }}/reproduction/1.jpg"  @frontendAlt('theme/viar/pages/gallery/modern_handmade_paintings.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/1.jpg', '', '')>
 				</picture>
 				<div></div>
 			</div>

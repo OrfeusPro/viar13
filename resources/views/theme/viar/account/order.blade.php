@@ -177,7 +177,7 @@
 								{{-- <a href="#" class="download-account">Скачать счёт</a> --}}
 								<div class="cabinet-orderItem__status pendingStatus">
 									<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/work-process.svg" width="25"
-										height="25" alt="">
+										height="25"  @frontendAlt('theme/viar/account/order.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/work-process.svg', '', '')>
 									<span>{{ $statusName }}</span>
 								</div>
 							</div>
@@ -488,7 +488,7 @@
 							@if ($painter != '')
 								<div class="cabinet-orderItem__info">
 									<p>@lang("account_new.orders.user_status.watching")</p>
-									<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30" alt="">
+									<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30"  @frontendAlt('theme/viar/account/order.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/icon-danger.svg', '', '')>
 								</div>
 							@endif
 						@endif
@@ -506,7 +506,7 @@
 
 								<div class="cabinet-orderItem__info">
 									<p>@lang("account_new.orders.user_status.print_text")</p>
-									<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30" alt="">
+									<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30"  @frontendAlt('theme/viar/account/order.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/icon-danger.svg', '', '')>
 								</div>
 							@endif
 						@endif
@@ -523,17 +523,17 @@
 									@if(!$painter_picture_images->last() && !$painter_sketch_images->last())
 										<div class="cabinet-orderItem__info">
 											<p>@lang("account_new.orders.user_status.pegging")</p>
-											<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30" alt="">
+											<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30"  @frontendAlt('theme/viar/account/order.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/icon-danger.svg', '', '')>
 										</div>
 									@elseif($painter_picture_images->last()  && $painter_sketch_images->last())
 										<div class="cabinet-orderItem__info">
 											<p>@lang("account_new.orders.user_status.picture")</p>
-											<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30" alt="">
+											<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30"  @frontendAlt('theme/viar/account/order.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/icon-danger.svg', '', '')>
 										</div>
 									@elseif(!$painter_picture_images->last() && $painter_sketch_images->last())
 										<div class="cabinet-orderItem__info">
 											<p>@lang("account_new.orders.user_status.sketch")</p>
-											<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30" alt="">
+											<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30"  @frontendAlt('theme/viar/account/order.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/icon-danger.svg', '', '')>
 										</div>
 									@else
 

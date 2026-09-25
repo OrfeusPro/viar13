@@ -2,7 +2,7 @@
 	<div class="vz-art section-frame">
 		<div class="vz-art header-bar">
 			<a href="{{ route('home') }}" class="vz-art logo">
-				<img loading="lazy" src="{{ asset('img/icons/logo.svg') }}" width="170" height="68" alt="@lang('settings.site_name')" class="img-svg">
+				<img loading="lazy" src="{{ asset('img/icons/logo.svg') }}" width="170" height="68"  class="img-svg" @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', (asset('img/icons/logo.svg')), __('settings.site_name'), '')>
 			</a>
 			<ul class="vz-art header-social">
 				<li>
@@ -113,8 +113,10 @@
 												if (isset($item['png']) && $item['png'] && !$menu_def_img) {
 												$menu_def_img = Voyager::image($item['png']);
 												}
-										@endphp <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
-												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
+											@endphp
+
+                                            <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
+												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" data-image-alt-attributes="{{ \App\Models\FrontendImage::attributesFor('theme/viar/pages/index/header_new_1.blade.php', Voyager::image($item['png'])) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
 										@endif
@@ -125,7 +127,7 @@
                             @if ($menu_def_img)
                                 <div class="header-new-drop__img">
                                     <div class="header-new-drop__img--wrapper">
-                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy" alt="">
+                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', ($menu_def_img), '', '')>
                                     </div>
                                 </div>
                             @endif
@@ -145,8 +147,9 @@
 												$menu_def_img = Voyager::image($item['png']);
 												}
 											@endphp
+
 											<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
-												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
+												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" data-image-alt-attributes="{{ \App\Models\FrontendImage::attributesFor('theme/viar/pages/index/header_new_1.blade.php', Voyager::image($item['png'])) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
 										@endif
@@ -157,7 +160,7 @@
                             @if ($menu_def_img)
                                 <div class="header-new-drop__img">
                                     <div class="header-new-drop__img--wrapper">
-                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy" alt="">
+                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', ($menu_def_img), '', '')>
                                     </div>
                                 </div>
                             @endif
@@ -177,8 +180,9 @@
 												$menu_def_img = Voyager::image($item['png']);
 												}
 											@endphp
+
 											<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
-												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
+												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" data-image-alt-attributes="{{ \App\Models\FrontendImage::attributesFor('theme/viar/pages/index/header_new_1.blade.php', Voyager::image($item['png'])) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
 										@endif
@@ -189,7 +193,7 @@
                             @if ($menu_def_img)
 							<div class="header-new-drop__img">
 								<div class="header-new-drop__img--wrapper">
-									<img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy" alt="">
+									<img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', ($menu_def_img), '', '')>
 								</div>
 							</div>
                             @endif

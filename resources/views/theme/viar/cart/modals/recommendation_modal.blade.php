@@ -21,7 +21,7 @@
 
                 <div class="popup-recommendation--image">
                     @if($imageUrl)
-                        <img src="{{ asset('storage/'.$imageUrl) }}" alt="{{ $recommendationData['name'] }}">
+                        <img src="{{ asset('storage/'.$imageUrl) }}"  @frontendAlt('theme/viar/cart/modals/recommendation_modal.blade.php', (asset('storage/'.$imageUrl)), ($recommendationData['name']), '')>
                     @else
                         <div class="no-image">@lang('cart_new.no_image')</div>
                     @endif

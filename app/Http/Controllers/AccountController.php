@@ -140,6 +140,8 @@ class AccountController extends Controller
                 'status' => 1,
                 'order_id' => $request->order_id,
                 'images' => $cur_images . ',' . $uploaded_images,
+                'image_alt_attributes' => app(\App\Services\AltGeneration\FrontendImageRegistry::class)
+                    ->attributesForList('account.blade.php', $cur_images . ',' . $uploaded_images),
             ]);
         }
 
@@ -215,6 +217,8 @@ class AccountController extends Controller
                 'status' => 1,
                 'order_id' => $request->order_id,
                 'images' => $cur_images . ',' . $uploaded_images,
+                'image_alt_attributes' => app(\App\Services\AltGeneration\FrontendImageRegistry::class)
+                    ->attributesForList('account.blade.php', $cur_images . ',' . $uploaded_images),
             ]);
         }
 
@@ -324,6 +328,8 @@ class AccountController extends Controller
             'order_id' => $request->order_id,
             'comment' => $request->client_comment,
             'images' => $client_images_urls,
+            'image_alt_attributes' => app(\App\Services\AltGeneration\FrontendImageRegistry::class)
+                ->attributesForList('account.blade.php', (string) $client_images_urls),
         ]);
     }
 

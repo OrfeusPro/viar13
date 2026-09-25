@@ -170,7 +170,7 @@
                                     @endif
                                     <source srcset="{{ Voyager::image($item->main_category_image) }}" type="image/jpeg">
                                     <img width="433" height="583" src="{{ Voyager::image($item->main_category_image) }}"
-                                        alt="ViarCanvas" loading="lazy">
+                                         loading="lazy" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', (Voyager::image($item->main_category_image)), 'ViarCanvas', '')>
                                 </picture>
                                 <div class="g-c-slide__inner">
                                     <div class="gcs-title">
@@ -190,7 +190,7 @@
                                     @endif
                                     <source srcset="{{ Voyager::image($item->main_category_image) }}" type="image/jpeg">
                                     <img width="433" height="583" src="{{ Voyager::image($item->main_category_image) }}"
-                                        alt="ViarCanvas" loading="lazy">
+                                         loading="lazy" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', (Voyager::image($item->main_category_image)), 'ViarCanvas', '')>
                                 </picture>
                                 <div class="g-c-slide__inner">
                                     <div class="gcs-title">
@@ -210,7 +210,7 @@
                                     @endif
                                     <source srcset="{{ Voyager::image($item->main_category_image) }}" type="image/jpeg">
                                     <img width="433" height="583" src="{{ Voyager::image($item->main_category_image) }}"
-                                        alt="ViarCanvas" loading="lazy">
+                                         loading="lazy" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', (Voyager::image($item->main_category_image)), 'ViarCanvas', '')>
                                 </picture>
                                 <div class="g-c-slide__inner">
                                     <div class="gcs-title">
@@ -232,8 +232,8 @@
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_popular')
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
-        decoding="async" loading="eager" height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
+        decoding="async" loading="eager" height="99" width="1374" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_bestseller')

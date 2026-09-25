@@ -64,7 +64,7 @@
                     @if(!empty($sharjExampleImageSources['src']) && !empty($sharjExampleImageSources['type']))
                         <source srcset="{{ $sharjExampleImageSources['src'] }}" type="{{ $sharjExampleImageSources['type'] }}">
                     @endif
-                    <img width="315" height="451" src="{{ $sharjExampleImageSources['src'] }}" alt="">
+                    <img width="315" height="451" src="{{ $sharjExampleImageSources['src'] }}"  @frontendAlt('theme/viar/pages/sharj/examples.blade.php', ($sharjExampleImageSources['src']), '', '')>
                 </picture>
                 <div class="default-btn">
                     @lang('sharj.translate30')
@@ -81,7 +81,7 @@
         <picture>
             <source srcset="https://viarcanvas.com/images/icon/load-more.webp" type="image/webp">
             <source srcset="https://viarcanvas.com/images/icon/load-more.png">
-            <img src="https://viarcanvas.com/images/icon/load-more.png" alt="img" loading="lazy">
+            <img src="https://viarcanvas.com/images/icon/load-more.png"  loading="lazy" @frontendAlt('theme/viar/pages/sharj/examples.blade.php', 'https://viarcanvas.com/images/icon/load-more.png', 'img', '')>
         </picture>
         <span>{{ trans('homepage_new.top_sales_more_btn_title') }}</span>
     </a>

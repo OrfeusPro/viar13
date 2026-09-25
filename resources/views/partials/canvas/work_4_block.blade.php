@@ -25,7 +25,7 @@
                                     @endphp
                                     <img class="lazy"
                                         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAoMBgDTD2qgAAAAASUVORK5CYII=""
-                                    data-src="/storage/{{ $img }}" alt="">
+                                    data-src="/storage/{{ $img }}" >
                                 </div>
                             @endforeach
                         </div>
@@ -38,4 +38,4 @@
     <a data-collapse="tabs-work-content" class="mod-collapse js_mod_collapse" href="javascript:void(0)"
         data-show="{{ trans('gl.show_btn') }}" data-hide="{{ trans('gl.hide_btn') }}">
         <span>{{ trans('gl.show_btn') }}</span></a>
-</div>
+</div @frontendAlt('partials/canvas/work_4_block.blade.php', '/storage/' . ($img), '', '')>

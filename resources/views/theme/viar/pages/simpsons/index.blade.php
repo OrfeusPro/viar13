@@ -58,13 +58,13 @@
                         <div class="img">
                             <picture>
                                 <img width="536" height="620" src="{{ Voyager::image($slide['png']) }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (Voyager::image($slide['png'])), '', '')>
                             </picture>
                             <div class="img-badge">
                                 <div class="text">@lang('simpson.img_badge')</div>
                                 <img width="71" height="78"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i1.webp') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i1.webp')), '', '')>
                             </div>
                         </div>
                     </div>
@@ -149,7 +149,7 @@
                     <div class="simpson-image-text">
                         @lang('simpson.about__screen__blocks.simpson_image_text')
                         <img src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/arr-bottom.svg') }}"
-                            width="80" height="80" alt="">
+                            width="80" height="80"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/arr-bottom.svg')), '', '')>
                     </div>
                     <div class="portrait-list__inner">
                         @if (!$backgrounds->isEmpty())
@@ -169,7 +169,7 @@
 
                                     <div class="portrait-list__img">
                                         <picture>
-                                            <img width="315" height="244" src="{{ $string }}" alt="">
+                                            <img width="315" height="244" src="{{ $string }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($string), '', '')>
                                         </picture>
                                         <a href="#simpsons-calc" attr_image="{{ $string }}" attr_type="fon"
                                             attr_name="{!! $background->custom_properties[$locale] !!}" class="yellow-btn js-simps-calc "
@@ -188,7 +188,7 @@
                         <picture>
                             <source srcset="https://viarcanvas.com/images/icon/load-more.webp" type="image/webp">
                             <source srcset="https://viarcanvas.com/images/icon/load-more.png">
-                            <img src="https://viarcanvas.com/images/icon/load-more.png" alt="img" loading="lazy">
+                            <img src="https://viarcanvas.com/images/icon/load-more.png"  loading="lazy" @frontendAlt('theme/viar/pages/simpsons/index.blade.php', 'https://viarcanvas.com/images/icon/load-more.png', 'img', '')>
                         </picture>
                         <span>{{ trans('homepage_new.top_sales_more_btn_title') }}</span>
                     </a>
@@ -206,7 +206,7 @@
 
             /*
             | ???? -> ??????? desktop/mobile + ??????? <img>
-            | ???? ????? ?????? ??????? — ?????? ??????? ????? ???.
+            | ???? ????? ?????? ??????? â€” ?????? ??????? ????? ???.
             */
             $defs = [
                 'simpsons_on_canvas' => ['desk' => 'a4.webp', 'mob' => 'a4Min.webp', 'w'=>450, 'h'=>360],
@@ -215,7 +215,7 @@
                 'simpsons_on_paper_in_a_premium_frame' => ['desk' => 'a2.webp', 'mob' => 'a2Min.webp', 'w'=>450, 'h'=>360],
             ];
 
-            /* ?????? ?????? ??? ???? ??? (… ? _mob ????) */
+            /* ?????? ?????? ??? ???? ??? (â€¦ ? _mob ????) */
             $car = [];
             foreach ($defs as $key => $cfg) {
                 $car[$key] = site_image_pair(
@@ -244,7 +244,7 @@
                             <div class="flex">
                                 <img width="40" height="40"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i1.svg') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i1.svg')), '', '')>
 
                                 @lang('simpson.about__block_types_row.img1.flex.text1')
 
@@ -276,7 +276,7 @@
                             <li>
                                 <img width="65" height="65"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai1.webp') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai1.webp')), '', '')>
 
                                 @lang('simpson.about__block_types_row.ul.li1')
 
@@ -284,7 +284,7 @@
                             <li>
                                 <img width="65" height="65"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai2.webp') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai2.webp')), '', '')>
 
                                 @lang('simpson.about__block_types_row.ul.li2')
 
@@ -293,7 +293,7 @@
                             <li>
                                 <img width="65" height="65"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai3.webp') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai3.webp')), '', '')>
 
                                 @lang('simpson.about__block_types_row.ul.li3')
 
@@ -304,7 +304,7 @@
                             <div class="flex">
                                 <img width="40" height="40"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i2.svg') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i2.svg')), '', '')>
 
                                 @lang('simpson.about__block_types_row.img2.flex.text1')
 
@@ -344,7 +344,7 @@
                             <div class="flex mb-2">
                                 <img width="40" height="40"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i3.svg') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i3.svg')), '', '')>
 
                                 @lang('simpson.about__screen__blocks.about__block_types_row2.img.flex')
 
@@ -376,13 +376,13 @@
                             <li>
                                 <img width="65" height="65"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai4.webp') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai4.webp')), '', '')>
                                 @lang('simpson.about__block_types_row2.ul.li1')
                             </li>
                             <li>
                                 <img width="65" height="65"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai5.webp') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai5.webp')), '', '')>
                                 @lang('simpson.about__block_types_row2.ul.li2')
                             </li>
                         </ul>
@@ -390,7 +390,7 @@
                             <div class="flex">
                                 <img width="40" height="40"
                                     src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i4.svg') }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i4.svg')), '', '')>
 
                                 @lang('simpson.about__block_types_row2.img.flex')
 
@@ -635,7 +635,7 @@
                 <div class="about-deadline">
                     <div class="deadline-block">
                         <div class="deadline-title">
-                            <img width="100" height="100" src="{{ ver_asset('images/clock.png') }}" alt="" />
+                            <img width="100" height="100" src="{{ ver_asset('images/clock.png') }}"   @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (ver_asset('images/clock.png')), '', '')/>
 
                             @lang('simpson.about.about_deadline.deadline_title')
 
@@ -714,7 +714,7 @@
                     </div>
                     <div class="deadline-block">
                         <div class="deadline-title">
-                            <img width="100" height="100" src="{{ ver_asset('images/delivery.png') }}" alt="" />
+                            <img width="100" height="100" src="{{ ver_asset('images/delivery.png') }}"   @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (ver_asset('images/delivery.png')), '', '')/>
                             @lang('simpson.about.deadline_block.deadline_title')
                         </div>
                         <div class="deadline-items">
@@ -1007,7 +1007,7 @@
                                         type="image/webp">
                                     <img width="124" height="106"
                                         src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern1.webp') }}"
-                                        alt="">
+                                         @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern1.webp')), '', '')>
                                 </picture>
                             </div>
                         </div>
@@ -1026,7 +1026,7 @@
                                         type="image/webp">
                                     <img width="271" height="189"
                                         src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern2.webp') }}"
-                                        alt="">
+                                         @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern2.webp')), '', '')>
                                 </picture>
                             </div>
                         </div>
@@ -1045,7 +1045,7 @@
                                         type="image/webp">
                                     <img width="299" height="224"
                                         src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern3.webp') }}?v=1"
-                                        alt="">
+                                         @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern3.webp')) . '?v=1', '', '')>
                                 </picture>
                             </div>
                         </div>
@@ -1262,7 +1262,7 @@
 
                 <div class="form-inner">
                     <img src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/homer.webp') }}"
-                        width="250" height="525" alt="">
+                        width="250" height="525"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/homer.webp')), '', '')>
                     <div class="form-grid">
                         <div class="kviz-input">
 
@@ -1340,8 +1340,8 @@
                                 <div class="banner__input-item">
                                     <input type="text" id="phone2" name="phone" class="banner__input phone"
                                         required>
-                                    <img src="https://viarcanvas.com/img/icons/phone.svg" alt=""
-                                        class="img-svg img-svg__posa">
+                                    <img src="https://viarcanvas.com/img/icons/phone.svg"
+                                        class="img-svg img-svg__posa" @frontendAlt('theme/viar/pages/simpsons/index.blade.php', 'https://viarcanvas.com/img/icons/phone.svg', '', '')>
                                 </div>
                             </div>
                         </div>
@@ -1438,7 +1438,7 @@
                     @if(!empty($gift['desk']['png']))
                         <source srcset="{{ $gift['desk']['png'] }}?v={{ $gift['desk']['v'] }}" type="image/png">
                     @endif
-                    <img width="800" height="451" src="{{ $gift['desk']['png'] ?? $gift['desk']['webp'] }}?v={{ $gift['desk']['v'] }}" alt="">
+                    <img width="800" height="451" src="{{ $gift['desk']['png'] ?? $gift['desk']['webp'] }}?v={{ $gift['desk']['v'] }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($gift['desk']['png'] ?? $gift['desk']['webp']) . '?v=' . ($gift['desk']['v']), '', '')>
                 </picture>
             </div>
         </div>
@@ -1468,7 +1468,7 @@
                             type="image/webp">
                         <img class="homerUp" width="115" height="113"
                             src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon1.webp') }}"
-                            alt="">
+                             @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon1.webp')), '', '')>
                     </picture>
                     <picture>
                         <source media="(max-width: 576px)"
@@ -1479,7 +1479,7 @@
                             type="image/webp">
                         <img class="homerBottom" width="115" height="113"
                             src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon2.webp') }}"
-                            alt="">
+                             @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon2.webp')), '', '')>
                     </picture>
                 </div>
             </div>
@@ -1496,7 +1496,7 @@
                                 type="image/webp">
                             <img width="170" height="170"
                                 src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask1.webp') }}"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask1.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1520,7 +1520,7 @@
                                 type="image/webp">
                             <img width="170" height="170"
                                 src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask2.webp') }}"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask2.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1546,7 +1546,7 @@
                                 type="image/webp">
                             <img width="170" height="170"
                                 src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask3.webp') }}"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask3.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1571,7 +1571,7 @@
                                 type="image/webp">
                             <img width="170" height="170"
                                 src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask4.webp') }}"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask4.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1597,7 +1597,7 @@
                                 type="image/webp">
                             <img width="170" height="170"
                                 src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask5.webp') }}"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask5.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1623,7 +1623,7 @@
                                 type="image/webp">
                             <img width="170" height="170"
                                 src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask6.webp') }}"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask6.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1645,7 +1645,7 @@
                 <div class="steps-order__top-item">
                     <img width="100" height="100"
                         src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/express.svg') }}"
-                        alt="">
+                         @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/express.svg')), '', '')>
 
                     @lang('simpson.steps-order__top.steps-order__top-item1')
 
@@ -1654,7 +1654,7 @@
                 <div class="steps-order__top-item">
                     <img width="100" height="100"
                         src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/standart.svg') }}"
-                        alt="">
+                         @frontendAlt('theme/viar/pages/simpsons/index.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/standart.svg')), '', '')>
 
                     @lang('simpson.steps-order__top.steps-order__top-item2')
 
@@ -1754,7 +1754,7 @@
                                 @if(!empty($services[$k]['desk']['png']))
                                     <source srcset="{{ $services[$k]['desk']['png'] }}?v={{ $services[$k]['desk']['v'] }}" type="image/png">
                                 @endif
-                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}" alt="">
+                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                             <picture>
                                 @php $k = 2; @endphp
@@ -1770,7 +1770,7 @@
                                 @if(!empty($services[$k]['desk']['png']))
                                     <source srcset="{{ $services[$k]['desk']['png'] }}?v={{ $services[$k]['desk']['v'] }}" type="image/png">
                                 @endif
-                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}" alt="">
+                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -1863,7 +1863,7 @@
                                 @if(!empty($services[$k]['desk']['png']))
                                     <source srcset="{{ $services[$k]['desk']['png'] }}?v={{ $services[$k]['desk']['v'] }}" type="image/png">
                                 @endif
-                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}" alt="">
+                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                             <picture>
                                 @php $k = 4; @endphp
@@ -1879,7 +1879,7 @@
                                 @if(!empty($services[$k]['desk']['png']))
                                     <source srcset="{{ $services[$k]['desk']['png'] }}?v={{ $services[$k]['desk']['v'] }}" type="image/png">
                                 @endif
-                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}" alt="">
+                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -1967,7 +1967,7 @@
                                 @if(!empty($services[$k]['desk']['png']))
                                     <source srcset="{{ $services[$k]['desk']['png'] }}?v={{ $services[$k]['desk']['v'] }}" type="image/png">
                                 @endif
-                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}" alt="">
+                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                             <picture>
                                 @php $k = 6; @endphp
@@ -1983,7 +1983,7 @@
                                 @if(!empty($services[$k]['desk']['png']))
                                     <source srcset="{{ $services[$k]['desk']['png'] }}?v={{ $services[$k]['desk']['v'] }}" type="image/png">
                                 @endif
-                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}" alt="">
+                                <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"  @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2076,7 +2076,7 @@
                                     <source srcset="{{ $services[$k]['desk']['png'] }}?v={{ $services[$k]['desk']['v'] }}" type="image/png">
                                 @endif
                                 <img width="315" height="275" src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                             <picture>
                                 @php $k = 8; @endphp
@@ -2094,7 +2094,7 @@
                                 @endif
                                 <img width="315" height="275"
                                     src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2103,7 +2103,7 @@
                                 <div class="title">
                                     @lang('simpson.service-info__simpson.service-info__row3.content-text.title')
                                     <p>?????????? ? ???????? ?????</p>
-                                    <p>?? 30 €</p>
+                                    <p>?? 30 â‚¬</p>
                                 </div>
 
                                 <p>
@@ -2136,7 +2136,7 @@
                                 @endif
                                 <img width="315" height="275"
                                     src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                             <picture>
                                 @php $k = 10; @endphp
@@ -2154,7 +2154,7 @@
                                 @endif
                                 <img width="315" height="275"
                                     src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2163,7 +2163,7 @@
                                 <div class="title">
                                     @lang('simpson.service-info__simpson.service-info__row4.content-text.title')
                                     <p>???????? ??????? ?????? ??? ???????!</p>
-                                    <p>5 €</p>
+                                    <p>5 â‚¬</p>
                                 </div>
 
                                 <p>
@@ -2195,7 +2195,7 @@
                                 @endif
                                 <img width="315" height="275"
                                     src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                             <picture>
                                 @php $k = 12; @endphp
@@ -2213,7 +2213,7 @@
                                 @endif
                                 <img width="315" height="275"
                                     src="{{ $services[$k]['desk']['png'] ?? $services[$k]['desk']['webp'] }}?v={{ $services[$k]['desk']['v'] }}"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/simpsons/index.blade.php', ($services[$k]['desk']['png'] ?? $services[$k]['desk']['webp']) . '?v=' . ($services[$k]['desk']['v']), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2224,7 +2224,7 @@
                                     @lang('simpson.service-info__simpson.service-info__row5.content-text.title')
                                     <p>???????? ????????????
                                         (? ??????? 1 ???)</p>
-                                    <p>5 €</p>
+                                    <p>5 â‚¬</p>
 
                                 </div>
 

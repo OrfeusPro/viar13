@@ -29,7 +29,7 @@ for ($i=1; $i<=9; $i++){
     <div class="about-deadline">
         <div class="deadline-block">
             <div class="deadline-title">
-                <img src="{{ ver_asset('images/clock.png') }}" alt=""/>
+                <img src="{{ ver_asset('images/clock.png') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/fifth.blade.php', (ver_asset('images/clock.png')), '', '')/>
                 <p>{!! trans('portrait.tab5__inner__title') !!}</p>
             </div>
             <div class="deadline-items">
@@ -100,7 +100,7 @@ for ($i=1; $i<=9; $i++){
         </div>
         <div class="deadline-block">
             <div class="deadline-title">
-                <img src="{{ ver_asset('images/delivery.png') }}" alt=""/>
+                <img src="{{ ver_asset('images/delivery.png') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/fifth.blade.php', (ver_asset('images/delivery.png')), '', '')/>
                 <p>{!! trans('portrait.tab5__delivery__title') !!}</p>
             </div>
             <div class="deadline-items">

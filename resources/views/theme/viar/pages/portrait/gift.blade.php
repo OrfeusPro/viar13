@@ -10,7 +10,7 @@
                     <div class="absolute-elements">
                         <div class="portrait-gift">
                             <img loading="lazy" width="149" height="138"
-                                src="{{ ver_asset('images/collage/gift.svg') }}" alt="Viar Image">
+                                src="{{ ver_asset('images/collage/gift.svg') }}"  @frontendAlt('theme/viar/pages/portrait/gift.blade.php', (ver_asset('images/collage/gift.svg')), 'Viar Image', '')>
                             <p>{!! trans('portrait_royal.s_gift_note') !!}</p>
                         </div>
                     </div>

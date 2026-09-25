@@ -11,7 +11,7 @@
                             <div class="stages-row">
                                 <div class="stage-item">
                                     <div class="stage-img">
-                                        <img src="{{ asset('images/photo.png') }}" alt=""/>
+                                        <img src="{{ asset('images/photo.png') }}"  @frontendAlt('partials/simpsons/order_steps.blade.php', (asset('images/photo.png')), '', '')/>
                                         <div class="stage-num">1</div>
                                     </div>
                                     <div class="stage-name">{{ trans('portrait.order_step1_title') }}</div>
@@ -21,7 +21,7 @@
                                 </div>
                                 <div class="stage-item">
                                     <div class="stage-img">
-                                        <img src="{{ asset('images/conversation.png') }}" alt=""/>
+                                        <img src="{{ asset('images/conversation.png') }}"  @frontendAlt('partials/simpsons/order_steps.blade.php', (asset('images/conversation.png')), '', '')/>
                                         <div class="stage-num">2</div>
                                     </div>
                                     <div class="stage-name">{{ trans('portrait.order_step2_title') }}</div>
@@ -31,7 +31,7 @@
                                 </div>
                                 <div class="stage-item">
                                     <div class="stage-img">
-                                        <img src="{{ asset('images/portrait.png') }}" alt=""/>
+                                        <img src="{{ asset('images/portrait.png') }}"  @frontendAlt('partials/simpsons/order_steps.blade.php', (asset('images/portrait.png')), '', '')/>
                                         <div class="stage-num">3</div>
                                     </div>
                                     <div class="stage-name">{{ trans('portrait.order_step3_title') }}</div>
@@ -41,7 +41,7 @@
                                 </div>
                                 <div class="stage-item">
                                     <div class="stage-img">
-                                        <img src="{{ asset('images/canvas.png') }}" alt=""/>
+                                        <img src="{{ asset('images/canvas.png') }}"  @frontendAlt('partials/simpsons/order_steps.blade.php', (asset('images/canvas.png')), '', '')/>
                                         <div class="stage-num">4</div>
                                     </div>
                                     <div class="stage-name">{{ trans('portrait.order_step4_title') }}</div>
@@ -51,7 +51,7 @@
                                 </div>
                                 <div class="stage-item">
                                     <div class="stage-img">
-                                        <img src="{{ asset('images/delivery1.png') }}" alt=""/>
+                                        <img src="{{ asset('images/delivery1.png') }}"  @frontendAlt('partials/simpsons/order_steps.blade.php', (asset('images/delivery1.png')), '', '')/>
                                         <div class="stage-num">5</div>
                                     </div>
                                     <div class="stage-name">{{ trans('portrait.order_step5_title') }}</div>
@@ -71,11 +71,11 @@
                         </div>
                         <div class="work-time">
                             <div class="work-time__item">
-                                <img src="{{ asset('images/work/work-4.svg') }}" alt="" loading="lazy"/>
+                                <img src="{{ asset('images/work/work-4.svg') }}"  loading="lazy" @frontendAlt('partials/simpsons/order_steps.blade.php', (asset('images/work/work-4.svg')), '', '')/>
                                 <p>{!! trans('homepage_new.how_we_work_express') !!}</p>
                             </div>
                             <div class="work-time__item">
-                                <img src="{{ asset('images/work/work-5.svg') }}" alt="" loading="lazy"/>
+                                <img src="{{ asset('images/work/work-5.svg') }}"  loading="lazy" @frontendAlt('partials/simpsons/order_steps.blade.php', (asset('images/work/work-5.svg')), '', '')/>
                                 <p>{!! trans('homepage_new.how_we_work_standart') !!}</p>
                             </div>
                         </div>

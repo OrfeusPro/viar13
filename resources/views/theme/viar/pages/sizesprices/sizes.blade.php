@@ -15,7 +15,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z1.webp') }}"
                                     type="image/webp">
                             <img width="200" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z1.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z1.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z1.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">
@@ -37,7 +37,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z2.webp') }}"
                                     type="image/webp">
                             <img width="200" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z2.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z2.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z2.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">
@@ -59,7 +59,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z3.webp') }}"
                                     type="image/webp">
                             <img width="200" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z3.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z3.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z3.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">
@@ -81,7 +81,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z4.webp') }}"
                                     type="image/webp">
                             <img width="230" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z4.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z4.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z4.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">
@@ -105,7 +105,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z5.webp') }}"
                                     type="image/webp">
                             <img width="240" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z5.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z5.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z5.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">
@@ -127,7 +127,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z6.webp') }}"
                                     type="image/webp">
                             <img width="230" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z6.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z6.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z6.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">
@@ -149,7 +149,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z7.webp') }}"
                                     type="image/webp">
                             <img width="290" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z7.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z7.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z7.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">
@@ -171,7 +171,7 @@
                             <source srcset="{{ asset(config('theme.current') . '/images/sizesprices/z8.webp') }}"
                                     type="image/webp">
                             <img width="350" height="270"
-                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z8.webp') }}" alt="">
+                                 src="{{ asset(config('theme.current') . '/images/sizesprices/z8.webp') }}"  @frontendAlt('theme/viar/pages/sizesprices/sizes.blade.php', (asset(config('theme.current') . '/images/sizesprices/z8.webp')), '', '')>
                         </picture>
                     </div>
                     <div class="row">

@@ -29,7 +29,7 @@
                 </div>
             </div>
             <div class="ellipse">
-                <img alt="img" src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374" />
+                <img  src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374"  @frontendAlt('theme/viar/pages/portrait.blade.php', (asset(env('THEME').'images/icon/ellipse-whete.svg')), 'img', '')/>
             </div>
         @endif
 
@@ -77,10 +77,10 @@
         </section>
         @include(env('THEME_RESOURCES') . 'pages.portrait.examples')
         <div class="ellipse ellipse_black custom-ellipse">
-            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" class="ellipse_bottom" alt="" loading="lazy" />
+            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" class="ellipse_bottom"  loading="lazy"  @frontendAlt('theme/viar/pages/portrait.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), '', '')/>
         </div>
         <div class="mobile-ell">
-            <img src="{{ asset(env('THEME').'images/sizes/union.png') }}" alt="" />
+            <img src="{{ asset(env('THEME').'images/sizes/union.png') }}"   @frontendAlt('theme/viar/pages/portrait.blade.php', (asset(env('THEME').'images/sizes/union.png')), '', '')/>
             <div class="mobile-size-title">{{ trans('portrait.sizes__title') }}</div>
         </div>
         @include(env('THEME_RESOURCES') . 'pages.portrait.sizes')
@@ -88,7 +88,7 @@
             <a href="#examples" class="anchor ellipse-arrow ellipse-arrow_white" aria-label="anchor link">
                 <i class="fa-arrow-down"></i>
             </a>
-            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy" />
+            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/portrait.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')/>
         </div>
         @include(env('THEME_RESOURCES') . 'pages.portrait.order_steps')
         <section class="portraits-examples">
@@ -169,7 +169,7 @@
                                     <source src="{{ Voyager::image( $vid ) }}#t=0.5" type="video/mp4" />
                                 </video>
                                 <div class="video-btn">
-                                    <img src="{{ asset(env('THEME').'images/play.svg') }}" alt="" />
+                                    <img src="{{ asset(env('THEME').'images/play.svg') }}"   @frontendAlt('theme/viar/pages/portrait.blade.php', (asset(env('THEME').'images/play.svg')), '', '')/>
                                 </div>
                             </div>
                         </div>
@@ -239,7 +239,7 @@
                             <div class="page-input__item phone-input">
                                 <div class="banner__input-item">
                                     <input type="text" id="phone2" name="phone" class="banner__input phone" required>
-                                    <img src="{{ asset(env('THEME').'img/icons/phone.svg') }}" alt="" class="img-svg img-svg__posa">
+                                    <img src="{{ asset(env('THEME').'img/icons/phone.svg') }}"  class="img-svg img-svg__posa" @frontendAlt('theme/viar/pages/portrait.blade.php', (asset(env('THEME').'img/icons/phone.svg')), '', '')>
                                 </div>
                             </div>
                         </div>

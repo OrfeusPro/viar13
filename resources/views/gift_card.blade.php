@@ -59,10 +59,10 @@
         <div class="gift-card-content">
             <div class="card clearfix">
                 <div class="card-item">
-                    <img src="{{ asset('img/front_') . app()->getLocale() . '.png' }}" alt="">
+                    <img src="{{ asset('img/front_') . app()->getLocale() . '.png' }}"  @frontendAlt('gift_card.blade.php', (asset('img/front_') . app()->getLocale() . '.png'), '', '')>
                 </div>
                 <div class="card-item">
-                    <img src="{{ asset('img/back_') . app()->getLocale() . '.png' }}" alt="">
+                    <img src="{{ asset('img/back_') . app()->getLocale() . '.png' }}"  @frontendAlt('gift_card.blade.php', (asset('img/back_') . app()->getLocale() . '.png'), '', '')>
                 </div>
             </div>
             <div class="card-form">
@@ -144,37 +144,37 @@
             <div class="benefits-items clearfix">
                 <div class="benefits-item">
                     <div class="text">
-                        <img src="{{ asset('img/benefits-img1.png') }}" alt="">
+                        <img src="{{ asset('img/benefits-img1.png') }}"  @frontendAlt('gift_card.blade.php', (asset('img/benefits-img1.png')), '', '')>
                         <p>{!! $data['adv1_text'] !!}</p>
                     </div>
                 </div>
                 <div class="benefits-item">
                     <div class="text">
-                        <img src="{{ asset('img/benefits-img2.png') }}" alt="">
+                        <img src="{{ asset('img/benefits-img2.png') }}"  @frontendAlt('gift_card.blade.php', (asset('img/benefits-img2.png')), '', '')>
                         <p> {!! $data['adv2_text'] !!}</p>
                     </div>
                 </div>
                 <div class="benefits-item">
                     <div class="text">
-                        <img src="{{ asset('img/benefits-img3.png') }}" alt="">
+                        <img src="{{ asset('img/benefits-img3.png') }}"  @frontendAlt('gift_card.blade.php', (asset('img/benefits-img3.png')), '', '')>
                         <p> {!! $data['adv3_text'] !!}</p>
                     </div>
                 </div>
                 <div class="benefits-item">
                     <div class="text">
-                        <img src="{{ asset('img/benefits-img4.png') }}" alt="">
+                        <img src="{{ asset('img/benefits-img4.png') }}"  @frontendAlt('gift_card.blade.php', (asset('img/benefits-img4.png')), '', '')>
                         <p> {!! $data['adv4_text'] !!}</p>
                     </div>
                 </div>
                 <div class="benefits-item">
                     <div class="text">
-                        <img src="{{ asset('img/benefits-img5.png') }}" alt="">
+                        <img src="{{ asset('img/benefits-img5.png') }}"  @frontendAlt('gift_card.blade.php', (asset('img/benefits-img5.png')), '', '')>
                         <p> {!! $data['adv5_text'] !!}</p>
                     </div>
                 </div>
                 <div class="benefits-item">
                     <div class="text">
-                        <img src="{{ asset('img/benefits-img6.png') }}" alt="">
+                        <img src="{{ asset('img/benefits-img6.png') }}"  @frontendAlt('gift_card.blade.php', (asset('img/benefits-img6.png')), '', '')>
                         <p> {!! $data['adv6_text'] !!}</p>
                     </div>
                 </div>

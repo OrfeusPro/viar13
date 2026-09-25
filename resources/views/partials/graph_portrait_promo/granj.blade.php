@@ -11,8 +11,8 @@
                 <div class="portraits-item">
                     <div class="img">
                         <i></i>
-                        <img alt="{{ $item['name'] }}" title="{{ $item['name'] }}" class="p__img"
-                            src="{{ Voyager::image(  $item['image'] ) }}">
+                        <img   class="p__img"
+                            src="{{ Voyager::image(  $item['image'] ) }}" @frontendAlt('partials/graph_portrait_promo/granj.blade.php', (Voyager::image( $item['image'] )), ($item['name']), ($item['name']))>
                     </div>
                     <h4>{{ $item['name'] }}</h4>
                 </div>
@@ -36,8 +36,8 @@
                 @foreach($item as $sub_item)
                 <div class="group-item">
                     <div class="img">
-                        <img alt="{{ $sub_item['name'] }}" title="{{ $sub_item['name'] }}"
-                            src="{{ Voyager::image( $sub_item['image'] ) }}">
+                        <img
+                            src="{{ Voyager::image( $sub_item['image'] ) }}" @frontendAlt('partials/graph_portrait_promo/granj.blade.php', (Voyager::image( $sub_item['image'] )), ($sub_item['name']), ($sub_item['name']))>
                     </div>
                     <h4>{{ $sub_item['name'] }}</h4>
                 </div>

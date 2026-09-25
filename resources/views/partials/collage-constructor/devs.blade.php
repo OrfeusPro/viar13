@@ -436,10 +436,12 @@
             $('#sizes').html('<ul>'+s_html+'</ul>');
     }
 
+    var templateAltAttributes = @json(app(\App\Services\AltGeneration\FrontendImageRegistry::class)->inlineAttributes('partials/collage-constructor/devs.blade.php', 'js/collage-templates.js'));
+    templates.forEach(function (template, index) { template.frontendAlt = templateAltAttributes[index] || 'alt=""'; });
     var list_templates = document.getElementById("templates");
     list_templates.innerHTML = "<ul>"+ templates.sort((a, b) => a.ratio - b.ratio).map(function(template)
         {
-            return `<li><a onclick="open_template('${template.grid}',${template.ratio});"><i class="icon-down-arrow"></i><img src="${template.icon}" alt=""></a></li>`;
+            return `<li><a onclick="open_template('${template.grid}',${template.ratio});"><i class="icon-down-arrow"></i><img src="${template.icon}" ${template.frontendAlt}></a></li>`;
     }).join(" ")+"</ul>";
 
     function open_template(grid,ratio)

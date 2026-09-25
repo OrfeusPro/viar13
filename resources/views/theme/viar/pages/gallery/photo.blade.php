@@ -84,7 +84,7 @@
                                                 <source srcset="{{ $webpSrc }}" type="image/webp">
                                             @endif
                                             <source srcset="https://viarcanvas.com{{ $src }}" type="image/jpeg">
-                                            <img width="430" height="450" src="https://viarcanvas.com{{ $src }}" alt="ViarCanvas">
+                                            <img width="430" height="450" src="https://viarcanvas.com{{ $src }}"  @frontendAlt('theme/viar/pages/gallery/photo.blade.php', 'https://viarcanvas.com' . ($src), 'ViarCanvas', '')>
                                         </picture>
                                     </div>
 
@@ -236,7 +236,7 @@
                 {{-- <source srcset="{{ asset(env('THEME').'images') }}/reproduction/5.webp" type="image/webp"> --}}
                 <source srcset="{{ asset(env('THEME') . 'images') }}/reproduction/5.jpg" type="image/jpeg">
                 <img width="1399" height="65" src="{{ asset(env('THEME') . 'images') }}/reproduction/5.jpg"
-                    alt="Viar" loading="lazy">
+                     loading="lazy" @frontendAlt('theme/viar/pages/gallery/photo.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/5.jpg', 'Viar', '')>
             </picture>
         </div>
     </div>
@@ -245,8 +245,8 @@
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_popular')
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
-        decoding="async" loading="eager" height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
+        decoding="async" loading="eager" height="99" width="1374" @frontendAlt('theme/viar/pages/gallery/photo.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_bestseller')

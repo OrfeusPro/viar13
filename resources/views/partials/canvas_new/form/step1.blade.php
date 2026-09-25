@@ -9,7 +9,7 @@
     <div class="product-download pd-canvas" id="imgs">
         <div class="loader-canvas">
             <button type="button">
-                <img src="{{ asset('images/icon/info.svg') }}" alt="" onload="this.style.opacity=1" />
+                <img src="{{ asset('images/icon/info.svg') }}"  onload="this.style.opacity=1"  @frontendAlt('partials/canvas_new/form/step1.blade.php', (asset('images/icon/info.svg')), '', '')/>
                 <span class="delete"></span>
             </button>
             <div class="file-save file-save__popup">
@@ -45,7 +45,7 @@
     <div class="additional-image">
         <div class="additional-row">
             <div class="additional-img">
-                <img src="{{ asset('images/canvas/additional.svg') }}" alt="">
+                <img src="{{ asset('images/canvas/additional.svg') }}"  @frontendAlt('partials/canvas_new/form/step1.blade.php', (asset('images/canvas/additional.svg')), '', '')>
             </div>
             <div class="additional-input">
                 <div class="vz-art popup-log-check js-checkbox">
@@ -84,7 +84,7 @@
                                     <span>
                                         <span class="kviz-label__title">{{ $improveName }}</span>&nbsp;
                                         <span class="kviz-label__price">{{ $improvePrice }} EUR</span>
-                                        <img src="{{ asset('images/icon/info.svg') }}" alt="">
+                                        <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/canvas_new/form/step1.blade.php', (asset('images/icon/info.svg')), '', '')>
                                     </span>
                                     <input name="boxes2[]" type="radio"
                                         data-id="{{ $improve->id }}"
@@ -118,7 +118,7 @@
                             <div class="check check-border"></div>
                             <label>
                                 <span>{{ trans('canvas.form_step1_tarif_1') }}
-                                    <img src="{{ asset('images/icon/info.svg') }}" alt="">
+                                    <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/canvas_new/form/step1.blade.php', (asset('images/icon/info.svg')), '', '')>
                                 </span>
                                 <input name="boxes2[]" type="radio" data-id="2" checked data-name="base" value="{{ $canvas_head['ob_price1'] }}">
 
@@ -130,7 +130,7 @@
                         <div class="kviz-radio js-checkbox" data-stock="2">
                             <div class="check check-border"></div>
                             <label>
-                                <span> {{ trans('canvas.form_step1_tarif_2') }}<img src="{{ asset('images/icon/info.svg') }}" alt="">
+                                <span> {{ trans('canvas.form_step1_tarif_2') }}<img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/canvas_new/form/step1.blade.php', (asset('images/icon/info.svg')), '', '')>
                                 </span>
                                 <input name="boxes2[]" type="radio" data-id="1" data-name="standart" value="{{ $canvas_head['ob_price2'] }}">
                                 <div class="window-prompt">
@@ -141,7 +141,7 @@
                         <div class="kviz-radio js-checkbox" data-stock="1">
                             <div class="check check-border"></div>
                             <label class="jcf-label-active">
-                                <span>{{ trans('canvas.form_step1_tarif_3') }}<img src="{{ asset('images/icon/info.svg') }}" alt=""></span>
+                                <span>{{ trans('canvas.form_step1_tarif_3') }}<img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/canvas_new/form/step1.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                                 <input name="boxes2[]" type="radio" data-id="3" data-name="premium" value="{{ $canvas_head['ob_price3'] }}">
                                 <div class="window-prompt">
                                     {{ trans('canvas.form_step1_tarif_3') }}

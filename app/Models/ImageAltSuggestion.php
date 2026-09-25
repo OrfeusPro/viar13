@@ -39,6 +39,19 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class ImageAltSuggestion extends Model
 {
+    public function getPreviewUrlAttribute(): string
+    {
+        if ($this->imageable_type === FrontendImage::class) {
+            $url = data_get($this->prompt_context, 'image.public_url');
+            if (is_string($url) && preg_match('#^https?://#i', $url)) {
+                return $url;
+            }
+        }
+        $path = (string) $this->image_path;
+        return $path !== '' && strpos($path, 'data:image/') !== 0 && !preg_match('#^(?:https?://|/)#i', $path)
+            ? \Illuminate\Support\Facades\Storage::url(ltrim($path, '/')) : $path;
+    }
+
     public const STATUS_NEW = 'new';
     public const STATUS_GENERATED = 'generated';
     public const STATUS_PENDING = 'pending';

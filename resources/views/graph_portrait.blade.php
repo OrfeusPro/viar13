@@ -27,7 +27,7 @@
                 </div>
                 <div class="compositions-form">
                     <img class="" src="{{ asset('img/compositions-form-img.png') }}"
-                        data-src="{{ asset('img/compositions-form-img.png') }}" alt="">
+                        data-src="{{ asset('img/compositions-form-img.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/compositions-form-img.png')), '', '')>
                     <div class="form">
                         <div class="title-form">
                             <h4>{!! $canv_bot['comp_right_form_title'] !!}</h4>
@@ -54,42 +54,42 @@
 
     <section class="components-pictures">
         <div class="title">
-            <img src="{{ asset('img/components-img.png') }}" alt="">
+            <img src="{{ asset('img/components-img.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-img.png')), '', '')>
             <h2>{!! $canv_bot['cart_title'] !!}</h2>
         </div>
         <div class="components-content">
-            <img src="{{ asset('img/components-content-img.png') }}" alt="" class="components-content-img">
+            <img src="{{ asset('img/components-content-img.png') }}"  class="components-content-img" @frontendAlt('graph_portrait.blade.php', (asset('img/components-content-img.png')), '', '')>
             <div class="components-items">
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon1.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon1.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon1.png')), '', '')>
                     <p>{!! $canv_bot['cart1_title'] !!}</p>
                 </div>
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon2.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon2.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon2.png')), '', '')>
                     <p>{!! $canv_bot['cart2_title'] !!}</p>
                 </div>
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon3.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon3.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon3.png')), '', '')>
                     <p>{!! $canv_bot['cart3_title'] !!}</p>
                 </div>
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon4.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon4.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon4.png')), '', '')>
                     <p>{!! $canv_bot['cart4_title'] !!}</p>
                 </div>
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon5.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon5.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon5.png')), '', '')>
                     <p>{!! $canv_bot['cart5_title'] !!}</p>
                 </div>
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon6.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon6.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon6.png')), '', '')>
                     <p>{!! $canv_bot['cart6_title'] !!}</p>
                 </div>
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon7.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon7.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon7.png')), '', '')>
                     <p>{!! $canv_bot['cart7_title'] !!}</p>
                 </div>
                 <div class="components-item">
-                    <img src="{{ asset('img/components-item-icon8.png') }}" alt="">
+                    <img src="{{ asset('img/components-item-icon8.png') }}"  @frontendAlt('graph_portrait.blade.php', (asset('img/components-item-icon8.png')), '', '')>
                     <p>{!! $canv_bot['cart8_title'] !!}</p>
                 </div>
             </div>
@@ -105,7 +105,7 @@
                 <div class="text">
                     {!! $canv_bot['up_left_text'] !!}
                 </div>
-                <img src="{{ asset('img/packaging-img.png') }}" alt="" class="packaging-img">
+                <img src="{{ asset('img/packaging-img.png') }}"  class="packaging-img" @frontendAlt('graph_portrait.blade.php', (asset('img/packaging-img.png')), '', '')>
             </div>
             <div class="package-size clearfix">
                 <h4>{!! $canv_bot['up_def_title'] !!}</h4>

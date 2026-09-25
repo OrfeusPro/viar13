@@ -214,6 +214,10 @@ class AltGenerator
 
         $absolutePath = $image->absolutePath;
 
+        if ($image->sourceType === 'frontend' && strtolower(pathinfo((string) parse_url($image->path, PHP_URL_PATH), PATHINFO_EXTENSION)) === 'svg') {
+            return app(SvgRasterizer::class)->dataUrl((string) $absolutePath);
+        }
+
         if (
             $absolutePath === null ||
             trim((string) $absolutePath) === '' ||

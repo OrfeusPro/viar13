@@ -336,6 +336,12 @@ class BlogController extends Controller
             'desc'
         )->skip($offset)->get()->translate(App::getLocale(), 'ru');
 
+        foreach ($posts as $post) {
+            $post->frontend_alt_attributes = \App\Models\FrontendImage::attributesFor(
+                'partials/blog/scripts.blade.php', '/storage/' . str_replace('\\', '/', $post->image), ''
+            );
+        }
+
         return $posts;
     }
 }

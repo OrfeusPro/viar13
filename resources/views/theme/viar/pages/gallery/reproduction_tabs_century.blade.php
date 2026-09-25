@@ -70,7 +70,7 @@
 							'shape'=> "landscape" ]) }}">
 						@endif
 							<img width="88" height="55" src="{{ asset(env('THEME') . 'images') }}/reproduction/1a.svg"
-								alt="">
+								 @frontendAlt('theme/viar/pages/gallery/reproduction_tabs_century.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/1a.svg', '', '')>
 						</a>
 					</li>
 					<li>
@@ -87,7 +87,7 @@
 							'order'=> \Request::get('order') ?? "", 
 							'shape'=> "square" ]) }}">
 						@endif
-							<img width="60" height="60" src="{{ asset(env('THEME') . 'images') }}/reproduction/3a.svg" alt="">
+							<img width="60" height="60" src="{{ asset(env('THEME') . 'images') }}/reproduction/3a.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction_tabs_century.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/3a.svg', '', '')>
 						</a>
 					</li>
 					<li>
@@ -104,7 +104,7 @@
 							'shape'=> \Request::get('order') ?? "", 
 							'shape'=> "portrait" ]) }}">
 						@endif
-							<img width="55" height="81" src="{{ asset(env('THEME') . 'images') }}/reproduction/5a.svg" alt="">
+							<img width="55" height="81" src="{{ asset(env('THEME') . 'images') }}/reproduction/5a.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction_tabs_century.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/5a.svg', '', '')>
 						</a>
 					</li>
 				</ul>

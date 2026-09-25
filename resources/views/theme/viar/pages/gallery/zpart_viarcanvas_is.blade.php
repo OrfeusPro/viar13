@@ -31,13 +31,13 @@
         <div class="g-viar-blocks">
             <div class="g-viar-block">
                 <img width="50" height="27" src="{{ asset(env('THEME') . 'images') }}/gallery/1.svg"
-                    loading="lazy" alt="">
+                    loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_viarcanvas_is.blade.php', (asset(env('THEME') . 'images')) . '/gallery/1.svg', '', '')>
                 <div class="g-viar-btitle">@lang("contacts.viarcanvas_is_t_1")</div>
                 <p>@lang("contacts.viarcanvas_is_t_2")</p>
             </div>
             <div class="g-viar-block">
                 <img width="50" height="27" src="{{ asset(env('THEME') . 'images') }}/gallery/2.svg"
-                    loading="lazy" alt="">
+                    loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_viarcanvas_is.blade.php', (asset(env('THEME') . 'images')) . '/gallery/2.svg', '', '')>
                 <div class="g-viar-btitle">@lang("contacts.viarcanvas_is_t_3")</div>
                 <p>
                     @lang("contacts.viarcanvas_is_t_4")
@@ -45,13 +45,13 @@
             </div>
             <div class="g-viar-block">
                 <img width="50" height="27" src="{{ asset(env('THEME') . 'images') }}/gallery/3.svg"
-                    loading="lazy" alt="">
+                    loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_viarcanvas_is.blade.php', (asset(env('THEME') . 'images')) . '/gallery/3.svg', '', '')>
                 <div class="g-viar-btitle">@lang("contacts.viarcanvas_is_t_5")</div>
                 <p>@lang("contacts.viarcanvas_is_t_6")</p>
             </div>
             <div class="g-viar-block">
                 <img width="50" height="27" src="{{ asset(env('THEME') . 'images') }}/gallery/4.svg"
-                    loading="lazy" alt="">
+                    loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_viarcanvas_is.blade.php', (asset(env('THEME') . 'images')) . '/gallery/4.svg', '', '')>
                 <div class="g-viar-btitle">@lang("contacts.viarcanvas_is_t_7")</div>
                 <p>
                     @lang("contacts.viarcanvas_is_t_8")

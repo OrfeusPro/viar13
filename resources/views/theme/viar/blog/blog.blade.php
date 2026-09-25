@@ -157,7 +157,7 @@
 
 
 	<div class="ellipse ellipse_black ellipse_top">
-		<img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg" alt="img" loading="lazy">
+		<img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"  loading="lazy" @frontendAlt('theme/viar/blog/blog.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
 	</div>
 
 	<div class="newone__screen">
@@ -400,7 +400,7 @@
 									<source srcset="{{ $storyImage['src_webp'] }}" type="image/webp">
 								@endif
 								<source srcset="{{ $storyImage['src'] }}" type="{{ $storyImage['type'] ?? 'image/jpeg' }}">
-								<img src="{{ $storyImage['src'] }}" alt="">
+								<img src="{{ $storyImage['src'] }}"  @frontendAlt('theme/viar/blog/blog.blade.php', ($storyImage['src']), '', '')>
 							</picture>
 						</div>
 						<div class="h3_old">{{ $story->getTranslatedAttribute('title') }}</div>
@@ -555,8 +555,8 @@
 	</div>
 
 	<div class="ellipse">
-		<img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async" height="99"
-			width="1374">
+		<img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async" height="99"
+			width="1374" @frontendAlt('theme/viar/blog/blog.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 	</div>
 
 	<div class="blogsoc__screen">

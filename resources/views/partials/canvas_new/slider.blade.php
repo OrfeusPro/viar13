@@ -32,7 +32,7 @@
 									@if(!empty($canvasNewSlidePngSources['src']) && !empty($canvasNewSlidePngSources['type']))
 										<source srcset="{{ $canvasNewSlidePngSources['src'] }}" type="{{ $canvasNewSlidePngSources['type'] }}">
 									@endif
-									<img class="canvas-object" width="550" height="600" src="{{ $canvasNewSlidePngSources['src'] }}" alt="Viar Image">
+									<img class="canvas-object" width="550" height="600" src="{{ $canvasNewSlidePngSources['src'] }}"  @frontendAlt('partials/canvas_new/slider.blade.php', ($canvasNewSlidePngSources['src']), 'Viar Image', '')>
 								</picture>
 								@if(isset($slide['sub_title']) && $slide['sub_title'] && $slide['sub_title']!='-')
 								<div class="pmo-block pmo-block1 pmo-blockr">
@@ -135,7 +135,7 @@
 							</div>
 							<div class="absolute-elements">
 								<div class="portrait-gift">
-									<img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}" alt="Viar Image">
+									<img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}"  @frontendAlt('partials/canvas_new/slider.blade.php', (asset('images/collage/gift.svg')), 'Viar Image', '')>
 									<p>{!! $slide['text_gift'] !!}</p>
 								</div>
 							</div>
@@ -163,4 +163,4 @@
 		</div>
 	</div>
 
-	<div class="ellipse"><img alt="img" src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374" /></div>
+	<div class="ellipse"><img  src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374"  @frontendAlt('partials/canvas_new/slider.blade.php', (asset(env('THEME').'images/icon/ellipse-whete.svg')), 'img', '')/></div>

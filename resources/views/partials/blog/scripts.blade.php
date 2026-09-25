@@ -37,7 +37,7 @@
                             $('.js_blog_arts').append(`
                             <div class="blog-item">
                                 <div class="img">
-                                    <img src="/storage/${img_url}">
+                                    <img src="/storage/${img_url}" ${el.frontend_alt_attributes || 'alt=""'}>
                                     </div>
                                 <h3 class="b_post__title">${el.title}</h3>
                                 <p>${short_text_clear}</p>

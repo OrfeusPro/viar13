@@ -213,7 +213,7 @@
 					</div>
 					<div class="cabinet-content__icon">
 						<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/settings.svg" width="82" height="82"
-							alt="Viar Cabinet Peding Orders">
+							 @frontendAlt('theme/viar/account/settings.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/settings.svg', 'Viar Cabinet Peding Orders', '')>
 					</div>
 				</div>
 			</div>

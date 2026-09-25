@@ -13,7 +13,7 @@
             <div class="condition-list">
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon1.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon1.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon1.svg')), '', '')>
                         <h2>@lang('pages.condition.terms')</h2>
                     </div>
                     <div class="content">
@@ -24,7 +24,7 @@
                 </div>
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon2.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon2.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon2.svg')), '', '')>
                         <h2>@lang('pages.condition.register')</h2>
                     </div>
                     <div class="content">
@@ -35,7 +35,7 @@
                 </div>
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon3.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon3.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon3.svg')), '', '')>
                         <h2>@lang('pages.condition.prices')</h2>
                     </div>
                     <div class="content">
@@ -46,7 +46,7 @@
                 </div>
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon4.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon4.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon4.svg')), '', '')>
                         <h2>@lang('pages.condition.delivery')</h2>
                     </div>
                     <div class="content">
@@ -57,7 +57,7 @@
                 </div>
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon5.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon5.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon5.svg')), '', '')>
                         <h2>@lang('pages.condition.confidentiality')</h2>
                     </div>
                     <div class="content">
@@ -68,7 +68,7 @@
                 </div>
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon6.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon6.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon6.svg')), '', '')>
                         <h2>@lang('pages.condition.gift_card')</h2>
                     </div>
                     <div class="content">
@@ -79,7 +79,7 @@
                 </div>
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon7.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon7.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon7.svg')), '', '')>
                         <h2>@lang('pages.condition.property')</h2>
                     </div>
                     <div class="content">
@@ -90,7 +90,7 @@
                 </div>
                 <div class="condition-item">
                     <div class="title">
-                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon8.svg') }}" alt="">
+                        <img width="45" height="45" src="{{ asset(config('theme.current') . '/images/condition/icon8.svg') }}"  @frontendAlt('theme/viar/pages/condition/index.blade.php', (asset(config('theme.current') . '/images/condition/icon8.svg')), '', '')>
                         <h2>@lang('pages.condition.return_product')</h2>
                     </div>
                     <div class="content">

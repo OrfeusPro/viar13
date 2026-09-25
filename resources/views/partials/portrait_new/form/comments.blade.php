@@ -48,7 +48,7 @@
     <div class="formalization-prompt">
         <div class="formalization-prompt--wrapper">
             <div class="formalization-prompt--inner">
-                <img src="{{ asset('images/prompt9.png') }}" alt=""/>
+                <img src="{{ asset('images/prompt9.png') }}"  @frontendAlt('partials/portrait_new/form/comments.blade.php', (asset('images/prompt9.png')), '', '')/>
                 <p>
                      {{ trans('portrait_buy_form.step_comment_bot_desc') }} </p>
             </div>

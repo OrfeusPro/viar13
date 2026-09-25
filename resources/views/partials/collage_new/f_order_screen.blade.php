@@ -23,7 +23,7 @@
                                     <picture>
                                         <source srcset="{{ asset('images/collage/fo1.webp') }}" type="image/webp">
                                         <source srcset="{{ asset('images/collage/fo1.jpg') }}" type="image/jpeg">
-                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo1.jpg') }}" alt="Viar">
+                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo1.jpg') }}"  @frontendAlt('partials/collage_new/f_order_screen.blade.php', (asset('images/collage/fo1.jpg')), 'Viar', '')>
                                     </picture>
                                 </div>
                             </div>
@@ -55,7 +55,7 @@
                                     <picture>
                                         <source srcset="{{ asset('images/collage/fo3.webp') }}" type="image/webp">
                                         <source srcset="{{ asset('images/collage/fo3.jpg') }}" type="image/jpeg">
-                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo3.jpg') }}" alt="Viar">
+                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo3.jpg') }}"  @frontendAlt('partials/collage_new/f_order_screen.blade.php', (asset('images/collage/fo3.jpg')), 'Viar', '')>
                                     </picture>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@
                                     <picture>
                                         <source srcset="{{ asset('images/collage/fo2.webp') }}" type="image/webp">
                                         <source srcset="{{ asset('images/collage/fo2.jpg') }}" type="image/jpeg">
-                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo2.jpg') }}" alt="Viar">
+                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo2.jpg') }}"  @frontendAlt('partials/collage_new/f_order_screen.blade.php', (asset('images/collage/fo2.jpg')), 'Viar', '')>
                                     </picture>
                                 </div>
                             </div>
@@ -119,7 +119,7 @@
                                     <picture>
                                         <source srcset="{{ asset('images/collage/fo4.webp') }}" type="image/webp">
                                         <source srcset="{{ asset('images/collage/fo4.jpg') }}" type="image/jpeg">
-                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo4.jpg') }}" alt="Viar">
+                                        <img width="208" height="145" loading="lazy" src="{{ asset('images/collage/fo4.jpg') }}"  @frontendAlt('partials/collage_new/f_order_screen.blade.php', (asset('images/collage/fo4.jpg')), 'Viar', '')>
                                     </picture>
                                 </div>
                             </div>

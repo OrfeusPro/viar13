@@ -135,7 +135,7 @@
                           <source src="@isset(json_decode($page['video_file'])[0]->download_link){{ asset( 'storage/'.json_decode($page['video_file'])[0]->download_link ) }}@endisset" type="video/mp4">
                         </video>
                         <div class="video-btn">
-                          <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/play.svg" alt="">
+                          <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/play.svg"  @frontendAlt('theme/viar/pages/about/index.blade.php', (asset(env('THEME') . 'images')) . '/play.svg', '', '')>
                         </div>
                       </div>
                 </div>
@@ -208,7 +208,7 @@
 
                     <div class="at-block">
                         <div class="at-logo">
-                            <img width="120" height="120" src="{{ asset('img') }}/icons/logo.svg" alt="Viar">
+                            <img width="120" height="120" src="{{ asset('img') }}/icons/logo.svg"  @frontendAlt('theme/viar/pages/about/index.blade.php', (asset('img')) . '/icons/logo.svg', 'Viar', '')>
                         </div>
                         <div class="atl-title">
                             @lang("about.text_6_2")
@@ -251,7 +251,7 @@
                                                     <source srcset="{{ $webpSrc }}" type="image/webp">
                                                 @endif
 												<source srcset="{{ asset(Voyager::image($image)) }}" type="image/jpeg">
-												<img width="433" height="583" src="{{ asset(Voyager::image($image)) }}" alt="{{ $item->title }} {{ $item->title }}" loading="lazy">
+												<img width="433" height="583" src="{{ asset(Voyager::image($image)) }}"  loading="lazy" @frontendAlt('theme/viar/pages/about/index.blade.php', (asset(Voyager::image($image))), ($item->title) . ' ' . ($item->title), '')>
 											</picture>
 										</div>
 									</div>
@@ -267,7 +267,7 @@
     </div>
 
     <div class="ellipse">
-        <img alt="img" src="{{ asset(env('THEME') . 'images') }}/icon/ellipse-whete.svg" decoding="async" height="99" width="1374">
+        <img  src="{{ asset(env('THEME') . 'images') }}/icon/ellipse-whete.svg" decoding="async" height="99" width="1374" @frontendAlt('theme/viar/pages/about/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/ellipse-whete.svg', 'img', '')>
     </div>
 
     <div class="about-work">
@@ -287,7 +287,7 @@
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w1.avif" type="image/avif">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w1.webp" type="image/webp">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w1.jpg" type="image/jpeg">
-                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w1.jpg" alt="">
+                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w1.jpg"  @frontendAlt('theme/viar/pages/about/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w1.jpg', '', '')>
                             </picture>
                         </div>
                         <div class="ab-title">
@@ -309,7 +309,7 @@
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w2.avif" type="image/avif">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w2.webp" type="image/webp">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w2.jpg" type="image/jpeg">
-                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w2.jpg" alt="">
+                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w2.jpg"  @frontendAlt('theme/viar/pages/about/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w2.jpg', '', '')>
                             </picture>
                         </div>
                         <div class="ab-title">
@@ -331,7 +331,7 @@
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w3.avif" type="image/avif">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w3.webp" type="image/webp">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w3.jpg" type="image/jpeg">
-                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w3.jpg" alt="">
+                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w3.jpg"  @frontendAlt('theme/viar/pages/about/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w3.jpg', '', '')>
                             </picture>
                         </div>
                         <div class="ab-title">
@@ -353,7 +353,7 @@
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w4.avif" type="image/avif">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w4.webp" type="image/webp">
                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w4.jpg" type="image/jpeg">
-                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w4.jpg" alt="">
+                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/w4.jpg"  @frontendAlt('theme/viar/pages/about/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w4.jpg', '', '')>
                             </picture>
                         </div>
                         <div class="ab-title">

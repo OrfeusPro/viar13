@@ -28,9 +28,9 @@
                     <p>@lang("pages.faq_info")</p>
                         <div class="contact-list">
                             <div class="contact-list__inner">
-                                <a href="{{ setting('sots-seti.what_link') }}" target="_blank"><img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/question-all/whatsapp_icon-icons.com_65942 2.svg" alt=""></a>
-                                <a href="{{ setting('sots-seti.viber_link') }}" target="_blank"><img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/question-all/Viber_icon-icons.com_66792 2.svg" alt=""></a>
-                                <a href="https://www.instagram.com/viarcanvas/" target="_blank"><img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/question-all/instagram.svg" alt=""></a>
+                                <a href="{{ setting('sots-seti.what_link') }}" target="_blank"><img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/question-all/whatsapp_icon-icons.com_65942 2.svg"  @frontendAlt('theme/viar/pages/faq/item.blade.php', (asset(env('THEME') . 'images')) . '/question-all/whatsapp_icon-icons.com_65942 2.svg', '', '')></a>
+                                <a href="{{ setting('sots-seti.viber_link') }}" target="_blank"><img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/question-all/Viber_icon-icons.com_66792 2.svg"  @frontendAlt('theme/viar/pages/faq/item.blade.php', (asset(env('THEME') . 'images')) . '/question-all/Viber_icon-icons.com_66792 2.svg', '', '')></a>
+                                <a href="https://www.instagram.com/viarcanvas/" target="_blank"><img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/question-all/instagram.svg"  @frontendAlt('theme/viar/pages/faq/item.blade.php', (asset(env('THEME') . 'images')) . '/question-all/instagram.svg', '', '')></a>
                             </div>
                             <div class="list-group">
                                 <a href="tel:{{ trans('header_footer_new.footer_phone') }}">{{ trans('header_footer_new.footer_phone') }}</a>

@@ -14,7 +14,7 @@
 								aria-label="examples slide link">
 								<picture>
 									<source srcset="{{ $images_folder . $element->image }}" type="image/jpeg">
-									<img width="120px" height="86px" src="{{ $images_folder . $element->image }}" alt="Viar">
+									<img width="120px" height="86px" src="{{ $images_folder . $element->image }}"  @frontendAlt('theme/viar/account/special_offers.blade.php', ($images_folder . $element->image), 'Viar', '')>
 								</picture>
 							</a>
 							<a href="#" class="examples-slide__title">{{ $element->value }}</a>

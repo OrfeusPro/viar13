@@ -5,7 +5,7 @@ namespace App\Widgets;
 use App\Models\FooterMenu;
 use App\Models\HeaderMenu;
 use Arrilot\Widgets\AbstractWidget;
-use Stevebauman\Location\Facades\Location;
+use App\Services\RequestGeoIp;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -52,7 +52,7 @@ class Header extends AbstractWidget
 
           //  if ($position = Location::get($ip)) {
 
-            if ($position = Location::get(request()->ip())) {
+            if ($position = app(RequestGeoIp::class)->get(request())) {
                 $country_code = $position->countryCode;
 
                 if ($country_code == 'LT') {

@@ -26,7 +26,7 @@
 											<source srcset="{{ $webpSrc }}" type="image/webp">
 										@endif
 										<img class="canvas-object" width="550" height="600" decoding="async" loading="lazy"
-											src="{{ Voyager::image($slide['png']) }}" alt="an avif image" />
+											src="{{ Voyager::image($slide['png']) }}"   @frontendAlt('theme/viar/pages/canvas/slider.blade.php', (Voyager::image($slide['png'])), 'an avif image', '')/>
 										{{-- <img class="canvas-object" width="550" height="600" src="{{ Voyager::image($slide['png']) }}" alt="Viar Image"> --}}
 
 									</picture>
@@ -65,6 +65,9 @@
 													{!! $slide['title'] !!}
 												</div>
 											@endif
+										@endif
+										@if (isset($slide['hero_subtitle']) && $slide['hero_subtitle'] && $slide['hero_subtitle'] != '-')
+											<p class="canvas-hero-subtitle @if (isset($slide['is_white']) && $slide['is_white']) slider_hb_white @endif">{!! $slide['hero_subtitle'] !!}</p>
 										@endif
 										<div class="mp__inner--list">
 											@if (isset($slide['text1']) && $slide['text1'] && $slide['text1'] != '-')
@@ -147,7 +150,7 @@
 								<div class="absolute-elements">
 									<div class="portrait-gift" style="z-index: 99;">
 										<img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}"
-											alt="Viar Image">
+											 @frontendAlt('theme/viar/pages/canvas/slider.blade.php', (asset('images/collage/gift.svg')), 'Viar Image', '')>
 										<p>{!! $slide['text_gift'] !!}</p>
 									</div>
 								</div>
@@ -204,5 +207,5 @@
 		
 	</div>
 </div> --}}
-<div class="ellipse notmobile"><img alt="img" src="{{ asset(env('THEME') . 'images/icon/ellipse-whete.svg') }}"
-		decoding="async" height="99" width="1374" /></div>
+<div class="ellipse notmobile"><img  src="{{ asset(env('THEME') . 'images/icon/ellipse-whete.svg') }}"
+		decoding="async" height="99" width="1374"  @frontendAlt('theme/viar/pages/canvas/slider.blade.php', (asset(env('THEME') . 'images/icon/ellipse-whete.svg')), 'img', '')/></div>

@@ -43,11 +43,11 @@
                 <picture>
                     <source srcset="{{ asset('images/why-picture-girl.webp') }}" type="image/webp">
                     <source srcset="{{ asset('images/why-picture-girl.png') }}">
-                    <img src="{{ asset('images/why-picture-girl.png') }}" class="why-photo" alt="img"
-                        loading="lazy">
+                    <img src="{{ asset('images/why-picture-girl.png') }}" class="why-photo"
+                        loading="lazy" @frontendAlt('partials/index_new/why7.blade.php', (asset('images/why-picture-girl.png')), 'img', '')>
                 </picture>
                 <div class="why-gift">
-                    <img src="{{ asset('images/icon/gift.svg') }}" alt="img" loading="lazy">
+                    <img src="{{ asset('images/icon/gift.svg') }}"  loading="lazy" @frontendAlt('partials/index_new/why7.blade.php', (asset('images/icon/gift.svg')), 'img', '')>
                     <p>{!! trans('homepage_new.why_pic_gift_text') !!}</p>
                 </div>
             </div>

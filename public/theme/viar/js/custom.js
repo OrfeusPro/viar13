@@ -799,13 +799,7 @@ $(document).ready(function() {
       $(".popup-inv-size").addClass("active");
       return
   }
-}), $(document).on("click", "#t3_submit_btn", function(e) {
-  e.preventDefault();
-  if (0 == $('.product-download input[type="file"]')[0].files.length) {
-      $(".popup-inv-size").addClass("active");
-      return
-  }
-	}), $(document).ready(function() {
+}), $(document).ready(function() {
 	  function e() {
 	      const menuLinks = $(".header-item_pc > ul > li > a");
 	      const headerFixed = $(".vz-header").hasClass("is-fixed");
@@ -874,6 +868,44 @@ $('.popup-repair-basket .popup-close').on('click', function (e) {
 
     window.location.href = '/cart';
 });
+
+// Load the HEIC converter only for HEIC and HEIF photos.
+(function (window, document) {
+    var pending;
+    window.viarLoadHeic = function () {
+        if (pending) return pending;
+        if (typeof window.HeicTo === 'function') return Promise.resolve(window.HeicTo);
+        pending = new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            var timer;
+            function fail() {
+                clearTimeout(timer);
+                script.onload = script.onerror = null;
+                script.remove();
+                reject(new Error('Unable to load HEIC converter. Please select the file again.'));
+            }
+            script.setAttribute('data-cfasync', 'false');
+            script.async = true;
+            script.src = 'https://cdn.jsdelivr.net/npm/heic-to@1.5.2/dist/iife/heic-to.js';
+            script.onload = function () {
+                if (typeof window.HeicTo !== 'function') return fail();
+                clearTimeout(timer);
+                script.onload = script.onerror = null;
+                resolve(window.HeicTo);
+            };
+            script.onerror = fail;
+            timer = setTimeout(fail, 30000);
+            document.head.appendChild(script);
+        }).catch(function (error) { pending = null; throw error; });
+        return pending;
+    };
+    window.viarConvertPhoto = async function (file) {
+        if (file.type !== 'image/heic' && file.type !== 'image/heif' && file.type !== '') return file;
+        var convert = await window.viarLoadHeic();
+        var blob = await convert({ blob: file, type: 'image/png' });
+        return new File([blob], file.name.replace(/\.(heic|heif)$/i, '.png'), { type: 'image/png' });
+    };
+})(window, document);
 
 $(document).ready(function() {
     /* -- faq --*/

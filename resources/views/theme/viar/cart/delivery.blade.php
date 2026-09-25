@@ -72,7 +72,7 @@
                                     <div class="cart-delivery-item__header js-cart-delivery-item">
                                         <div class="kvizz-radio js-checkbox">
 
-                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('theme/viar/cart/delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                             <div class="window-prompt">
                                                 @lang('cart_new.step_3_delivery_in') <?php echo isset($town->translations[0]) ? $town->translations[0]->value : $town->city; ?>
                                             </div>
@@ -91,7 +91,7 @@
                                     <div class="cart-delivery-item__header js-cart-delivery-item">
                                         <div class="kvizz-radio js-checkbox">
 
-                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('theme/viar/cart/delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                             <div class="window-prompt">
                                                 @lang('cart_new.step_3_delivery_to_your_address_by_courier')
                                             </div>
@@ -119,7 +119,7 @@
                                     <div class="cart-delivery-item__header js-cart-delivery-item">
                                         <div class="kvizz-radio js-checkbox">
 
-                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('theme/viar/cart/delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                             <div class="window-prompt">
                                                 @lang('cart_new.step_3_delivery_to_pick-up_point')
                                             </div>
@@ -195,7 +195,7 @@
                                 <div class="cart-delivery-item__wrapper">
                                     <div class="cart-delivery-item__header js-cart-delivery-item">
                                         <div class="kvizz-radio js-checkbox">
-                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                            <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('theme/viar/cart/delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                             <div class="window-prompt">
                                                 @lang('cart_new.step_3_pick_up_at_viar_workshop')
                                             </div>

@@ -21,13 +21,13 @@
 						<div class="painter_img" style="text-align: center;" data-src="{{ $painter_img }}">
 							<a target="_blank" href="{{ $imgSrc }}">
 								@if(!$imgExists)
-								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}"  @frontendAlt('partials/account/painter_images.blade.php', (order_image_placeholder()), '', '')>
 								@elseif($ext == 'psd')
-								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/psd.svg', '', '')>
 								@elseif ($ext == 'pdf')
-								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/pdf.svg', '', '')>
 								@else
-								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}"  @frontendAlt('partials/account/painter_images.blade.php', ($imgSrc), '', '')>
 								@endif
 							</a>
 						</div>
@@ -57,13 +57,13 @@
 						<div class="painter_img" style="text-align: center;" data-src="{{ $painter_img }}">
 							<a target="_blank" href="{{ $imgSrc }}">
 								@if(!$imgExists)
-								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}"  @frontendAlt('partials/account/painter_images.blade.php', (order_image_placeholder()), '', '')>
 								@elseif($ext == 'psd')
-								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/psd.svg', '', '')>
 								@elseif ($ext == 'pdf')
-								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/pdf.svg', '', '')>
 								@else
-								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}"  @frontendAlt('partials/account/painter_images.blade.php', ($imgSrc), '', '')>
 								@endif
 							</a>
 						</div>
@@ -103,13 +103,13 @@
 						<div class="painter_img" style="text-align: center;">
 							<a target="_blank" href="{{ $imgSrc }}">
 								@if(!$imgExists)
-								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}"  @frontendAlt('partials/account/painter_images.blade.php', (order_image_placeholder()), '', '')>
 								@elseif($ext == 'psd')
-								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/psd.svg', '', '')>
 								@elseif ($ext == 'pdf')
-								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/pdf.svg', '', '')>
 								@else
-								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}"  @frontendAlt('partials/account/painter_images.blade.php', ($imgSrc), '', '')>
 								@endif
 							</a>
 							@php
@@ -153,13 +153,13 @@
 						<div class="painter_img" style="text-align: center;">
 							<a target="_blank" href="{{ $imgSrc }}">
 								@if(!$imgExists)
-								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}"  @frontendAlt('partials/account/painter_images.blade.php', (order_image_placeholder()), '', '')>
 								@elseif($ext == 'psd')
-								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/psd.svg', '', '')>
 								@elseif ($ext == 'pdf')
-								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg"  @frontendAlt('partials/account/painter_images.blade.php', '/img/pdf.svg', '', '')>
 								@else
-								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}"  @frontendAlt('partials/account/painter_images.blade.php', ($imgSrc), '', '')>
 								@endif
 							</a>
 							@php

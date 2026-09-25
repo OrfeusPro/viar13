@@ -87,12 +87,12 @@
 											@php $cur_country = $user['country']; @endphp
 
 											<img src="{{ asset('/images/flag') }}/{{ strtolower($user['country']) }}.svg" data-country='{{ $user['country'] }}'
-												alt="img" loading="lazy" />
+												 loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($user['country'])) . '.svg', 'img', '')/>
 										@elseif (isset($user['settings']['locale']) && $user['settings']['locale'])
 											@php $cur_country = $user['settings']['locale']; @endphp
 
 											<img src="{{ asset('/images/flag') }}/{{ strtolower($user['settings']['locale']) }}.svg"
-												data-country='{{ $user['settings']['locale'] }}' alt="img" loading="lazy" />
+												data-country='{{ $user['settings']['locale'] }}'  loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($user['settings']['locale'])) . '.svg', 'img', '')/>
 										@else
 											@foreach ($c_tels as $c_tel)
 												@if (\Session::has('basket_country'))
@@ -104,7 +104,7 @@
 														@php $cur_country = $c_tel['country_code']; @endphp
 
 														<img src="{{ asset('/images/flag') }}/{{ strtolower($c_tel['country_code']) }}.svg"
-															data-country='{{ $c_tel['country_code'] }}' alt="img" loading="lazy" />
+															data-country='{{ $c_tel['country_code'] }}'  loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($c_tel['country_code'])) . '.svg', 'img', '')/>
 													@endif
 												@else
 													@php
@@ -134,7 +134,7 @@
 
 														@php $cur_country = $c_tel['country_code']; @endphp
 														<img src="{{ asset('/images/flag') }}/{{ strtolower($c_tel['country_code']) }}.svg"
-															data-country='{{ $c_tel['country_code'] }}' alt="img" loading="lazy" />
+															data-country='{{ $c_tel['country_code'] }}'  loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($c_tel['country_code'])) . '.svg', 'img', '')/>
 													@endif
 												@endif
 											@endforeach
@@ -164,8 +164,8 @@
 											@if($tel['country_code'] == 'RU' || $tel['country_code'] == 'UA') @continue @endif
 
 											<div class="country-item">
-												<img src="{{ asset('images/flag') }}/{{ strtolower($tel['country_code']) }}.svg" alt="img"
-													loading="lazy" />
+												<img src="{{ asset('images/flag') }}/{{ strtolower($tel['country_code']) }}.svg"
+													loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('images/flag')) . '/' . (strtolower($tel['country_code'])) . '.svg', 'img', '')/>
 												<p>{{ $tel['country_name'] }}</p>
 												<span data-mask="{{ $tel['mask'] }}"
 													data-placeholder="{{ $tel['placeholder'] }}"

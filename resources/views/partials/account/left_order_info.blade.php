@@ -23,13 +23,13 @@
             <li>
                 <a href="{{ $imgSrc }}" target="_blank" data-src="{{ $painter_img }}">
                     @if(!$imgExists)
-                    <img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}" alt="">
+                    <img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}"  @frontendAlt('partials/account/left_order_info.blade.php', (order_image_placeholder()), '', '')>
                     @elseif($ext == 'psd')
-                    <img style="max-width:100%;max-height:100px;" src="/img/psd.svg" alt="">
+                    <img style="max-width:100%;max-height:100px;" src="/img/psd.svg"  @frontendAlt('partials/account/left_order_info.blade.php', '/img/psd.svg', '', '')>
                     @elseif ($ext == 'pdf')
-                    <img style="max-width:100%;max-height:100px;" src="/img/pdf.svg" alt="">
+                    <img style="max-width:100%;max-height:100px;" src="/img/pdf.svg"  @frontendAlt('partials/account/left_order_info.blade.php', '/img/pdf.svg', '', '')>
                     @else
-                    <img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}" alt="">
+                    <img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}"  @frontendAlt('partials/account/left_order_info.blade.php', ($imgSrc), '', '')>
                     @endif
                 </a>
             </li>
@@ -57,13 +57,13 @@
 						<div class="painter_img" style="text-align: center;" data-src="{{ $painter_img }}">
 							<a target="_blank" href="{{ $imgSrc }}">
 								@if(!$imgExists)
-								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ order_image_placeholder() }}"  @frontendAlt('partials/account/left_order_info.blade.php', (order_image_placeholder()), '', '')>
 								@elseif($ext == 'psd')
-								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/psd.svg"  @frontendAlt('partials/account/left_order_info.blade.php', '/img/psd.svg', '', '')>
 								@elseif ($ext == 'pdf')
-								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg" alt="">
+								<img style="max-width:100%;max-height:100px;" src="/img/pdf.svg"  @frontendAlt('partials/account/left_order_info.blade.php', '/img/pdf.svg', '', '')>
 								@else
-								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}" alt="">
+								<img style="max-width:100%;max-height:100px;" src="{{ $imgSrc }}"  @frontendAlt('partials/account/left_order_info.blade.php', ($imgSrc), '', '')>
 								@endif
 							</a>
 						</div>
@@ -126,7 +126,7 @@ $client_imgs_items = explode (",", $client_imgs);
         @endphp
         <li>
             <a href="{{ $imgSrc }}" target="_blank">
-                <img src="{{ $imgSrc }}" alt="" class="img__user_upl">
+                <img src="{{ $imgSrc }}"  class="img__user_upl" @frontendAlt('partials/account/left_order_info.blade.php', ($imgSrc), '', '')>
             </a>
         </li>
         @endforeach

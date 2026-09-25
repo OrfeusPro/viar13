@@ -20,7 +20,7 @@
                             @if(!empty($graphPromoStyleImageSources['src']) && !empty($graphPromoStyleImageSources['type']))
                                 <source srcset="{{ $graphPromoStyleImageSources['src'] }}" type="{{ $graphPromoStyleImageSources['type'] }}">
                             @endif
-                            <img alt="{{ $item['name'] }}" title="{{ $item['name'] }}"
+                            <img
                                 src="{{ $graphPromoStyleImageSources['src'] }}" @altAttrs($item, 'etc_style_image', data_get($item, 'etc_style_image'))>
                         </picture>
                         @endif

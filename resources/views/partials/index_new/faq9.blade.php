@@ -8,8 +8,8 @@
                     <picture>
                         <source srcset="{{ asset('images/faq.webp') }}" type="image/webp">
                         <source srcset="{{ asset('images/faq.png') }}">
-                        <img src="{{ asset('images/faq.png') }}" class="faq-photo" alt="img"
-                            loading="lazy">
+                        <img src="{{ asset('images/faq.png') }}" class="faq-photo"
+                            loading="lazy" @frontendAlt('partials/index_new/faq9.blade.php', (asset('images/faq.png')), 'img', '')>
                     </picture>
                     <div class="h3_old">{!! trans('homepage_new.faq_whats_title') !!}</div>
                     <p>{!! trans('homepage_new.faq_whats_desc') !!}
@@ -42,7 +42,7 @@
                         <picture>
                             <source srcset="{{ asset('images/icon/load-more.webp') }}" type="image/webp">
                             <source srcset="{{ asset('images/icon/load-more.png') }}">
-                            <img src="{{ asset('images/icon/load-more.png') }}" alt="img" loading="lazy">
+                            <img src="{{ asset('images/icon/load-more.png') }}"  loading="lazy" @frontendAlt('partials/index_new/faq9.blade.php', (asset('images/icon/load-more.png')), 'img', '')>
                         </picture>
                         <span>{!! trans('homepage_new.faq_show_more_btn_text') !!}</span>
                     </a>

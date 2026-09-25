@@ -13,7 +13,7 @@
                         <source media="(max-width: 550px)" srcset="{{ asset('images/canvas/canvas-popup.webp') }}"  type="image/webp">
                         <source srcset="{{ asset('images/canvas/canvas-popup.webp') }}"  type="image/webp">
                         <source srcset="{{ asset('images/canvas/canvas-popup.png') }}">
-                        <img loading="lazy" src="{{ asset('images/canvas/canvas-popup.png') }}" alt="">
+                        <img loading="lazy" src="{{ asset('images/canvas/canvas-popup.png') }}"  @frontendAlt('theme/viar/modals/popup_add_to_cart.blade.php', (asset('images/canvas/canvas-popup.png')), '', '')>
                     </picture>
                 </div>
                 <div class="portraits-btn">

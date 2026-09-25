@@ -8,7 +8,7 @@
 						<source media="(max-width: 576px)" srcset="{{ ver_asset(env('THEME') . 'images/oil/video_1.webp') }}"
 							type="image/webp">
 						<source srcset="{{ ver_asset(env('THEME') . 'images/oil/video_1.webp') }}" type="image/webp">
-						<img width="652" height="744" src="{{ ver_asset(env('THEME') . 'images/oil/video_1.png') }}" alt="">
+						<img width="652" height="744" src="{{ ver_asset(env('THEME') . 'images/oil/video_1.png') }}"  @frontendAlt('theme/viar/pages/portrait/oil-video.blade.php', (ver_asset(env('THEME') . 'images/oil/video_1.png')), '', '')>
 					</picture>
 					<div class="pmo-block">
 						@lang('pages.portrait_oil.oil-video.t11')
@@ -21,7 +21,7 @@
                         </video> --}}
 						<div class="video-btn video-open-btn">
 							<img width="72" height="72" src="{{ ver_asset(env('THEME') . 'images/oil/video_btn_play.svg') }}"
-								alt="">
+								 @frontendAlt('theme/viar/pages/portrait/oil-video.blade.php', (ver_asset(env('THEME') . 'images/oil/video_btn_play.svg')), '', '')>
 						</div>
 					</div>
 

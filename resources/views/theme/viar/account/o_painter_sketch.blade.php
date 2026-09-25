@@ -27,11 +27,11 @@
 							<a target="_blank" href="{{ $painter_img }}">
 							<picture>
 								@if($ext == 'psd')
-									<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/psd.svg" alt="">
+									<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/psd.svg"  @frontendAlt('theme/viar/account/o_painter_sketch.blade.php', '/img/psd.svg', '', '')>
 								@elseif ($ext == 'pdf')
-									<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/pdf.svg" alt="">
+									<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/pdf.svg"  @frontendAlt('theme/viar/account/o_painter_sketch.blade.php', '/img/pdf.svg', '', '')>
 								@else
-									<img width="180" height="200" style="max-width:100%;max-height:100%;" src="{{ $painter_img }}" alt="">
+									<img width="180" height="200" style="max-width:100%;max-height:100%;" src="{{ $painter_img }}"  @frontendAlt('theme/viar/account/o_painter_sketch.blade.php', ($painter_img), '', '')>
 								@endif
 							</picture>
 							</a>
@@ -155,11 +155,11 @@
 										<div class="loaded-images__container image-absoluteContainer">
 											<div class="uploaded-image-styles">
 												<span></span>
-												<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/image-preview.png" width="114" height="140" alt="">
+												<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/image-preview.png" width="114" height="140"  @frontendAlt('theme/viar/account/o_painter_sketch.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/image-preview.png', '', '')>
 											</div>
 											<div class="uploaded-image-styles">
 												<span></span>
-												<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/image-preview.png" width="114" height="140" alt="">
+												<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/image-preview.png" width="114" height="140"  @frontendAlt('theme/viar/account/o_painter_sketch.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/image-preview.png', '', '')>
 											</div>
 										</div>
 									</div>

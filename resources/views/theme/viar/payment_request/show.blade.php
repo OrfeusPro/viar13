@@ -262,7 +262,7 @@
                                     </div>
                                     @if(!empty($methodData['img']))
                                         <div class="cart-payments-page__item--img">
-                                            <img src="{{ asset(env('THEME') . $methodData['img']) }}" alt="">
+                                            <img src="{{ asset(env('THEME') . $methodData['img']) }}"  @frontendAlt('theme/viar/payment_request/show.blade.php', (asset(env('THEME') . $methodData['img'])), '', '')>
                                         </div>
                                     @endif
                                 </button>

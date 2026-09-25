@@ -1,6 +1,45 @@
 # План миграции viar13 на Laravel 13
 
-Обновлено: 2026-09-05.
+Обновлено: 2026-09-25.
+
+## Сверка исходных коммитов с `9a72e4b9` по `8101a9df` (2026-09-25)
+
+Статус переноса: **IN PROGRESS**. Работа ведётся по группам ниже; решение
+`TODO` меняется на `DONE` только после реализации и проверки в viar13.
+
+Источник: `C:\OSPanel\domains\asoft\viar` (`main`, HEAD `8101a9df`), цель:
+этот репозиторий (`codex/laravel13-frontend`, HEAD при аудите `2d88b9e`).
+Коммит `c1805f0b` уже адаптирован в `65271d6`. Следующие пункты относятся и к
+публичному сайту, и к действующей Filament-панели, если затронуты оба.
+
+| Исходный коммит | Решение | Задача |
+| --- | --- | --- |
+| `9a72e4b9` | DONE, админка | `OrderVenipakLabelService` берёт `delivery.phone` → `delivery.payer_phone` → профиль. Тест порядка fallback: `4 passed / 17 assertions` в suite Venipak. |
+| `2d2807df` | НЕ ПЕРЕНОСИТЬ | Только запись результатов production crawl в legacy-документацию. |
+| `f035b623`, `7acdac59` | НЕ ПЕРЕНОСИТЬ | Функция business analytics/payment-mail outbox полностью отменена следующим revert; итоговый diff пары пуст. |
+| `98c8f6d9` | IN PROGRESS, сайт | GeoIP, устранение повторных запросов/N+1, приоритет hero image и отложенная HEIC-конверсия перенесены. Нужна browser/UAT-проверка загрузки HEIC и главной. CAPTCHA не включать: текущий серверный контракт регистрации её не требует. |
+| `a084a89f`, `381ba34d` | IN PROGRESS, сайт + данные | Поле `canvas_slider.hero_subtitle`, модель, публичный шаблон и узкий Filament-редактор переводов перенесены; миграция применена. Livewire-тест записи EN/RU прошёл. Остаётся browser/UAT проверки отображения на живой странице. |
+| `e19b2a38` | НЕ ПЕРЕНОСИТЬ ОТДЕЛЬНО | Кроме промежуточного `canvas.hero_subtitle`, изменения invoice-переводов — перестановка ключей/форматирование без нового бизнес-правила. |
+| `1835e259` | NOT REQUIRED | Ленивая CAPTCHA несовместима с уже принятым контрактом Laravel 13: серверная регистрация не требует CAPTCHA. Возвращать её можно только отдельной согласованной задачей вместе с серверной проверкой. |
+| `44982d52` | DONE, сайт | Неблокирующий Font Awesome и WebP изображения партнёра перенесены; HTTPS главной вернул 200, внешний WebP URL — 200 `image/webp`. |
+| `0d831842` | IN PROGRESS, сайт | Inline-ошибка отсутствующего canvas-фото, фокус и переводы перенесены; нужен browser/UAT тест выбора большого файла и добавления в корзину. |
+| `f100b837`, `315594c4`, `fe3bb616`, `2ba9f15a` | DONE, сайт | Финальные SEO Analytics pages/routes/локали перенесены; feature-тест 1 passed/9 assertions, Blade cache и route-list успешны. |
+| `22028e9b`, `8101a9df` | IN PROGRESS, сайт + админка | Registry/inventory/model/миграция, финальные исключения `orders/`/`uploads/`, все 339 ALT Blade-патчей и Filament-очередь с правами/действиями перенесены; обе миграции применены. Одноязычный dry-run scan успешен. Нужны полное сканирование/применение и browser UAT. |
+
+Порядок: (1) Venipak phone; (2) canvas upload + GeoIP/JS совместимость;
+(3) slider schema/content; (4) SEO Analytics pages; (5) ALT frontend inventory;
+(6) независимые performance-правки. Перед каждым этапом сверять фактические
+таблицы/данные и текущий код Filament, не переписывать уже выполненные задачи.
+Все пункты TODO требуют реализации и отдельного evidence; этот аудит не считает
+их выполненными.
+
+Текущие найденные задачи ALT: оптимизировать полный многоязычный runtime-скан
+(одноязычный `--limit=1` на 128 МБ прошёл, полный `--limit=1` занял более
+нескольких минут и был прерван без записи); проверить реальные права
+`browse/edit_alt_suggestions` в БД; проверить применение ALT к записи на
+изолированной БД; довести Filament ALT-очередь до паритета с прежним Voyager UI
+(bulk moderation, WebP-фильтр/статистика, привязка к BREAD-записи там, где она
+ещё актуальна). До этих проверок не считать ALT-этап завершённым.
 
 ## Название задачи
 
@@ -557,6 +596,124 @@
 - [ ] [TODO] **ADM-FIL-025 — Dashboard и индикаторы**.
 - [ ] [TODO] **ADM-FIL-030 — Переключение на `/admin`**.
 - [ ] [TODO] **ADM-FIL-031 — Удаление зависимостей Voyager**.
+
+### Полный backlog интеграции админ-панели (аудит 2026-09-25)
+
+Этот перечень сводит переносимые функции кода и действующих legacy admin
+маршрутов в проверяемые этапы. Он не меняет текущий приоритет публичного
+frontend: админские задачи остаются отдельным post-RC этапом. `viar_filament` и
+архив `docs/upgrade-laravel13-filament5` источниками не являются.
+
+#### A. Базовая панель и безопасность
+
+- [DONE] ADM-FIL-000—002: инвентаризация, Filament panel, вход и базовые роли.
+- [TODO] ADM-FIL-012 — Единая матрица доступа: сопоставить все роли/permissions
+  Voyager с Filament policies и action-level checks; закрыть каждую admin route
+  аутентификацией и полномочием; добавить deny-by-default и тесты запрета для
+  прямого URL, Livewire action и массовых операций.
+- [TODO] ADM-FIL-013 — Безопасная замена legacy GET/ANY mutations на POST/PATCH/
+  DELETE с CSRF, валидацией, подтверждением опасных действий, throttling где
+  нужно и журналом критических изменений; отдельно пройти cache, coupon, sale,
+  image delete, assignment, review и label endpoints.
+- [TODO] ADM-FIL-014 — Админский UX foundation: локали, навигация, доступность,
+  responsive, ошибки/empty states, загрузки, сообщения об успехе и единые
+  критерии визуальной приёмки на desktop/mobile.
+
+#### B. Заказы: список, карточка и рабочие операции
+
+- [IN PROGRESS] ADM-FIL-003 — Orders list parity: все восемь legacy-колонок,
+  быстрые вкладки, сортировка, поиск, фильтры, счётчики, actions и browser UAT.
+- [DONE] ADM-FIL-004 — Карточка и основные редактируемые поля заказа.
+- [TODO] ADM-FIL-005 — Позиции/файлы: добавить/удалить позицию и изображения,
+  редактировать цену/параметры, проверять принадлежность файлов заказу,
+  сохранять legacy JSON без потери неизвестных ключей, безопасно обрабатывать
+  большие/удалённые файлы и rollback.
+- [TODO] ADM-FIL-006 — Назначения художника/печатника, очереди `painter_orders` /
+  `printing_orders`, сроки, статусы и изображения производства; права ролей,
+  уведомления-gates и parity/UAT.
+- [TODO] ADM-FIL-007 — Полный перенос клиентского, внутреннего и painter чатов:
+  история, вложения, read/unread, authorship, ответы, ограничения закрытых
+  заказов и регрессия client-facing потока.
+- [TODO] ADM-FIL-008 — Счета, фирмы, payment requests и платёжные ссылки:
+  генерация/подтверждение PDF, email gate, статусы/суммы, идемпотентность и
+  запрет повторного/неверного списания.
+- [TODO] ADM-FIL-009 — Venipak: адресная и pickup-доставка, создание/печать
+  этикеток, повтор/ошибки провайдера, привязка номера к заказу и fake HTTP.
+- [IN PROGRESS] ADM-FIL-010 — Создание заказа менеджером: parity полей и
+  клиент-only copy semantics, транзакция пользователя/бонусов/заказа/файлов,
+  filename codes, доставка по стране, бонусы, округления, browser UAT.
+- [TODO] ADM-FIL-011 — Приёмка модуля заказов end-to-end: полный набор ролей,
+  filters/actions, CRUD, чаты, вложения, оплаты/доставка; regression по `orders`
+  и админ-чатам, проверка внешних отправок и runbook восстановления.
+
+#### C. SA/CRM и административные коммуникации
+
+- [TODO] ADM-FIL-020 — CRM-SA inbox: список/поиск/фильтры/непрочитанное,
+  история и вложения, отправка/ответ, bind/create order, bot controls, аудит,
+  права, идемпотентность и согласованная обработка временных сущностей.
+- [TODO] ADM-FIL-026 — Уведомления и mail tools: `email-sender`, user notify,
+  шаблоны/получатели, suppression/preview, безопасный тестовый режим, лимиты,
+  лог доставки и запрет массовой отправки без подтверждения.
+- [TODO] ADM-FIL-027 — Image generation и review workflow: генерация по заказу,
+  thumbnails, аудио-отзывы, reviewer actions; очередь/ошибки/повтор и storage
+  ownership, без вызова production AI/внешних сервисов в тестах.
+
+#### D. Пользователи, контент и инструменты
+
+- [TODO] ADM-FIL-021 — Пользователи/роли/скидки: поиск и карточка клиента,
+  заказы/история, язык, категории и менеджер, статусы, бонусы/скидки, назначение
+  и отмена акций; транзакции, permission checks и уведомления.
+- [TODO] ADM-FIL-022 — Контент и мультиязычные CRUD: определить приоритетные
+  BREAD-типы по фактической навигации; страницы, header/menu, gallery/services,
+  категории и справочники; локали, переводы, медиа, сортировка, trash/restore,
+  связи и сохранение legacy форматов.
+- [TODO] ADM-FIL-023 — SEO/ALT suggestions: scan, generate, approve/reject,
+  apply/revert и bulk; права, история изменений, локали, rate limits и тестовый
+  режим генератора.
+- [TODO] ADM-FIL-024 — Операционные инструменты: купоны/30×40/Facebook sales,
+  cache/storage utilities, TinyMCE upload, media cleanup и прочие фактические
+  Voyager actions; отдельно решить судьбу каждой функции, не переносить
+  небезопасные legacy semantics.
+- [TODO] ADM-FIL-025 — Dashboard: оперативные показатели и unread indicators,
+  быстрые ссылки/очереди, корректность фильтров по ролям и производительность.
+- [TODO] ADM-FIL-028 — Media/library и загрузки контента: найти все хранилища,
+  URL и правила удаления; безопасный просмотр/загрузка/замена, валидация MIME,
+  размеров и ownership, миграцию данных выполнять только при подтверждённой
+  необходимости.
+- [TODO] ADM-FIL-029 — Каталог BREAD и схема миграции контента: выгрузить из
+  реальной БД типы, поля, связи, меню и permissions; утвердить keep/migrate/
+  retire для каждого типа до реализации полного CRUD.
+
+#### E. Переключение и вывод Voyager
+
+- [TODO] ADM-FIL-030 — Cutover `/admin`: сверить route/menu parity, пользователей
+  и роли, прямые ссылки и callbacks; staged smoke, feature flag/rollback,
+  проверка сессий, файлов, почты и интеграций; переключать только после UAT.
+- [TODO] ADM-FIL-031 — Удаление Voyager runtime/dependencies: сначала доказать
+  отсутствие оставшихся routes/views/helpers/commands/jobs/public consumers,
+  затем удалять пакет и compatibility code отдельными небольшими изменениями;
+  legacy data и активные orders/chat не удалять.
+
+#### F. Сквозные критерии для каждого этапа
+
+- [TODO] Для каждого модуля: source inventory (routes, BREAD, роли, tables,
+  внешние вызовы), контракт данных, owner каждой записи, безопасная транзакция
+  и миграционная совместимость.
+- [TODO] Для каждого изменяющего действия: feature tests успеха/валидации/
+  запрета доступа/повтора/rollback; external HTTP/mail/storage подменять.
+- [TODO] Для каждого модуля: browser parity/UAT на согласованной тестовой записи,
+  screenshots/evidence, отсутствие неожиданных внешних отправок и запись итогов
+  в `MIGRATION_PROGRESS.md`.
+- [TODO] До cutover: полный permission matrix, backup/restore rehearsal,
+  мониторинг ошибок и latency, сверка delta записей/файлов/чатов/платежей,
+  rollback checklist и подтверждение write-owner для каждой capability.
+
+Основание инвентаризации: `routes/admin.php`, `AdminOrdersController`,
+`VoyagerAdminController`, `AdminSaIntegrationController`, `AdminLocaleController`,
+SEO/ALT controllers, Filament `OrdersResource` и существующие services/tests.
+Список покрывает найденные прикладные admin-контуры; точный перечень BREAD-типов,
+полей и permissions требует чтения актуальной legacy БД и остаётся TODO
+ADM-FIL-029, а не считается подтверждённым статическим списком.
 
 ### Матрица переноса legacy admin
 

@@ -9,7 +9,7 @@
             </div>
             <img 
             src="{{ asset('img/packaging-img.png') }}"
-            data-src="{{ asset('img/packaging-img.png') }}" alt="" class="packaging-img">
+            data-src="{{ asset('img/packaging-img.png') }}"  class="packaging-img" @frontendAlt('partials/family/packs.blade.php', (asset('img/packaging-img.png')), '', '')>
         </div>
         <div class="package-size clearfix">
             <h4>{!! $canv_bot['up_def_title'] !!}</h4>

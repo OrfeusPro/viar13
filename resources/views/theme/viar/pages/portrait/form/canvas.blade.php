@@ -20,7 +20,7 @@
                                             <span>
                                                 {{ $c_item->getTranslatedAttribute('name', app()->getLocale()) }}
                                                 {{ $c_item->getTranslatedAttribute('density', app()->getLocale()) }}
-                                              <img src="{{ asset('images/icon/info.svg') }}" alt=""/>
+                                              <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('theme/viar/pages/portrait/form/canvas.blade.php', (asset('images/icon/info.svg')), '', '')/>
                                             </span>
                                         <input
                                             @if($loop->iteration === 2) checked @endif
@@ -41,7 +41,7 @@
     <div class="formalization-prompt">
         <div class="formalization-prompt--wrapper">
             <div class="formalization-prompt--inner">
-                <img src="{{ asset('images/prompt5.png') }}" alt=""/>
+                <img src="{{ asset('images/prompt5.png') }}"  @frontendAlt('theme/viar/pages/portrait/form/canvas.blade.php', (asset('images/prompt5.png')), '', '')/>
                 <p>
                     {!! trans('portrait_buy_form.step5_bot_desc') !!}</p>
             </div>

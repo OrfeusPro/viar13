@@ -30,7 +30,7 @@
 										@if(!empty($sharjSlidePngSources['src']) && !empty($sharjSlidePngSources['type']))
 											<source srcset="{{ $sharjSlidePngSources['src'] }}" type="{{ $sharjSlidePngSources['type'] }}">
 										@endif
-										<img width="578" height="589" src="{{ $sharjSlidePngSources['src'] }}" alt="Viar Image">
+										<img width="578" height="589" src="{{ $sharjSlidePngSources['src'] }}"  @frontendAlt('theme/viar/pages/sharj/slider.blade.php', ($sharjSlidePngSources['src']), 'Viar Image', '')>
 									</picture>
 									{{-- <div class="pmo-block pmo-block1">
                                         <p>@lang("simpson.img_badge")</p>
@@ -43,7 +43,7 @@
 									<div class="pms-block pms-block1">
 										<picture>
 											<img width="150" height="195" src="{{ asset(config('theme.current') . '/images/sharjs.png') }}"
-												alt="Viar Image">
+												 @frontendAlt('theme/viar/pages/sharj/slider.blade.php', (asset(config('theme.current') . '/images/sharjs.png')), 'Viar Image', '')>
 										</picture>
 									</div>
 									<div class="mobile-img sharj-mobile-img">
@@ -63,7 +63,7 @@
 									<div class="pmm-block">
 										<p>@lang('sharj.translate44')</p>
 										<img width="52" height="80" src="{{ asset(config('theme.current') . '/images/wing.svg') }}"
-											alt="">
+											 @frontendAlt('theme/viar/pages/sharj/slider.blade.php', (asset(config('theme.current') . '/images/wing.svg')), '', '')>
 									</div>
 								</div>
 
@@ -204,6 +204,6 @@
 @endif
 
 <div class="ellipse notmobile">
-	<img alt="img" src="{{ asset(env('THEME') . 'images') }}/icon/ellipse-whete.svg" decoding="async"
-		height="99" width="1374" />
+	<img  src="{{ asset(env('THEME') . 'images') }}/icon/ellipse-whete.svg" decoding="async"
+		height="99" width="1374"  @frontendAlt('theme/viar/pages/sharj/slider.blade.php', (asset(env('THEME') . 'images')) . '/icon/ellipse-whete.svg', 'img', '')/>
 </div>

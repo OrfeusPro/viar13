@@ -72,6 +72,9 @@ class AltScanCommand extends Command
      * @var array<int, array<int, string>>
      */
     private $debugRows = [];
+    private $debugRowCount = 0;
+    private $imageHashes = [];
+    private $frontendSuggestions = [];
 
     /**
      * @var bool
@@ -132,7 +135,11 @@ class AltScanCommand extends Command
         $this->limit = max(0, (int) $this->option('limit'));
         $this->prepared = 0;
         $this->scannedRows = 0;
+        $this->pendingRows = [];
         $this->debugRows = [];
+        $this->debugRowCount = 0;
+        $this->imageHashes = [];
+        $this->frontendSuggestions = [];
         $this->hasLocaleColumn = Schema::hasTable((new ImageAltSuggestion())->getTable())
             && Schema::hasColumn((new ImageAltSuggestion())->getTable(), 'locale');
 
@@ -186,8 +193,8 @@ class AltScanCommand extends Command
                 array_slice($this->debugRows, 0, 50)
             );
 
-            if (count($this->debugRows) > 50) {
-                $this->line('Showing first 50 scan rows out of ' . count($this->debugRows) . '.');
+            if ($this->debugRowCount > 50) {
+                $this->line('Showing first 50 scan rows out of ' . $this->debugRowCount . '.');
             }
         }
 
@@ -206,6 +213,39 @@ class AltScanCommand extends Command
     private function scanModel(string $modelClass, ?string $since, array $locales): int
     {
         $created = 0;
+
+        if ($modelClass === \App\Models\FrontendImage::class) {
+            $originalLocale = app()->getLocale();
+            try {
+                $registry = app(\App\Services\AltGeneration\FrontendImageRegistry::class);
+                $placement = null;
+                $batch = [];
+                foreach ($registry->entities($locales, $since, !$this->dryRun) as $entity) {
+                    if ($placement !== $entity->placement) {
+                        $created += $this->scanFrontendBatch($batch, $locales);
+                        $batch = [];
+                        if ($this->limitReached()) {
+                            break;
+                        }
+                        $placement = $entity->placement;
+                        if ($this->output->isVerbose()) {
+                            $this->line('Frontend template: ' . $placement . ' (scanned: ' . $this->scannedRows . ')');
+                        }
+                    }
+                    $batch[] = $entity;
+                    if (count($batch) >= 100) {
+                        $created += $this->scanFrontendBatch($batch, $locales);
+                        $batch = [];
+                    }
+                    if ($this->limitReached()) {
+                        break;
+                    }
+                }
+                return $created + $this->scanFrontendBatch($batch, $locales);
+            } finally {
+                app()->setLocale($originalLocale);
+            }
+        }
 
         if (method_exists($modelClass, 'altScanEntities')) {
             /** @var iterable<int, \Illuminate\Database\Eloquent\Model> $entities */
@@ -283,7 +323,7 @@ class AltScanCommand extends Command
 
                 $imageContext = $this->contextResolver->resolve($entity, $image, $locale);
 
-                if (!$this->hasPageUrl($imageContext)) {
+                if (!$this->hasPageUrl($imageContext) && !($entity instanceof \App\Models\FrontendImage)) {
                     $this->skippedLogger->log($entity, 'no_public_url', [
                         'command' => 'alt:scan',
                         'locale' => $locale,
@@ -312,7 +352,9 @@ class AltScanCommand extends Command
     private function prepareSuggestion(Model $entity, ImageDescriptor $image, array $context, string $locale): int
     {
         $hash = $this->imageHash($image);
-        $existing = $this->suggestionIdentityQuery($entity, $image, $locale)->first();
+        $existing = $entity instanceof \App\Models\FrontendImage
+            ? ($this->frontendSuggestions[$entity->getKey() . ':' . $image->path . ':' . $locale] ?? null)
+            : $this->suggestionIdentityQuery($entity, $image, $locale)->first();
 
         if ($existing instanceof ImageAltSuggestion) {
             return $this->refreshExistingSuggestion($existing, $image, $context, $hash, $locale);
@@ -432,11 +474,15 @@ class AltScanCommand extends Command
         $currentTitle = $context['current_title'] ?? $image->currentTitle;
         $promptContext = $this->promptContext($context, $image);
 
+        $sameContext = $suggestion->imageable_type === \App\Models\FrontendImage::class
+            ? $suggestion->prompt_context == $promptContext
+            : json_encode($suggestion->prompt_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                === json_encode($promptContext, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
         $changed = (string) $suggestion->page_url !== (string) $pageUrl
             || (string) $suggestion->current_alt !== (string) $currentAlt
             || (string) $suggestion->current_title !== (string) $currentTitle
-            || json_encode($suggestion->prompt_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-                !== json_encode($promptContext, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            || !$sameContext;
 
         if (!$changed) {
             return 0;
@@ -475,6 +521,13 @@ class AltScanCommand extends Command
         $rows = $this->pendingRows;
         $this->pendingRows = [];
 
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            $inserted = 0;
+            foreach (array_chunk($rows, max(1, intdiv(999, count($rows[0])))) as $chunk) {
+                $inserted += (int) DB::table((new ImageAltSuggestion())->getTable())->insertOrIgnore($chunk);
+            }
+            return $inserted;
+        }
         return (int) DB::table((new ImageAltSuggestion())->getTable())->insertOrIgnore($rows);
     }
 
@@ -640,6 +693,28 @@ class AltScanCommand extends Command
         return $this->limit > 0 && $this->scannedRows >= $this->limit;
     }
 
+    private function scanFrontendBatch(array $entities, array $locales): int
+    {
+        if (!$entities || $this->limitReached()) {
+            return 0;
+        }
+        $this->frontendSuggestions = [];
+        $existing = ImageAltSuggestion::where('imageable_type', \App\Models\FrontendImage::class)
+            ->whereIn('imageable_id', array_map(function ($entity) { return $entity->getKey(); }, $entities))
+            ->whereIn('locale', $locales)->get();
+        foreach ($existing as $suggestion) {
+            $this->frontendSuggestions[$suggestion->imageable_id . ':' . $suggestion->image_path . ':' . $suggestion->locale] = $suggestion;
+        }
+        $created = 0;
+        foreach ($entities as $entity) {
+            $created += $this->scanEntity($entity, $locales);
+            if ($this->limitReached()) {
+                break;
+            }
+        }
+        return $created;
+    }
+
     /**
      * @param \Illuminate\Database\Eloquent\Model $entity
      * @param \App\Services\AltGeneration\ImageDescriptor $image
@@ -655,6 +730,10 @@ class AltScanCommand extends Command
         string $locale,
         string $action
     ): void {
+        $this->debugRowCount++;
+        if (count($this->debugRows) >= 50) {
+            return;
+        }
         $this->debugRows[] = [
             class_basename(get_class($entity)),
             (string) $entity->getKey(),
@@ -684,6 +763,10 @@ class AltScanCommand extends Command
         string $locale,
         string $action
     ): void {
+        $this->debugRowCount++;
+        if (count($this->debugRows) >= 50) {
+            return;
+        }
         $this->debugRows[] = [
             class_basename((string) $suggestion->imageable_type),
             (string) $suggestion->imageable_id,
@@ -720,7 +803,18 @@ class AltScanCommand extends Command
             return null;
         }
 
+        if ($image->sourceType !== 'frontend') {
+            $hash = hash_file('sha256', $image->absolutePath);
+            return $hash === false ? null : $hash;
+        }
+        $key = $image->absolutePath . ':' . filemtime($image->absolutePath) . ':' . filesize($image->absolutePath);
+        if (isset($this->imageHashes[$key])) {
+            return $this->imageHashes[$key];
+        }
         $hash = hash_file('sha256', $image->absolutePath);
+        if ($hash !== false) {
+            $this->imageHashes[$key] = $hash;
+        }
 
         return $hash === false ? null : $hash;
     }

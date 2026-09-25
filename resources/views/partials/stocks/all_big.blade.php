@@ -7,7 +7,7 @@
             $images = json_decode($item['images'], true);
             $image = '/storage/' . $images[0];
             @endphp
-            <img src="{{ $image }}" alt="">
+            <img src="{{ $image }}"  @frontendAlt('partials/stocks/all_big.blade.php', ($image), '', '')>
             <div class="text">
                 <strong>{{ $cat_name }}</strong>
                 <h3>{{ $item['name'] }}</h3>

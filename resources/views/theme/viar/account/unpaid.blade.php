@@ -290,7 +290,7 @@
 							</div>
 						</div>
 						<div class="cabinet-content__icon">
-							<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/credit-card.svg" width="82" height="82" alt="Viar Cabinet Peding Orders">
+							<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/credit-card.svg" width="82" height="82"  @frontendAlt('theme/viar/account/unpaid.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/credit-card.svg', 'Viar Cabinet Peding Orders', '')>
 						</div>
 					</div>
 

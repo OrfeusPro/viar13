@@ -13,7 +13,7 @@
             <source media="(max-width: 980px)" srcset="{{ asset('images/canvas/composition-min.webp') }}">
             <source srcset="{{ asset('images/canvas/composition.webp') }}" type="image/webp">
             <source srcset="{{ asset('images/canvas/composition.jpg') }}" type="image/jpeg">
-            <img src="{{ asset('images/canvas/composition.jpg') }}" alt="">
+            <img src="{{ asset('images/canvas/composition.jpg') }}"  @frontendAlt('theme/viar/pages/canvas/composition.blade.php', (asset('images/canvas/composition.jpg')), '', '')>
         </picture>
         <div class="section-frame relative">
             <div class="notes-block top-note">
@@ -69,13 +69,13 @@
                                 <p class="kviz-input__title">{{ trans('canvas.enter_num') }}</p>
                                 <div class="page-input__item phone-input">
                                     <div class="country-item country-item-active">
-                                        <img src="{{ asset('images/flag/lv.svg') }}" alt="img" loading="lazy">
+                                        <img src="{{ asset('images/flag/lv.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/canvas/composition.blade.php', (asset('images/flag/lv.svg')), 'img', '')>
                                     </div>
                                     <div class="country-list">
 										@foreach ($c_tels as $tel)
 											<div class="country-item">
-												<img src="{{ asset('images/flag') }}/{{ strtolower($tel['country_code']) }}.svg" alt="img"
-													loading="lazy" />
+												<img src="{{ asset('images/flag') }}/{{ strtolower($tel['country_code']) }}.svg"
+													loading="lazy"  @frontendAlt('theme/viar/pages/canvas/composition.blade.php', (asset('images/flag')) . '/' . (strtolower($tel['country_code'])) . '.svg', 'img', '')/>
 												<p>{{ $tel['country_name'] }}</p>
 												<span data-mask="{{ $tel['mask'] }}"
 													data-placeholder="{{ $tel['placeholder'] }}"

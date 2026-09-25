@@ -1,7 +1,7 @@
 <div class="formalization-item">
     <div class="formalization-box">
         <div class="formalization-tab">
-            <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format2.svg') }}" alt="">
+            <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format2.svg') }}"  @frontendAlt('partials/simpsons/form/photo.blade.php', (asset(config('theme.current') . '/images/sharj/new/format2.svg')), '', '')>
             @lang("simpson.formalization-items.formalization-item4.formalization-tab")
             <span class="tab-icon"></span>
         </div>
@@ -53,7 +53,7 @@
     <div class="formalization-prompt">
         <div class="formalization-prompt--wrapper">
             <div class="formalization-prompt--inner">
-                <img src="{{ asset('images/prompt1.png') }}" alt="" />
+                <img src="{{ asset('images/prompt1.png') }}"   @frontendAlt('partials/simpsons/form/photo.blade.php', (asset('images/prompt1.png')), '', '')/>
                 <p>
                     {!! trans('portrait_buy_form.step1_bot_desc') !!}
                 </p>

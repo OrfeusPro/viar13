@@ -228,7 +228,7 @@
 							@if ($errors->any())
 								<div class="cabinet-orderItem__info" style="margin-bottom: 20px; max-width: 100%;">
 									<p>{{ $errors->first('payment') }}</p>
-									<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30" alt="">
+									<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/icon-danger.svg" width="30" height="30"  @frontendAlt('theme/viar/account/order_payment.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/icon-danger.svg', '', '')>
 								</div>
 							@endif
 
@@ -269,7 +269,7 @@
 											</div>
 											@if(!empty($methodData['img']))
 												<div class="cart-payments-page__item--img">
-													<img src="{{ asset(env('THEME') . $methodData['img']) }}" alt="">
+													<img src="{{ asset(env('THEME') . $methodData['img']) }}"  @frontendAlt('theme/viar/account/order_payment.blade.php', (asset(env('THEME') . $methodData['img'])), '', '')>
 												</div>
 											@endif
 										</button>
@@ -316,7 +316,7 @@
 					</div>
 
 					<div class="cabinet-content__icon">
-						<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/credit-card.svg" width="82" height="82" alt="Viar Cabinet Order Payment">
+						<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/credit-card.svg" width="82" height="82"  @frontendAlt('theme/viar/account/order_payment.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/credit-card.svg', 'Viar Cabinet Order Payment', '')>
 					</div>
 				</div>
 			</div>

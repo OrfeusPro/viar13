@@ -19,7 +19,7 @@
 					<div class="absolute-elements">
 						<div class="portrait-gift">
 							<img loading="lazy" width="149" height="138" src="{{ ver_asset('images/collage/gift.svg') }}"
-								alt="Viar Image">
+								 @frontendAlt('theme/viar/pages/portrait/gift-oil.blade.php', (ver_asset('images/collage/gift.svg')), 'Viar Image', '')>
 							<p>{!! trans('portrait_royal.s_gift_note') !!}</p>
 						</div>
 					</div>
@@ -28,7 +28,7 @@
 			<div class="portrait-img">
 				<picture>
 					<source srcset="{{ ver_asset(env('THEME') . 'images/oil/gift_1.webp') }}" type="image/webp">
-					<img width="800" height="451" src="{{ ver_asset(env('THEME') . 'images/oil/gift_1.png') }}" alt="">
+					<img width="800" height="451" src="{{ ver_asset(env('THEME') . 'images/oil/gift_1.png') }}"  @frontendAlt('theme/viar/pages/portrait/gift-oil.blade.php', (ver_asset(env('THEME') . 'images/oil/gift_1.png')), '', '')>
 				</picture>
 			</div>
 		</div>

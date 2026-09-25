@@ -103,6 +103,27 @@ class OrderVenipakLabelServiceTest extends TestCase
         $this->assertStringContainsString('<comment_door_code></comment_door_code>', $xml);
     }
 
+    public function test_label_defaults_prefer_the_order_recipient_phone(): void
+    {
+        $order = $this->createOrder('delivery');
+        $delivery = json_decode($order->delivery, true);
+        $delivery['phone'] = '+37120085999';
+        $delivery['payer_phone'] = '+37120000000';
+        $order->delivery = json_encode($delivery);
+        $order->save();
+
+        $service = app(OrderVenipakLabelService::class);
+        $this->assertSame('+37120085999', $service->defaultData($order)['g_contact_t']);
+
+        unset($delivery['phone']);
+        $order->delivery = json_encode($delivery);
+        $this->assertSame('+37120000000', $service->defaultData($order)['g_contact_t']);
+
+        unset($delivery['payer_phone']);
+        $order->delivery = json_encode($delivery);
+        $this->assertSame('+37121111111', $service->defaultData($order)['g_contact_t']);
+    }
+
     public function test_pickup_order_rejects_address_mode_without_external_request(): void
     {
         Http::fake();

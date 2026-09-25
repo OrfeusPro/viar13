@@ -56,7 +56,7 @@
 									<div class="r-img-t-row">
 										<picture>
 											<img width="50" height="50" src="{{ asset(config('theme.current') . '/images/review/client.svg') }}"
-												alt="">
+												 @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/client.svg')), '', '')>
 										</picture>
 										<div class="r-img-info">
 											<div class="r-img-name">
@@ -73,7 +73,7 @@
 									</div>
 									<picture>
 										<img width="256" height="201" src="{{ asset(config('theme.current') . '/images/review/1.svg') }}"
-											alt="">
+											 @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/1.svg')), '', '')>
 									</picture>
 								</div>
 							</div>
@@ -94,7 +94,7 @@
 								<div class="r-img-wrap">
 									<picture>
 										<img width="256" height="201" src="{{ asset(config('theme.current') . '/images/review/2.svg') }}"
-											alt="">
+											 @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/2.svg')), '', '')>
 									</picture>
 								</div>
 							</div>
@@ -268,17 +268,17 @@
 			<div class="bonus__row">
 				<div class="b-image">
 					<img width="494" height="505" src="{{ asset(config('theme.current') . '/images/review/3.svg') }}"
-						alt="">
+						 @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/3.svg')), '', '')>
 				</div>
 				<div class="b-soc">
 					<a href="{{ setting('sots-seti.facebook') }}" class="b-soc-item" target="_blank">
 						<img width="80" height="80" src="{{ asset(config('theme.current') . '/images/review/f.svg') }}"
-							alt="">
+							 @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/f.svg')), '', '')>
 						<p>@lang('pages.review_text18')</p>
 					</a>
 					<a href="{{ setting('sots-seti.google') }}" class="b-soc-item" target="_blank">
 						<img width="80" height="80" src="{{ asset(config('theme.current') . '/images/review/g.svg') }}"
-							alt="">
+							 @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/g.svg')), '', '')>
 						<p>@lang('pages.review_text18')</p>
 					</a>
 				</div>
@@ -295,7 +295,7 @@
 
 <!--  -->
 <div class="ellipse ellipse_black ellipse_top">
-	<img src="{{ asset(config('theme.current') . '/images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+	<img src="{{ asset(config('theme.current') . '/images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/icon/ellipse-black.svg')), 'img', '')>
 </div>
 
 <div class="only__screen">
@@ -307,7 +307,7 @@
 			<div class="only-row">
 				<div class="only-item">
 					<div class="o-box">
-						<img src="{{ asset(config('theme.current') . '/images/review/o1.svg') }}" alt="">
+						<img src="{{ asset(config('theme.current') . '/images/review/o1.svg') }}"  @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/o1.svg')), '', '')>
 					</div>
 					<p>
 						@lang('pages.review_text22')
@@ -315,7 +315,7 @@
 				</div>
 				<div class="only-item">
 					<div class="o-box">
-						<img src="{{ asset(config('theme.current') . '/images/review/o2.svg') }}" alt="">
+						<img src="{{ asset(config('theme.current') . '/images/review/o2.svg') }}"  @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/o2.svg')), '', '')>
 					</div>
 					<p>
 						@lang('pages.review_text23')
@@ -323,7 +323,7 @@
 				</div>
 				<div class="only-item">
 					<div class="o-box">
-						<img src="{{ asset(config('theme.current') . '/images/review/o3.svg') }}" alt="">
+						<img src="{{ asset(config('theme.current') . '/images/review/o3.svg') }}"  @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/review/o3.svg')), '', '')>
 					</div>
 					<p>
 						@lang('pages.review_text24')
@@ -336,7 +336,7 @@
 
 
 <div class="ellipse ellipse_black">
-	<img src="{{ asset(config('theme.current') . '/images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+	<img src="{{ asset(config('theme.current') . '/images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/review/index.blade.php', (asset(config('theme.current') . '/images/icon/ellipse-black.svg')), 'img', '')>
 </div>
 
 @include(config('theme.resource') . 'partials.google_reviews_section')

@@ -1,5 +1,5 @@
 <div class="mobile-ell">
-    <img src="{{ asset('images/sizes/union.png') }}" alt=""/>
+    <img src="{{ asset('images/sizes/union.png') }}"  @frontendAlt('partials/canvas_new/sizes.blade.php', (asset('images/sizes/union.png')), '', '')/>
     <div class="mobile-size-title">{{ trans('portrait.sizes__title') }}1</div>
 </div>
 <div class="sizes__screen section-p">
@@ -9,19 +9,19 @@
             <source media="(max-width: 43.75em)" srcset="{{ asset('images/sizes/size-bgM.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/size-bg.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/size-bg.jpg') }}" type="image/jpeg"/>
-            <img src="{{ asset('images/sizes/size-bg.jpg') }}" alt="img"/>
+            <img src="{{ asset('images/sizes/size-bg.jpg') }}"  @frontendAlt('partials/canvas_new/sizes.blade.php', (asset('images/sizes/size-bg.jpg')), 'img', '')/>
         </picture>
         <picture>
             <source media="(max-width: 500px)" srcset="{{ asset('images/sizes/10M.webp') }}" type="image/webp"/>
             <source media="(max-width: 500px)" srcset="{{ asset('images/sizes/10M.png') }}" type="image/png"/>
             <source srcset="{{ asset('images/sizes/10.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/10.png') }}" type="image/png"/>
-            <img class="boy" src="{{ asset('images/sizes/10.webp') }}" alt=""/>
+            <img class="boy" src="{{ asset('images/sizes/10.webp') }}"  @frontendAlt('partials/canvas_new/sizes.blade.php', (asset('images/sizes/10.webp')), '', '')/>
         </picture>
         <picture>
             <source srcset="{{ asset('images/sizes/9.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/9.png') }}" type="image/png"/>
-            <img class="girl" src="{{ asset('images/sizes/9.webp') }}" alt=""/>
+            <img class="girl" src="{{ asset('images/sizes/9.webp') }}"  @frontendAlt('partials/canvas_new/sizes.blade.php', (asset('images/sizes/9.webp')), '', '')/>
         </picture>
         <div class="size-frame">
             <div class="section-frame">
@@ -94,5 +94,5 @@
     <a href="#composition" class="anchor ellipse-arrow ellipse-arrow_white" aria-label="anchor link">
         <i class="fa-arrow-down"></i>
     </a>
-    <img alt="img" src="{{ asset('images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374">
+    <img  src="{{ asset('images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374" @frontendAlt('partials/canvas_new/sizes.blade.php', (asset('images/icon/ellipse-whete.svg')), 'img', '')>
 </div>

@@ -2,7 +2,7 @@
     <div class="vz-art section-frame">
         <div class="vz-art header-bar">
             <a href="{{ route('home') }}" class="vz-art logo">
-                <img loading="lazy" src="{{ asset('img/icons/logo.svg') }}" width="170" height="68" alt="@lang('settings.site_name')" class="img-svg">
+                <img loading="lazy" src="{{ asset('img/icons/logo.svg') }}" width="170" height="68"  class="img-svg" @frontendAlt('partials/index_new/header1.blade.php', (asset('img/icons/logo.svg')), __('settings.site_name'), '')>
             </a>
             <ul class="vz-art header-social">
                 <li>
@@ -69,7 +69,7 @@
 
 
             <div class="vz-art language header-item_pc _spollers _one _esc">
-                <p class="_spoller "><img class="lozad" loading="lazy" src="{{ asset('images/flag/' . app()->getLocale() . '.svg') }}"> {{ ucfirst(app()->getLocale()) }} <i class="fa-arrow-down"></i>
+                <p class="_spoller "><img class="lozad" loading="lazy" src="{{ asset('images/flag/' . app()->getLocale() . '.svg') }}" @frontendAlt('partials/index_new/header1.blade.php', (asset('images/flag/' . app()->getLocale() . '.svg')), '', '')> {{ ucfirst(app()->getLocale()) }} <i class="fa-arrow-down"></i>
                 </p>
 
                 <ul class="ver1_langs">
@@ -80,7 +80,7 @@
                         @endphp
                         <li>
                             <a rel="alternate" hreflang="{{ $localeCode }}" href="{{ $cur_url_mod }}">
-                                <img class="lozad" loading="lazy" src="{{ asset('images/flag/' . $localeCode . '.svg') }}"> {{ $localeCode }}
+                                <img class="lozad" loading="lazy" src="{{ asset('images/flag/' . $localeCode . '.svg') }}" @frontendAlt('partials/index_new/header1.blade.php', (asset('images/flag/' . $localeCode . '.svg')), '', '')> {{ $localeCode }}
                             </a>
                         </li>
                     @endforeach

@@ -45,7 +45,7 @@
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p1.avif" type="image/avif">
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p1.webp" type="image/webp">
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p1.png" type="image/png">
-				<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p1.png" alt="Viar">
+				<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p1.png"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/p1.png', 'Viar', '')>
 			</picture>
 		</div>
 	</div>
@@ -309,7 +309,7 @@
 					</div>
 					<div class="ci-item ci-out ci-img">
 						<div>
-							<img width="74" height="74" src="{{ asset(env('THEME') . 'images') }}/stock/c1.jpg" alt="Viar">
+							<img width="74" height="74" src="{{ asset(env('THEME') . 'images') }}/stock/c1.jpg"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/c1.jpg', 'Viar', '')>
 							<div>
 								<p>IMG_0483.PNG</p>
 								<span>2.8 MB</span>
@@ -330,7 +330,7 @@
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p2.avif" type="image/avif">
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p2.webp" type="image/webp">
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p2.png" type="image/png">
-				<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p2.png" alt="Viar">
+				<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p2.png"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/p2.png', 'Viar', '')>
 			</picture>
 			<p class="friend-disc">
 				@lang('stock.modal_2_11')
@@ -385,7 +385,7 @@
 						<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p3.avif" type="image/avif">
 						<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p3.webp" type="image/webp">
 						<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p3.png" type="image/png">
-						<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p3.png" alt="Viar">
+						<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p3.png"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/p3.png', 'Viar', '')>
 					</picture>
 					<p class="bonus-disc">
 						@lang('stock.modal_3_5')
@@ -401,7 +401,7 @@
 					<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p4.avif" type="image/avif">
 					<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p4.webp" type="image/webp">
 					<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p4.png" type="image/png">
-					<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p4.png" alt="Viar">
+					<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p4.png"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/p4.png', 'Viar', '')>
 				</picture>
 			</div>
 		</div>
@@ -502,7 +502,7 @@
                     <source media="(max-width: 700px)" srcset="{{ asset(env('THEME') . 'images') }}/canvas/canvasMin.png">
                     <source srcset="{{ asset(env('THEME') . 'images') }}/canvas/canvas.webp" type="images/webp">
                     <source srcset="{{ asset(env('THEME') . 'images') }}/canvas/canvas.png">
-                    <img width="411" height="293" src="{{ asset(env('THEME') . 'images') }}/canvas/canvas.png" alt="Viar" loading="lazy">
+                    <img width="411" height="293" src="{{ asset(env('THEME') . 'images') }}/canvas/canvas.png"  loading="lazy" @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/canvas/canvas.png', 'Viar', '')>
                 </picture>
             </div>
             <div class="p-fit-col">
@@ -605,7 +605,7 @@
             </div>
         </div>
         <a href="https://wa.me/+37127044470" class="n-p-whatsapp">
-            <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg" alt="Viar WhatsApp" loading="lazy">
+            <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg"  loading="lazy" @frontendAlt('theme/viar/pages/stocks/modals.blade.php', 'https://viarcanvas.com/images/premium-icon-whatsapp.svg', 'Viar WhatsApp', '')>
             <p>связаться с нами сейчас</p>
         </a>
     </div>
@@ -626,7 +626,7 @@
         </p>
         <div class="ps-abs ps-av">
             <picture>
-                <img width="115" height="115" src="{{ asset(env('THEME') . 'images') }}/stock/popIcon.svg" alt="Viar">
+                <img width="115" height="115" src="{{ asset(env('THEME') . 'images') }}/stock/popIcon.svg"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/popIcon.svg', 'Viar', '')>
             </picture>
             <p class="data-disc">-20 %</p>
         </div>
@@ -646,7 +646,7 @@
         </p>
         <div class="ps-abs ps-av">
             <picture>
-                <img width="115" height="115" src="{{ asset(env('THEME') . 'images') }}/stock/popIcon.svg" alt="Viar">
+                <img width="115" height="115" src="{{ asset(env('THEME') . 'images') }}/stock/popIcon.svg"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/popIcon.svg', 'Viar', '')>
             </picture>
             <p class="data-disc">5 €</p>
         </div>
@@ -690,7 +690,7 @@
         <div class="ps-row">
             <div class="img">
                 <p>Пример Вашего фото:</p>
-                <img width="122" height="173" src="{{ asset(env('THEME') . 'images') }}/stock/feedback-photo.webp" alt="">
+                <img width="122" height="173" src="{{ asset(env('THEME') . 'images') }}/stock/feedback-photo.webp"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/feedback-photo.webp', '', '')>
             </div>
             <span class="text-orange">И получите от ViarCanvas
                         картину в подарок размером 30*40</span>
@@ -747,7 +747,7 @@
         </div>
         <p class="sdi-text">@lang('stock.modal_30_40_text2')</p>
         <p class="sdi-text"><span>@lang('stock.modal_30_40_text3')</span></p>
-        <img width="150" height="200" src="{{ asset(env('THEME') . 'images') }}/stock/pngwing22.webp" alt="" class="thImg">
+        <img width="150" height="200" src="{{ asset(env('THEME') . 'images') }}/stock/pngwing22.webp"  class="thImg" @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/pngwing22.webp', '', '')>
     </div>
 </div>
 
@@ -913,7 +913,7 @@
 
 		<div class="ps-abs ps-av">
 			<picture>
-				<img width="115" height="115" src="{{ asset(env('THEME') . 'images') }}/stock/popIcon.svg" alt="Viar">
+				<img width="115" height="115" src="{{ asset(env('THEME') . 'images') }}/stock/popIcon.svg"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/popIcon.svg', 'Viar', '')>
 			</picture>
 			<p class="data-disc">-20 %</p>
 		</div>
@@ -955,7 +955,7 @@
                 <source srcset="{{ asset(env('THEME') . 'images') }}/stock/p2.avif" type="image/avif">
                 <source srcset="{{ asset(env('THEME') . 'images') }}/stock/p2.webp" type="image/webp">
                 <source srcset="{{ asset(env('THEME') . 'images') }}/stock/p2.png" type="image/png">
-                <img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p2.png" alt="Viar">
+                <img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p2.png"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/p2.png', 'Viar', '')>
             </picture>
             <p class="friend-disc">-5 %</p>
         </div>
@@ -1021,7 +1021,7 @@
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p3.avif" type="image/avif">
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p3.webp" type="image/webp">
 				<source srcset="{{ asset(env('THEME') . 'images') }}/stock/p3.png" type="image/png">
-				<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p3.png" alt="Viar">
+				<img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/p3.png"  @frontendAlt('theme/viar/pages/stocks/modals.blade.php', (asset(env('THEME') . 'images')) . '/stock/p3.png', 'Viar', '')>
 			</picture>
 			<p class="bonus-disc">Скидка <br>
 				-2%</p>

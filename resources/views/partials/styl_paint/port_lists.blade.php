@@ -11,8 +11,8 @@
                 <div class="portraits-item">
                     <div class="img">
                         <i></i>
-                        <img alt="{{ $item->name }}" title="{{ $item->name }}" class="p__img"
-                            src="{{ Voyager::image($item->image) }}">
+                        <img   class="p__img"
+                            src="{{ Voyager::image($item->image) }}" @frontendAlt('partials/styl_paint/port_lists.blade.php', (Voyager::image($item->image)), ($item->name), ($item->name))>
                     </div>
                     <h4>{{ $item->name }}</h4>
                 </div>

@@ -62,7 +62,7 @@
                         <div class="title-offers">
                             <h3>{{ $head['modc_sale'] }}</h3>
                             <a href="javascript:void(0)" class="discount">
-                                <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}" alt="">
+                                <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}"  @frontendAlt('stocks.blade.php', (asset('img/akcii_') . app()->getLocale() . '.png'), '', '')>
                                 <span><i>%</i></span>
                             </a>
                         </div>
@@ -75,8 +75,8 @@
                                                 $images = json_decode($mod_sale_item['images'], true);
                                                 $image = '/storage/' . $images[0];
                                             @endphp
-                                            <img alt="{{ $mod_sale_item['name'] }}"
-                                                 title="{{ $mod_sale_item['name'] }}" src="{{ $image }}">
+                                            <img
+                                                  src="{{ $image }}" @frontendAlt('stocks.blade.php', ($image), ($mod_sale_item['name']), ($mod_sale_item['name']))>
                                         </div>
                                         <h5>{{ $mod_sale_item['name'] }}</h5>
                                         <div class="custom_sale__container">
@@ -114,7 +114,7 @@
                     <div class="title-offers">
                         <h3>{{ $head['fotoc_sale'] }}</h3>
                         <a href="javascript:void(0)" class="discount">
-                            <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}" alt="">
+                            <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}"  @frontendAlt('stocks.blade.php', (asset('img/akcii_') . app()->getLocale() . '.png'), '', '')>
                             <span><i>%</i></span>
                         </a>
                     </div>
@@ -130,8 +130,8 @@
                                                 $images = json_decode($photo_sale_item['images'], true);
                                                 $image = '/storage/' . $images[0];
                                             @endphp
-                                            <img alt="{{ $photo_sale_item['name'] }}"
-                                                 title="{{ $photo_sale_item['name'] }}" src="{{ $image }}">
+                                            <img
+                                                  src="{{ $image }}" @frontendAlt('stocks.blade.php', ($image), ($photo_sale_item['name']), ($photo_sale_item['name']))>
                                         </div>
                                         <h5>{{ $photo_sale_item['name'] }}</h5>
                                         <div class="custom_sale__container">
@@ -162,7 +162,7 @@
                         <div class="title-offers">
                             <h3>{{ $head['repr_sale'] }}</h3>
                             <a href="javascript:void(0)" class="discount">
-                                <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}" alt="">
+                                <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}"  @frontendAlt('stocks.blade.php', (asset('img/akcii_') . app()->getLocale() . '.png'), '', '')>
                                 <span><i>%</i></span>
                             </a>
                         </div>
@@ -181,7 +181,7 @@
                                 <div class="title-offers">
                                     <h3>{{ $head['repr_sale'] }}</h3>
                                     <a href="javascript:void(0)" class="discount">
-                                        <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}" alt="">
+                                        <img src="{{ asset('img/akcii_') . app()->getLocale() . '.png' }}"  @frontendAlt('stocks.blade.php', (asset('img/akcii_') . app()->getLocale() . '.png'), '', '')>
                                         <span><i>%</i></span>
                                     </a>
                                 </div>
@@ -197,9 +197,9 @@
                                                             $images = json_decode($repr_sale_item['images'], true);
                                                             $image = '/storage/' . $images[0];
                                                         @endphp
-                                                        <img alt="{{ $repr_sale_item['name'] }}"
-                                                             title="{{ $repr_sale_item['name'] }}"
-                                                             src="{{ $image }}">
+                                                        <img
+
+                                                             src="{{ $image }}" @frontendAlt('stocks.blade.php', ($image), ($repr_sale_item['name']), ($repr_sale_item['name']))>
                                                     </div>
                                                     <h5>{{ $repr_sale_item['name'] }}</h5>
                                                     <div class="custom_sale__container">

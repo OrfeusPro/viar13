@@ -8,7 +8,7 @@
             <div class="formalization-content--inner">
                 <div class="form-types">
                     <div data-form="1" class="form-image active">
-                        <img src="{{ asset('images/form1.svg ')}}" alt="">
+                        <img src="{{ asset('images/form1.svg ')}}"  @frontendAlt('partials/portrait_new/form/form.blade.php', (asset('images/form1.svg ')), '', '')>
                         <div class="selected-icon">
                             <svg width="12" height="9" viewBox="0 0 12 9" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +19,7 @@
                         </div>
                     </div>
                     <div data-form="2" class="form-image">
-                        <img src="{{ asset('images/form2.svg ')}}" alt="">
+                        <img src="{{ asset('images/form2.svg ')}}"  @frontendAlt('partials/portrait_new/form/form.blade.php', (asset('images/form2.svg ')), '', '')>
                         <div class="selected-icon">
                             <svg width="12" height="9" viewBox="0 0 12 9" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
@@ -30,7 +30,7 @@
                         </div>
                     </div>
                     <div data-form="3" class="form-image">
-                        <img src="{{ asset('images/form3.svg ')}}" alt="">
+                        <img src="{{ asset('images/form3.svg ')}}"  @frontendAlt('partials/portrait_new/form/form.blade.php', (asset('images/form3.svg ')), '', '')>
                         <div class="selected-icon">
                             <svg width="12" height="9" viewBox="0 0 12 9" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
@@ -47,7 +47,7 @@
     <div class="formalization-prompt">
         <div class="formalization-prompt--wrapper">
             <div class="formalization-prompt--inner">
-                <img src="{{ asset('images/prompt2.png') }}" alt=""/>
+                <img src="{{ asset('images/prompt2.png') }}"  @frontendAlt('partials/portrait_new/form/form.blade.php', (asset('images/prompt2.png')), '', '')/>
                 <p>
                     {!! trans('portrait_buy_form.step2_bot_desc') !!}
                 </p>

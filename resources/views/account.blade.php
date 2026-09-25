@@ -98,18 +98,18 @@
                     </div>
                     <ul>
                         <li class="orders-click">
-                            <img src="{{ asset('img/filter-img1.png') }}" alt="">
+                            <img src="{{ asset('img/filter-img1.png') }}"  @frontendAlt('account.blade.php', (asset('img/filter-img1.png')), '', '')>
                             <h3>@lang('account.index4')</h3>
                             <p>@lang('account.index10')</p>
                         </li>
                         <li class="bonuses-click">
-                            <img src="{{ asset('img/filter-img2.png') }}" alt="">
+                            <img src="{{ asset('img/filter-img2.png') }}"  @frontendAlt('account.blade.php', (asset('img/filter-img2.png')), '', '')>
                             <h3>@lang('account.index5')</h3>
                             <p>@lang('account.index11')
                             </p>
                         </li>
                         <li class="settings-click">
-                            <img src="{{ asset('img/filter-img3.png') }}" alt="">
+                            <img src="{{ asset('img/filter-img3.png') }}"  @frontendAlt('account.blade.php', (asset('img/filter-img3.png')), '', '')>
                             <h3>@lang('account.index6')</h3>
                             <p>@lang('account.index12')</p>
                         </li>
@@ -294,7 +294,7 @@
                                         '.user__painter__imgs__list').append(`
                                                                         <li>
                                                                             <a href="${el}" target="_blank">
-                                                                                <img src="${el}" alt="" class="img__user_upl">
+                                                                                <img src="${el}" ${(response.image_alt_attributes || {})[el] || 'alt=""'} class="img__user_upl">
                                                                             </a>
                                                                         </li>
                                                                             `);
@@ -369,7 +369,7 @@
                                                                             <a target="_blank"
                                                                             href="${el}">
                                                                                 <img style="max-width:100%;max-height:100px;"
-                                                                                src="${el}" alt="">
+                                                                                src="${el}" ${(response.image_alt_attributes || {})[el] || 'alt=""'}>
                                                                             </a>
                                                                         </div>
                                                                             `);
@@ -439,7 +439,7 @@
                                                                             <a target="_blank"
                                                                             href="${el}">
                                                                                 <img style="max-width:100%;max-height:100px;"
-                                                                                src="${el}" alt="">
+                                                                                src="${el}" ${(response.image_alt_attributes || {})[el] || 'alt=""'}>
                                                                             </a>
                                                                         </div>
                                                                             `);

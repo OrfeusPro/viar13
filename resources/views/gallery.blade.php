@@ -16,7 +16,7 @@
 @section('content')
     <section class="gallery-banner">
         {{ Breadcrumbs::render('gallery_add') }}
-        <img src="{{ asset('img/gallery-banner-img.png') }}" alt="" class="gallery-banner-img">
+        <img src="{{ asset('img/gallery-banner-img.png') }}"  class="gallery-banner-img" @frontendAlt('gallery.blade.php', (asset('img/gallery-banner-img.png')), '', '')>
         <div class="gallery-banner-content clearfix">
             <div class="title">
                 <h1 class="gal__h1">{{ $gallery['left_title'] }}</h1>
@@ -27,12 +27,12 @@
                     <h3 class="h3__title gal__h3">{{ $gallery['right_title'] }}</h3>
                     <ul>
                         <li><a href="#modular">{{ $gallery['right_t1'] }}</a><img
-                                src="{{ asset('img/gallery-icon1.png') }}" alt="">
+                                src="{{ asset('img/gallery-icon1.png') }}"  @frontendAlt('gallery.blade.php', (asset('img/gallery-icon1.png')), '', '')>
                         </li>
                         <li><a href="#photo">{{ $gallery['right_t2'] }}</a><img
-                                src="{{ asset('img/gallery-icon2.png') }}" alt=""></li>
+                                src="{{ asset('img/gallery-icon2.png') }}"  @frontendAlt('gallery.blade.php', (asset('img/gallery-icon2.png')), '', '')></li>
                         <li><a href="#reproductions">{{ $gallery['right_t3'] }}</a><img
-                                src="{{ asset('img/gallery-icon3.png') }}" alt="">
+                                src="{{ asset('img/gallery-icon3.png') }}"  @frontendAlt('gallery.blade.php', (asset('img/gallery-icon3.png')), '', '')>
                         </li>
                     </ul>
                 </div>
@@ -47,8 +47,8 @@
         <div class="container">
             <div class="modular-content clearfix">
                 <div class="img">
-                    <img class="" alt="{{ $gallery['modc_title'] }}" title="{{ $gallery['modc_title'] }}"
-                        src="{{ asset('img/moudlar_v2.png') }}" data-src="{{ asset('img/moudlar_v2.png') }}">
+                    <img class=""
+                        src="{{ asset('img/moudlar_v2.png') }}" data-src="{{ asset('img/moudlar_v2.png') }}" @frontendAlt('gallery.blade.php', (asset('img/moudlar_v2.png')), ($gallery['modc_title']), ($gallery['modc_title']))>
                 </div>
                 <div class="text">
                     <div class="modular-title">
@@ -69,8 +69,8 @@
         <div class="container">
             <div class="photo-content clearfix">
                 <div class="img">
-                    <img class="" alt="{{ $gallery['fotoc_title'] }}" title="{{ $gallery['fotoc_title'] }}"
-                        src="{{ asset('img/photo-img.png') }}" data-src="{{ asset('img/photo-img.png') }}">
+                    <img class=""
+                        src="{{ asset('img/photo-img.png') }}" data-src="{{ asset('img/photo-img.png') }}" @frontendAlt('gallery.blade.php', (asset('img/photo-img.png')), ($gallery['fotoc_title']), ($gallery['fotoc_title']))>
                 </div>
                 <div class="text">
                     <div class="photo-title">
@@ -91,9 +91,9 @@
         <div class="container">
             <div class="reproductions-content clearfix">
                 <div class="img">
-                    <img class="" alt="{{ $gallery['repr_title'] }}" title="{{ $gallery['repr_title'] }}"
+                    <img class=""
                         src="{{ asset('img/reproductions-img.png') }}"
-                        data-src="{{ asset('img/reproductions-img.png') }}">
+                        data-src="{{ asset('img/reproductions-img.png') }}" @frontendAlt('gallery.blade.php', (asset('img/reproductions-img.png')), ($gallery['repr_title']), ($gallery['repr_title']))>
                 </div>
                 <div class="text">
                     <div class="reproductions-title">

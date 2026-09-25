@@ -1,5 +1,101 @@
 # Миграция на Laravel 13 — текущий статус
 
+## 2026-09-25 — перенос после `9a72e4b9` (в работе)
+
+- Перенесены GeoIP-кеш/запрос, оптимизации главной, приоритет hero image,
+  ленивая HEIC-конверсия и проверка фото canvas; CAPTCHA сознательно не
+  включена, так как действующий Laravel 13 registration contract её не требует.
+- Перенесены `canvas_slider.hero_subtitle` (миграция, модель, frontend),
+  неблокирующий Font Awesome и WebP партнёра. Реальная БД/браузер пока не
+  проверены; без этого группы остаются IN PROGRESS.
+- SEO Analytics: финальные маршруты, контроллер, шаблоны и локали перенесены.
+  `SeoAnalyticsPagesTest`: 1 passed/9 assertions, `view:cache` успешен.
+- ALT: добавлены `FrontendImage` и таблица/registry/inventory/catalog,
+  PHP pipeline, JS и все 339 Blade-патчей. Три шаблона сопоставлены вручную;
+  в двух нормализованы единичные legacy CP1252-байты в UTF-8.
+  Большой каталог вынесен из `config/` в `resources/`, потому что загрузка
+  при каждом boot приводила к fatal memory exhaustion на 128 МБ. Файл
+  содержит 348 определений и теперь загружается только во время сканирования.
+- Для Filament добавлена очередь ALT-предложений с фильтрами и
+  approve/reject/regenerate/apply через текущую `alt:apply`, с отдельными
+  Voyager permissions. Маршрут `/filament/image-alt-suggestions` существует;
+  тест доступа и рендера: 5 passed/9 assertions.
+- Общий feature-suite после исправления memory boot: 361 passed,
+  2 skipped, 2778 assertions; exit code PHPUnit 1 при двух skipped,
+  упавших тестов в отчёте нет. Проверка реальной миграции и ALT-сканирования
+  остаётся открытой.
+- Изолированный тест миграций/ALT fallback: 3 passed/6 assertions.
+  `view:cache` успешно после всех 339 патчей. Живой HTTPS: главная,
+  `/simpsons`, `/seo-analytics` вернули 200. `/modular-generator` сначала
+  вернул 500 из-за старого `env('THEME_RESOURCES')` в include; заменён на
+  штатный `config('theme.resource')`, повторный HTTPS-запрос вернул 200.
+- `alt:scan --model=FrontendImage --dry-run --limit=1 --locale=en` на PHP
+  128 МБ: exit 0, 1 scanned / 1 suggestion, без записи. Перед этим выявлены
+  fatal memory errors в старом MySQL cursor/сериализации binding cache;
+  чтение переведено на порции по ID, `data:` пути исключены из legacy lookup,
+  сериализация списка устранена. Полный многоязычный `--limit=1` выполнялся
+  несколько минут без ошибки, но был остановлен вручную из-за длительности;
+  его производительность и результат остаются открытым пунктом.
+- `php artisan migrate --force` применил ровно две ожидавшие миграции:
+  `frontend_images` и `canvas_slider.hero_subtitle` (предварительно проверены
+  через `migrate:status` и `migrate --pretend`). После миграции HTTPS главная,
+  Simpsons и SEO Analytics вернули 200; `/modular-generator` при первом
+  параллельном запросе дал уже известный локальный сбой `View [pages.index.footer]
+  not found`, который пользователь просил не считать регрессией; немедленный
+  повторный запрос вернул 200.
+- Filament: добавлен узкий редактор переводимого
+  `canvas_slider.hero_subtitle` с существующими правами
+  `browse/edit_canvas_slider`; действия ALT дополнительно проверяют `edit`
+  внутри обработчика. Livewire-тест записи EN/RU и одобрения ALT:
+  `FilamentAuthorizationTest` 8 passed/19 assertions. Маршрут
+  `/filament/canvas-sliders` зарегистрирован.
+- Финальная выборочная проверка затронутых сценариев:
+  52 passed/236 assertions (`FilamentAuthorization`, Venipak, ALT migration,
+  SEO Analytics, frontend boot, public auth); `node --check` для `custom.js`
+  и `new_bot_scripts.js` успешен; `php artisan view:cache` успешен;
+  `migrate:status` показывает обе новые миграции как Ran.
+- Изображение партнёра `https://static.salidzini.lv/images/logo_button.webp`
+  проверено напрямую: HTTP 200, `image/webp`; задача `44982d52` закрыта.
+
+- `9a72e4b9`: в Filament Venipak defaults телефон получателя теперь берётся
+  из `delivery.phone`, затем `delivery.payer_phone` и лишь затем из профиля.
+  Добавлен тест всех трёх вариантов; `OrderVenipakLabelServiceTest` —
+  `4 passed / 17 assertions`. Следующее действие — зависимые frontend-правки
+  `98c8f6d9`, `1835e259`, `0d831842`.
+
+## 2026-09-25 — аудит source commits `9a72e4b9` → `8101a9df`
+
+- Read-only проверена история `C:\OSPanel\domains\asoft\viar`: сам `9a72e4b9`
+  и 16 следующих коммитов до HEAD `8101a9df`; рабочий source не менялся.
+- Сверены затронутые файлы и текущие Laravel 13/Filament аналоги. В частности,
+  `OrderVenipakLabelService` сейчас предпочитает профильный телефон, а новые
+  GeoIP, canvas subtitle, SEO Analytics pages и frontend-image registry в цели
+  отсутствуют. ALT pipeline уже есть и требует расширения, не создания заново.
+- Подтверждено, что `f035b623` полностью отменён `7acdac59`: diff конечного
+  состояния пары пуст. Документальный `2d2807df` и форматирование переводов
+  `e19b2a38` не дают самостоятельной новой логики.
+- Полный список решений и порядок переноса добавлены в `MIGRATION_PLAN.md`.
+  Это только аудит/планирование: production-код и БД не менялись, тесты не
+  запускались. Следующий точный шаг — исправить default Venipak phone с тестом,
+  затем переносить зависимые frontend-группы по порядку из плана.
+
+## 2026-09-25 — Сводный backlog интеграции админ-панели
+
+- По запросу составлен и добавлен в `MIGRATION_PLAN.md` полный прикладной
+  backlog Filament 5: базовая безопасность, заказы, чаты/CRM-SA, пользователи,
+  контент, SEO/ALT, операционные инструменты, dashboard и cutover с удалением
+  Voyager.
+- Инвентаризация основана на `routes/admin.php`, найденных admin controllers,
+  текущем Filament Orders Resource, services/tests и ранее подтверждённых
+  migration notes. Конкретные BREAD-типы/поля/permissions не выдумывались:
+  их точный inventory выделен в ADM-FIL-029 для сверки с актуальной legacy БД.
+- Отмечены зависимости и общие критерии тестов, прав, rollback, browser UAT и
+  сохранности `orders`/админ-чатов. Это планирование; код и данные не менялись.
+- Тесты не запускались: изменена только документация. Следующий точный шаг —
+  когда начнётся этап админки, выполнить ADM-FIL-029 (реальный каталог BREAD,
+  полей, связей и permissions), затем продолжать текущие IN PROGRESS задачи
+  ADM-FIL-003 и ADM-FIL-010. Приоритет публичного frontend сохраняется.
+
 ## ADM-FIL-010 — Значения новых позиций и переключение скидок
 
 - 2026-09-05: по оригинальному Laravel 6 order_create.blade.php перенесены

@@ -86,6 +86,14 @@ class GenerateImageAltJob implements ShouldQueue
     ): void {
         $suggestion = $this->resolveSuggestion();
 
+        if ($suggestion->imageable_type === \App\Models\FrontendImage::class) {
+            $frontend = \App\Models\FrontendImage::find($suggestion->imageable_id);
+            $context = $frontend ? ($frontend->context['locales'][$suggestion->locale] ?? []) : [];
+            if ($frontend && (new \App\Services\AltGeneration\FrontendLegacySources())->fromContext($context, $frontend->image_path)) {
+                return;
+            }
+        }
+
         if (!$this->force && in_array($suggestion->status, [
                 ImageAltSuggestion::STATUS_PENDING,
                 ImageAltSuggestion::STATUS_APPROVED,
@@ -221,6 +229,14 @@ class GenerateImageAltJob implements ShouldQueue
      */
     private function buildDescriptor(ImageAltSuggestion $suggestion, ConfigRepository $config): ImageDescriptor
     {
+        if ($suggestion->imageable_type === \App\Models\FrontendImage::class) {
+            $entity = \App\Models\FrontendImage::findOrFail($suggestion->imageable_id);
+            $descriptor = app(\App\Services\AltGeneration\FrontendImageRegistry::class)->descriptor($entity, (string) $suggestion->locale);
+            if (!$descriptor) {
+                throw new RuntimeException('Frontend image is not registered for the requested locale.');
+            }
+            return $descriptor;
+        }
         $promptContext = (array) $suggestion->prompt_context;
         $imageContext = isset($promptContext['image']) && is_array($promptContext['image'])
             ? $promptContext['image']

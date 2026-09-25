@@ -24,7 +24,7 @@
                     </p>
                     <div class="form-inner">
                         <img src="{{ asset(config('theme.current') . '/images/sharj/men.webp') }}" width="250"
-                            height="525" alt="">
+                            height="525"  @frontendAlt('theme/viar/pages/sharj/form.blade.php', (asset(config('theme.current') . '/images/sharj/men.webp')), '', '')>
 
                         {{--                    <img src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/homer.webp') }}" width="250" height="525" alt=""> --}}
                         <div class="form-grid">
@@ -104,8 +104,8 @@
                                     <div class="banner__input-item">
                                         <input type="text" id="phone2" name="phone" class="banner__input phone"
                                             required>
-                                        <img src="https://viarcanvas.com/img/icons/phone.svg" alt=""
-                                            class="img-svg img-svg__posa">
+                                        <img src="https://viarcanvas.com/img/icons/phone.svg"
+                                            class="img-svg img-svg__posa" @frontendAlt('theme/viar/pages/sharj/form.blade.php', 'https://viarcanvas.com/img/icons/phone.svg', '', '')>
                                     </div>
                                 </div>
                             </div>

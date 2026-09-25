@@ -4,11 +4,11 @@
         <div class="create-picture-items clearfix">
             <div class="create-picture-item">
                 <img class="" src="{{ asset('img/create-picture-img3.png') }}"
-                    data-src="{{ asset('img/create-picture-img3.png') }}" alt="">
+                    data-src="{{ asset('img/create-picture-img3.png') }}"  @frontendAlt('partials/gallery_item/create_pic.blade.php', (asset('img/create-picture-img3.png')), '', '')>
             </div>
             <div class="create-picture-item">
                 <img class="" src="{{ asset('img/create-picture-img4.png') }}"
-                    data-src="{{ asset('img/create-picture-img4.png') }}" alt="">
+                    data-src="{{ asset('img/create-picture-img4.png') }}"  @frontendAlt('partials/gallery_item/create_pic.blade.php', (asset('img/create-picture-img4.png')), '', '')>
             </div>
         </div>
         @if($cur_loc == '')

@@ -91,8 +91,8 @@
 </div>
 
 <div class="ellipse">
-    <img alt="img" src="{{ asset(config('theme.current') . '/images/icon/ellipse-whete.svg') }}"
-         decoding="async" height="99" width="1374">
+    <img  src="{{ asset(config('theme.current') . '/images/icon/ellipse-whete.svg') }}"
+         decoding="async" height="99" width="1374" @frontendAlt('theme/viar/pages/sizesprices/index.blade.php', (asset(config('theme.current') . '/images/icon/ellipse-whete.svg')), 'img', '')>
 </div>
 
 <div class="sizes-page">
@@ -117,7 +117,7 @@
                                     type="image/webp">
                             <source srcset="{{ asset('storage/' . $a_canvas_image->size_img) }}" type="image/webp">
                             <img width="430" height="450" src="{{ asset('storage/' . $a_canvas_image->size_img) }}"
-                                 alt="">
+                                  @frontendAlt('theme/viar/pages/sizesprices/index.blade.php', (asset('storage/' . $a_canvas_image->size_img)), '', '')>
                         </picture>
                     </div>
                     <div class="content text-content">
@@ -208,7 +208,7 @@
                                     srcset="{{ asset('storage/' . $a_collage_image->size_img) }}" type="image/webp">
                             <source srcset="{{ asset('storage/' . $a_collage_image->size_img) }}" type="image/webp">
                             <img width="430" height="450"
-                                 src="{{ asset('storage/' . $a_collage_image->size_img) }}" alt="">
+                                 src="{{ asset('storage/' . $a_collage_image->size_img) }}"  @frontendAlt('theme/viar/pages/sizesprices/index.blade.php', (asset('storage/' . $a_collage_image->size_img)), '', '')>
                         </picture>
                     </div>
                     <div class="content text-content">
@@ -324,7 +324,7 @@
                                                : (json_decode($item->images)[0] ?? '')
                                             )
                                         )) }}"
-                                     alt="">
+                                      @frontendAlt('theme/viar/pages/sizesprices/index.blade.php', (asset('storage/' . (optional($item->sliderImage)->size_img ? $item->sliderImage->size_img : ($item->sliderImage ? $item->sliderImage->png : (json_decode($item->images)[0] ?? '') ) ))), '', '')>
                             </picture>
                         </div>
                         <div class="content text-content">

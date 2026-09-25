@@ -35,7 +35,7 @@
                                                 @if(!empty($homeNewMenuImageSources['src']) && !empty($homeNewMenuImageSources['type']))
                                                     <source srcset="{{ $homeNewMenuImageSources['src'] }}" type="{{ $homeNewMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -52,7 +52,7 @@
                                         @if(!empty($homeNewMenuPngSources['src']) && !empty($homeNewMenuPngSources['type']))
                                             <source srcset="{{ $homeNewMenuPngSources['src'] }}" type="{{ $homeNewMenuPngSources['type'] }}">
                                         @endif
-                                        <img class="lozad" src="{{ $homeNewMenuPngSources['src'] }}" loading="lazy" alt="">
+                                        <img class="lozad" src="{{ $homeNewMenuPngSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuPngSources['src']), '', '')>
                                     </picture>
                                 </a>
                                 @endif
@@ -98,7 +98,7 @@
                                                 @if(!empty($homeNewMenuImageSources['src']) && !empty($homeNewMenuImageSources['type']))
                                                     <source srcset="{{ $homeNewMenuImageSources['src'] }}" type="{{ $homeNewMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -144,7 +144,7 @@
                                                 @if(!empty($homeNewMenuImageSources['src']) && !empty($homeNewMenuImageSources['type']))
                                                     <source srcset="{{ $homeNewMenuImageSources['src'] }}" type="{{ $homeNewMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -163,7 +163,7 @@
 <div class="vz-art burge-menu">
     <div class="vz-art header-bar header-bar_burger">
         <a href="{{ route('home') }}" class="vz-art logo" aria-label="logo link">
-            <img loading="lazy" src="{{ asset('images/logo.svg') }}" alt="@lang('settings.site_name')">
+            <img loading="lazy" src="{{ asset('images/logo.svg') }}"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', (asset('images/logo.svg')), __('settings.site_name'), '')>
         </a>
         <div class="header-button">
             <a href="#" class="vz-art header-user" aria-label="user link">

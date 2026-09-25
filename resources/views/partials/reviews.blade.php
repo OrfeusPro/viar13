@@ -5,7 +5,7 @@
                 <div class="our-work-item">
                     <div class="avatar">
                         <img class="" src="{{ Voyager::image($item->avatar) }}"
-                            data-src="{{ Voyager::image($item->avatar) }}" alt="">
+                            data-src="{{ Voyager::image($item->avatar) }}"  @frontendAlt('partials/reviews.blade.php', (Voyager::image($item->avatar)), '', '')>
                     </div>
                     <div class="img"
                         style="background: url({{ Voyager::image($item->img) }}) no-repeat 50% 50%; background-size: cover;">

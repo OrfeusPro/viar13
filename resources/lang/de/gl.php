@@ -32,6 +32,7 @@ return array (
   'report_suc_send' => 'Erfolgreich gesendet!',
   'too_big_filesize' => 'Dateigröße ist zu groß',
   'inv_filesize_or_ext' => 'Datei wurde nicht hinzugefügt',
+  'canvas_photo_required_step1' => 'Fügen Sie ein Foto hinzu.',
   'media_missing' => 'Kein Bild',
   'choose_person_count' => 'Wählen Sie <span> Anzahl der Personen </span>',
   'personal' => 'Persönlich',

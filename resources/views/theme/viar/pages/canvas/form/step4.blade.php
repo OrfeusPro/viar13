@@ -23,7 +23,7 @@
                 <div class="img">
                     <img
                         src="{{ asset('images/canvas/execution-item2.svg') }}"
-                        alt=""/>
+                         @frontendAlt('theme/viar/pages/canvas/form/step4.blade.php', (asset('images/canvas/execution-item2.svg')), '', '')/>
                 </div>
             </div>
             <p>{!! trans('canvas.form_print') !!}}</p>
@@ -44,7 +44,7 @@
                     <i class="icon-down-arrow"></i>
                     <img
                         src="{{ asset('images/canvas/execution-item1.svg') }}"
-                        alt=""/>
+                         @frontendAlt('theme/viar/pages/canvas/form/step4.blade.php', (asset('images/canvas/execution-item1.svg')), '', '')/>
                 </div>
             </div>
             <p>{!! trans('canvas.form_print_oil') !!}}</p>

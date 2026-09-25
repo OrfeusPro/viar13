@@ -66,7 +66,7 @@
 <div class="formalization-prompt">
     <div class="formalization-prompt--wrapper">
         <div class="formalization-prompt--inner">
-            <img src="{{ asset('images/prompt4.png') }}" alt=""/>
+            <img src="{{ asset('images/prompt4.png') }}"  @frontendAlt('partials/portrait_new/form/persons.blade.php', (asset('images/prompt4.png')), '', '')/>
             <p>{!! trans('portrait_buy_form.step4_bot_desc') !!}</p>
         </div>
     </div>

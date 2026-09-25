@@ -3,7 +3,7 @@
         <div class="compositions-content">
             <div class="compositions-form">
                 <img class="" src="{{ asset('img/compositions-form-img.png') }}"
-                    data-src="{{ asset('img/compositions-form-img.png') }}" alt="">
+                    data-src="{{ asset('img/compositions-form-img.png') }}"  @frontendAlt('partials/gallery_item/compositions.blade.php', (asset('img/compositions-form-img.png')), '', '')>
                 <div class="form">
                     <div class="title-form">
                         <h4>{!! $canv_bot['comp_right_form_title'] !!}</h4>

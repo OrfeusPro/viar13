@@ -3,7 +3,7 @@
         <picture>
             <source srcset="{{ asset('images/about-borderB.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/about-borderB.png') }}" type="image/png"/>
-            <img class="about-border big-border" src="{{ asset('images/about-borderB.png') }}" alt=""/>
+            <img class="about-border big-border" src="{{ asset('images/about-borderB.png') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/first.blade.php', (asset('images/about-borderB.png')), '', '')/>
         </picture>
         <div class="about__portrait-img">
             @if($item->new_main_image)

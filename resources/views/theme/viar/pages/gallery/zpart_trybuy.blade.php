@@ -10,7 +10,7 @@
 
 @if(!$white)
 <div class="ellipse rotated-ell">
-	<img alt="img" src="{{ asset(env('THEME') . 'images') }}/icon/ellipse-whete.svg" decoding="async" height="99" width="1374">
+	<img  src="{{ asset(env('THEME') . 'images') }}/icon/ellipse-whete.svg" decoding="async" height="99" width="1374" @frontendAlt('theme/viar/pages/gallery/zpart_trybuy.blade.php', (asset(env('THEME') . 'images')) . '/icon/ellipse-whete.svg', 'img', '')>
 </div>
 @endif
 

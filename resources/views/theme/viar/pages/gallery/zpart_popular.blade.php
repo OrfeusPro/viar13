@@ -43,7 +43,7 @@
                                         @if($item->image)
                                         <picture>
                                             <source srcset="{{ asset('/storage') }}/{{ $item->image }}" type="image/jpeg">
-                                            <img width="433" height="583" src="{{ asset('/storage') }}/{{ $item->image }}" alt="{{ $item->name }}" loading="lazy">
+                                            <img width="433" height="583" src="{{ asset('/storage') }}/{{ $item->image }}"  loading="lazy" @frontendAlt('theme/viar/pages/gallery/zpart_popular.blade.php', (asset('/storage')) . '/' . ($item->image), ($item->name), '')>
                                         </picture>
                                         @endif
                                     </div>
@@ -66,7 +66,7 @@
                                         @if($item->image)
                                         <picture>
                                             <source srcset="{{ asset('/storage') }}/{{ $item->image }}" type="image/jpeg">
-                                            <img width="433" height="583" src="{{ asset('/storage') }}/{{ $item->image }}" alt="{{ $item->name }}" loading="lazy">
+                                            <img width="433" height="583" src="{{ asset('/storage') }}/{{ $item->image }}"  loading="lazy" @frontendAlt('theme/viar/pages/gallery/zpart_popular.blade.php', (asset('/storage')) . '/' . ($item->image), ($item->name), '')>
                                         </picture>
                                         @endif
 
@@ -91,7 +91,7 @@
                                         @if($item->image)
                                         <picture>
                                             <source srcset="{{ asset('/storage') }}/{{ $item->image }}" type="image/jpeg">
-                                            <img width="433" height="583" src="{{ asset('/storage') }}/{{ $item->image }}" alt="{{ $item->name }}" loading="lazy">
+                                            <img width="433" height="583" src="{{ asset('/storage') }}/{{ $item->image }}"  loading="lazy" @frontendAlt('theme/viar/pages/gallery/zpart_popular.blade.php', (asset('/storage')) . '/' . ($item->image), ($item->name), '')>
                                         </picture>
                                         @endif
                                     </div>

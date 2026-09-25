@@ -60,5 +60,5 @@
 </section>
 
 <div class="ellipse ellipse_black">
-    <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+    <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/examples4.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
 </div>

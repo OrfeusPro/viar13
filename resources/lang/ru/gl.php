@@ -32,6 +32,7 @@ return array (
   'report_suc_send' => 'Успешно отправлено!',
   'too_big_filesize' => 'Слишком большой размер файла',
   'inv_filesize_or_ext' => 'Файл не добавлен',
+  'canvas_photo_required_step1' => 'Добавьте фото.',
   'media_missing' => 'Изображение отсутствует',
   'pic_on_wall' => 'Картина на стене',
   'choose_person_count' => 'Выберите <span>Количество человек</span>',

@@ -1,6 +1,6 @@
 <section class="top-frame">
     <div class="ellipse ellipse_cream">
-        <img src="{{ asset('images/icon/ellipse-cream.svg') }}" alt="img" loading="lazy">
+        <img src="{{ asset('images/icon/ellipse-cream.svg') }}"  loading="lazy" @frontendAlt('partials/index_new/tops6.blade.php', (asset('images/icon/ellipse-cream.svg')), 'img', '')>
     </div>
     <div class="top">
         <div class="section-frame">
@@ -40,7 +40,7 @@
                 <picture>
                     <source srcset="{{ asset('images/icon/load-more.webp') }}" type="image/webp">
                     <source srcset="{{ asset('images/icon/load-more.png') }}">
-                    <img src="{{ asset('images/icon/load-more.png') }}" alt="img" loading="lazy">
+                    <img src="{{ asset('images/icon/load-more.png') }}"  loading="lazy" @frontendAlt('partials/index_new/tops6.blade.php', (asset('images/icon/load-more.png')), 'img', '')>
                 </picture>
                 <span>{!! trans('homepage_new.top_sales_more_btn_title') !!}</span>
             </a>

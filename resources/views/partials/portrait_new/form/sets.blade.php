@@ -14,7 +14,7 @@
                                     <div class="check"></div>
                                     <label>
                                         <span>{{ $set->getTranslatedAttribute('name', app()->getLocale()) }}
-                                            <img src="{{ asset('images/icon/info.svg') }}" alt=""/></span>
+                                            <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/portrait_new/form/sets.blade.php', (asset('images/icon/info.svg')), '', '')/></span>
                                         <input @if($loop->last) checked @endif class="js_set" type="radio" name="equipment" data-id="{{ $set['id'] }}" value="{{ $set->price }}"/>
                                     </label>
                                 </div>
@@ -28,7 +28,7 @@
     <div class="formalization-prompt">
         <div class="formalization-prompt--wrapper">
             <div class="formalization-prompt--inner">
-                <img src="{{ asset('images/prompt8.png') }}" alt=""/>
+                <img src="{{ asset('images/prompt8.png') }}"  @frontendAlt('partials/portrait_new/form/sets.blade.php', (asset('images/prompt8.png')), '', '')/>
                 <p>
                     {!! trans('portrait_buy_form.step8_bot_desc') !!}
                 </p>

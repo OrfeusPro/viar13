@@ -24,7 +24,7 @@
                                 type="image/webp">
                             <img width="92" height="121"
                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern1.webp"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/sharj/default-pattern-new-items.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/s-pattern1.webp', '', '')>
                         </picture>
                     </div>
                 </div>
@@ -39,7 +39,7 @@
                                 type="image/webp">
                             <img width="190" height="239"
                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern2.webp"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/sharj/default-pattern-new-items.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/s-pattern2.webp', '', '')>
                         </picture>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
                                 type="image/webp">
                             <img width="190" height="239"
                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern3.webp?v=1"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/sharj/default-pattern-new-items.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/s-pattern3.webp?v=1', '', '')>
                         </picture>
                     </div>
                 </div>
@@ -214,7 +214,7 @@
                     @if(!empty($sharjDefaultItemImageSources['src']) && !empty($sharjDefaultItemImageSources['type']))
                         <source srcset="{{ $sharjDefaultItemImageSources['src'] }}" type="{{ $sharjDefaultItemImageSources['type'] }}">
                     @endif
-                    <img width="315" height="451" src="{{ $sharjDefaultItemImageSources['src'] }}" alt="">
+                    <img width="315" height="451" src="{{ $sharjDefaultItemImageSources['src'] }}"  @frontendAlt('theme/viar/pages/sharj/default-pattern-new-items.blade.php', ($sharjDefaultItemImageSources['src']), '', '')>
                 </picture>
                 <a href="#" class="default-btn js-simps-calc" attr_image="{{ $ba_item->getUrl() }}"
                     attr_type="obraz" 
@@ -235,7 +235,7 @@
         <picture>
             <source srcset="https://viarcanvas.com/images/icon/load-more.webp" type="image/webp">
             <source srcset="https://viarcanvas.com/images/icon/load-more.png">
-            <img src="https://viarcanvas.com/images/icon/load-more.png" alt="img" loading="lazy">
+            <img src="https://viarcanvas.com/images/icon/load-more.png"  loading="lazy" @frontendAlt('theme/viar/pages/sharj/default-pattern-new-items.blade.php', 'https://viarcanvas.com/images/icon/load-more.png', 'img', '')>
         </picture>
         <span>{{ trans('homepage_new.top_sales_more_btn_title') }}</span>
     </a>

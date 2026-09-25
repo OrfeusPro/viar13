@@ -55,7 +55,7 @@
                                 {{--<source media="(max-width: 576px)"
                                         srcset="{{ ver_asset('images/sharj/subRow1.webp') }}" type="image/webp">
                                 <source srcset="{{ ver_asset('images/sharj/subRow1.webp') }}" type="image/webp">--}}
-                                <img class="popup-dyn-image" width="194" height="236" src="{{ ver_asset('images/sharj/subRow1.webp') }}" alt="">
+                                <img class="popup-dyn-image" width="194" height="236" src="{{ ver_asset('images/sharj/subRow1.webp') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/subRow1.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="formalization__col">
@@ -64,7 +64,7 @@
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
                                             <img width="25" height="25"
-                                                 src="{{ ver_asset('images/sharj/format1.svg') }}" alt="">
+                                                 src="{{ ver_asset('images/sharj/format1.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/format1.svg')), '', '')>
                                             <p>@lang('portrait_royal.form_group_type_title')</p>
                                             <span class="tab-icon"></span>
                                         </div>
@@ -84,7 +84,7 @@
                                                                         type="image/webp">
                                                                     <img width="112" height="119"
                                                                          src="{{ ver_asset('images/sharj/holstPhoto.webp') }}"
-                                                                         alt="">
+                                                                          @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/holstPhoto.webp')), '', '')>
                                                                 </picture>
                                                             </label>
                                                         </div>
@@ -99,7 +99,7 @@
                                                                         type="image/webp">
                                                                     <img width="112" height="119"
                                                                          src="{{ ver_asset('images/sharj/paperPhoto.webp') }}"
-                                                                         alt="">
+                                                                          @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/paperPhoto.webp')), '', '')>
                                                                 </picture>
                                                             </label>
                                                         </div>
@@ -112,7 +112,7 @@
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
                                                 <img width="56" height="58"
-                                                     src="{{ ver_asset('images/sharj/ficon1.webp') }}" alt="">
+                                                     src="{{ ver_asset('images/sharj/ficon1.webp') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/ficon1.webp')), '', '')>
                                                 <p>{{ trans('portrait_royal.form_group_type_hint') }}</p>
                                             </div>
                                         </div>
@@ -122,7 +122,7 @@
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
                                             <img width="25" height="25"
-                                                 src="{{ ver_asset('images/sharj/format2.svg') }}" alt="">
+                                                 src="{{ ver_asset('images/sharj/format2.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/format2.svg')), '', '')>
                                             <p>{{ trans('portrait_royal.form_group_upload_title') }}</p>
                                             <span class="tab-icon"></span>
                                         </div>
@@ -184,7 +184,7 @@
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
                                                 <img width="56" height="58"
-                                                     src="{{ ver_asset('images/sharj/ficon2.webp') }}" alt="">
+                                                     src="{{ ver_asset('images/sharj/ficon2.webp') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/ficon2.webp')), '', '')>
                                                 <p>{!! trans('portrait_buy_form.step1_bot_desc') !!}</p>
                                             </div>
                                         </div>
@@ -194,7 +194,7 @@
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
                                             <img width="25" height="25"
-                                                 src="{{ ver_asset('images/sharj/format3.svg') }}" alt="">
+                                                 src="{{ ver_asset('images/sharj/format3.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/format3.svg')), '', '')>
                                             <p>@lang('portrait_royal.form_group_size_title')</p>
                                             <span class="tab-icon"></span>
                                         </div>
@@ -246,7 +246,7 @@
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
                                                 <img width="56" height="58"
-                                                     src="{{ ver_asset('images/sharj/ficon3.webp') }}" alt="">
+                                                     src="{{ ver_asset('images/sharj/ficon3.webp') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/ficon3.webp')), '', '')>
                                                 <p>{!! trans('portrait_buy_form.step3_bot_desc') !!}</p>
                                             </div>
                                         </div>
@@ -256,7 +256,7 @@
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
                                             <img width="25" height="25"
-                                                 src="{{ ver_asset('images/sharj/format4.svg') }}" alt="">
+                                                 src="{{ ver_asset('images/sharj/format4.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/format4.svg')), '', '')>
                                             <p>@lang('portrait_royal.form_group_people_title')</p>
                                             <span class="tab-icon"></span>
                                         </div>
@@ -320,7 +320,7 @@
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
                                                 <img width="56" height="58" src="{{ asset('images/prompt4.png') }}"
-                                                     alt="">
+                                                      @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset('images/prompt4.png')), '', '')>
                                                 <p>{!! trans('portrait_buy_form.step4_bot_desc') !!}</p>
                                             </div>
                                         </div>
@@ -330,7 +330,7 @@
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
                                             <img width="25" height="25"
-                                                 src="{{ ver_asset('images/sharj/format5.svg') }}" alt="">
+                                                 src="{{ ver_asset('images/sharj/format5.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/format5.svg')), '', '')>
                                             <p>@lang('portrait_royal.form_group_frame_title')</p>
                                             <span class="tab-icon"></span>
                                         </div>
@@ -455,7 +455,7 @@
                                                                             type="image/jpeg">
                                                                         <img width="150" height="150"
                                                                              src="{{ asset("/storage/".$_frame->img) }}"
-                                                                             alt="Viar" loading="lazy">
+                                                                              loading="lazy" @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset("/storage/".$_frame->img)), 'Viar', '')>
                                                                     </picture>
                                                                     <div class="fi-info">
                                                                         <p> @lang("gallery.code"):
@@ -554,7 +554,7 @@
                                     <div class="formalization-prompt" style="">
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
-                                                <img src="{{ asset('images/prompt7.png') }}" alt="">
+                                                <img src="{{ asset('images/prompt7.png') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset('images/prompt7.png')), '', '')>
                                                 <p>@lang('portrait_royal.form_group_frame_note')</p>
                                             </div>
                                         </div>
@@ -564,7 +564,7 @@
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
                                             <img width="25" height="25"
-                                                 src="{{ ver_asset('images/sharj/format5.svg') }}" alt="">
+                                                 src="{{ ver_asset('images/sharj/format5.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/format5.svg')), '', '')>
                                             <p>@lang('portrait_royal.form_group_frame2_title')</p>
                                             <span class="tab-icon"></span>
                                         </div>
@@ -600,7 +600,7 @@
                                                                                 type="image/jpeg">
                                                                             <img width="150" height="150"
                                                                                  src="{{ asset("/storage/".$_frame->img) }}"
-                                                                                 alt="Viar" loading="lazy">
+                                                                                  loading="lazy" @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset("/storage/".$_frame->img)), 'Viar', '')>
                                                                         </picture>
                                                                         <div class="frame-info">
                                                                             <ul>
@@ -820,7 +820,7 @@
                                                                                     type="image/jpeg">
                                                                                 <img width="150" height="150"
                                                                                      src="{{ asset("/storage/".$_frame->img) }}"
-                                                                                     alt="Viar" loading="lazy">
+                                                                                      loading="lazy" @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset("/storage/".$_frame->img)), 'Viar', '')>
                                                                             </picture>
                                                                             <div class="fi-info">
                                                                                 <p> @lang("gallery.code"):
@@ -921,7 +921,7 @@
                                     <div class="formalization-prompt" style="">
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
-                                                <img src="{{ asset('images/prompt7.png') }}" alt="">
+                                                <img src="{{ asset('images/prompt7.png') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset('images/prompt7.png')), '', '')>
                                                 <p>@lang('portrait_royal.form_group_frame_note')</p>
                                             </div>
                                         </div>
@@ -931,7 +931,7 @@
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
                                             <img width="25" height="25"
-                                                 src="{{ ver_asset('images/sharj/format6.svg') }}" alt="">
+                                                 src="{{ ver_asset('images/sharj/format6.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/format6.svg')), '', '')>
                                             <p>{{ trans('portrait_buy_form.step_comment_title') }}</p>
                                             <span class="tab-icon"></span>
                                         </div>
@@ -996,7 +996,7 @@
                                     <div class="formalization-prompt">
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
-                                                <img src="{{ asset('images/prompt9.png') }}" alt="">
+                                                <img src="{{ asset('images/prompt9.png') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset('images/prompt9.png')), '', '')>
                                                 <p>{{ trans('portrait_buy_form.step_comment_bot_desc') }}</p>
                                             </div>
                                         </div>
@@ -1030,7 +1030,7 @@
                                                 <em class="check"></em>
                                                 <label>
                     <span>{{ $set->getTranslatedAttribute('name', app()->getLocale()) }}
-                        <img src="{{ asset('images/icon/info.svg') }}" alt=""/></span>
+                        <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (asset('images/icon/info.svg')), '', '')/></span>
                                                     <input class="js_set" @if($loop->last) checked @endif type="radio"
                                                            name="equipment" data-id="{{ $set['id'] }}"
                                                            value="{{ $set->price }}"/>
@@ -1083,7 +1083,7 @@
                     </div>
                 </div>
                 <div class="close-btn">
-                    <img width="30" height="30" src="{{ ver_asset('images/sharj/cancel.svg') }}" alt="">
+                    <img width="30" height="30" src="{{ ver_asset('images/sharj/cancel.svg') }}"  @frontendAlt('theme/viar/pages/portrait/popup-order.blade.php', (ver_asset('images/sharj/cancel.svg')), '', '')>
                 </div>
             </div>
         </form>

@@ -70,7 +70,7 @@
                     <div class="page-input__item phone-input">
                         <div class="banner__input-item">
                             <input type="text" id="phone2" name="phone" class="banner__input phone" required>
-                            <img src="{{ asset('img/icons/phone.svg') }}" alt="" class="img-svg img-svg__posa">
+                            <img src="{{ asset('img/icons/phone.svg') }}"  class="img-svg img-svg__posa" @frontendAlt('theme/viar/pages/index/why7_form.blade.php', (asset('img/icons/phone.svg')), '', '')>
                         </div>
                     </div>
                 </div>
@@ -91,6 +91,6 @@
                     <source srcset="{{ $bgWebp }}" type="image/webp">
                 @endif
                 <source srcset="{{ $bgPng }}">
-                <img src="{{ $bgPng }}" class="why-form__photo" alt="img" loading="lazy">
+                <img src="{{ $bgPng }}" class="why-form__photo"  loading="lazy" @frontendAlt('theme/viar/pages/index/why7_form.blade.php', ($bgPng), 'img', '')>
             </picture>
         </form>

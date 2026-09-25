@@ -11,7 +11,7 @@
     <div class="form-types">
         <div class="form-image calcForm active" onclick="setForm(0)"
              data-id="1">
-            <img src="{{ asset('images/form1.svg') }}" alt="">
+            <img src="{{ asset('images/form1.svg') }}"  @frontendAlt('partials/canvas_new/form/step2.blade.php', (asset('images/form1.svg')), '', '')>
             <div class="selected-icon">
                 <svg width="12" height="9" viewBox="0 0 12 9"
                      fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,7 +23,7 @@
         </div>
         <div class="form-image calcForm" onclick="setForm(1)"
              data-id="2">
-            <img src="{{ asset('images/form2.svg') }}" alt="">
+            <img src="{{ asset('images/form2.svg') }}"  @frontendAlt('partials/canvas_new/form/step2.blade.php', (asset('images/form2.svg')), '', '')>
             <div class="selected-icon">
                 <svg width="12" height="9" viewBox="0 0 12 9"
                      fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -35,7 +35,7 @@
         </div>
         <div class="form-image calcForm" onclick="setForm(2)"
              data-id="3">
-            <img src="{{ asset('images/form3.svg') }}" alt="">
+            <img src="{{ asset('images/form3.svg') }}"  @frontendAlt('partials/canvas_new/form/step2.blade.php', (asset('images/form3.svg')), '', '')>
             <div class="selected-icon">
                 <svg width="12" height="9" viewBox="0 0 12 9"
                      fill="none" xmlns="http://www.w3.org/2000/svg">

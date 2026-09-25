@@ -63,6 +63,7 @@ class AltGenerationServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(LocaleResolver::class);
+        $this->app->singleton(\App\Services\AltGeneration\FrontendImageRegistry::class);
         $this->app->singleton(SkippedAltGenerationLogger::class);
     }
 
@@ -76,6 +77,9 @@ class AltGenerationServiceProvider extends ServiceProvider
         Blade::directive('altAttrs', function ($expression) {
             return "<?php echo app(\\App\\Services\\AltGeneration\\AltAttributeResolver::class)->attributesFor({$expression}); ?>";
         });
+        Blade::directive('frontendAlt', function ($expression) {
+            return "<?php echo \\App\\Models\\FrontendImage::attributesFor({$expression}); ?>";
+        });
 
         View::composer('voyager::dashboard.sidebar', AltSuggestionsMenuBadgeComposer::class);
 
@@ -88,6 +92,10 @@ class AltGenerationServiceProvider extends ServiceProvider
         $targets = (array) $config->get('alt_generation.targets', []);
 
         foreach ($targets as $modelClass => $target) {
+            // Registry synchronization belongs to alt:scan, not automatic generation.
+            if ($modelClass === \App\Models\FrontendImage::class) {
+                continue;
+            }
             if (!is_string($modelClass) || !class_exists($modelClass) || !is_subclass_of($modelClass, Model::class)) {
                 continue;
             }

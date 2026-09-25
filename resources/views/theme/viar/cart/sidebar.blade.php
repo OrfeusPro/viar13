@@ -330,7 +330,7 @@
 				<div class="cart-page-sidebar__make">
 					<div class="cart-page-sidebar__make--title">
 						<span>@lang('cart_new.general_production')</span>
-						<img src="{{ asset(env('THEME') . 'img/cart/clock-orange.svg') }}" alt="">
+						<img src="{{ asset(env('THEME') . 'img/cart/clock-orange.svg') }}"  @frontendAlt('theme/viar/cart/sidebar.blade.php', (asset(env('THEME') . 'img/cart/clock-orange.svg')), '', '')>
 					</div>
 
 					@php

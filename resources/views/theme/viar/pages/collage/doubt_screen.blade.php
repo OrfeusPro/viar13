@@ -11,7 +11,7 @@
                     <div class="collage-doubt--content">
                         <div class="c-db-questions">
                             <div class="c-db-question">
-                                <img loading="lazy" width="112" height="157" src="{{ asset('images/collage/tel.svg') }}" alt="Viar Image">
+                                <img loading="lazy" width="112" height="157" src="{{ asset('images/collage/tel.svg') }}"  @frontendAlt('theme/viar/pages/collage/doubt_screen.blade.php', (asset('images/collage/tel.svg')), 'Viar Image', '')>
                                 <span>{!! trans('collage_new.z4_doubt_screen_question') !!}</span>
                             </div>
                             <div class="c-db-question">
@@ -36,11 +36,11 @@
                 </div>
                 <div class="absolute-elements">
                     <div class="collage-d-express">
-                        <img loading="lazy" width="87" height="73" src="{{ asset('images/collage/express.svg') }}" alt="Viar Image">
+                        <img loading="lazy" width="87" height="73" src="{{ asset('images/collage/express.svg') }}"  @frontendAlt('theme/viar/pages/collage/doubt_screen.blade.php', (asset('images/collage/express.svg')), 'Viar Image', '')>
                         <p>{!! trans('collage_new.z4_doubt_screen_express_text1') !!}</p>
                     </div>
                     <div class="collage-d-gift">
-                        <img loading="lazy" width="120" height="106" src="{{ asset('images/collage/gift.svg') }}" alt="Viar Image">
+                        <img loading="lazy" width="120" height="106" src="{{ asset('images/collage/gift.svg') }}"  @frontendAlt('theme/viar/pages/collage/doubt_screen.blade.php', (asset('images/collage/gift.svg')), 'Viar Image', '')>
                         <p>{!! trans('collage_new.z4_doubt_screen_express_text2') !!}</p>
                     </div>
                 </div>
@@ -48,7 +48,7 @@
         </div>
 
 		<div class="ellipse el-desk ellipse-b-dbt">
-			<img src="{{ asset('images/icon/ellipse-whete.svg') }}" alt="img" loading="eager" >
+			<img src="{{ asset('images/icon/ellipse-whete.svg') }}"  loading="eager"  @frontendAlt('theme/viar/pages/collage/doubt_screen.blade.php', (asset('images/icon/ellipse-whete.svg')), 'img', '')>
 		</div>
 
 		<div class="c-mob-d">

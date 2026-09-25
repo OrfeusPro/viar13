@@ -22,7 +22,7 @@
 
 					<div class="cabinet-content__icon">
 						<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/free-icon-order-delivery.svg" width="82" height="82"
-							alt="Viar Cabinet Peding Orders">
+							 @frontendAlt('theme/viar/account/orders_success.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/free-icon-order-delivery.svg', 'Viar Cabinet Peding Orders', '')>
 					</div>
 
 

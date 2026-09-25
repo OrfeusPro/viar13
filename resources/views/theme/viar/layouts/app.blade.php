@@ -124,7 +124,12 @@
     @if(Route::currentRouteName() == 'home')
         @include((config('theme.resource') ?: 'theme.viar.') .'pages.index.head_styles')
     @endif
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @if(Route::currentRouteName() == 'home')
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.onload=null;this.media='all'">
+        <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    @else
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    @endif
 
 	<link rel="stylesheet" href="{{ ver_asset(env('THEME').'style/main.min.css') }}" media="all" />
     <link rel="stylesheet" href="{{ ver_asset(env('THEME').'style/custom.css') }}">
@@ -335,7 +340,6 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
     <script src="{{ ver_asset(env('THEME').'js/module.js') }}" defer></script>
 @endif
-<script src="https://cdn.jsdelivr.net/npm/heic2any/dist/heic2any.min.js"></script>
 
     @if(Route::currentRouteName() == 'modular-generator' )
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
@@ -416,7 +420,7 @@
 @endphp
 @if($isTopSaleEnabled)
 <div class="top-sale">
-    <img width="77" height="66" src="{{ asset(env('THEME').'images/sale.webp') }}" alt="">
+    <img width="77" height="66" src="{{ asset(env('THEME').'images/sale.webp') }}"  @frontendAlt('theme/viar/layouts/app.blade.php', (asset(env('THEME').'images/sale.webp')), '', '')>
     <p>@lang("header_footer_new.header.top_sale")</p>
 </div>
 @else
@@ -529,7 +533,7 @@
         <div id="template-preview" style="display:none;">
             <div class="dz-preview dz-file-preview well" id="dz-preview-template">
                 <div class="dz-image">
-                    <img loading="lazy" data-dz-thumbnail="" src="{{ asset('img/loading.gif') }}" alt="loading">
+                    <img loading="lazy" data-dz-thumbnail="" src="{{ asset('img/loading.gif') }}"  @frontendAlt('theme/viar/layouts/app.blade.php', (asset('img/loading.gif')), 'loading', '')>
                 </div>
                 <div class="dz-details">
                     <div class="dz-filename"><span data-dz-name=""></span></div>
@@ -662,7 +666,7 @@
             <span class="close-content"><i class="icon-icon4"></i></span>
             <div class="p__mod__title green__text">{{ trans('gl.suc') }}
                 <span>
-                    <img src="{{ asset(env('THEME').'img/checkmark_circle.1.png') }}" alt="">
+                    <img src="{{ asset(env('THEME').'img/checkmark_circle.1.png') }}"  @frontendAlt('theme/viar/layouts/app.blade.php', (asset(env('THEME').'img/checkmark_circle.1.png')), '', '')>
                 </span>
             </div>
         </div>
@@ -673,7 +677,7 @@
 		<span class="close-popup"></span>
 		<div class="popup-content">
 			<span class="close-content" style="display: flex; flex-direction: row-reverse; cursor: pointer ">
-            <img src="{{ asset(env('THEME').'img/cross1.png') }}" alt="" style="width:15px; height: 15px">
+            <img src="{{ asset(env('THEME').'img/cross1.png') }}"  style="width:15px; height: 15px" @frontendAlt('theme/viar/layouts/app.blade.php', (asset(env('THEME').'img/cross1.png')), '', '')>
             </span>
 			<div class="p__mod__title red__text h3_old" id="err_msgs">
 				<span style="display:block;">{{ trans('gl.inv_filesize_or_ext') }}</span>

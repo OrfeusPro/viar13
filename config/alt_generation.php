@@ -1234,5 +1234,12 @@ TEXT,
             'url_resolver' => [PublicUrlResolver::class, 'reviewWhenActive'],
             'language' => 'orig_locale',
         ],
+        \App\Models\FrontendImage::class => [
+            'enabled' => true,
+            'image_fields' => ['image_path'],
+            'gallery_fields' => [],
+            'html_fields' => [],
+            'context' => [],
+        ],
     ],
 ];

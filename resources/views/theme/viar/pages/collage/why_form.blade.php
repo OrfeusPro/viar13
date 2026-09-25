@@ -27,7 +27,7 @@
                     <div class="page-input__item phone-input">
                         <div class="banner__input-item">
                             <input type="text" id="phone2" name="phone" class="banner__input phone" required>
-                            <img loading="lazy" src="{{ asset('img/icons/phone.svg') }}" alt="" class="img-svg img-svg__posa">
+                            <img loading="lazy" src="{{ asset('img/icons/phone.svg') }}"  class="img-svg img-svg__posa" @frontendAlt('theme/viar/pages/collage/why_form.blade.php', (asset('img/icons/phone.svg')), '', '')>
                         </div>
                     </div>
                 </div>
@@ -89,6 +89,6 @@
             <picture>
                 <source srcset="{{ asset('images/pinned-photo.webp') }}" type="image/webp">
                 <source srcset="{{ asset('images/pinned-photo.png') }}">
-                <img src="{{ asset('images/pinned-photo.png') }}" class="why-form__photo" alt="img" loading="lazy">
+                <img src="{{ asset('images/pinned-photo.png') }}" class="why-form__photo"  loading="lazy" @frontendAlt('theme/viar/pages/collage/why_form.blade.php', (asset('images/pinned-photo.png')), 'img', '')>
             </picture>
         </form>

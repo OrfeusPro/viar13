@@ -59,8 +59,8 @@
                             <p class="text__desc__gal">{!! $slide['text'] !!}</p>
                         </div>
                         <div class="img">
-                            <img alt="{{ $slide['title'] }}" title="{{ $slide['title'] }}"
-                                 src="{{ Voyager::image($slide['image']) }}">
+                            <img
+                                 src="{{ Voyager::image($slide['image']) }}" @frontendAlt('gallery_block_category.blade.php', (Voyager::image($slide['image'])), ($slide['title']), ($slide['title']))>
                         </div>
                     </div>
                 @endforeach
@@ -78,8 +78,8 @@
                         <div
                                 style="background: url('{{ asset('img/foto-slider-bg.png') }}') no-repeat 50% 50%; background-size: cover;">
                             <a href="{{ App\Models\GalleryCategory::getUrlById($page->url, $category->url) }}"></a>
-                            <img src="{{ asset('img/foto-img1.png') }}" alt="" class="foto-item1">
-                            <img src="{{ asset('img/foto-img2.png') }}" alt="" class="foto-item2">
+                            <img src="{{ asset('img/foto-img1.png') }}"  class="foto-item1" @frontendAlt('gallery_block_category.blade.php', (asset('img/foto-img1.png')), '', '')>
+                            <img src="{{ asset('img/foto-img2.png') }}"  class="foto-item2" @frontendAlt('gallery_block_category.blade.php', (asset('img/foto-img2.png')), '', '')>
                             <h3>{{ App\Models\GalleryCategory::getNameById($category->id)['name'] }}</h3>
                         </div>
                     </div>
@@ -114,8 +114,8 @@
                                 <div class="popular-item">
                                     <div>
                                         <div class="img">
-                                            <img alt="{{ $item->name }}" title="{{ $item->name }}"
-                                                 src="{{ '/storage/' . json_decode($item->images)[0] }}">
+                                            <img
+                                                 src="{{ '/storage/' . json_decode($item->images)[0] }}" @frontendAlt('gallery_block_category.blade.php', ('/storage/' . json_decode($item->images)[0]), ($item->name), ($item->name))>
                                         </div>
                                         <h5>{{ $item->name }}</h5>
                                         <i>{{ $all_globs['size_title'] }}
@@ -155,8 +155,8 @@
                                 <div class="popular-item">
                                     <div>
                                         <div class="img">
-                                            <img alt="{{ $art->name }}" title="{{ $art->name }}"
-                                                 src="{{ '/storage/' . json_decode($art->images)[0] }}">
+                                            <img
+                                                 src="{{ '/storage/' . json_decode($art->images)[0] }}" @frontendAlt('gallery_block_category.blade.php', ('/storage/' . json_decode($art->images)[0]), ($art->name), ($art->name))>
                                         </div>
                                         <h5>{{ $art->name }}</h5>
                                         <i>{{ $all_globs['size_title'] }}
@@ -191,8 +191,8 @@
                             <div class="popular-item">
                                 <div>
                                     <div class="img">
-                                        <img alt="{{ $art->name }}" title="{{ $art->name }}"
-                                             src="{{ '/storage/' . json_decode($art->images)[0] }}">
+                                        <img
+                                             src="{{ '/storage/' . json_decode($art->images)[0] }}" @frontendAlt('gallery_block_category.blade.php', ('/storage/' . json_decode($art->images)[0]), ($art->name), ($art->name))>
                                     </div>
                                     <h5>{{ $art->name }}</h5>
                                     <i>{{ $all_globs['size_title'] }}

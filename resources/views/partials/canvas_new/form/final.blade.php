@@ -24,8 +24,8 @@
                               <span
                               >{{ $set->getTranslatedAttribute('name', app()->getLocale()) }}<img
                                       src="{{ asset('images/icon/info.svg') }}"
-                                      alt=""
-                                  /></span>
+
+                                   @frontendAlt('partials/canvas_new/form/final.blade.php', (asset('images/icon/info.svg')), '', '')/></span>
                                     <input
                                         name="boxes[]"
                                         type="radio"

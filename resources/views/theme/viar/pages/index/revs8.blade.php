@@ -8,7 +8,7 @@
 
 <section class="certificate-frame">
     <div class="ellipse ellipse_black ellipse_top">
-        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/revs8.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
     </div>
     <div class="certificate">
         <div class="section-frame">
@@ -20,7 +20,7 @@
                         @endif
                         <source srcset="{{ $bgPng }}">
                         <img src="{{ $bgPng }}" class="certificate-photo"
-                            alt="img" loading="lazy">
+                             loading="lazy" @frontendAlt('theme/viar/pages/index/revs8.blade.php', ($bgPng), 'img', '')>
                     </picture>
                     <div class="certificate-gift">
                         <svg>
@@ -55,7 +55,7 @@
                                                     <source srcset="{{ $homeReviewImageSources['src'] }}" type="{{ $homeReviewImageSources['type'] }}">
                                                 @endif
                                                 <img src="{{ $homeReviewImageSources['src'] }}"
-                                                    class="reviews-photo" alt="" loading="lazy">
+                                                    class="reviews-photo"  loading="lazy" @frontendAlt('theme/viar/pages/index/revs8.blade.php', ($homeReviewImageSources['src']), '', '')>
                                             </picture>
                                             <div class="reviews-info">
                                                 <div class="reviews-title">
@@ -69,8 +69,8 @@
                                                         @if(!empty($homeReviewAvatarSources['src']) && !empty($homeReviewAvatarSources['type']))
                                                             <source srcset="{{ $homeReviewAvatarSources['src'] }}" type="{{ $homeReviewAvatarSources['type'] }}">
                                                         @endif
-                                                        <img src="{{ $homeReviewAvatarSources['src'] }}" alt="img"
-                                                            loading="lazy">
+                                                        <img src="{{ $homeReviewAvatarSources['src'] }}"
+                                                            loading="lazy" @frontendAlt('theme/viar/pages/index/revs8.blade.php', ($homeReviewAvatarSources['src']), 'img', '')>
                                                     </picture>
                                                     <div class="reviews-name">
                                                         <b>{{ $item->name }}</b>
@@ -122,6 +122,6 @@
         </div>
     </div>
     <div class="ellipse ellipse_black">
-        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/revs8.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
     </div>
 </section>

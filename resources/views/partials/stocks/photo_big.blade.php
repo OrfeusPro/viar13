@@ -1,7 +1,7 @@
 <div class="other-slider">
     <div>
         <div class="other-items clearfix">
-            <img src="../img/other-items-img2.png" alt="">
+            <img src="../img/other-items-img2.png"  @frontendAlt('partials/stocks/photo_big.blade.php', '../img/other-items-img2.png', '', '')>
             <div class="text">
                 <strong>Фотокартины </strong>
                 <h3>- Тестовый пример картины</h3>
@@ -21,7 +21,7 @@
     </div>
     <div>
         <div class="other-items clearfix">
-            <img src="../img/other-items-img2.png" alt="">
+            <img src="../img/other-items-img2.png"  @frontendAlt('partials/stocks/photo_big.blade.php', '../img/other-items-img2.png', '', '')>
             <div class="text">
                 <strong>Фотокартины </strong>
                 <h3>- Тестовый пример картины</h3>
@@ -41,7 +41,7 @@
     </div>
     <div>
         <div class="other-items clearfix">
-            <img src="../img/other-items-img2.png" alt="">
+            <img src="../img/other-items-img2.png"  @frontendAlt('partials/stocks/photo_big.blade.php', '../img/other-items-img2.png', '', '')>
             <div class="text">
                 <strong>Фотокартины </strong>
                 <h3>- Тестовый пример картины</h3>

@@ -11,7 +11,7 @@
                             <div class="check"></div>
                             <label>
                                                     <span>{{ $item->getTranslatedAttribute('name', app()->getLocale()) }}
-                                                      <img src="{{ asset('images/icon/info.svg') }}" alt=""></span>
+                                                      <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/canvas_new/form/step4_show.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                                 <input name="decoration" type="radio"
                                        data-name="{{ $item->getTranslatedAttribute('name', app()->getLocale()) }}"
                                        data-id="{{ $item->id }}"

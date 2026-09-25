@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div class="ellipse">
-                <img alt="img" src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374" />
+                <img  src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374"  @frontendAlt('portrait_new.blade.php', (asset(env('THEME').'images/icon/ellipse-whete.svg')), 'img', '')/>
             </div>
         @endif
 
@@ -102,10 +102,10 @@
         </section>
         @include('partials.portrait_new.examples')
         <div class="ellipse ellipse_black custom-ellipse">
-            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="" loading="lazy" />
+            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy"  @frontendAlt('portrait_new.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), '', '')/>
         </div>
         <div class="mobile-ell">
-            <img src="{{ asset(env('THEME').'images/sizes/union.png') }}" alt="" />
+            <img src="{{ asset(env('THEME').'images/sizes/union.png') }}"   @frontendAlt('portrait_new.blade.php', (asset(env('THEME').'images/sizes/union.png')), '', '')/>
             <div class="mobile-size-title">{{ trans('portrait.sizes__title') }}</div>
         </div>
         @include('partials.portrait_new.sizes')
@@ -113,7 +113,7 @@
             <a href="#examples" class="anchor ellipse-arrow ellipse-arrow_white" aria-label="anchor link">
                 <i class="fa-arrow-down"></i>
             </a>
-            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy" />
+            <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy"  @frontendAlt('portrait_new.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')/>
         </div>
         @include('partials.portrait_new.order_steps')
         <section class="portraits-examples">
@@ -185,7 +185,7 @@
                                     <source src="{{ Voyager::image( $vid ) }}#t=0.5" type="video/mp4" />
                                 </video>
                                 <div class="video-btn">
-                                    <img src="{{ asset(env('THEME').'images/play.svg') }}" alt="" />
+                                    <img src="{{ asset(env('THEME').'images/play.svg') }}"   @frontendAlt('portrait_new.blade.php', (asset(env('THEME').'images/play.svg')), '', '')/>
                                 </div>
                             </div>
                         </div>
@@ -255,7 +255,7 @@
                             <div class="page-input__item phone-input">
                                 <div class="banner__input-item">
                                     <input type="text" id="phone2" name="phone" class="banner__input phone" required>
-                                    <img src="{{ asset(env('THEME').'img/icons/phone.svg') }}" alt="" class="img-svg img-svg__posa">
+                                    <img src="{{ asset(env('THEME').'img/icons/phone.svg') }}"  class="img-svg img-svg__posa" @frontendAlt('portrait_new.blade.php', (asset(env('THEME').'img/icons/phone.svg')), '', '')>
                                 </div>
                             </div>
                         </div>
@@ -344,7 +344,7 @@
             <span class="close-content"><i class="icon-icon4"></i></span>
             <div class="p__mod__title green__text">{{ trans('gl.suc') }}
                 <span>
-                    <img src="{{ asset(env('THEME').'img/checkmark_circle.1.png') }}" alt="">
+                    <img src="{{ asset(env('THEME').'img/checkmark_circle.1.png') }}"  @frontendAlt('portrait_new.blade.php', (asset(env('THEME').'img/checkmark_circle.1.png')), '', '')>
                 </span>
             </div>
         </div>

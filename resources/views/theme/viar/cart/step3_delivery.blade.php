@@ -488,7 +488,7 @@
                                     </div>
                                     <div class="cart-delivery-comments__title   ">
                                         <span>@lang('cart_new.step_3_your_comment_on_the_order')</span>
-                                        <img src="{{ asset(env('THEME') . 'img/cart/comment.svg') }}" alt="">
+                                        <img src="{{ asset(env('THEME') . 'img/cart/comment.svg') }}"  @frontendAlt('theme/viar/cart/step3_delivery.blade.php', (asset(env('THEME') . 'img/cart/comment.svg')), '', '')>
                                     </div>
                                 </div>
                                 <div class="cart-delivery-comments__wrapper">

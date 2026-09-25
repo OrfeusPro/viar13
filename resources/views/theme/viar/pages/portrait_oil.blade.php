@@ -29,7 +29,7 @@
                 </div>
             </div>
             <div class="ellipse">
-                <img alt="img" src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374" />
+                <img  src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374"  @frontendAlt('theme/viar/pages/portrait_oil.blade.php', (asset(env('THEME').'images/icon/ellipse-whete.svg')), 'img', '')/>
             </div>
         @endif
 
@@ -106,7 +106,7 @@
                                             </div>
 
                                             @if($listItem->src)
-                                                <img width="433" height="583" src="{{ asset('/storage') }}/{{ $listItem->src }}" alt="{{ $listItem->title }}" loading="lazy">
+                                                <img width="433" height="583" src="{{ asset('/storage') }}/{{ $listItem->src }}"  loading="lazy" @frontendAlt('theme/viar/pages/portrait_oil.blade.php', (asset('/storage')) . '/' . ($listItem->src), ($listItem->title), '')>
                                             @endif
                                         </div>
                                         <p>{{ $listItem->title }}</p>
@@ -123,7 +123,7 @@
                                                     <div class="cp-item-inner-b">
                                                         <a href="#" class="mm-btn">@lang("gallery.see")</a>
                                                     </div>
-                                                    <img width="433" height="583" src="{{ asset('/storage') }}/{{ $listItem->src }}" alt="{{ $listItem->title }}" loading="lazy">
+                                                    <img width="433" height="583" src="{{ asset('/storage') }}/{{ $listItem->src }}"  loading="lazy" @frontendAlt('theme/viar/pages/portrait_oil.blade.php', (asset('/storage')) . '/' . ($listItem->src), ($listItem->title), '')>
                                                 </div>
                                                 <p>{{ $listItem->title }}</p>
                                             </div>
@@ -175,7 +175,7 @@
         <div class="container">
             <div class="portrait__video-content">
                 <div class="portrait__video-content--left">
-                    <img src="{{ ver_asset('img/video-image.svg') }}" alt="">
+                    <img src="{{ ver_asset('img/video-image.svg') }}"  @frontendAlt('theme/viar/pages/portrait_oil.blade.php', (ver_asset('img/video-image.svg')), '', '')>
                     <svg width="112" height="112" viewBox="0 0 112 112" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <g filter="url(#filter0_d_2168_181)">
                             <circle cx="56" cy="50" r="36" fill="#FA7846"/>

@@ -9,46 +9,46 @@
                 <div class="service-items clearfix">
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img.png') }}"
-                            data-src="{{ asset('img/service-item-img.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img.png')), '', '')>
                         <p>{!! $canvas_work_serv['why1_title'] !!}</p>
                     </div>
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img2.png') }}"
-                            data-src="{{ asset('img/service-item-img2.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img2.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img2.png')), '', '')>
                         <p>{!! $canvas_work_serv['why2_title'] !!}</p>
                     </div>
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img3.png') }}"
-                            data-src="{{ asset('img/service-item-img3.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img3.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img3.png')), '', '')>
                         <p>{!! $canvas_work_serv['why3_title'] !!}</p>
                     </div>
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img4.png') }}"
-                            data-src="{{ asset('img/service-item-img4.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img4.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img4.png')), '', '')>
                         <p>{!! $canvas_work_serv['why4_title'] !!}</p>
                     </div>
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img5.png') }}"
-                            data-src="{{ asset('img/service-item-img5.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img5.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img5.png')), '', '')>
                         <p>{!! $canvas_work_serv['why5_title'] !!}</p>
                     </div>
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img6.png') }}"
-                            data-src="{{ asset('img/service-item-img6.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img6.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img6.png')), '', '')>
                         <p>
                             <p>{!! $canvas_work_serv['why6_title'] !!}</p>
                         </p>
                     </div>
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img7.png') }}"
-                            data-src="{{ asset('img/service-item-img7.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img7.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img7.png')), '', '')>
                         <p>
                             <p>{!! $canvas_work_serv['why7_title'] !!}</p>
                         </p>
                     </div>
                     <div class="service-item">
                         <img class="" src="{{ asset('img/service-item-img8.png') }}"
-                            data-src="{{ asset('img/service-item-img8.png') }}" alt="">
+                            data-src="{{ asset('img/service-item-img8.png') }}"  @frontendAlt('partials/canvas/serv_quant_5_block.blade.php', (asset('img/service-item-img8.png')), '', '')>
                         <p>
                             <p>{!! $canvas_work_serv['why8_title'] !!}</p>
                         </p>

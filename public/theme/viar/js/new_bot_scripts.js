@@ -1,3 +1,4 @@
+
     //close modal
     $(document).on('click', '.close-content', function (e) {
         $(this).closest('.popup').removeClass('active');
@@ -160,6 +161,7 @@
         }
 
       var CanvasMainImg = null;
+      var canvasPhotoPending = false;
       var base_64_img = null;
       var saved_tab2_img;
       var preview,file,reader;
@@ -184,6 +186,7 @@
           btn.find('input').val('');
 
           if (!$('#imgs button.is-load').length) {
+              CanvasMainImg = null;
               $('.additional-image').addClass('additional-image_pending').removeClass('additional-image_loaded');
           }
       });
@@ -248,8 +251,45 @@
       }
 
     // SUBMIT
+    function hideCanvasPhotoRequiredError() {
+        var $accordion = $('.filter-accordion').first();
+        var $stepTitle = $accordion.children('.accordion-title').first();
+        var $stepContent = $stepTitle.next('.accordion-content');
+
+        $stepContent.find('.canvas-photo-required-error').removeClass('is-visible');
+        $stepContent.find('.pd-canvas').removeAttr('aria-invalid');
+    }
+
+    function showCanvasPhotoRequiredError() {
+        var $accordion = $('.filter-accordion').first();
+        var $stepTitle = $accordion.children('.accordion-title').first();
+        var $stepContent = $stepTitle.next('.accordion-content');
+        var $message = $stepContent.find('.canvas-photo-required-error').first();
+
+        $('.popup-inv-size').removeClass('active');
+        $stepTitle.trigger('open');
+        $message.addClass('is-visible');
+        $stepContent.find('.pd-canvas').attr('aria-invalid', 'true');
+
+        window.setTimeout(function () {
+            if ($message.length) {
+                $message.get(0).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if ($message.length) {
+                $message.get(0).focus({ preventScroll: true });
+            }
+        }, 420);
+    }
+
     $(document).on('click', '#t3_submit_btn', function (e) {
         e.preventDefault();
+
+        if (canvasPhotoPending) return;
+        if (!CanvasMainImg || !imgs.some(function (img) { return img.isLoad; })) {
+            showCanvasPhotoRequiredError();
+            return;
+        }
+        hideCanvasPhotoRequiredError();
 
         var $btn = $(this);
         if ($btn.data('processed') === true) return;
@@ -1005,10 +1045,23 @@
                   inputFile.setAttribute('type', 'file');
                   inputFile.setAttribute('accept', 'image/*,image/heif,image/heic');
                   item.element.appendChild(inputFile);
+                  var photoStatus = document.createElement('span');
+                  photoStatus.setAttribute('role', 'status');
+                  photoStatus.setAttribute('aria-live', 'polite');
+                  item.element.parentElement.appendChild(photoStatus);
 
                   inputFile.onchange = async function ()
                   {
-                      CanvasMainImg = inputFile.files[0];
+                      var selectedFiles = Array.from(inputFile.files || []);
+                      if (!selectedFiles.length) return;
+                      if (canvasPhotoPending) return;
+                      canvasPhotoPending = true;
+                      CanvasMainImg = null;
+                      inputFile.disabled = true;
+                      item.element.setAttribute('aria-busy', 'true');
+                      photoStatus.textContent = 'Processing photo…';
+                      var failed = false;
+                      try {
 
                       if (inputFile.files && inputFile.files.length) {
                           $('.additional-image').removeClass('additional-image_pending').addClass('additional-image_loaded');
@@ -1016,25 +1069,24 @@
 
                       let pos = imgs.indexOf(item);
 
-                      for (let file of inputFile.files)
+                      for (let file of selectedFiles)
                       {
                           if (pos < imgs.length)
                           {
                               let b = imgs[pos];
 
-                              if (file.type === 'image/heic' || file.type === 'image/heif' || file.type === '') {
                                   try {
-                                      const convertedBlob = await heic2any({ blob: file, toType: "image/png" });
-                                      file = new File([convertedBlob], file.name.replace(/\.(heic|heif)$/i, '.png'), {
-                                          type: "image/png",
-                                      });
+                                      file = await window.viarConvertPhoto(file);
                                   } catch (err) {
-                                      console.error("HEIC conversion error:", err);
+                                      console.warn('HEIC conversion failed:', err && err.code, err && err.message);
+                                      failed = true;
                                       continue;
                                   }
-                              }
 
+                              await new Promise(function (resolve, reject) {
                               var reader = new FileReader();
+                              reader.onerror = function () { reject(new Error('Photo read failed')); };
+                              reader.onabort = function () { reject(new Error('Photo read aborted')); };
                               reader.onload = function (e) {
                                   loadImg(e.target.result, function (img) {
                                       if (img) {
@@ -1044,18 +1096,38 @@
                                           b.img = img;
                                           b.isLoad = true;
 
-                                          editor.grid[0].setImg(img);
+                                          try {
+                                              editor.grid[0].setImg(img);
+                                              CanvasMainImg = selectedFiles[0];
+                                              hideCanvasPhotoRequiredError();
+                                              resolve();
+                                          } catch (error) {
+                                              reject(error);
+                                          }
                                       } else {
                                           b.isLoad = false;
+                                          reject(new Error('Photo decode failed'));
                                       }
                                   });
                               }
 
                               reader.readAsDataURL(file);
+                              });
                               pos++;
                             }
 
                         }
+                      } catch (err) {
+                          failed = true;
+                          CanvasMainImg = null;
+                      } finally {
+                          canvasPhotoPending = false;
+                          inputFile.disabled = false;
+                          inputFile.value = '';
+                          item.element.removeAttribute('aria-busy');
+                          photoStatus.textContent = failed
+                              ? 'Unable to convert a photo. Please select it again or use JPEG/PNG.' : '';
+                      }
                     }
 
                     item.element.onclick = function()

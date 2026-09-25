@@ -55,7 +55,7 @@
                                             </div>
                                             @if($methodData['img'])
                                             <div class="cart-payments-page__item--img">
-                                                <img src="{{ asset(env('THEME') . $methodData['img']) }}" alt="">
+                                                <img src="{{ asset(env('THEME') . $methodData['img']) }}"  @frontendAlt('theme/viar/cart/step4_payment.blade.php', (asset(env('THEME') . $methodData['img'])), '', '')>
                                             </div>
                                             @endif
                                         </label>
@@ -72,7 +72,7 @@
                                             </div>
                                         </div>
 										<div class="cart-payments-page__item--img">
-                                            <img src="{{ asset(env('THEME') . 'img/icons/PayPal.svg') }}" alt="">
+                                            <img src="{{ asset(env('THEME') . 'img/icons/PayPal.svg') }}"  @frontendAlt('theme/viar/cart/step4_payment.blade.php', (asset(env('THEME') . 'img/icons/PayPal.svg')), '', '')>
                                         </div>
                                     </label>
                                     {{-- @endif --}}
@@ -100,7 +100,7 @@
                                             </div>
                                         </div>
                                         <div class="cart-payments-page__item--img">
-                                            <img src="{{ asset(env('THEME') . 'img/cart/prepaid2.png') }}" alt="">
+                                            <img src="{{ asset(env('THEME') . 'img/cart/prepaid2.png') }}"  @frontendAlt('theme/viar/cart/step4_payment.blade.php', (asset(env('THEME') . 'img/cart/prepaid2.png')), '', '')>
                                         </div>
                                     </label>
 

@@ -96,7 +96,7 @@
 										@foreach ($product['orig_images'] as $key_img=>$img)
 											@if($key_img>0)
 											<div class="cart-page-item__photo" id="cart_img_{{ $basketIndex }}_{{ $key_img }}">
-												<img src="{{ asset($img) }}">
+												<img src="{{ asset($img) }}" @frontendAlt('theme/viar/cart/step1.blade.php', (asset($img)), '', '')>
 
 												<div class="cart-page-item__photo--btns">
 													<a href="#" class="cart-page-item__photo--btn cart-page-item-edit" data-type="upload" data-cartid="{{ $basketIndex }}" data-cartimgid="{{ $key_img }}" data-curid="cart_img_{{ $basketIndex }}_{{ $key_img }}" data-img="{{ $img }}">

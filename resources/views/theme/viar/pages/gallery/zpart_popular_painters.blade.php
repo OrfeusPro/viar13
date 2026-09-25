@@ -19,10 +19,10 @@
                                         <source srcset="{{ $webpSrc }}" type="image/webp">
                                     @endif
                                 	<source srcset="{{ Voyager::image($painter->image) }}" type="image/jpeg">
-                                	<img width="433" height="583" src="{{ Voyager::image($painter->image) }}" @altAttrs($painter, 'image', data_get($painter, 'image')) loading="lazy">
+                                    <img width="433" height="583" src="{{ Voyager::image($painter->image) }}" @altAttrs($painter, 'image', data_get($painter, 'image')) loading="lazy">
 								@else
 									<source srcset="{{ asset(env('THEME').'images') }}/gallery/7.jpg" type="image/jpeg">
-                                	<img width="433" height="583" src="{{ asset(env('THEME').'images') }}/gallery/7.jpg" alt="{{ $painter->name }}" title="{{ $painter->name }}" loading="lazy">
+                                    <img width="433" height="583" src="{{ asset(env('THEME').'images') }}/gallery/7.jpg"   loading="lazy" @frontendAlt('theme/viar/pages/gallery/zpart_popular_painters.blade.php', (asset(env('THEME').'images')) . '/gallery/7.jpg', ($painter->name), ($painter->name))>
 								@endif
                             </picture>
                         </div>

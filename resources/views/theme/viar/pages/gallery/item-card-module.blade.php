@@ -220,7 +220,7 @@
 								<picture>
 									{{-- <source srcset="{{ asset(env('THEME').'images') }}/mcard/3.webp" type="image/webp"> --}}
 									<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/3.jpg" type="image/jpeg">
-									<img width="148" height="82" src="{{ asset(env('THEME') . 'images') }}/mcard/3.jpg" alt="ViarCanvas">
+									<img width="148" height="82" src="{{ asset(env('THEME') . 'images') }}/mcard/3.jpg"  @frontendAlt('theme/viar/pages/gallery/item-card-module.blade.php', (asset(env('THEME') . 'images')) . '/mcard/3.jpg', 'ViarCanvas', '')>
 								</picture>
 								<p>
 									<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -242,7 +242,7 @@
 								<picture>
 									{{-- <source srcset="{{ asset(env('THEME').'images') }}/mcard/4.webp" type="image/webp"> --}}
 									<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/4.jpg" type="image/jpeg">
-									<img width="148" height="82" src="{{ asset(env('THEME') . 'images') }}/mcard/4.jpg" alt="ViarCanvas">
+									<img width="148" height="82" src="{{ asset(env('THEME') . 'images') }}/mcard/4.jpg"  @frontendAlt('theme/viar/pages/gallery/item-card-module.blade.php', (asset(env('THEME') . 'images')) . '/mcard/4.jpg', 'ViarCanvas', '')>
 								</picture>
 								<p>
 									<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">

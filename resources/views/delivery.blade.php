@@ -190,7 +190,7 @@
                                             <img width="200" height="200" src="{{ $deliveryImages['i1']['desk']['src'] }}" alt="{{ $deliveryImages['i1']['desk']['alt'] ?? '' }}" title="{{ $deliveryImages['i1']['desk']['title'] ?? '' }}">
                                         </picture>
                                     </div>
-                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                     @lang('pages.delivery_second_block_box1')
                                 </div>
                                 <div class="list-step">
@@ -211,7 +211,7 @@
                                             <img width="200" height="200" src="{{ $deliveryImages['i2']['desk']['src'] }}" alt="{{ $deliveryImages['i2']['desk']['alt'] ?? '' }}" title="{{ $deliveryImages['i2']['desk']['title'] ?? '' }}">
                                         </picture>
                                     </div>
-                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                     @lang('pages.delivery_second_block_box2')
 
                                 </div>
@@ -233,7 +233,7 @@
                                             <img width="200" height="200" src="{{ $deliveryImages['i3']['desk']['src'] }}" alt="{{ $deliveryImages['i3']['desk']['alt'] ?? '' }}" title="{{ $deliveryImages['i3']['desk']['title'] ?? '' }}">
                                         </picture>
                                     </div>
-                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                     @lang('pages.delivery_second_block_box3')
                                 </div>
                             </div>
@@ -330,7 +330,7 @@
                                                 @if(!empty($deliveryContactIcon1['src']) && !empty($deliveryContactIcon1['type']))
                                                     <source srcset="{{ $deliveryContactIcon1['src'] }}" type="{{ $deliveryContactIcon1['type'] }}">
                                                 @endif
-                                                <img width="120" height="120" src="{{ $deliveryContactIcon1['src'] }}" alt="">
+                                                <img width="120" height="120" src="{{ $deliveryContactIcon1['src'] }}"  @frontendAlt('delivery.blade.php', ($deliveryContactIcon1['src']), '', '')>
                                             </picture>
                                         </div>
                                         <div class="img">
@@ -344,7 +344,7 @@
                                                 @if(!empty($deliveryContactIcon2['src']) && !empty($deliveryContactIcon2['type']))
                                                     <source srcset="{{ $deliveryContactIcon2['src'] }}" type="{{ $deliveryContactIcon2['type'] }}">
                                                 @endif
-                                                <img width="120" height="120" src="{{ $deliveryContactIcon2['src'] }}" alt="">
+                                                <img width="120" height="120" src="{{ $deliveryContactIcon2['src'] }}"  @frontendAlt('delivery.blade.php', ($deliveryContactIcon2['src']), '', '')>
                                             </picture>
                                         </div>
                                         <div class="img">
@@ -358,7 +358,7 @@
                                                 @if(!empty($deliveryContactIcon3['src']) && !empty($deliveryContactIcon3['type']))
                                                     <source srcset="{{ $deliveryContactIcon3['src'] }}" type="{{ $deliveryContactIcon3['type'] }}">
                                                 @endif
-                                                <img width="120" height="120" src="{{ $deliveryContactIcon3['src'] }}" alt="">
+                                                <img width="120" height="120" src="{{ $deliveryContactIcon3['src'] }}"  @frontendAlt('delivery.blade.php', ($deliveryContactIcon3['src']), '', '')>
                                             </picture>
                                         </div>
                                     </div>
@@ -371,7 +371,7 @@
                                         <picture>
                                             <source srcset="https://viarcanvas.com/theme/viar/images/contacts/whatsapp.webp" type="image/webp">
                                             <source srcset="https://viarcanvas.com/theme/viar/images/contacts/whatsapp.png" type="image/png">
-                                            <img width="35" height="35" src="https://viarcanvas.com/theme/viar/images/contacts/whatsapp.png" alt="">
+                                            <img width="35" height="35" src="https://viarcanvas.com/theme/viar/images/contacts/whatsapp.png"  @frontendAlt('delivery.blade.php', 'https://viarcanvas.com/theme/viar/images/contacts/whatsapp.png', '', '')>
                                         </picture>
                                     </div>
                                     <p>@lang('pages.delivery_del_block_contact')</p>
@@ -419,7 +419,7 @@
                                             <img width="200" height="200" src="{{ $deliveryImages['i4']['desk']['src'] }}" alt="{{ $deliveryImages['i4']['desk']['alt'] ?? '' }}" title="{{ $deliveryImages['i4']['desk']['title'] ?? '' }}">
                                         </picture>
                                     </div>
-                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                     @lang('pages.delivery_third_block_box1')
                                 </div>
                                 <div class="list-step">
@@ -440,7 +440,7 @@
                                             <img width="200" height="200" src="{{ $deliveryImages['i5']['desk']['src'] }}" alt="{{ $deliveryImages['i5']['desk']['alt'] ?? '' }}" title="{{ $deliveryImages['i5']['desk']['title'] ?? '' }}">
                                         </picture>
                                     </div>
-                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                     @lang('pages.delivery_third_block_box2')
                                 </div>
                                 <div class="list-step">
@@ -461,7 +461,7 @@
                                             <img width="200" height="200" src="{{ $deliveryImages['i6']['desk']['src'] }}" alt="{{ $deliveryImages['i6']['desk']['alt'] ?? '' }}" title="{{ $deliveryImages['i6']['desk']['title'] ?? '' }}">
                                         </picture>
                                     </div>
-                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg" alt=""> </div>
+                                    <div class="icon"><img width="24" height="24" src="/images/icon/check-circle.svg"  @frontendAlt('delivery.blade.php', '/images/icon/check-circle.svg', '', '')> </div>
                                     @lang('pages.delivery_third_block_box3')
                                 </div>
                             </div>

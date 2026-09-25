@@ -42,7 +42,7 @@
 						</div>
 					</div>
 					<div class="cabinet-content__icon">
-						<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/resume.svg" width="82" height="82" alt="Viar Cabinet Resume">
+						<img src="{{ asset(config('theme.current') . '/images')}}/cabinet/resume.svg" width="82" height="82"  @frontendAlt('theme/viar/account/account.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/resume.svg', 'Viar Cabinet Resume', '')>
 					</div>
 
 

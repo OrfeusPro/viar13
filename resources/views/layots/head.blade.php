@@ -243,7 +243,7 @@ $top_menu = preg_replace( '^/en/^', $replace, menu('header','layots.menu.default
 
 @if(Route::currentRouteName() == 'delivery_page' && filter_var(setting('site.top_sale', false), FILTER_VALIDATE_BOOLEAN))
     <div class="top-sale">
-        <img width="77" height="66" src="{{ asset(env('THEME').'images/sale.webp') }}" alt="">
+        <img width="77" height="66" src="{{ asset(env('THEME').'images/sale.webp') }}"  @frontendAlt('layots/head.blade.php', (asset(env('THEME').'images/sale.webp')), '', '')>
         <p>@lang("header_footer_new.header.top_sale")</p>
     </div>
     @endif
@@ -280,7 +280,7 @@ $top_menu = preg_replace( '^/en/^', $replace, menu('header','layots.menu.default
         <div id="template-preview" style="display:none;">
             <div class="dz-preview dz-file-preview well" id="dz-preview-template">
                 <div class="dz-image">
-                    <img loading="lazy" data-dz-thumbnail="" src="{{ asset('img/loading.gif') }}" alt="loading">
+                    <img loading="lazy" data-dz-thumbnail="" src="{{ asset('img/loading.gif') }}"  @frontendAlt('layots/head.blade.php', (asset('img/loading.gif')), 'loading', '')>
                 </div>
                 <div class="dz-details">
                     <div class="dz-filename"><span data-dz-name></span></div>

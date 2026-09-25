@@ -4,7 +4,7 @@
                 <div class="vz-art footer-info" style="position: relative">
                     <div class="vz-art footer-logo">
                         <a href="{{ route('home') }}" class="vz-art footer-logo__item" aria-label="footer logo">
-                            <img src="{{ asset('images/logo.svg') }}" alt="viarcanvas" loading="lazy">
+                            <img src="{{ asset('images/logo.svg') }}"  loading="lazy" @frontendAlt('partials/index_new/footer.blade.php', (asset('images/logo.svg')), 'viarcanvas', '')>
                         </a>
                         <div class="vz-art footer-social footer-social_mob">
                             <ul>
@@ -24,31 +24,31 @@
                     <div class="vz-art footer-contact">
 
                         <a href="tel:{{ trans('header_footer_new.footer_phone_clean') }}" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/phone-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/phone-footer.svg') }}"  class="img-svg" @frontendAlt('partials/index_new/footer.blade.php', (asset('img/icons/phone-footer.svg')), '', '')>
                             <span>
                                 <b>{{ trans('header_footer_new.footer_phone') }}</b>
                             </span>
                         </a>
 
                         <a href="tel:{{ trans('header_footer_new.footer_phone_clean2') }}" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/mail-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/mail-footer.svg') }}"  class="img-svg" @frontendAlt('partials/index_new/footer.blade.php', (asset('img/icons/mail-footer.svg')), '', '')>
                             <span>
                                 <b>{{ trans('header_footer_new.footer_phone2') }}</b>
                             </span>
                         </a>
 
                         <a href="mailto:orders@viarcanvas.com" class="vz-art footer-contact__item">
-                            <img src="{{ asset('img/icons/mail-footer.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/mail-footer.svg') }}"  class="img-svg" @frontendAlt('partials/index_new/footer.blade.php', (asset('img/icons/mail-footer.svg')), '', '')>
                             <span>orders@viarcanvas.com</span>
                         </a>
 
                         <a href="{{ trans('header_footer_new.footer_addr1_link') }}" target="_blank" class="vz-art footer-contact__item" rel="noopener noreferrer">
-                            <img src="{{ asset('img/icons/location.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/location.svg') }}"  class="img-svg" @frontendAlt('partials/index_new/footer.blade.php', (asset('img/icons/location.svg')), '', '')>
                             <span>{{ trans('header_footer_new.footer_addr1') }}</span>
                         </a>
 
                         <a href="{{ trans('header_footer_new.footer_addr2_link') }}" target="_blank" class="vz-art footer-contact__item" rel="noopener noreferrer">
-                            <img src="{{ asset('img/icons/location.svg') }}" alt="" class="img-svg">
+                            <img src="{{ asset('img/icons/location.svg') }}"  class="img-svg" @frontendAlt('partials/index_new/footer.blade.php', (asset('img/icons/location.svg')), '', '')>
                             <span>{{ trans('header_footer_new.footer_addr2') }}</span>
                         </a>
                     </div>
@@ -126,8 +126,8 @@
                 <div class="vz-art footer-copy__content">
                     <p class="vz-art copy-title">© {{ now()->year }} VIARCANVAS ®</p>
                     <div class="vz-art footer-pay">
-                        <img src="{{ asset('images/icon/visa.svg') }}" alt="visa" loading="lazy">
-                        <img src="{{ asset('images/icon/master.svg') }}" alt="mastercard" loading="lazy">
+                        <img src="{{ asset('images/icon/visa.svg') }}"  loading="lazy" @frontendAlt('partials/index_new/footer.blade.php', (asset('images/icon/visa.svg')), 'visa', '')>
+                        <img src="{{ asset('images/icon/master.svg') }}"  loading="lazy" @frontendAlt('partials/index_new/footer.blade.php', (asset('images/icon/master.svg')), 'mastercard', '')>
                     </div>
                 </div>
             </div>

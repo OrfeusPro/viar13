@@ -19,7 +19,7 @@
                 <div class="collage-slider--item">
                   <div class="collage-slider--item__body">
                     <div class="collage-advantage_s--img">
-                      <img loading="lazy" width="80" height="80" src="{{ asset($advantage_screen->image) }}" alt="Viar Image">
+                      <img loading="lazy" width="80" height="80" src="{{ asset($advantage_screen->image) }}"  @frontendAlt('partials/collage_new/advantage_screen.blade.php', (asset($advantage_screen->image)), 'Viar Image', '')>
                     </div>
                     <div class="collage-advantage_s--content">
                       <div class="collage-advantage_s--title">

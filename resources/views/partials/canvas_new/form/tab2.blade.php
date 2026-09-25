@@ -34,7 +34,7 @@
                                     type="image/jpeg">
                                 <img
                                     src="{{ asset('images/canvas/interio1.jpg') }}"
-                                    alt=""/>
+                                     @frontendAlt('partials/canvas_new/form/tab2.blade.php', (asset('images/canvas/interio1.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -66,7 +66,7 @@
                                     type="image/jpeg">
                                 <img
                                     src="{{ asset('images/canvas/interio2.jpg') }}"
-                                    alt=""/>
+                                     @frontendAlt('partials/canvas_new/form/tab2.blade.php', (asset('images/canvas/interio2.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -98,7 +98,7 @@
                                     type="image/jpeg">
                                 <img
                                     src="{{ asset('images/canvas/interio3.jpg') }}"
-                                    alt=""/>
+                                     @frontendAlt('partials/canvas_new/form/tab2.blade.php', (asset('images/canvas/interio3.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                                     type="image/jpeg">
                                 <img
                                     src="{{ asset('images/canvas/interio4.jpg') }}"
-                                    alt=""/>
+                                     @frontendAlt('partials/canvas_new/form/tab2.blade.php', (asset('images/canvas/interio4.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -162,7 +162,7 @@
                                     type="image/jpeg">
                                 <img
                                     src="{{ asset('images/canvas/interio5.jpg') }}"
-                                    alt=""/>
+                                     @frontendAlt('partials/canvas_new/form/tab2.blade.php', (asset('images/canvas/interio5.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -320,8 +320,8 @@
                                     type="image/webp">
                                 <source
                                     srcset="{{ asset('images/canvas/rama1.jpg') }}">
-                                <img alt="Белый" title="Белый"
-                                     src="{{ asset('images/canvas/rama1.jpg') }}"/>
+                                <img
+                                     src="{{ asset('images/canvas/rama1.jpg') }}" @frontendAlt('partials/canvas_new/form/tab2.blade.php', (asset('images/canvas/rama1.jpg')), 'Белый', 'Белый')/>
                             </picture>
                         </div>
                         <span class="price"> + 25 &euro; </span>
@@ -352,8 +352,8 @@
                                     type="image/webp">
                                 <source
                                     srcset="{{ asset('images/canvas/rama2.jpg') }}">
-                                <img alt="Белый" title="Белый"
-                                     src="{{ asset('images/canvas/rama2.jpg') }}"/>
+                                <img
+                                     src="{{ asset('images/canvas/rama2.jpg') }}" @frontendAlt('partials/canvas_new/form/tab2.blade.php', (asset('images/canvas/rama2.jpg')), 'Белый', 'Белый')/>
                             </picture>
                         </div>
                         <span class="price"> + 25 &euro; </span>

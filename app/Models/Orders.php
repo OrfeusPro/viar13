@@ -191,6 +191,19 @@ class Orders extends Model
         }
     }
 
+    /** The order recipient can have a different phone from the current account. */
+    public static function getShippingRecipientPhone(array $delivery, $user = null): string
+    {
+        foreach (['phone', 'payer_phone'] as $field) {
+            $phone = trim((string) ($delivery[$field] ?? ''));
+            if ($phone !== '') {
+                return $phone;
+            }
+        }
+
+        return is_object($user) ? trim((string) ($user->phone ?? '')) : '';
+    }
+
     // This function is used to add bonus to a user
     public static function addBonusToUser($id, $bonus)
     {

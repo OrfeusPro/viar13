@@ -78,7 +78,7 @@
                             <source media="(max-width: 700px)" srcset="{{ asset('images/canvas/canvasMin.webp') }}" type="images/webp"> <source media="(max-width: 700px)" srcset="images/canvas/canvasMin.png">
                             <source srcset="{{ asset('images/canvas/canvas.webp') }}" type="images/webp">
                             <source srcset="{{ asset('images/canvas/canvas.png') }}">
-                            <img loading="lazy" width="411" height="293" src="{{ asset('images/canvas/canvas.png') }}" alt="">
+                            <img loading="lazy" width="411" height="293" src="{{ asset('images/canvas/canvas.png') }}"  @frontendAlt('theme/viar/modals/target-box.blade.php', (asset('images/canvas/canvas.png')), '', '')>
                           </picture>
                     </div>
                     <div class="p-fit-col">
@@ -166,7 +166,7 @@
                     </div>
                 </div>
                 <a href="https://api.whatsapp.com/send/?phone={{ urlencode(__('portrait_buy_form.setting_whatsapp_phone_href')) }}&text&type=phone_number&app_absent=0" class="n-p-whatsapp">
-                    <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg" alt="">
+                    <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg"  @frontendAlt('theme/viar/modals/target-box.blade.php', 'https://viarcanvas.com/images/premium-icon-whatsapp.svg', '', '')>
                     <p>{!! trans('popup.target-box_3_btn') !!}</p>
                 </a>
             </div>
@@ -198,11 +198,11 @@
                         @endforeach
                     </ul>
                     <div class="popup-why--img">
-                        <img loading="lazy" src="{{ asset(env('THEME').'img/p-why.svg') }}" alt="">
+                        <img loading="lazy" src="{{ asset(env('THEME').'img/p-why.svg') }}"  @frontendAlt('theme/viar/modals/target-box.blade.php', (asset(env('THEME').'img/p-why.svg')), '', '')>
                     </div>
                 </div>
                 <a href="https://api.whatsapp.com/send/?phone={{ urlencode(__('portrait_buy_form.setting_whatsapp_phone_href')) }}&text&type=phone_number&app_absent=0" class="n-p-whatsapp">
-                    <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg" alt="">
+                    <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg"  @frontendAlt('theme/viar/modals/target-box.blade.php', 'https://viarcanvas.com/images/premium-icon-whatsapp.svg', '', '')>
                     <p>{!! trans('popup.target-box_3_btn') !!}</p>
                 </a>
             </div>
@@ -226,14 +226,14 @@
                         <div class="page-input__item phone-input">
                             <div class="banner__input-item">
                                 <input type="text" id="phone5" name="phone" class="banner__input phone" required>
-                                <img src="{{ asset('img/icons/phone.svg') }}" alt="" class="img-svg img-svg__posa">
+                                <img src="{{ asset('img/icons/phone.svg') }}"  class="img-svg img-svg__posa" @frontendAlt('theme/viar/modals/target-box.blade.php', (asset('img/icons/phone.svg')), '', '')>
                             </div>
                         </div>
                     </div>
                         <button type="submit" class="top-btn">{{ trans('homepage_new.send') }}</button>
                 </div>
                 <a href="https://api.whatsapp.com/send/?phone={{ urlencode(__('portrait_buy_form.setting_whatsapp_phone_href')) }}&text&type=phone_number&app_absent=0" class="n-p-whatsapp">
-                    <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg" alt="">
+                    <img loading="lazy" src="https://viarcanvas.com/images/premium-icon-whatsapp.svg"  @frontendAlt('theme/viar/modals/target-box.blade.php', 'https://viarcanvas.com/images/premium-icon-whatsapp.svg', '', '')>
                     <p>{!! trans('popup.target-box_3_btn') !!}</p>
                 </a>
             </div>

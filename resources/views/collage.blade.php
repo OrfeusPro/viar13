@@ -84,7 +84,7 @@
     <div id="template-preview" style="display:none;">
         <div class="dz-preview dz-file-preview well" id="dz-preview-template">
             <div class="dz-image">
-                <img loading="lazy" data-dz-thumbnail="" src="{{ asset('img/loading.gif') }}" alt="loading">
+                <img loading="lazy" data-dz-thumbnail="" src="{{ asset('img/loading.gif') }}"  @frontendAlt('collage.blade.php', (asset('img/loading.gif')), 'loading', '')>
             </div>
             <div class="dz-details">
                 <div class="dz-filename"><span data-dz-name=""></span></div>
@@ -171,7 +171,7 @@
             <span class="close-content"><i class="icon-icon4"></i></span>
             <div class="p__mod__title green__text h3_old">{{ trans('gl.suc') }}
                 <span>
-                    <img src="{{ asset('img/checkmark_circle.1.png') }}" alt="">
+                    <img src="{{ asset('img/checkmark_circle.1.png') }}"  @frontendAlt('collage.blade.php', (asset('img/checkmark_circle.1.png')), '', '')>
                 </span>
             </div>
         </div>
@@ -181,7 +181,7 @@
         <span class="close-popup"></span>
         <div class="popup-content">
 			<span class="close-content" style="display: flex; flex-direction: row-reverse; cursor: pointer ">
-            <img src="{{ asset(env('THEME').'img/cross1.png') }}" alt="" style="width:15px; height: 15px">
+            <img src="{{ asset(env('THEME').'img/cross1.png') }}"  style="width:15px; height: 15px" @frontendAlt('collage.blade.php', (asset(env('THEME').'img/cross1.png')), '', '')>
             </span>
             <div class="p__mod__title red__text" id="err_msgs">
                 <span style="display:block;">{{ trans('gl.inv_filesize_or_ext') }}</span>
@@ -192,7 +192,7 @@
     {{-- thanks --}}
     <div class="vz-artjs-popup thanks">
         <div class="vz-art kviz-thanks">
-            <img src="{{ asset('images/icon/check-done.svg') }}" class="kviz-thanks__icon" alt="img" loading="lazy">
+            <img src="{{ asset('images/icon/check-done.svg') }}" class="kviz-thanks__icon"  loading="lazy" @frontendAlt('collage.blade.php', (asset('images/icon/check-done.svg')), 'img', '')>
             <div class="vz-art kviz-thanks__title">
                 <div class="h3_old">{{ trans('portrait_buy_form.popup_thanks_text1') }}</div>
                 <p>{{ trans('portrait_buy_form.popup_thanks_text2') }}</p>

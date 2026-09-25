@@ -10,7 +10,7 @@
 							<picture>
 							{{--<source media="(max-width: 520px)" srcset="{{ format_webp($slide[App::getLocale().'_mob']) }}" type="image/webp">--}}
 								<source media="(max-width: 520px)" srcset="{{ Voyager::image($slide[App::getLocale().'_mob']) }}" type="image/jpeg">
-								<img width="520" height="400" src="{{ Voyager::image($slide[App::getLocale()]) }}" alt="Viar Image">
+								<img width="520" height="400" src="{{ Voyager::image($slide[App::getLocale()]) }}"  @frontendAlt('partials/collage_new/slider.blade.php', (Voyager::image($slide[App::getLocale()])), 'Viar Image', '')>
 							</picture>
 						</div>
 						<div class="collage__inner">
@@ -88,11 +88,11 @@
 						</div>
 						<div class="absolute-elements">
 							<div class="collage-express">
-								<img loading="lazy" width="87" height="87" src="{{ asset('images/collage/express.svg') }}" alt="Viar Image">
+								<img loading="lazy" width="87" height="87" src="{{ asset('images/collage/express.svg') }}"  @frontendAlt('partials/collage_new/slider.blade.php', (asset('images/collage/express.svg')), 'Viar Image', '')>
 								<p>{!! trans('collage_new.c_slider_z_text7') !!}</p>
 							</div>
 							<div class="collage-gift">
-								<img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}" alt="Viar Image">
+								<img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}"  @frontendAlt('partials/collage_new/slider.blade.php', (asset('images/collage/gift.svg')), 'Viar Image', '')>
 								<p>{!! trans('collage_new.c_slider_z_text8') !!}</p>
 							</div>
 							<div class="collage-shape">
@@ -126,7 +126,7 @@
         <a href="#generate" class="anchor ellipse-arrow ellipse-arrow_white" aria-label="anchor link">
             <i class="fa-arrow-down"></i>
         </a>
-        <img src="{{ asset('images/icon/ellipse-whete.svg') }}" alt="img" loading="eager" >
+        <img src="{{ asset('images/icon/ellipse-whete.svg') }}"  loading="eager"  @frontendAlt('partials/collage_new/slider.blade.php', (asset('images/icon/ellipse-whete.svg')), 'img', '')>
     </div>
 
 

@@ -2,14 +2,14 @@
     <div class="container">
         <div class="stocks-items clearfix">
             <div class="stocks-item">
-                <img src="{{ asset('img/stocks-item-img1.png') }}" alt="">
+                <img src="{{ asset('img/stocks-item-img1.png') }}"  @frontendAlt('partials/stocks/header.blade.php', (asset('img/stocks-item-img1.png')), '', '')>
                 <h3>{!! $head['dates_title'] !!}<i>i<span>{!! $head['dates_tip'] !!}</span></i></h3>
                 {!! $head['dates_sales_text'] !!}
                 <a @guest class="js_open_reg" @endguest @auth class="datas_js" @endauth
                     href="javascript:void(0)"><span>{!! $head['dates_sales_btn_text'] !!}</span></a>
             </div>
             <div class="stocks-item">
-                <img src="{{ asset('img/stocks-item-img2.png') }}" alt="">
+                <img src="{{ asset('img/stocks-item-img2.png') }}"  @frontendAlt('partials/stocks/header.blade.php', (asset('img/stocks-item-img2.png')), '', '')>
                 <h3>{!! $head['friend_title'] !!}<i>i<span>{!! $head['friend_tip'] !!}</span></i></h3>
                 {!! $head['friend_sale_text'] !!}
 
@@ -17,7 +17,7 @@
                     href="javascript:void(0)"><span>{!! $head['friend_sale_btn_text'] !!}</span></a>
             </div>
             <div class="stocks-item">
-                <img src="{{ asset('img/stocks-item-img3.png') }}" alt="">
+                <img src="{{ asset('img/stocks-item-img3.png') }}"  @frontendAlt('partials/stocks/header.blade.php', (asset('img/stocks-item-img3.png')), '', '')>
                 <h3>{!! $head['print_title'] !!}<i>i<span>{!! $head['print_tip'] !!}</span></i></h3>
                 {!! $head['print_text'] !!}
                 <a @guest class="js_open_reg" @endguest @auth class="printScreen_js" @endauth
@@ -30,7 +30,7 @@
                 <a @guest class="js_open_reg" @endguest @auth class="photo_js" @endauth
                     href="javascript:void(0)"><span>{!! $head['foto_free_btn_text'] !!}</span></a>
             </div>
-            <img src="{{ asset('img/send-data-img.png') }}" alt="">
+            <img src="{{ asset('img/send-data-img.png') }}"  @frontendAlt('partials/stocks/header.blade.php', (asset('img/send-data-img.png')), '', '')>
         </div>
     </div>
 </div>

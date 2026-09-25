@@ -34,7 +34,7 @@
                                                 @if(!empty($homeMenuImageSources['src']) && !empty($homeMenuImageSources['type']))
                                                     <source srcset="{{ $homeMenuImageSources['src'] }}" type="{{ $homeMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header0.blade.php', ($homeMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -81,7 +81,7 @@
                                                 @if(!empty($homeMenuImageSources['src']) && !empty($homeMenuImageSources['type']))
                                                     <source srcset="{{ $homeMenuImageSources['src'] }}" type="{{ $homeMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header0.blade.php', ($homeMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -127,7 +127,7 @@
                                                 @if(!empty($homeMenuImageSources['src']) && !empty($homeMenuImageSources['type']))
                                                     <source srcset="{{ $homeMenuImageSources['src'] }}" type="{{ $homeMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header0.blade.php', ($homeMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -146,7 +146,7 @@
 <div class="vz-art burge-menu">
     <div class="vz-art header-bar header-bar_burger">
         <a href="{{ route('home') }}" class="vz-art logo" aria-label="logo link">
-            <img loading="lazy" src="{{ asset('images/logo.svg') }}" alt="@lang('settings.site_name')">
+            <img loading="lazy" src="{{ asset('images/logo.svg') }}"  @frontendAlt('theme/viar/pages/index/header0.blade.php', (asset('images/logo.svg')), __('settings.site_name'), '')>
         </a>
         <div class="header-button">
             <a href="#" class="vz-art header-user" aria-label="user link">
@@ -219,7 +219,7 @@
     </div>
 
     <div class="vz-art language header-item_pc _spollers _one _esc new_lang">
-                <p class="_spoller "><img class="lozad" loading="lazy" src="{{ asset('images/flag/' . app()->getLocale() . '.svg') }}"> {{ ucfirst(app()->getLocale()) }} <i class="fa-arrow-down"></i>
+                <p class="_spoller "><img class="lozad" loading="lazy" src="{{ asset('images/flag/' . app()->getLocale() . '.svg') }}" @frontendAlt('theme/viar/pages/index/header0.blade.php', (asset('images/flag/' . app()->getLocale() . '.svg')), '', '')> {{ ucfirst(app()->getLocale()) }} <i class="fa-arrow-down"></i>
                 </p>
 
                 <ul class="ver1_langs">
@@ -230,7 +230,7 @@
                         @endphp
                         <li>
                             <a href="{{ $cur_url_mod }}">
-                                <img class="lozad" src="{{ asset('images/flag/' . $localeCode . '.svg') }}" loading="lazy"> {{ $localeCode }}
+                                <img class="lozad" src="{{ asset('images/flag/' . $localeCode . '.svg') }}" loading="lazy" @frontendAlt('theme/viar/pages/index/header0.blade.php', (asset('images/flag/' . $localeCode . '.svg')), '', '')> {{ $localeCode }}
                             </a>
                         </li>
                     @endforeach

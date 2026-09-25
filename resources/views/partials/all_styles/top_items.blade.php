@@ -14,9 +14,9 @@
 
                     <source srcset="{{ asset('img/vertical.webp') }}" type="image/webp">
 
-                    <img data-src="{{ asset('img/vertical.webp') }}" src="{{ asset('img/load.png') }}" alt=""
+                    <img data-src="{{ asset('img/vertical.webp') }}" src="{{ asset('img/load.png') }}"
 
-                        class="arts__bg lazyload">
+                        class="arts__bg lazyload" @frontendAlt('partials/all_styles/top_items.blade.php', (asset('img/vertical.webp')), '', '')>
 
                 </picture>
 
@@ -37,7 +37,7 @@
                     @if(!empty($topItemImageSources['src']) && !empty($topItemImageSources['type']))
                         <source srcset="{{ $topItemImageSources['src'] }}" type="{{ $topItemImageSources['type'] }}">
                     @endif
-                    <img @if (!empty($topItemImageSources['src'])) src="{{ $topItemImageSources['src'] }}" @else src="{{ asset('img/load.png') }}" @endif alt="">
+                    <img @if (!empty($topItemImageSources['src'])) src="{{ $topItemImageSources['src'] }}" @else src="{{ asset('img/load.png') }}" @endif  @frontendAlt('partials/all_styles/top_items.blade.php', ($topItemImageSources['src']), '', '')>
 
                 </picture>
 

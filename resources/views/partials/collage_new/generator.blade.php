@@ -1,7 +1,7 @@
 <!-- ellipse -->
 
 <div class="ellipse ellipse_black ellipse_top">
-    <img src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg" alt="img" loading="lazy">
+    <img src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"  loading="lazy" @frontendAlt('partials/collage_new/generator.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
 </div>
 
 
@@ -18,7 +18,7 @@
                                     {!! trans('collage_new.z7_generator_title') !!}
                                 </div>
                                 <div class="col-gen--element">
-                                    <img loading="lazy" width="165" height="92" src="{{ asset('images/collage/clg.svg') }}" alt="">
+                                    <img loading="lazy" width="165" height="92" src="{{ asset('images/collage/clg.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/clg.svg')), '', '')>
                                     <p>{!! trans('collage_new.z7_generator_subtitle') !!}</p>
                                 </div>
                             </div>
@@ -47,31 +47,31 @@
                                                             <div class="cs-tabs-column">
                                                                 <ul>
                                                                     <li class="active">
-                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc1.svg') }}" alt="">
+                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc1.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/ctc1.svg')), '', '')>
                                                                         <p>{!! trans('collage_new.z7_generator_ctc1') !!}</p>
                                                                     </li>
                                                                     <li>
-                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc2.svg') }}" alt="">
+                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc2.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/ctc2.svg')), '', '')>
                                                                         <p>{!! trans('collage_new.z7_generator_ctc2') !!}</p>
                                                                     </li>
                                                                     <li>
-                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc4.svg') }}" alt="">
+                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc4.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/ctc4.svg')), '', '')>
                                                                         <p>{!! trans('collage_new.z7_generator_ctc3') !!}</p>
                                                                     </li>
                                                                     <li>
-                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc3.svg') }}" alt="">
+                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc3.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/ctc3.svg')), '', '')>
                                                                         <p>{!! trans('collage_new.z7_generator_ctc4') !!}</p>
                                                                     </li>
                                                                     <li>
-                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc5.svg') }}" alt="">
+                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc5.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/ctc5.svg')), '', '')>
                                                                         <p>{!! trans('collage_new.z7_generator_ctc5') !!}</p>
                                                                     </li>
                                                                     <li>
-                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc6.svg') }}" alt="">
+                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc6.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/ctc6.svg')), '', '')>
                                                                         <p>{!! trans('collage_new.z7_generator_ctc6') !!}</p>
                                                                     </li>
                                                                     <li>
-                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc7.svg') }}" alt="">
+                                                                        <img loading="lazy" width="30" height="25" src="{{ asset('images/collage/ctc7.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/ctc7.svg')), '', '')>
                                                                         <p>{!! trans('collage_new.z7_generator_ctc7') !!}</p>
                                                                     </li>
                                                                 </ul>
@@ -80,37 +80,37 @@
                                                         </div>
                                                         <div class="cs-controls cs-ds-controls">
                                                             <div class="csc-item" id="delete_background" data-tooltip="{!! trans('collage_new.z7_generator_controls1') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool1.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool1.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool1.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="clear" data-tooltip="{!! trans('collage_new.z7_generator_controls2') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool2.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool2.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool2.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="cell_delete" data-tooltip="{!! trans('collage_new.z7_generator_controls3') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool3.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool3.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool3.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="img_delete" data-tooltip="{!! trans('collage_new.z7_generator_controls4') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool4.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool4.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool4.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="redo" data-tooltip="{!! trans('collage_new.z7_generator_controls5') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool5.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool5.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool5.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="undo" data-tooltip="{!! trans('collage_new.z7_generator_controls6') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool6.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool6.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool6.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="photo_zoom_plus" data-tooltip="{!! trans('collage_new.z7_generator_controls7') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool7.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool7.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool7.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="photo_zoom_minus" data-tooltip="{!! trans('collage_new.z7_generator_controls8') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool8.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool8.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool8.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="turn_right" data-tooltip="{!! trans('collage_new.z7_generator_controls9') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool9.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool9.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool9.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="turn_left" data-tooltip="{!! trans('collage_new.z7_generator_controls10') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool10.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool10.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool10.svg')), '', '')>
                                                             </div>
                                                             <div class="csc-item" id="loadPhotos_4" data-tooltip="{!! trans('collage_new.z7_generator_controls11') !!}">
-                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool11.svg') }}" alt="">
+                                                                <img loading="lazy" width="30" height="30" src="{{ asset('images/collage/tool11.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool11.svg')), '', '')>
                                                             </div>
                                                         </div>
                                                         <div class="cs-wrapper">
@@ -168,7 +168,7 @@
                                                                     <div class="additional-image">
                                                                         <div class="additional-row">
                                                                             <div class="additional-img">
-                                                                                <img loading="lazy" src="{{ asset('images/canvas/additional.svg') }}" alt="">
+                                                                                <img loading="lazy" src="{{ asset('images/canvas/additional.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/additional.svg')), '', '')>
                                                                             </div>
                                                                             <div class="additional-input">
                                                                                 <div class="vz-art popup-log-check js-checkbox">
@@ -190,7 +190,7 @@
                                                                                         <div class="check check-border"></div>
                                                                                         <label>
                                                                                             <span>{!! trans('collage_new.z7_generator_foto_text8') !!}
-                                                                                                <img loading="lazy" src="{{ asset('images/icon/info.svg') }}" alt="">
+                                                                                                <img loading="lazy" src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/icon/info.svg')), '', '')>
                                                                                             </span>
                                                                                             <input name="boxes2[]" type="radio" data-id="2" checked data-name="{!! trans('collage_new.z7_generator_foto_text8') !!}" value="0">
                                                                                             <div class="window-prompt">
@@ -201,7 +201,7 @@
                                                                                     <div class="kviz-radio js-checkbox" data-stock="2">
                                                                                         <div class="check check-border"></div>
                                                                                         <label>
-                                                                                            <span>{!! trans('collage_new.z7_generator_foto_text9') !!}<img loading="lazy" src="{{ asset('images/icon/info.svg') }}" alt="">
+                                                                                            <span>{!! trans('collage_new.z7_generator_foto_text9') !!}<img loading="lazy" src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/icon/info.svg')), '', '')>
                                                                                             </span>
                                                                                             <input name="boxes2[]" type="radio" data-id="1" data-name="{!! trans('collage_new.z7_generator_foto_text9') !!}" value="3">
                                                                                             <div class="window-prompt">
@@ -212,7 +212,7 @@
                                                                                     <div class="kviz-radio js-checkbox" data-stock="1">
                                                                                         <div class="check check-border"></div>
                                                                                         <label class="jcf-label-active">
-                                                                                            <span>{!! trans('collage_new.z7_generator_foto_text10') !!}<img loading="lazy" src="{{ asset('images/icon/info.svg') }}" alt=""></span>
+                                                                                            <span>{!! trans('collage_new.z7_generator_foto_text10') !!}<img loading="lazy" src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                                                                                             <input name="boxes2[]" type="radio" data-id="3" data-name="{!! trans('collage_new.z7_generator_foto_text10') !!}" value="4">
                                                                                             <div class="window-prompt">
                                                                                                 {!! trans('collage_new.z7_generator_foto_text10') !!}
@@ -280,7 +280,7 @@
                                                                             @if($ACollageFon)
                                                                             @foreach($ACollageFon as $fon)
                                                                             <div class="cs-bg-img_item">
-                                                                                <img loading="lazy" width="109" height="109" src="{{  asset('storage/'.$fon->image)  }}" alt="">
+                                                                                <img loading="lazy" width="109" height="109" src="{{  asset('storage/'.$fon->image)  }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('storage/'.$fon->image)), '', '')>
                                                                             </div>
                                                                             @endforeach
                                                                             @endif
@@ -348,7 +348,7 @@
                                                                                 @foreach($ACollageStiker as $sticker)
                                                                                 @if($sticker->stiker_group_id == $sticker_group->id)
                                                                                 <div class="cs-smiles_item">
-                                                                                    <img loading="lazy" width="70" height="70" src="{{  asset('storage/'.$sticker->image) }}" alt="">
+                                                                                    <img loading="lazy" width="70" height="70" src="{{  asset('storage/'.$sticker->image) }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('storage/'.$sticker->image)), '', '')>
                                                                                 </div>
                                                                                 @endif
                                                                                 @endforeach
@@ -370,7 +370,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="wrap-btn">
-                                                            <img loading="lazy" src="{{ asset('images/collage/angle-close.svg') }}" alt="">
+                                                            <img loading="lazy" src="{{ asset('images/collage/angle-close.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/angle-close.svg')), '', '')>
                                                         </div>
                                                         <div class="cs-btn-scroll" title="Scroll down">
                                                             <svg width="11" height="7" viewBox="0 0 11 7" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -404,7 +404,7 @@
                                                                                     <source media="(max-width: 550px)" srcset="{{ asset('images/canvas/interio1Min.jpg') }}" type="image/jpeg">
                                                                                     <source srcset="{{ asset('images/canvas/interio1.webp') }}" type="image/webp">
                                                                                     <source srcset="{{ asset('images/canvas/interio1.jpg') }}" type="image/jpeg">
-                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio1.jpg') }}" alt="" />
+                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio1.jpg') }}"   @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/interio1.jpg')), '', '')/>
                                                                                 </picture>
                                                                             </div>
                                                                         </div>
@@ -423,7 +423,7 @@
                                                                                     <source media="(max-width: 550px)" srcset="{{ asset('images/canvas/interio2Min.jpg') }}" type="image/jpeg">
                                                                                     <source srcset="{{ asset('images/canvas/interio2.webp') }}" type="image/webp">
                                                                                     <source srcset="{{ asset('images/canvas/interio2.jpg') }}" type="image/jpeg">
-                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio2.jpg') }}" alt="" />
+                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio2.jpg') }}"   @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/interio2.jpg')), '', '')/>
                                                                                 </picture>
                                                                             </div>
                                                                         </div>
@@ -442,7 +442,7 @@
                                                                                     <source media="(max-width: 550px)" srcset="{{ asset('images/canvas/interio3Min.jpg') }}" type="image/jpeg">
                                                                                     <source srcset="{{ asset('images/canvas/interio3.webp') }}" type="image/webp">
                                                                                     <source srcset="{{ asset('images/canvas/interio3.jpg') }}" type="image/jpeg">
-                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio3.jpg') }}" alt="" />
+                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio3.jpg') }}"   @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/interio3.jpg')), '', '')/>
                                                                                 </picture>
                                                                             </div>
 
@@ -462,7 +462,7 @@
                                                                                     <source media="(max-width: 550px)" srcset="{{ asset('images/canvas/interio4Min.jpg') }}" type="image/jpeg">
                                                                                     <source srcset="{{ asset('images/canvas/interio4.webp') }}" type="image/webp">
                                                                                     <source srcset="{{ asset('images/canvas/interio4.jpg') }}" type="image/jpeg">
-                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio4.jpg') }}" alt="" />
+                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio4.jpg') }}"   @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/interio4.jpg')), '', '')/>
                                                                                 </picture>
                                                                             </div>
 
@@ -482,7 +482,7 @@
                                                                                     <source media="(max-width: 550px)" srcset="{{ asset('images/canvas/interio5Min.jpg') }}" type="image/jpeg">
                                                                                     <source srcset="{{ asset('images/canvas/interio5.webp') }}" type="image/webp">
                                                                                     <source srcset="{{ asset('images/canvas/interio5.jpg') }}" type="image/jpeg">
-                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio5.jpg') }}" alt="" />
+                                                                                    <img loading="lazy" src="{{ asset('images/canvas/interio5.jpg') }}"   @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/interio5.jpg')), '', '')/>
                                                                                 </picture>
                                                                             </div>
                                                                         </div>
@@ -595,7 +595,7 @@
                                                                                 <picture>
                                                                                     <source srcset="{{ asset('images/canvas/rama1.webp') }}" type="image/webp">
                                                                                     <source srcset="{{ asset('images/canvas/rama1.jpg') }}">
-                                                                                    <img loading="lazy" alt="{!! trans('collage_new.z7_generator_ramma_text4') !!}" title="{!! trans('collage_new.z7_generator_ramma_text4') !!}" src="{{ asset('images/canvas/rama1.jpg') }}" />
+                                                                                    <img loading="lazy"   src="{{ asset('images/canvas/rama1.jpg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/rama1.jpg')), (trans('collage_new.z7_generator_ramma_text4')), (trans('collage_new.z7_generator_ramma_text4')))/>
                                                                                 </picture>
                                                                             </div>
                                                                             <span class="price"> + 25 &euro; </span>
@@ -614,7 +614,7 @@
                                                                                 <picture>
                                                                                     <source srcset="{{ asset('images/canvas/rama2.webp') }}" type="image/webp">
                                                                                     <source srcset="{{ asset('images/canvas/rama2.jpg') }}">
-                                                                                    <img loading="lazy" alt="{!! trans('collage_new.z7_generator_ramma_text5') !!}" title="{!! trans('collage_new.z7_generator_ramma_text5') !!}" src="{{ asset('images/canvas/rama2.jpg') }}" />
+                                                                                    <img loading="lazy"   src="{{ asset('images/canvas/rama2.jpg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/canvas/rama2.jpg')), (trans('collage_new.z7_generator_ramma_text5')), (trans('collage_new.z7_generator_ramma_text5')))/>
                                                                                 </picture>
                                                                             </div>
                                                                             <span class="price"> + 25 &euro; </span>
@@ -653,11 +653,11 @@
                                                                         <input id="range_between" class="slider" type="range" min="0" max="100" value="20">
                                                                     </div>
                                                                     <div class="fullscreen-change" id="fullscreen">
-                                                                        <img loading="lazy" width="20" height="20" src="{{ asset('images/collage/tool12.svg') }}" alt="">
+                                                                        <img loading="lazy" width="20" height="20" src="{{ asset('images/collage/tool12.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool12.svg')), '', '')>
                                                                         <span>{!! trans('collage_new.z7_generator_controls15') !!}</span>
                                                                     </div>
                                                                     <div class="fullscreen-close" id="fullscreen-close">
-                                                                        <img loading="lazy" width="20" height="20" src="{{ asset('images/collage/tool12.svg') }}" alt="">
+                                                                        <img loading="lazy" width="20" height="20" src="{{ asset('images/collage/tool12.svg') }}"  @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/collage/tool12.svg')), '', '')>
                                                                         <span>{!! trans('collage_new.z7_generator_controls16') !!}</span>
                                                                     </div>
                                                                 </div>
@@ -711,8 +711,8 @@
                                               <span
                                               >{{ $set->getTranslatedAttribute('name', app()->getLocale()) }}<img
                                                       src="{{ asset('images/icon/info.svg') }}"
-                                                      alt=""
-                                                  /></span>
+
+                                                   @frontendAlt('partials/collage_new/generator.blade.php', (asset('images/icon/info.svg')), '', '')/></span>
                                                     <input
                                                         name="boxes[]"
                                                         type="radio"
@@ -836,12 +836,12 @@
                         <div class="reviews-slide-box">
                             <div class="reviews-content">
                                 <picture>
-                                    <img src="{{ Voyager::image($item->img) }}" class="reviews-photo" alt="" loading="lazy">
+                                    <img src="{{ Voyager::image($item->img) }}" class="reviews-photo"  loading="lazy" @frontendAlt('partials/collage_new/generator.blade.php', (Voyager::image($item->img)), '', '')>
                                 </picture>
                                 <div class="reviews-info">
                                     <div class="reviews-title">
                                         <picture>
-                                            <img src="{{ Voyager::image($item->avatar) }}" alt="img" loading="lazy">
+                                            <img src="{{ Voyager::image($item->avatar) }}"  loading="lazy" @frontendAlt('partials/collage_new/generator.blade.php', (Voyager::image($item->avatar)), 'img', '')>
                                         </picture>
                                         <div class="reviews-name">
                                             <b>{{ $item->name }}</b>

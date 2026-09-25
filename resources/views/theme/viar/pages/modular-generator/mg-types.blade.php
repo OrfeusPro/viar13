@@ -113,7 +113,7 @@
                                     <picture>
                                         <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/s1.webp" type="image/webp">
                                         <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/s1.jpg" type="image/jpeg">
-                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/s1.jpg" alt="ViarCanvas">
+                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/s1.jpg"  @frontendAlt('theme/viar/pages/modular-generator/mg-types.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/s1.jpg', 'ViarCanvas', '')>
                                     </picture>
                                 </div>
 
@@ -136,7 +136,7 @@
                                 <div class="mg-slide swiper-slide">
                                     <picture>
                                         <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/2.jpg" type="image/jpeg">
-                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/2.jpg" alt="ViarCanvas">
+                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/2.jpg"  @frontendAlt('theme/viar/pages/modular-generator/mg-types.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/2.jpg', 'ViarCanvas', '')>
                                     </picture>
                                 </div>
                             </div>
@@ -158,7 +158,7 @@
                                 <div class="mg-slide swiper-slide">
                                     <picture>
                                         <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/3.jpg" type="image/jpeg">
-                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/3.jpg" alt="ViarCanvas">
+                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/3.jpg"  @frontendAlt('theme/viar/pages/modular-generator/mg-types.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/3.jpg', 'ViarCanvas', '')>
                                     </picture>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@
                                 <div class="mg-slide swiper-slide">
                                     <picture>
                                         <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/4.jpg" type="image/jpeg">
-                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/4.jpg" alt="ViarCanvas">
+                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/4.jpg"  @frontendAlt('theme/viar/pages/modular-generator/mg-types.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/4.jpg', 'ViarCanvas', '')>
                                     </picture>
                                 </div>
                             </div>
@@ -202,7 +202,7 @@
                                 <div class="mg-slide swiper-slide">
                                     <picture>
                                         <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/5.jpg" type="image/jpeg">
-                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/5.jpg" alt="ViarCanvas">
+                                        <img width="545" height="535" src="{{ asset(env('THEME') . 'images') }}/module-generator/5.jpg"  @frontendAlt('theme/viar/pages/modular-generator/mg-types.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/5.jpg', 'ViarCanvas', '')>
                                     </picture>
                                 </div>
                             </div>

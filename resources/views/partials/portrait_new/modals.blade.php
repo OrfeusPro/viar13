@@ -334,7 +334,7 @@
         <picture>
             <source srcset="{{ asset('images/portrait-form.webp') }}" type="image/webp" />
             <source srcset="{{ asset('images/portrait-form.png') }}" />
-            <img src="{{ asset('images/portrait-form.png') }}" class="vz-art photo-mokap" alt="img" loading="lazy" />
+            <img src="{{ asset('images/portrait-form.png') }}" class="vz-art photo-mokap"  loading="lazy"  @frontendAlt('partials/portrait_new/modals.blade.php', (asset('images/portrait-form.png')), 'img', '')/>
         </picture>
     </form>
 @endif

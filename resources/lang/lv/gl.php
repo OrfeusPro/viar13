@@ -32,6 +32,7 @@ return array (
   'report_suc_send' => 'Veiksmīgi nosūtīts!',
   'too_big_filesize' => 'Faila lielums ir pārāk liels',
   'inv_filesize_or_ext' => 'Fails nav pievienots',
+  'canvas_photo_required_step1' => 'Pievienojiet fotoattēlu.',
   'media_missing' => 'Attēls ',
   'choose_person_count' => 'Izvēlies <span>Personu skaits</span>',
   'personal' => 'Viens cilvēks',
