@@ -1,18 +1,24 @@
-<x-filament-panels::page>
+<x-filament-panels::page class="viar-bread-page">
     <style>
         .viar-bread-media-preview { width: 96px; height: 96px; object-fit: cover; display: block; }
         .viar-bread-media-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
         .viar-bread-media-card { border: 1px solid #d1d5db; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
         .viar-bread-media-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
         .viar-bread-media-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .viar-bread-page .fi-page-main, .viar-bread-page .fi-section { min-width: 0; }
+        .viar-bread-search { max-width: 28rem; margin-bottom: 24px; }
+        .viar-bread-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; position: relative; }
         .viar-bread-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
         .viar-bread-table th, .viar-bread-table td { min-width: 150px; max-width: 240px; padding: 9px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
         .viar-bread-table th { white-space: nowrap; font-weight: 600; }
         .viar-bread-table th:first-child, .viar-bread-table td:first-child { min-width: 75px; }
-        .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; min-width: 120px; background: white; border-left: 1px solid #e5e7eb; }
+        .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 6px -4px #9ca3af; }
         .dark .viar-bread-table th:last-child, .dark .viar-bread-table td:last-child { background: #18181b; }
     </style>
     @php($bread = $this->bread())
+    @php($breadRegistry = app(\App\Filament\Bread\BreadRegistry::class))
+    @php($canAddRecord = $breadRegistry->permitted($bread, 'add') && $breadRegistry->hasFormFields($bread, 'add'))
+    @php($canEditRecord = $breadRegistry->permitted($bread, 'edit') && $breadRegistry->hasFormFields($bread, 'edit'))
     @php($records = ! $editing && $viewId === null ? $this->records() : [])
     @if (! app(\App\Filament\Bread\BreadRegistry::class)->model($bread))
         <x-filament::section>
@@ -43,51 +49,27 @@
         <x-filament::section>
             <div class="mb-4 flex flex-wrap gap-2" style="margin-bottom: 24px;">
                 @foreach (app(\App\Filament\Bread\BreadRegistry::class)->locales() as $language)
-                    <x-filament::button size="sm" :color="$locale === $language ? 'primary' : 'gray'" wire:click="changeLocale('{{ $language }}')" :disabled="$recordId === null && $language !== config('voyager.multilingual.default', 'en')">
+                    <x-filament::button size="sm" :color="$locale === $language ? 'primary' : 'gray'" :aria-pressed="$locale === $language ? 'true' : 'false'" wire:click="changeLocale('{{ $language }}')" wire:loading.attr="disabled" wire:target="changeLocale" :disabled="$recordId === null && $language !== config('voyager.multilingual.default', 'en')">
                         {{ strtoupper($language) }}
                     </x-filament::button>
                 @endforeach
             </div>
             <form wire:submit="save" class="space-y-5">
+                @if ($recordId !== null && $this->seoMetaTarget())
+                    <div style="margin-bottom:24px;">
+                        <x-filament::button type="button" color="gray" wire:click="generateSeoMeta" wire:loading.attr="disabled" wire:target="generateSeoMeta" wire:confirm="Сгенерировать и сохранить SEO-метаданные для всех языков?">Сгенерировать Meta Title / Description</x-filament::button>
+                    </div>
+                @endif
                 {{ $this->form }}
+                @include('filament.components.bread-alt-panel')
                 <div class="flex gap-2" style="margin-top: 24px;">
                     <x-filament::button type="submit">Сохранить</x-filament::button>
                     <x-filament::button color="gray" wire:click="cancel" type="button">Отмена</x-filament::button>
                 </div>
             </form>
         </x-filament::section>
-        @foreach ($this->mediaSections() as $section)
-            <x-filament::section :heading="$section['label']">
-                <div class="mb-4 flex items-center gap-3">
-                    <input type="file" wire:model="mediaUpload" accept="image/jpeg,image/png,image/webp,image/gif">
-                    <x-filament::button wire:click="uploadMedia('{{ $section['field'] }}')">Добавить изображение</x-filament::button>
-                </div>
-                @error('mediaUpload') <p class="text-sm text-danger-600">{{ $message }}</p> @enderror
-                <div class="space-y-5">
-                    @foreach ($section['files'] as $media)
-                        <div class="viar-bread-media-card" wire:key="bread-media-{{ $media->id }}">
-                            <div class="viar-bread-media-row">
-                                <img src="{{ $media->getUrl() }}" alt="" class="viar-bread-media-preview">
-                                <div><p class="font-semibold">{{ $media->file_name }}</p><p class="text-sm">ID {{ $media->id }}</p></div>
-                            </div>
-                            <div class="viar-bread-media-fields">
-                                <label>Title <x-filament::input.wrapper><x-filament::input wire:model="mediaProperties.{{ $media->id }}.title" /></x-filament::input.wrapper></label>
-                                <label>ALT <x-filament::input.wrapper><x-filament::input wire:model="mediaProperties.{{ $media->id }}.alt" /></x-filament::input.wrapper></label>
-                                @foreach ($section['extra'] as $key => $definition)
-                                    <label>{{ $definition['title'] ?? $key }}<x-filament::input.wrapper><x-filament::input wire:model="mediaProperties.{{ $media->id }}.{{ $key }}" /></x-filament::input.wrapper></label>
-                                @endforeach
-                            </div>
-                            <div class="viar-bread-media-actions">
-                                <x-filament::button size="sm" wire:click="saveMediaProperties('{{ $section['field'] }}', {{ $media->id }})">Сохранить подписи</x-filament::button>
-                                <x-filament::button size="sm" color="danger" wire:click="deleteMedia('{{ $section['field'] }}', {{ $media->id }})" wire:confirm="Удалить файл?">Удалить файл</x-filament::button>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </x-filament::section>
-        @endforeach
     @else
-        @if (app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'add'))
+        @if ($canAddRecord)
             <div><x-filament::button wire:click="openCreate">Создать запись</x-filament::button></div>
         @endif
         <x-filament::section>
@@ -96,8 +78,8 @@
                     <x-filament::button size="sm" :color="$locale === $language ? 'primary' : 'gray'" :aria-pressed="$locale === $language ? 'true' : 'false'" wire:click="changeLocale('{{ $language }}')">{{ strtoupper($language) }}</x-filament::button>
                 @endforeach
             </div>
-            <div class="mb-4 max-w-md"><x-filament::input.wrapper><x-filament::input type="search" wire:model.live.debounce.350ms="search" aria-label="Поиск по текстовым полям" placeholder="Поиск по текстовым полям" /></x-filament::input.wrapper></div>
-            <div class="overflow-x-auto">
+            <div class="viar-bread-search"><x-filament::input.wrapper><x-filament::input type="search" wire:model.live.debounce.350ms="search" aria-label="Поиск по текстовым полям" placeholder="Поиск по текстовым полям" /></x-filament::input.wrapper></div>
+            <div class="viar-bread-table-scroll" tabindex="0" role="region" aria-label="Таблица записей с горизонтальной прокруткой">
                 <table class="viar-bread-table text-sm">
                     <thead><tr class="border-b text-left">
                         @foreach ($records['columns'] ?? [] as $column)<th class="p-2">{{ $column['label'] }}</th>@endforeach
@@ -128,8 +110,11 @@
                                 @if (app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'read'))
                                     <x-filament::icon-button size="sm" color="gray" :icon="\Filament\Support\Icons\Heroicon::OutlinedEye" label="Просмотр" tooltip="Просмотр" wire:click="openView({{ (int) $record->id }})" />
                                 @endif
-                                @if (app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'edit'))
-                                    <x-filament::icon-button size="sm" :icon="\Filament\Support\Icons\Heroicon::OutlinedPencilSquare" label="Изменить" tooltip="Изменить" wire:click="openEdit({{ (int) $record->id }})" />
+                                @if ($canEditRecord)
+                                    <x-filament::icon-button size="sm" :icon="\Filament\Support\Icons\Heroicon::OutlinedPencilSquare" label="Изменить" tooltip="Изменить" :href="$this->editUrl((int) $record->id)" tag="a" />
+                                @endif
+                                @if ($bread->name === 'gallery_items' && $canAddRecord && $canEditRecord)
+                                    <x-filament::icon-button size="sm" color="gray" :icon="\Filament\Support\Icons\Heroicon::OutlinedDocumentDuplicate" label="Клонировать" tooltip="Клонировать" wire:click="cloneRecord({{ (int) $record->id }})" wire:confirm="Создать копию товара?" />
                                 @endif
                                 @if (app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'delete'))
                                     <x-filament::icon-button size="sm" color="danger" :icon="\Filament\Support\Icons\Heroicon::OutlinedTrash" label="Удалить" tooltip="Удалить" wire:click="deleteRecord({{ (int) $record->id }})" wire:confirm="Удалить запись?" />

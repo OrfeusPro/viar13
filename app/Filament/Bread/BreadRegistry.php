@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
 use stdClass;
 
 class BreadRegistry
@@ -98,6 +99,15 @@ class BreadRegistry
         ));
     }
 
+    public function hasFormFields(stdClass $type, string $operation): bool
+    {
+        return $this->editableRows($type, $operation) !== []
+            || $this->belongsToRows($type, $operation) !== []
+            || ($operation === 'edit' && $this->manyToManyRows($type, $operation) !== [])
+            || ($operation === 'edit' && $this->model($type) instanceof HasMedia
+                && collect($this->rows($type))->contains(static fn (stdClass $row): bool => $row->type === 'adv_media_files' && (bool) $row->edit));
+    }
+
     public function belongsToRows(stdClass $type, string $operation): array
     {
         $columns = $this->columns($type);
@@ -142,9 +152,16 @@ class BreadRegistry
 
     public function locales(): array
     {
-        return array_values(array_unique(array_merge(
+        $locales = array_values(array_unique(array_merge(
             [config('voyager.multilingual.default', 'en')],
             array_filter(config('voyager.multilingual.locales', []), static fn (string $locale): bool => $locale !== 'uk')
         )));
+        // Keep configured languages and Voyager's original order for the catalogue.
+        $order = array_flip(['en', 'ru', 'lv', 'ee', 'lt', 'de', 'pl']);
+        $default = config('voyager.multilingual.default', 'en');
+        usort($locales, static fn (string $a, string $b): int =>
+            ($a === $default ? -1 : ($order[$a] ?? 99)) <=> ($b === $default ? -1 : ($order[$b] ?? 99)));
+
+        return $locales;
     }
 }
