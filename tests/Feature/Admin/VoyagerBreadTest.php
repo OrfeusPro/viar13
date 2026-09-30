@@ -429,7 +429,11 @@ class VoyagerBreadTest extends TestCase
 
         Livewire::test(VoyagerBread::class, ['type' => 'pages'])
             ->call('openEdit', $id)
+            ->call('changeLocale', 'ru')
+            ->assertSee('Автор')
             ->set('data.author_id', $author->id)
+            ->call('changeLocale', 'en')->assertSet('data.author_id', $author->id)
+            ->call('changeLocale', 'ru')->assertSet('data.author_id', $author->id)
             ->call('save')
             ->assertHasNoErrors();
         $this->assertDatabaseHas('pages', ['id' => $id, 'author_id' => $author->id]);
@@ -440,6 +444,7 @@ class VoyagerBreadTest extends TestCase
 
         Livewire::test(VoyagerBread::class, ['type' => 'pages'])
             ->call('openEdit', $id)
+            ->call('changeLocale', 'ru')
             ->set('data.author_id', $author->id + 1000)
             ->call('save')
             ->assertHasErrors(['data.author_id']);
@@ -454,6 +459,36 @@ class VoyagerBreadTest extends TestCase
             ->call('deleteRecord', $id)
             ->assertForbidden();
         $this->assertDatabaseHas('pages', ['id' => $id]);
+    }
+
+    public function test_relation_dropdown_loads_options_and_searches_beyond_initial_limit(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        for ($index = 0; $index < 55; $index++) {
+            DB::table('users')->insert(['email' => 'author-' . $index . '@example.test', 'password' => 'unused']);
+        }
+        $lastId = DB::table('users')->where('email', 'author-54@example.test')->value('id');
+        $id = DB::table('pages')->insertGetId(['title' => 'Page', 'author_id' => $lastId]);
+        DB::table('data_rows')->insert([
+            'data_type_id' => 1, 'field' => 'page_author_relationship', 'type' => 'relationship', 'order' => 3,
+            'details' => json_encode(['type' => 'belongsTo', 'table' => 'users', 'column' => 'author_id', 'key' => 'id', 'label' => 'email']),
+        ]);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $field = collect($editor->instance()->form->getFlatComponents())
+            ->first(fn ($field): bool => $field instanceof \Filament\Forms\Components\Select && $field->getName() === 'author_id');
+        $this->assertCount(50, $field->getOptions());
+        $this->assertArrayNotHasKey($lastId, $field->getOptions());
+        $this->assertSame([$lastId => 'author-54@example.test'], $field->getSearchResults('author-54'));
+        $this->assertSame('author-54@example.test', $field->getOptionLabel());
+        $this->assertSame([], $field->getSearchResults('no-such-author'));
+        foreach (['ru', 'lv', 'ee', 'lt', 'de', 'pl', 'en'] as $locale) {
+            $editor->call('changeLocale', $locale)->assertSet('data.author_id', $lastId);
+            $field = collect($editor->instance()->form->getFlatComponents())
+                ->first(fn ($field): bool => $field instanceof \Filament\Forms\Components\Select && $field->getName() === 'author_id');
+            $this->assertNotNull($field);
+            $this->assertCount(50, $field->getOptions());
+            $this->assertSame('author-54@example.test', $field->getOptionLabel());
+        }
     }
 
     public function test_validated_many_to_many_relation_syncs_pivot(): void
@@ -479,12 +514,28 @@ class VoyagerBreadTest extends TestCase
         $type = app(BreadRegistry::class)->type('pages');
         $this->assertCount(1, app(BreadRegistry::class)->manyToManyRows($type, 'edit'));
 
+        $otherCategoryId = DB::table('categories')->insertGetId(['name' => 'Other']);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $field = collect($editor->instance()->form->getFlatComponents())
+            ->first(fn ($field): bool => $field instanceof \Filament\Forms\Components\Select && $field->getName() === '__pivot_' . $rowId);
+        $this->assertSame([$categoryId => 'Art', $otherCategoryId => 'Other'], $field->getOptions());
+        $this->assertSame([$otherCategoryId => 'Other'], $field->getSearchResults('Other'));
+
         Livewire::test(VoyagerBread::class, ['type' => 'pages'])
             ->call('openEdit', $id)
+            ->call('changeLocale', 'ru')->assertSee('Категории')
             ->set('data.__pivot_' . $rowId, [$categoryId])
+            ->call('changeLocale', 'en')->assertSet('data.__pivot_' . $rowId, [$categoryId])
+            ->call('changeLocale', 'ru')->assertSet('data.__pivot_' . $rowId, [$categoryId])
             ->call('save')
             ->assertHasNoErrors();
         $this->assertDatabaseHas('category_page', ['page_id' => $id, 'category_id' => $categoryId]);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])
+            ->call('changeLocale', 'ru')->set('data.meta_description', 'Must roll back')
+            ->set('data.__pivot_' . $rowId, [$otherCategoryId + 1000])
+            ->call('save')->assertHasErrors();
+        $this->assertDatabaseHas('category_page', ['page_id' => $id, 'category_id' => $categoryId]);
+        $this->assertDatabaseMissing('translations', ['foreign_key' => $id, 'column_name' => 'meta_description', 'value' => 'Must roll back']);
     }
 
     public function test_image_upload_writes_to_public_disk_and_record(): void

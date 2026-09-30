@@ -2271,3 +2271,40 @@ scope; Filament 5 будет рассматриваться отдельным �
 - Chrome: gallery-holsts/5/edit, RU — все семь полей на месте; компактная картинка; ALT RU совпадает с оригиналом, переключение ALT DE/RU работает, applied статус отображается; кнопки отдельного/общего применения доступны. Ошибок JS страницы viar13.loc не найдено (предупреждения стороннего Chrome extension к приложению не относятся). Screenshot: storage/app/testing/gallery-holsts-parity-2026-09-30.png.
 - Рабочая БД, пути и физические картинки не изменялись; Chrome Save/Apply не нажимались. Запись проверена только SQLite и Storage::fake; использованы существующие ALT migrations только в тестовой базе. Новых schema migrations нет. Ограничение: полный write UAT на копии production БД остаётся открытым для всего BREAD этапа.
 - Следующее точное действие: после подключения production БД проверить типы/metadata/ALT в чтении, затем сценарии записи на отдельной тестовой копии. Весь BREAD этап IN PROGRESS.
+
+## 2026-09-30 — Варианты в dropdown связей (DONE для подзадачи)
+
+- Ошибка воспроизведена в Chrome на gallery-items/974/edit: выбран Modular canvas, открытый listbox пуст до ввода поиска. Read-only DB/metadata audit подтвердил 7 gallery_types, belongsTo через id_type, label name, key id. Причина — у generic Select был только getSearchResultsUsing, без initial options.
+- Добавлены lazy initial options (лимит 50, стабильный порядок key/id) для belongsTo и belongsToMany; поиск остаётся server-side, отдельные resolvers selected labels сохраняют отображение записей вне первых 50. Static списков или зависимостей от текущих production ID не добавлено.
+- Тесты focused: 3 passed / 21 assertions. Проверены начальные варианты, поиск за первым лимитом 50, selected label вне лимита, отсутствие результатов; начальные варианты и поиск many-to-many; прежние проверки сохранения/невалидной связи. php lint, view:cache, git diff --check успешны.
+- Chrome: раскрытие Типы даёт Modular canvas, Photo Canvas, Reproduction, Graphical portrait, Stylization painting, Oil pictures, Caricature; поиск Caricature после завершения запроса даёт один результат, очистка возвращает 7. Screenshot storage/app/testing/gallery-items-types-2026-09-30.png. Другой тип не выбирался, Save не нажимался; рабочая БД/картинки не изменялись.
+- Подзадача DONE; следующий шаг — общий UAT после подключения production БД на отдельной тестовой копии для записи. BREAD этап IN PROGRESS.
+
+## 2026-09-30 — Поля связей на всех языках (DONE для подзадачи)
+
+- Устранён оставшийся EN-only guard у schema и fillRecord belongsTo/belongsToMany. Типы и множественные связи остаются доступными при переключении языка, выбранные и несохранённые значения общие для языков. Initial options/search работают по прежней актуальной metadata.
+- Сохранение вне EN теперь включает разрешённые metadata FK-колонки с проверкой существования целевой записи. Pivot sync выполняется для всех языков в общей DB-транзакции после сохранения полей/переводов; невалидные ID отклоняются, текущие связи и переводы сохраняются без частичной записи.
+- Full VoyagerBreadTest: 42 passed / 379 assertions; lint/view:cache/diff-check успешны. Regression: поле/выбранный label/options на EN/RU/LV/EE/LT/DE/PL; черновик FK и pivot после RU→EN→RU; сохранение FK/pivot из RU; отказ невалидного FK и pivot без потери исходной связи/частичной записи перевода. Первоначальная проверка точного error key pivot уточнена: Filament может отклонить неизвестную option до ручной проверки, поэтому проверяется наличие ошибки и отсутствие изменений данных.
+- Chrome gallery-items/974/edit: переход EN→RU, название RU загрузилось, Типы сохранило Modular canvas, раскрытый список содержит все семь реальных типов. Screenshot storage/app/testing/gallery-items-types-ru-2026-09-30.png. При первом ожидании RU locator произошёл detached DOM во время перерендера; свежий snapshot подтвердил успешное переключение. Варианты проверены после завершения загрузки.
+- Рабочий товар, DB paths и картинки не изменялись; Save в Chrome не нажимался, запись только SQLite fixtures. Подзадача DONE; следующий шаг — UAT остальных типов/связей после production DB на тестовой копии. Весь BREAD этап IN PROGRESS.
+
+## 2026-09-30 — Оформление полосы вкладок (DONE для подзадачи)
+
+- Пользователь попросил выделить белую полосу вкладок товара 974. Добавлен scoped class viar-bread-tabs на schema BREAD; CSS задаёт голубовато-серый фон полосы, рамки/отступы отдельных вкладок, контрастный синий активный элемент, белый текст, тень, hover и keyboard focus outline. Предусмотрены цвета dark theme; прочие компоненты tabs не затрагиваются.
+- Chrome: открыта отдельная проверочная вкладка товара 974, пользовательская вкладка с выбранным языком и возможными черновиками не перезагружалась. Main→Фильтры→Main переключаются, aria-selected=true и active background rgb(37,99,235)/white text подтверждены. Сохранён screenshot storage/app/testing/gallery-items-tabs-2026-09-30.png.
+- Проверки: php lint, view:cache, git diff --check успешны. Новые tests для косметического изменения не добавлялись; browser проверяет реальное переключение. Dark стили добавлены, отдельный browser dark UAT не выполнялся.
+- Save не нажимался, рабочая БД и картинки не изменялись. Подзадача DONE; следующий шаг — общий UAT BREAD после production DB на тестовой копии.
+
+## 2026-09-30 — Компактные превью изображений BREAD (DONE для подзадачи)
+
+- Сравнены оригинальный Voyager и Filament gallery-items/974/edit → Новые медиа. Оригинал выводит Картинка в корзине тремя небольшими изображениями рядом, Filament до исправления показывал три полноширинные полосы по 256px высоты.
+- Общий метод BreadFileUpload::compactImagePreviews применяется к metadata image/multiple_images/media_picker во всех generic BREAD формах. Single: максимум 280px, image preview height 160px; multiple/picker: FilePond grid, максимум 720px, display item aspect 0.8, 3 колонки (2 при viewport ≤640px). Добавлено открытие полного файла. Spatie adv_media_files уже имеет 96px thumbnails, дополнительное уменьшение не требовалось.
+- Меняется только отображение: resize/crop/transform сохранённых файлов не запускается, DB image paths и формат state/JSON не меняются. Upload limits, MIME, права и reorderable metadata сохранены.
+- Chrome: новая проверочная вкладка по запрошенному URL, три исходные картинки видны компактно рядом, ссылки ведут на прежние November2020 files. Пользовательские вкладки не перезагружались. Screenshot storage/app/testing/gallery-items-compact-images-2026-09-30.png. Save/upload/delete/reorder не выполнялись.
+- Проверки: existing focused preview/image upload/media_picker tests — 4 passed / 33 assertions; php lint, view:cache, git diff --check успешны. Новые тесты, повторяющие CSS, не добавлялись. Мобильные CSS предусмотрены, отдельная проверка на узком viewport не выполнялась.
+- Рабочая БД и физические картинки не изменялись; автоматическая запись только тестовая SQLite + fake disk. Подзадача DONE, следующий шаг — общий UAT BREAD на отдельной production DB копии. Весь BREAD этап IN PROGRESS.
+# 2026-09-30 — DONE: прокрутка вкладок BREAD
+- Общая форма получила компонент `bread-scrollable-tabs`: делегированные Pointer Events для мыши, порог движения 6 px, pointer capture во время drag, подавление случайного клика после drag. Обычные клики и клавиатура сохраняют выбор вкладок; обработчики принадлежат Alpine-компоненту.
+- Полоса вкладок не переносится на строки, ограничена шириной формы, поддерживает overflow-x и touch-action pan-x pan-y; вертикальная прокрутка страницы доступна.
+- Chrome, gallery-items/974/edit?type=2, 390×844: drag 150 px прокрутил полосу, Main осталась выбрана; следующий клик выбрал Фильтры. Консоль без ошибок. Снимок: storage/app/testing/gallery-items-tabs-scroll-2026-09-30.png. Viewport сброшен.
+- `artisan view:cache` и `git diff --check` прошли. База и файлы изображений не изменялись. Проверка физического touch-устройства остаётся пользовательской UAT; браузерный инструмент предоставляет мышь и изменение viewport.

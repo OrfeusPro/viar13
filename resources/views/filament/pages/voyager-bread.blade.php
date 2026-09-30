@@ -14,6 +14,25 @@
         .viar-bread-table th:first-child, .viar-bread-table td:first-child { min-width: 75px; }
         .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 6px -4px #9ca3af; }
         .dark .viar-bread-table th:last-child, .dark .viar-bread-table td:last-child { background: #18181b; }
+        .viar-bread-page .viar-bread-image-single { width: 100%; max-width: 280px; }
+        .viar-bread-page .viar-bread-image-grid { width: 100%; max-width: 720px; }
+        .viar-bread-page .viar-bread-image-grid .filepond--root[data-style-panel-layout="grid"] .filepond--item { width: calc(33.333% - 0.5rem); }
+        @media (max-width: 640px) {
+            .viar-bread-page .viar-bread-image-grid .filepond--root[data-style-panel-layout="grid"] .filepond--item { width: calc(50% - 0.5rem); }
+        }
+        .viar-bread-tabs { min-width: 0; max-width: 100%; }
+        .viar-bread-tabs > .fi-tabs { display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; touch-action: pan-x pan-y; scrollbar-width: thin; cursor: grab; gap: 8px; padding: 12px; background: #eef2f8; border-bottom: 1px solid #d9e2ef; border-radius: 12px 12px 0 0; }
+        .viar-bread-tabs > .fi-tabs .fi-tabs-item { flex-shrink: 0; white-space: nowrap; }
+        .viar-bread-tabs > .fi-tabs.viar-tabs-dragging, .viar-bread-tabs > .fi-tabs.viar-tabs-dragging * { cursor: grabbing; user-select: none; }
+        .viar-bread-tabs > .fi-tabs .fi-tabs-item { padding: 10px 14px; border: 1px solid #d4deeb; border-radius: 8px; background: #fff; color: #475569; box-shadow: 0 1px 2px rgb(15 23 42 / 4%); transition: background-color 150ms, border-color 150ms, box-shadow 150ms; }
+        .viar-bread-tabs > .fi-tabs .fi-tabs-item-label { color: inherit; font-weight: 600; }
+        .viar-bread-tabs > .fi-tabs .fi-tabs-item:hover { background: #e0eaff; border-color: #a5bff7; color: #1d4ed8; }
+        .viar-bread-tabs > .fi-tabs .fi-tabs-item[aria-selected="true"] { background: #2563eb; border-color: #2563eb; color: #fff; box-shadow: 0 3px 8px rgb(37 99 235 / 22%); }
+        .viar-bread-tabs > .fi-tabs .fi-tabs-item:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+        .dark .viar-bread-tabs > .fi-tabs { background: #172033; border-color: #334155; }
+        .dark .viar-bread-tabs > .fi-tabs .fi-tabs-item { background: #243047; border-color: #475569; color: #e2e8f0; }
+        .dark .viar-bread-tabs > .fi-tabs .fi-tabs-item:hover { background: #334155; border-color: #60a5fa; }
+        .dark .viar-bread-tabs > .fi-tabs .fi-tabs-item[aria-selected="true"] { background: #2563eb; border-color: #60a5fa; color: #fff; }
     </style>
     @php($bread = $this->bread())
     @php($breadRegistry = app(\App\Filament\Bread\BreadRegistry::class))
@@ -60,7 +79,9 @@
                         <x-filament::button type="button" color="gray" wire:click="generateSeoMeta" wire:loading.attr="disabled" wire:target="generateSeoMeta" wire:confirm="Сгенерировать и сохранить SEO-метаданные для всех языков?">Сгенерировать Meta Title / Description</x-filament::button>
                     </div>
                 @endif
-                {{ $this->form }}
+                <x-bread-scrollable-tabs>
+                    {{ $this->form }}
+                </x-bread-scrollable-tabs>
                 @include('filament.components.bread-alt-panel')
                 <div class="flex gap-2" style="margin-top: 24px;">
                     <x-filament::button type="submit">Сохранить</x-filament::button>

@@ -210,10 +210,10 @@ class VoyagerBread extends Page
                 'date' => DatePicker::make($row->field),
                 'timestamp' => DateTimePicker::make($row->field),
                 'color' => ColorPicker::make($row->field),
-                'image' => FileUpload::make($row->field)->image()->openable()->imagePreviewHeight(240)->extraAttributes(['style' => 'max-width: 360px;'])->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(10240),
+                'image' => FileUpload::make($row->field)->image()->compactImagePreviews()->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(10240),
                 'file' => FileUpload::make($row->field)->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(102400),
-                'multiple_images' => FileUpload::make($row->field)->image()->multiple()->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(10240),
-                'media_picker' => FileUpload::make($row->field)->image()->multiple()->reorderable()->disk('public')
+                'multiple_images' => FileUpload::make($row->field)->image()->multiple()->compactImagePreviews(true)->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(10240),
+                'media_picker' => FileUpload::make($row->field)->image()->multiple()->compactImagePreviews(true)->reorderable()->disk('public')
                     ->directory($this->libraryRoot($details) . '/' . date('FY'))->maxSize(10240)
                     ->disabled(! (bool) ($details['allow_upload'] ?? true))->dehydrated()
                     ->acceptedFileTypes($details['allowed'] ?? ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/avif'])
@@ -233,19 +233,19 @@ class VoyagerBread extends Page
                 $components[$row->field] = $component;
             }
         }
-        if ($this->locale === config('voyager.multilingual.default', 'en')) {
-            foreach ($relationships as $column => [$row, $details]) {
+        foreach ($relationships as $column => [$row, $details]) {
                 $table = $details['table'];
                 $key = $details['key'];
                 $name = $details['label'];
                 $components[$row->field] = Select::make($column)
                     ->label($row->display_name ?: $column)
+                    ->options(fn (): array => DB::table($table)->orderBy($key)->limit(50)->pluck($name, $key)->all())
                     ->searchable()
                     ->getSearchResultsUsing(fn (string $search): array => DB::table($table)
-                        ->where($name, 'like', '%' . $search . '%')->limit(50)->pluck($name, $key)->all())
+                        ->where($name, 'like', '%' . $search . '%')->orderBy($key)->limit(50)->pluck($name, $key)->all())
                     ->getOptionLabelUsing(fn ($value): ?string => $value === null ? null : DB::table($table)->where($key, $value)->value($name));
-            }
-            if ($this->recordId !== null) {
+        }
+        if ($this->recordId !== null) {
                 foreach ($this->registry()->manyToManyRows($bread, $operation) as $relation) {
                     $row = $relation['row'];
                     $details = $relation['details'];
@@ -253,12 +253,12 @@ class VoyagerBread extends Page
                     $name = $details['label'];
                     $components[$row->field] = Select::make('__pivot_' . $row->id)
                         ->label($row->display_name ?: $table)
+                        ->options(fn (): array => DB::table($table)->orderBy('id')->limit(50)->pluck($name, 'id')->all())
                         ->multiple()->searchable()
                         ->getSearchResultsUsing(fn (string $search): array => DB::table($table)
-                            ->where($name, 'like', '%' . $search . '%')->limit(50)->pluck($name, 'id')->all())
+                            ->where($name, 'like', '%' . $search . '%')->orderBy('id')->limit(50)->pluck($name, 'id')->all())
                         ->getOptionLabelsUsing(fn (array $values): array => DB::table($table)->whereIn('id', $values)->pluck($name, 'id')->all());
                 }
-            }
         }
 
         if ($this->recordId !== null && $model instanceof HasMedia) {
@@ -290,7 +290,7 @@ class VoyagerBread extends Page
         }
 
         return $schema->statePath('data')->components(count($tabs) > 1
-            ? [Tabs::make('BREAD')->tabs($tabs)->persistTabInQueryString()->columnSpanFull()]
+            ? [Tabs::make('BREAD')->tabs($tabs)->extraAttributes(['class' => 'viar-bread-tabs'])->persistTabInQueryString()->columnSpanFull()]
             : array_values($components));
     }
 
@@ -489,7 +489,7 @@ class VoyagerBread extends Page
             }
         }
         $pivots = [];
-        if ($this->recordId !== null && $this->locale === $default) {
+        if ($this->recordId !== null) {
             foreach ($this->registry()->manyToManyRows($bread, 'edit') as $relation) {
                 $key = '__pivot_' . $relation['row']->id;
                 $pivots[] = [$relation, array_values(array_unique(array_map('intval', (array) ($values[$key] ?? []))))];
@@ -499,18 +499,16 @@ class VoyagerBread extends Page
             ->map(fn (stdClass $row): ?string => (json_decode($row->details ?: '{}', true) ?: [])['column'] ?? null)
             ->filter()->all();
         $values = array_intersect_key($values, array_flip(array_merge($allowed->pluck('field')->all(), $relationshipColumns)));
-        if ($this->locale === $default) {
-            foreach ($this->registry()->belongsToRows($bread, $this->recordId ? 'edit' : 'add') as $relation) {
+        foreach ($this->registry()->belongsToRows($bread, $this->recordId ? 'edit' : 'add') as $relation) {
                 $details = json_decode($relation->details ?: '{}', true) ?: [];
                 $column = $details['column'] ?? null;
                 if ($column && filled($values[$column] ?? null)
                     && ! DB::table($details['table'])->where($details['key'], $values[$column])->exists()) {
                     throw ValidationException::withMessages(['data.' . $column => 'Связанная запись не найдена.']);
                 }
-            }
         }
 
-        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated): void {
+        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns): void {
             $record = $this->recordId ? $model->newQuery()->lockForUpdate()->findOrFail($this->recordId) : $model->newInstance();
             if ($this->locale === $default) {
                 foreach ($values as $field => $value) {
@@ -527,39 +525,18 @@ class VoyagerBread extends Page
                 }
                 $record->save();
                 $this->recordId = (int) $record->getKey();
-                foreach ($pivots as [$relation, $ids]) {
-                    $details = $relation['details'];
-                    $target = $details['table'];
-                    if ($ids !== [] && DB::table($target)->whereIn('id', $ids)->count() !== count($ids)) {
-                        throw ValidationException::withMessages(['data.__pivot_' . $relation['row']->id => 'Связанные записи не найдены.']);
-                    }
-                    $pivot = $details['pivot_table'];
-                    $sourceKey = $relation['sourceKey'];
-                    $targetKey = $relation['targetKey'];
-                    DB::table($pivot)->where($sourceKey, $record->getKey())->delete();
-                    foreach ($ids as $id) {
-                        $attributes = [$sourceKey => $record->getKey(), $targetKey => $id];
-                        if (DatabaseSchema::hasColumn($pivot, 'created_at')) {
-                            $attributes['created_at'] = now();
-                        }
-                        if (DatabaseSchema::hasColumn($pivot, 'updated_at')) {
-                            $attributes['updated_at'] = now();
-                        }
-                        DB::table($pivot)->insert($attributes);
-                    }
-                }
             } else {
                 foreach ($values as $field => $value) {
                     if (! in_array($field, $translated, true)) {
                         $row = $allowed->firstWhere('field', $field);
-                        if (! $row) {
+                        if (! $row && ! in_array($field, $relationshipColumns, true)) {
                             continue;
                         }
-                        if ($row->type === 'password') {
+                        if ($row?->type === 'password') {
                             $value = Hash::make($value);
-                        } elseif (in_array($row->type, ['multiple_images', 'media_picker'], true)) {
+                        } elseif (in_array($row?->type, ['multiple_images', 'media_picker'], true)) {
                             $value = json_encode(array_values($value ?? []), JSON_UNESCAPED_SLASHES);
-                        } elseif ($row->type === 'multiple_checkbox') {
+                        } elseif ($row?->type === 'multiple_checkbox') {
                             $value = json_encode(array_combine((array) $value, (array) $value), JSON_UNESCAPED_SLASHES);
                         }
                         $record->setAttribute($field, $value);
@@ -573,6 +550,27 @@ class VoyagerBread extends Page
                     }
                 }
                 $record->save();
+            }
+            foreach ($pivots as [$relation, $ids]) {
+                $details = $relation['details'];
+                $target = $details['table'];
+                if ($ids !== [] && DB::table($target)->whereIn('id', $ids)->count() !== count($ids)) {
+                    throw ValidationException::withMessages(['data.__pivot_' . $relation['row']->id => 'Связанные записи не найдены.']);
+                }
+                $pivot = $details['pivot_table'];
+                $sourceKey = $relation['sourceKey'];
+                $targetKey = $relation['targetKey'];
+                DB::table($pivot)->where($sourceKey, $record->getKey())->delete();
+                foreach ($ids as $id) {
+                    $attributes = [$sourceKey => $record->getKey(), $targetKey => $id];
+                    if (DatabaseSchema::hasColumn($pivot, 'created_at')) {
+                        $attributes['created_at'] = now();
+                    }
+                    if (DatabaseSchema::hasColumn($pivot, 'updated_at')) {
+                        $attributes['updated_at'] = now();
+                    }
+                    DB::table($pivot)->insert($attributes);
+                }
             }
         });
         Notification::make()->title('Сохранено')->success()->send();
@@ -1327,17 +1325,15 @@ class VoyagerBread extends Page
                 ])->value('value');
             }
         }
-        if ($this->locale === config('voyager.multilingual.default', 'en')) {
-            foreach ($this->registry()->belongsToRows($bread, 'edit') as $row) {
+        foreach ($this->registry()->belongsToRows($bread, 'edit') as $row) {
                 $details = json_decode($row->details ?: '{}', true) ?: [];
                 $values[$details['column']] = $record->getAttribute($details['column']);
-            }
-            foreach ($this->registry()->manyToManyRows($bread, 'edit') as $relation) {
+        }
+        foreach ($this->registry()->manyToManyRows($bread, 'edit') as $relation) {
                 $details = $relation['details'];
                 $values['__pivot_' . $relation['row']->id] = DB::table($details['pivot_table'])
                     ->where($relation['sourceKey'], $record->getKey())
                     ->pluck($relation['targetKey'])->all();
-            }
         }
         $this->form->fill($values);
     }

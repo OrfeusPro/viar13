@@ -7,6 +7,18 @@ use Illuminate\Support\Str;
 
 class BreadFileUpload extends FileUpload
 {
+    public function compactImagePreviews(bool $multiple = false): static
+    {
+        $this->imagePreviewHeight('160')->openable()->extraAttributes([
+            'class' => $multiple ? 'viar-bread-image-grid' : 'viar-bread-image-single',
+        ]);
+        if ($multiple) {
+            $this->panelLayout('grid')->itemPanelAspectRatio(0.8);
+        }
+
+        return $this;
+    }
+
     public function toEmbeddedHtml(): string
     {
         $labels = [];
