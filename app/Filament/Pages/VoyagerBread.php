@@ -138,6 +138,7 @@ class VoyagerBread extends Page
             }
             $navigation[] = NavigationItem::make(trim((string) $item->title) ?: $type->display_name_plural)
                 ->key('bread-' . $item->id)
+                ->icon(\App\Filament\Bread\BreadNavigationIcon::resolve($item->icon_class ?? null, $type->slug))
                 ->group($group)
                 ->sort((int) $item->order)
                 ->url($url);

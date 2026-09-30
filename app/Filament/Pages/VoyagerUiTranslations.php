@@ -48,13 +48,14 @@ class VoyagerUiTranslations extends Page
         if (! static::canAccess() || ! DatabaseSchema::hasTable('menu_items')) {
             return [];
         }
-        $navigation = [NavigationItem::make('Переводы интерфейса')->url(static::getUrl())->sort(2)];
+        $navigation = [NavigationItem::make('Переводы интерфейса')->icon('heroicon-o-language')->url(static::getUrl())->sort(2)];
         $items = DB::table('menu_items')->where('status', 1)
             ->where('url', 'like', '/admin/translations/view/%')->orderBy('order')->get();
         foreach ($items as $item) {
             if (preg_match('~^/admin/translations/view/([a-zA-Z0-9_-]+)$~', (string) $item->url, $match)) {
                 $navigation[] = NavigationItem::make((string) $item->title)
                     ->key('ui-translations-' . $item->id)
+                    ->icon(\App\Filament\Bread\BreadNavigationIcon::resolve($item->icon_class ?? null, 'translations'))
                     ->group('Переводы')
                     ->sort((int) $item->order)
                     ->url(static::getUrl() . '?group=' . urlencode($match[1]));

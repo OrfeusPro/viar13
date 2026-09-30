@@ -15,6 +15,8 @@ class VoyagerCatalog extends Page
 
     protected static ?string $navigationLabel = 'Все разделы Voyager';
 
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
+
     protected string $view = 'filament.pages.voyager-catalog';
 
     public static function canAccess(): bool

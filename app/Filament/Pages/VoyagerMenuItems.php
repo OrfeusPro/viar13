@@ -20,6 +20,8 @@ class VoyagerMenuItems extends Page
 
     protected static ?string $navigationLabel = 'Пункты меню';
 
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bars-3';
+
     protected string $view = 'filament.pages.voyager-menu-items';
 
     public int $menuId = 0;
@@ -100,7 +102,8 @@ class VoyagerMenuItems extends Page
             TextInput::make('route')->label('Route')->maxLength(255),
             TextInput::make('parameters')->label('Параметры JSON'),
             Select::make('target')->label('Открывать')->options(['_self' => 'В этом окне', '_blank' => 'В новом окне']),
-            TextInput::make('icon_class')->label('Иконка')->maxLength(255),
+            TextInput::make('icon_class')->label('Иконка')->maxLength(255)
+                ->helperText('Класс Voyager (voyager-photo) или Heroicon (heroicon-o-photo). Если оставить пустым, иконка выбирается по разделу.'),
             Toggle::make('status')->label('Активен'),
         ]);
     }

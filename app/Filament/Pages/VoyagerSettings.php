@@ -19,6 +19,8 @@ class VoyagerSettings extends Page
 
     protected static ?string $navigationLabel = 'Настройки Voyager';
 
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+
     protected string $view = 'filament.pages.voyager-settings';
 
     public ?int $settingId = null;
