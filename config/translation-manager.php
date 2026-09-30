@@ -11,10 +11,10 @@ return [
     |
     */
     'route' => [
-        'prefix'     => 'admin/translations',
+        'prefix'     => 'filament/translations',
         'middleware' => [
             'web',
-            'auth',
+            \App\Http\Middleware\TranslationManagerAccess::class,
 
         ],
     ],

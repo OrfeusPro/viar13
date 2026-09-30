@@ -733,68 +733,52 @@ class VoyagerBreadTest extends TestCase
         $this->assertDatabaseHas('menu_items', ['id' => $id, 'parent_id' => null]);
     }
 
-    public function test_ui_translation_is_saved_to_database_and_published_to_dictionary(): void
+    public function test_standalone_translation_manager_edits_imports_and_publishes_with_filament_auth(): void
     {
         Schema::create('ltm_translations', function (Blueprint $table): void {
-            $table->id(); $table->boolean('status')->default(false);
-            $table->string('locale'); $table->string('group'); $table->string('key');
+            $table->id(); $table->integer('status')->default(0);
+            $table->string('locale'); $table->string('group'); $table->text('key');
             $table->text('value')->nullable(); $table->timestamps();
         });
         $this->admin(['browse_admin']);
-        DB::table('ltm_translations')->insert([
-            'locale' => 'ru', 'group' => 'homepage_new', 'key' => 'title', 'value' => 'Старое',
-        ]);
-        DB::table('ltm_translations')->insert([
-            'locale' => 'en', 'group' => 'homepage_new', 'key' => 'new_only', 'value' => 'New',
-        ]);
-        DB::table('ltm_translations')->insert([
-            'locale' => 'ru', 'group' => '_json', 'key' => 'A sentence.', 'value' => 'Старый текст',
-        ]);
+        DB::table('ltm_translations')->insert(['locale' => 'ru', 'group' => 'homepage_new', 'key' => 'title', 'value' => 'Old']);
         $oldPath = app()->langPath();
-        $directory = storage_path('framework/testing/ui-translations-' . uniqid());
-        \Illuminate\Support\Facades\File::makeDirectory($directory . '/ru', 0755, true);
-        \Illuminate\Support\Facades\File::put($directory . '/ru/homepage_new.php', "<?php return ['title' => 'Старое', 'other' => 'Не менять'];");
-        \Illuminate\Support\Facades\File::put($directory . '/ru.json', json_encode(['A sentence.' => 'Старый текст', 'other' => 'Не менять']));
+        $directory = storage_path('framework/testing/standalone-translations-' . uniqid());
+        \Illuminate\Support\Facades\File::ensureDirectoryExists($directory . '/ru');
+        file_put_contents($directory . '/ru/homepage_new.php', "<?php return ['title' => 'From file', 'other' => 'Imported'];");
         app()->useLangPath($directory);
+        app()->forgetInstance('translation.loader');
+        app()->forgetInstance('translator');
+        \Illuminate\Support\Facades\Lang::clearResolvedInstance('translator');
         try {
-            $this->get('/filament/ui-translations')->assertOk();
-            Livewire::test(VoyagerUiTranslations::class)
-                ->call('openEdit', 'title')
-                ->set('data.value', 'Новое')
-                ->call('save')
-                ->assertHasNoErrors();
-            $this->assertDatabaseHas('ltm_translations', [
-                'locale' => 'ru', 'group' => 'homepage_new', 'key' => 'title', 'value' => 'Новое',
-            ]);
-            $this->assertSame(['title' => 'Новое', 'other' => 'Не менять'], require $directory . '/ru/homepage_new.php');
-
-            Livewire::test(VoyagerUiTranslations::class)
-                ->assertSee('new_only')
-                ->call('openEdit', 'new_only')
-                ->set('data.value', 'Новое значение')
-                ->call('save')
-                ->assertHasNoErrors();
-            $this->assertDatabaseHas('ltm_translations', [
-                'locale' => 'ru', 'group' => 'homepage_new', 'key' => 'new_only', 'value' => 'Новое значение',
-            ]);
-
-            Livewire::test(VoyagerUiTranslations::class)
-                ->call('selectGroup', '_json')
-                ->call('openEdit', 'A sentence.')
-                ->set('data.value', 'Новый текст')
-                ->call('save')
-                ->assertHasNoErrors();
-            $this->assertSame(['A sentence.' => 'Новый текст', 'other' => 'Не менять'],
-                json_decode(\Illuminate\Support\Facades\File::get($directory . '/ru.json'), true));
+            $this->get('/filament/translations')->assertOk()->assertSee('Translation Manager')->assertSee('Import groups');
+            $this->get('/filament/ui-translations')->assertRedirect('/filament/translations');
+            $this->get('/filament/ui-translations?group=homepage_new')->assertRedirect('/filament/translations/view/homepage_new');
+            $this->post('/filament/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'New'])
+                ->assertOk()->assertJson(['status' => 'ok']);
+            $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'value' => 'New', 'status' => 1]);
+            $this->post('/filament/translations/import', ['replace' => false])->assertOk()->assertJson(['status' => 'ok']);
+            $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'value' => 'New']);
+            $this->assertDatabaseHas('ltm_translations', ['key' => 'other', 'value' => 'Imported']);
+            $this->post('/filament/translations/publish/homepage_new')->assertOk()->assertJson(['status' => 'ok']);
+            $this->assertSame(['title' => 'New', 'other' => 'Imported'], require $directory . '/ru/homepage_new.php');
+            $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'status' => 0]);
+            $this->get('/filament/translations/view/homepage_new')->assertOk()->assertSee('New');
+            $this->post('/filament/translations/add/homepage_new', ['keys' => "new_key\nsecond_key"])->assertRedirect();
+            $this->assertDatabaseHas('ltm_translations', ['group' => 'homepage_new', 'key' => 'new_key']);
+            auth('filament')->user()->role->permissions()->detach();
+            auth('filament')->user()->unsetRelations();
+            $this->get('/filament/translations')->assertForbidden();
+            $this->post('/filament/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'Forbidden'])->assertForbidden();
+            auth('filament')->logout();
+            $this->get('/filament/translations')->assertRedirect(route('filament.admin.auth.login'));
+            $this->postJson('/filament/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'Guest'])->assertUnauthorized();
+            $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'value' => 'New']);
         } finally {
             app()->useLangPath($oldPath);
-            \Illuminate\Support\Facades\File::delete($directory . '/ru/homepage_new.php');
-            \Illuminate\Support\Facades\File::delete($directory . '/ru.json');
-            rmdir($directory . '/ru');
-            rmdir($directory);
+            \Illuminate\Support\Facades\File::deleteDirectory($directory);
         }
     }
-
     public function test_voyager_setting_requires_permission_and_saves_value(): void
     {
         Schema::create('settings', function (Blueprint $table): void {
