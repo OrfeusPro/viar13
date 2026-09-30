@@ -7,13 +7,16 @@
         .viar-bread-media-actions { display: flex; gap: 8px; margin-top: 12px; }
         .viar-bread-page .fi-page-main, .viar-bread-page .fi-section { min-width: 0; }
         .viar-bread-search { max-width: 28rem; margin-bottom: 24px; }
-        .viar-bread-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; position: relative; }
+        .viar-bread-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; position: relative; border: 1px solid #dbe3ee; border-radius: 10px; }
         .viar-bread-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
         .viar-bread-table th, .viar-bread-table td { min-width: 150px; max-width: 240px; padding: 9px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
-        .viar-bread-table th { white-space: nowrap; font-weight: 600; }
+        .viar-bread-table thead th { padding: 13px 12px; text-align: left; vertical-align: middle; white-space: nowrap; font-weight: 600; color: #334155; background: #eef2f8; border-bottom: 1px solid #dbe3ee; }
         .viar-bread-table th:first-child, .viar-bread-table td:first-child { min-width: 75px; }
         .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 6px -4px #9ca3af; }
         .dark .viar-bread-table th:last-child, .dark .viar-bread-table td:last-child { background: #18181b; }
+        .viar-bread-table thead th:last-child { background: #eef2f8; }
+        .dark .viar-bread-table-scroll { border-color: #334155; }
+        .dark .viar-bread-table thead th { color: #e2e8f0; background: #243047; border-color: #334155; }
         .viar-bread-page .viar-bread-image-single { width: 100%; max-width: 280px; }
         .viar-bread-page .viar-bread-image-grid { width: 100%; max-width: 720px; }
         .viar-bread-page .viar-bread-image-grid .filepond--root[data-style-panel-layout="grid"] .filepond--item { width: calc(33.333% - 0.5rem); }

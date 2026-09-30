@@ -1,22 +1,51 @@
-<x-filament-panels::page>
+<x-filament-panels::page class="viar-management-page">
+    @include('filament.components.management-styles')
     <x-filament::section>
         @if ($settingId !== null)
-            <form wire:submit="save" style="display:grid;gap:16px">
+            <form wire:submit="save" class="viar-management-form">
                 {{ $this->form }}
-                <div style="display:flex;gap:8px"><x-filament::button type="submit">Сохранить</x-filament::button><x-filament::button type="button" color="gray" wire:click="cancel">Отмена</x-filament::button></div>
+                <div class="viar-management-form-actions"><x-filament::button type="submit">Сохранить</x-filament::button><x-filament::button type="button" color="gray" wire:click="cancel">Отмена</x-filament::button></div>
             </form>
         @else
-            @foreach ($this->groups() as $group => $settings)
-                <h2 style="font-size:1.2rem;font-weight:600;margin:16px 0 8px">{{ $group }}</h2>
-                <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
-                    <thead><tr><th>Настройка</th><th>Ключ</th><th>Значение</th><th></th></tr></thead>
-                    <tbody>
-                        @foreach ($settings as $setting)
-                            <tr style="border-top:1px solid #d1d5db"><td style="padding:8px">{{ $setting->display_name }}</td><td style="padding:8px">{{ $setting->key }}</td><td style="padding:8px;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $setting->type === 'image' ? '[изображение]' : $setting->value }}</td><td>@if (auth('filament')->user()?->hasPermission('edit_settings'))<x-filament::button size="sm" wire:click="openEdit({{ $setting->id }})">Изменить</x-filament::button>@endif</td></tr>
-                        @endforeach
-                    </tbody>
-                </table></div>
-            @endforeach
+            @php($groups = $this->groups())
+            @php($initialGroup = array_key_exists('Site', $groups) ? 'Site' : array_key_first($groups))
+            <div x-data="{ group: @js($initialGroup) }">
+                <div class="viar-management-tabs" role="tablist" aria-label="Группы настроек">
+                    @foreach ($groups as $group => $settings)
+                        <button type="button" class="viar-management-tab" role="tab" id="settings-tab-{{ $loop->index }}" aria-controls="settings-panel-{{ $loop->index }}" x-bind:aria-selected="group === @js($group)" x-on:click="group = @js($group)">{{ $group ?: 'Общие' }} <span style="margin-left:6px;opacity:.7">{{ count($settings) }}</span></button>
+                    @endforeach
+                </div>
+                @foreach ($groups as $group => $settings)
+                    <div role="tabpanel" id="settings-panel-{{ $loop->index }}" aria-labelledby="settings-tab-{{ $loop->index }}" x-show="group === @js($group)" x-cloak style="margin-top:24px">
+                        <div class="viar-management-scroll" tabindex="0" role="region" aria-label="Таблица настроек {{ $group }}">
+                            <table class="viar-management-table">
+                                <thead><tr><th scope="col">Настройка</th><th scope="col">Ключ</th><th scope="col">Значение</th><th scope="col">Действия</th></tr></thead>
+                                <tbody>
+                                @foreach ($settings as $setting)
+                                    <tr wire:key="setting-row-{{ $setting->id }}">
+                                        <td><span class="viar-setting-label">{{ $setting->display_name ?: $setting->key }}</span></td>
+                                        <td><code class="viar-management-code">{{ $setting->key }}</code></td>
+                                        <td class="viar-management-setting-value">
+                                            @if ($setting->type === 'image')
+                                                @php($imageUrl = \App\Filament\Bread\BreadImage::urls($setting->value)[0] ?? null)
+                                                @if ($imageUrl)<a href="{{ $imageUrl }}" target="_blank" rel="noopener noreferrer"><img class="viar-setting-image" src="{{ $imageUrl }}" alt="{{ $setting->display_name }}" loading="lazy"></a>@else<span class="viar-management-muted">Изображение не задано</span>@endif
+                                            @elseif ($setting->type === 'checkbox')
+                                                <span @class(['viar-management-badge', 'is-enabled' => (bool) $setting->value])>{{ $setting->value ? 'Включено' : 'Выключено' }}</span>
+                                            @elseif ($setting->type === 'code_editor')
+                                                <code class="viar-management-code">{{ \Illuminate\Support\Str::limit((string) $setting->value, 240) }}</code>
+                                            @else
+                                                {{ \Illuminate\Support\Str::limit((string) $setting->value, 600) ?: '—' }}
+                                            @endif
+                                        </td>
+                                        <td>@if (auth('filament')->user()?->hasPermission('edit_settings'))<x-filament::icon-button icon="heroicon-o-pencil-square" label="Изменить" wire:click="openEdit({{ $setting->id }})" />@endif</td>
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         @endif
     </x-filament::section>
 </x-filament-panels::page>
