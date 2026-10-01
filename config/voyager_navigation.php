@@ -1,11 +1,6 @@
 <?php
 
 return [
-    'group_icons' => [
-        'Контент' => 'heroicon-o-document-text',
-        'Переводы' => 'heroicon-o-language',
-        'Контент Voyager' => 'heroicon-o-squares-2x2',
-    ],
     // Existing menu_items.icon_class values stay unchanged when importing the production DB.
     'icons' => [
         'voyager-basket' => 'heroicon-o-shopping-bag',
