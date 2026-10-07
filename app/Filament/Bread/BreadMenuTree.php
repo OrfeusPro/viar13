@@ -53,7 +53,8 @@ class BreadMenuTree
                 $nodes[] = [
                     'id' => 'menu-'.$row->id,
                     'label' => trim((string) $row->title),
-                    'icon' => filled($row->icon_class ?? null) ? BreadNavigationIcon::resolve($row->icon_class) : ($item?->getIcon() ?? BreadNavigationIcon::resolve(null)),
+                    'icon' => $row->route === 'voyager.dashboard' ? 'heroicon-o-home'
+                        : (filled($row->icon_class ?? null) ? BreadNavigationIcon::resolve($row->icon_class) : ($item?->getIcon() ?? BreadNavigationIcon::resolve(null))),
                     'url' => $item?->getUrl(),
                     'active' => ($item && static::matches($item->getUrl())) || collect($children)->contains('active', true),
                     'children' => $children,

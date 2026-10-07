@@ -17,7 +17,10 @@
 .viar-menu-flyout { position: fixed; z-index: 60; width: 320px; max-width: calc(100vw - 100px); max-height: calc(100vh - 100px); overflow: auto; padding: 10px; border: 1px solid var(--gray-200); border-radius: 12px; background: white; box-shadow: 0 12px 36px #0002; }
 .viar-menu-flyout-heading { display: flex; gap: 10px; align-items: center; padding: 8px 10px 12px; margin-bottom: 6px; border-bottom: 1px solid var(--gray-200); }
 .viar-menu-flyout-heading .fi-icon { width: 24px; height: 24px; color: var(--primary-600); }
-.viar-menu-location { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-bottom: 18px; color: var(--gray-500); font-size: 13px; }
+.viar-menu-location { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--gray-500); font-size: 13px; line-height: 1.6; }
+.viar-menu-location-home { display: inline-flex; align-items: center; gap: 6px; }
+.viar-menu-location .fi-icon { width: 16px; height: 16px; flex-shrink: 0; }
+.viar-menu-location .viar-menu-location-separator { width: 12px; height: 12px; color: var(--gray-400); }
 .viar-menu-location a:hover { color: var(--primary-600); }
 .viar-menu-location [aria-current] { color: var(--gray-800); font-weight: 500; }
 .dark .viar-menu-button { color: var(--gray-200); }

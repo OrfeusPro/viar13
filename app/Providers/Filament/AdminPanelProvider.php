@@ -28,7 +28,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('filament')
             ->brandName('Viar Admin')
-            ->renderHook('panels::content.start', fn () => view('filament.components.menu-location'))
+            ->renderHook('panels::page.header.heading.before', fn (array $scopes) =>
+                collect($scopes)->contains(fn (string $scope): bool => is_subclass_of($scope, \Filament\Resources\Pages\Page::class))
+                    ? '' : view('filament.components.menu-location'))
             ->renderHook('panels::head.end', fn () => view('filament.components.order-chat-styles'))
             ->maxContentWidth(Width::Full)
             ->sidebarCollapsibleOnDesktop()
