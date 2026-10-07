@@ -2112,6 +2112,9 @@ class OrdersController extends Controller
         }
 
         $makeOrder = $this->makeOrder($request);
+        if ($makeOrder instanceof \Symfony\Component\HttpFoundation\Response) {
+            return $makeOrder;
+        }
         // $makeOrder = 136;
 
         // if ($request['payment'] === 'paypalOnetimePayment' && $makeOrder) {
@@ -2205,6 +2208,10 @@ class OrdersController extends Controller
 
     public function makeOrder(Request $request)
     {
+        if (session('coupon_error')) {
+            return redirect()->back()->with('def_error', session('coupon_error'));
+        }
+        $requestedCouponId = (int) session('coupon_id', 0);
 
         $response = [];
 
@@ -2263,7 +2270,17 @@ class OrdersController extends Controller
 
 
         // Сохранение заказа
-        $order_id = $this->Orders->saveOrder($basket, $request->all());
+        if ($requestedCouponId > 0 && (int) ($basket['coupon_id'] ?? 0) !== $requestedCouponId) {
+            return redirect()->back()->with('def_error', session('coupon_error', __('checkout_coupon.inactive')));
+        }
+        try {
+            $order_id = $this->Orders->saveOrder($basket, $request->all());
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $errors = $exception->errors();
+            $message = $errors['coupon'][0] ?? __('checkout_coupon.invalid_request');
+            session()->put('coupon_error', $message);
+            return redirect()->back()->with('def_error', $message);
+        }
 
 
 

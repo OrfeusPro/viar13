@@ -21,27 +21,31 @@ class UserRepository
             ->get();
     }
 
-    public function generateCouponUser($email): ?string
+    public function generateCouponUser($email, ?string $eventKey = null): ?string
     {
-        $user = User::where('email', $email)->first();
-        if ($user) {
-            $rand_code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz';
-            $coupon_code = mb_substr(str_shuffle($rand_code), 0, 10);
-            DB::table('coupons')->insert([
-                [
-                    'text'                => $coupon_code,
-                    'created_at'          => now(),
-                    'updated_at'          => now(),
-                    'value'               => "5%",
-                    'is_active'           => 1,
-                    'is_multiuse'         => 0,
-                    'user_id'             => $user->id,
-                    'is_abandoned_basket' => true,
-                ]
-            ]);
-            return $coupon_code;
+        $email = strtolower(trim((string) $email));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { return null; }
+        if ($eventKey) {
+            $existing = DB::table('coupons')->where('recovery_event_key', $eventKey)->value('text');
+            if ($existing) { return $existing; }
         }
-        return null;
+        $user = User::where('email', $email)->first();
+        $code = \Illuminate\Support\Str::random(20);
+        try {
+            DB::table('coupons')->insert([
+                'text' => $code, 'created_at' => now(), 'updated_at' => now(), 'value' => '5%',
+                'is_active' => 1, 'is_multiuse' => 0, 'user_id' => $user ? $user->id : 0,
+                'recipient_email' => $email, 'recovery_event_key' => $eventKey,
+                'is_abandoned_basket' => true,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($eventKey) {
+                $existing = DB::table('coupons')->where('recovery_event_key', $eventKey)->value('text');
+                if ($existing) { return $existing; }
+            }
+            throw $e;
+        }
+        return $code;
     }
 
     public function generateCouponUserGiftCard($email, $value, $order_id, $type = false): ?string

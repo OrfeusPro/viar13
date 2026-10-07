@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'without_coupon' => 'Tęsti be kupono',
+    'not_found' => 'Kodas nerastas.',
+    'inactive' => 'Kodas neaktyvus arba jau panaudotas.',
+    'email_required' => 'Norėdami pritaikyti kodą, įveskite el. paštą.',
+    'recipient_mismatch' => 'Šis kodas skirtas kitam el. pašto adresui.',
+    'referral_unavailable' => 'Pakvietimo nuolaida negalima.',
+    'invalid_value' => 'Neteisinga kupono vertė.',
+    'invalid_request' => 'Patikrinkite kodą ir el. paštą.',
+    'provisional' => 'Preliminari nuolaida. Patvirtinsime prisijungus kliento duomenų žingsnyje.',
+    'email_label' => 'Jūsų el. paštas',
+    'giftcard_terms' => 'Padengia įprastas ir akcines prekes. Naudojama vieną kartą; likutis neišsaugomas. Pristatymas mokamas atskirai.',
+    'size_offer' => 'Dydis :size už papildomus :extra €',
+    'choose_size' => 'Pasirinkti dydį',
+    'size_upgrade_title' => 'Padidinkite šio paveikslo dydį',
+    'size_current' => 'Dabar užsakyme',
+    'size_proposed' => 'Siūlomas dydis',
+    'size_cm' => 'cm',
+    'size_preserve_photo' => 'Pakeisime šio paveikslo dydį. Jūsų nuotrauka išliks.',
+    'size_extra' => 'Priemoka :extra € už paveikslą',
+    'size_replace' => 'Keisti į :size cm',
+    'giftcard_note_title' => 'Kaip naudoti dovanų kortelę',
+    'size_discount_terms' => '15% nuolaida tik drobei. Nuolaidos kodas papildomai taikomas drobei; papildomos paslaugos kainuoja įprastai.',
+];

@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'without_coupon' => 'Jätka kupongita',
+    'not_found' => 'Koodi ei leitud.',
+    'inactive' => 'Kood pole aktiivne või on juba kasutatud.',
+    'email_required' => 'Koodi kasutamiseks sisestage e-posti aadress.',
+    'recipient_mismatch' => 'See kood on mõeldud teisele e-posti aadressile.',
+    'referral_unavailable' => 'Soovitussoodustus pole saadaval.',
+    'invalid_value' => 'Kupongi väärtus on vigane.',
+    'invalid_request' => 'Kontrollige koodi ja e-posti aadressi.',
+    'provisional' => 'Esialgne soodustus. Kinnitame selle pärast sisselogimist kliendiandmete etapis.',
+    'email_label' => 'Teie e-post',
+    'giftcard_terms' => 'Katab tava- ja soodushinnaga tooted. Ühekordne kasutus; jääki ei säilitata. Tarne eest tasutakse eraldi.',
+    'size_offer' => 'Suurus :size lisatasuga :extra €',
+    'choose_size' => 'Vali suurus',
+    'size_upgrade_title' => 'Suurendage selle pildi mõõtu',
+    'size_current' => 'Praegu tellimuses',
+    'size_proposed' => 'Pakutav mõõt',
+    'size_cm' => 'cm',
+    'size_preserve_photo' => 'Muudame selle pildi mõõtu. Teie foto säilib.',
+    'size_extra' => 'Lisatasu :extra € pildi kohta',
+    'size_replace' => 'Muuda mõõduks :size cm',
+    'giftcard_note_title' => 'Kinkekaardi kasutamine',
+    'size_discount_terms' => '15% allahindlust ainult lõuendile. Sooduskood annab lõuendile lisasoodustuse; lisateenused on täishinnaga.',
+];

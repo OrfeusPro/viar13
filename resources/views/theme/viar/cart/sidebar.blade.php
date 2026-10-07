@@ -1,10 +1,15 @@
 @php $is_gift_card = false @endphp
 @if (!empty($basket))
+    <div id="checkout-endpoints" hidden
+         data-setmaking="{{ route('setmaking') }}"
+         data-setuser="{{ route('setuser') }}"
+         data-setdelivery="{{ route('setdelivery') }}"
+         data-setpay="{{ route('setpay') }}"
+         data-updateimg="{{ route('updateimg') }}"
+         data-delimage="{{ route('delimage') }}"
+         data-clear_coupon="{{ route('clearcart') }}"></div>
 	@php
 
-		$logstring = var_export($basket, true);
-		$file = __DIR__ . '/output_sidebar.txt';
-		file_put_contents($file, $logstring . "\n", FILE_APPEND);
 
 		$total_item_counts = 0;
 		$term = '';
@@ -45,7 +50,7 @@
                         return is_numeric($key) && isset($item['sumPrice']);
                     }, ARRAY_FILTER_USE_BOTH);
 
-                    if (count($basketProducts) == 1) {
+                    if (count($basketProducts) == 1 && !app(\App\Services\CheckoutCouponService::class)->isPromotional(reset($basketProducts))) {
                             $showRecommendations = true;
                     }
                 @endphp
@@ -218,6 +223,17 @@
 
 
 
+            @if(session('coupon_error'))
+                <p class="checkout-coupon-error" role="alert">{{ session('coupon_error') }}</p>
+                @if($step > 1)
+                    <a href="{{ route('cart.index') }}">@lang('cart_new.ganeral_coupon_or_certificate')</a>
+                @else
+                    <a href="#" class="clear_coupon">@lang('checkout_coupon.without_coupon')</a>
+                @endif
+            @endif
+            @if(!empty($basket['coupon_provisional']))
+                <p class="checkout-coupon-provisional">@lang('checkout_coupon.provisional')</p>
+            @endif
 			@if ($step == 1)
 				@if ($basket['spend_bonus'] == false)
 					@if ($basket['coupon_id'] <= 0)
@@ -231,25 +247,18 @@
 
 								<input name="coupon" type="text" class="input-grey" placeholder="@lang('cart_new.general_enter_code')">
 
-								@auth
-									<a href="" class="cart-page-sidebar__certificate--btn">
-										@lang('cart_new.general_apply')
-									</a>
-								@endauth
+                                @if(!auth()->check() && !session('email'))
+                                    <label>@lang('checkout_coupon.email_label')
+                                        <input type="email" name="coupon_email" class="input-grey" autocomplete="email">
+                                    </label>
+                                @endif
+                                <a href="#" class="cart-page-sidebar__certificate--btn" data-url="{{ route('coupon_use') }}">@lang('cart_new.general_apply')</a>
+                                <aside class="checkout-giftcard-note">
+                                    <strong>@lang('checkout_coupon.giftcard_note_title')</strong>
+                                    <p>@lang('checkout_coupon.giftcard_terms')</p>
+                                </aside>
+                                <p class="js-coupon-error" role="alert"></p>
 
-								@guest
-									<a href="" class="js-popup-login" style="margin-top: 6px;
-									font-weight: 400;
-									font-size: 15px;
-									line-height: 18px;
-									color: #fa7846;
-									border-bottom: 1px solid #fa7846;
-									transition: 0.3s linear;
-									float: right;
-									margin-bottom: 30px;">
-										@lang('cart_new.general_apply')
-									</a>
-								@endguest
 							@endif
 
 						</div>

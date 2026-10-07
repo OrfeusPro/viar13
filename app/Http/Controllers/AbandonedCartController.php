@@ -48,7 +48,8 @@ class AbandonedCartController extends Controller
 
     public function setEmail(Request $request)
     {
-        request()->session()->put('email', $request->get('email'));
+        $request->validate(['email' => 'required|email|max:255']);
+        request()->session()->put('email', strtolower(trim($request->get('email'))));
         return redirect()->route('cart.index');
     }
 }

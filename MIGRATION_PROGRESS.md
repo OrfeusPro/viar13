@@ -2362,3 +2362,10 @@ scope; Filament 5 будет рассматриваться отдельным �
 - На страницах ресурсов Filament не добавляется второй путь: сохранены их штатные крошки, в том числе список/редактирование.
 - Chrome FAQ: крошки находятся внутри fi-header; left крошек и заголовка 137.33px, gap 12px; домик виден. Заказы: 1 native breadcrumb, 0 custom duplicates. Снимок storage/app/testing/menu-home-breadcrumbs-2026-10-01.png.
 - Проверки: 2 теста BreadMenuNavigationTest / 20 assertions прошли, view:cache, PHP lint AdminPanelProvider, diff-check успешны. Следующее действие: пользовательская оценка размещения; обязательных задач по этому исправлению нет.
+
+# 2026-10-07 — DONE: упрощение корзины и правила скидок Laravel 13
+- Перенесены guest email/coupons, предложения первого шага, пропорциональный размер −15%, +1 картина −30%, исключения специальных цен, подарочные карты и recovery.
+- Сохранены target FormRequest (включая 100 MB исходники), inline auth, payment validation и BestEffortMailService. Купон и заказ атомарны; файлы/почта/Synvolve после транзакции. Исправлена подпись изготовления холстов, повторный запрос email не возникает.
+- Проверки: PHP 8.4.1, 65 tests / 387 assertions PASS; lint, JS syntax, view:cache, diff-check PASS. Chrome viar13.loc: 38 × 0,85 × 0,90 + 7,68 = 36,75 €, +1 26,60 €, SUPER DEAL 30 € без купона, второй шаг/email, мобильная ширина 390 px без overflow.
+- Доказательства и ограничения: docs/checkout/implementation.md, docs/checkout/evidence/checkout-port.xml и снимки. Реальная оплата и регистрация не выполнялись. Точечная миграция — Nothing to migrate.
+- Следующий шаг при выпуске: точечный импорт переводов и UAT оплаты в тестовом контуре. Изменения Filament не затронуты.

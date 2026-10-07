@@ -109,13 +109,14 @@
 												</div>
 											</div>
 											@endif
-										@endforeach
+					@endforeach
 										@endif
 
 									</div>
 								@endisset
 
 							</div>
+                            @include(config('theme.resource') . 'cart.size_offer', ['offer' => $sizeOffers[$basketIndex] ?? null, 'basketKey' => $basketIndex])
 						</div>
 					@endforeach
 					<div class="cart-page-global__bottom">

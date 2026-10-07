@@ -35,22 +35,27 @@ class SendAbandonedCartsEmailsCoupons extends Command
         $sentCount = 0;
 
         foreach ($carts as $cart) {
-            App::setLocale($cart->locale);
-
-            if ($cart->email) {
-                $coupon = $userRepository->generateCouponUser($cart->email);
-                $token = $cart->recovery_token;
-                $url_cart = route('cart.recover', ['redirect' => 'cart', 'token' => $token]);
-                $url_checkout = route('cart.recover', ['redirect' => 'checkout', 'token' => $token]);
-
-                try {
-                    Mail::to($cart->email)->queue(new AbandonedCartMailTwelve($url_cart, $url_checkout, $cart, $coupon));
+            try {
+                $sent = \DB::transaction(function () use ($cart, $userRepository) {
+                    $cart = AbandonedCart::where('id', $cart->id)->lockForUpdate()->first();
+                    if (!$cart || $cart->is_coupon_sent || !$cart->is_send_email_twelve_hours || !$cart->recovery_token ||
+                        $cart->updated_at >= Carbon::now()->subHours(24) ||
+                        $cart->hasPaidOrderAfterUpdate()) { return false; }
+                    App::setLocale($cart->locale);
+                    $eventKey = hash('sha256', $cart->id.':'.$cart->recovery_token);
+                    $coupon = $userRepository->generateCouponUser($cart->email, $eventKey);
+                    if (!$coupon) { return false; }
+                    $url_cart = route('cart.recover', ['redirect' => 'cart', 'token' => $cart->recovery_token]);
+                    $url_checkout = route('cart.recover', ['redirect' => 'checkout', 'token' => $cart->recovery_token]);
+                    Mail::to($cart->email)->queue((new AbandonedCartMailTwelve($url_cart, $url_checkout, $cart, $coupon))->afterCommit());
                     $cart->is_coupon_sent = true;
                     $cart->save();
-                    $sentCount++;
-                } catch (Exception $exception) {
-                    Log::error('Ошибка отправки письма о забытой корзине с купоном. Адресат - ' . $cart->email);
-                }
+                    return true;
+                });
+                if ($sent) { $sentCount++; }
+            } catch (Exception $exception) {
+                Log::error('Abandoned cart coupon email failed', ['cart_id' => $cart->id,
+                    'exception' => get_class($exception)]);
             }
         }
         Log::info("Отправлено $sentCount email(ов) пользователям с заброшенной корзиной с купоном.");

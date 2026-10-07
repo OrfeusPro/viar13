@@ -23,7 +23,7 @@
 							<label for="" class="cart-data-page__input email">
 								<span>@lang('cart_new.step_2_email')</span>
 								<input type="email" class="input-grey" required
-									@isset($user['email']) value="{{ $user['email'] }}" @endisset>
+									value="{{ $user['email'] ?? session('email', '') }}">
 							</label>
 
 							@if (!$user)
@@ -357,8 +357,8 @@
 </style>
 
 {{-- Modal windows for cart step 2 --}}
-@include(config('theme.resource') . 'cart.modals.alternative_size_modal')
-@include(config('theme.resource') . 'cart.modals.recommendation_modal')
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {

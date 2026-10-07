@@ -15,6 +15,13 @@ class CanvasRecommendationRequest extends FormRequest
 
     public function rules(): array
     {
+        // Replays do not create another item and do not require another upload.
+        foreach ((array) $this->session()->get('basket', []) as $item) {
+            if (is_array($item) && (! empty($item['is_recommendation']) || ! empty($item['is_canvas_recommendation']))) {
+                return [];
+            }
+        }
+
         return [
             'size' => ['required', 'string', 'regex:/^\d+(?:\.\d+)?x\d+(?:\.\d+)?$/i'],
             'full_size' => [

@@ -387,6 +387,27 @@ class Orders extends Model
 
     public function saveOrder($basket, $checkoutParams)
     {
+        $notifications = [];
+        if ((int) ($basket['coupon_id'] ?? 0) > 0) {
+            $result = DB::transaction(function () use ($basket, $checkoutParams, &$notifications) {
+                return $this->saveOrderWithConfirmedCoupon($basket, $checkoutParams, $notifications);
+            });
+        } else {
+            $result = $this->saveOrderWithConfirmedCoupon($basket, $checkoutParams, $notifications);
+        }
+        foreach ($notifications as $notification) {
+            try { $notification(); } catch (\Throwable $exception) {
+                \Log::error('Order post-persistence action failed', [
+                    'order_id' => is_numeric($result) ? (int) $result : null,
+                    'exception' => get_class($exception),
+                ]);
+            }
+        }
+        return $result;
+    }
+
+    private function saveOrderWithConfirmedCoupon($basket, $checkoutParams, array &$notifications)
+    {
 
         if(isset($checkoutParams['phone']))
         {
@@ -476,9 +497,9 @@ class Orders extends Model
                 $checkoutParams['phone'] = str_replace("-","", $checkoutParams['phone']);
             }
 
-            $checkoutParams->validate([
+            Validator::make($checkoutParams, [
                 'phone' => 'required|min:7|regex:/^\+?[0-9\s()-]+$/'
-            ]);
+            ])->validate();
 
             $user = new User();
             $user->password = $pass;
@@ -502,15 +523,21 @@ class Orders extends Model
 
             Auth::login($user);
 
+            $notifications[] = function () use ($user, $random_pass) {
             app(BestEffortMailService::class)->send(
                 $user->email,
                 new SendUserRegister($user, $random_pass),
                 'checkout_user_registration',
                 ['user_id' => $user->id]
             );
+            };
 
             $user_email = $checkoutParams['email'];
 
+        }
+
+        if ((int) ($basket['coupon_id'] ?? 0) > 0) {
+            $basket = app(\App\Services\CheckoutCouponService::class)->confirm($basket, $user);
         }
 
         // картинка в заказе
@@ -699,6 +726,8 @@ class Orders extends Model
 
         $z = 0;
         foreach ($basket as $okey => $itm) {
+            // For coupon orders leave source files intact until the transaction commits.
+            if ((int) ($basket['coupon_id'] ?? 0) > 0) { continue; }
             if (isset($basket[$okey]['savedImage'])) {
                 $z++;
                 $basket[$okey]['savedImage'] = $this->renameAndRemoveImage($basket[$okey]['savedImage'], $z);
@@ -762,15 +791,20 @@ class Orders extends Model
             'use_bonus' => $use_bonus
         ]);
 
-        self::renameUploadsPhoto($order_id);
-
-        app(BestEffortMailService::class)->send(
-            $user_email,
-            new SendUserYourOrderGiven($basket, $user, $order_id, $user->preferredLocale()),
-            'checkout_order_confirmation',
-            ['order_id' => $order_id, 'user_id' => $user->id]
-        );
-        app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order_id, 'site_order_created');
+        $notifications[] = function () use ($order_id) {
+            self::renameUploadsPhoto($order_id);
+        };
+        $notifications[] = function () use ($user_email, $basket, $user, $order_id) {
+            app(BestEffortMailService::class)->send(
+                $user_email,
+                new SendUserYourOrderGiven($basket, $user, $order_id, $user->preferredLocale()),
+                'checkout_order_confirmation',
+                ['order_id' => $order_id, 'user_id' => $user->id]
+            );
+        };
+        $notifications[] = function () use ($order_id) {
+            app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order_id, 'site_order_created');
+        };
 
         if (isset($basket['coupon_id']) && $basket['coupon_id'] >0) {
 
@@ -825,13 +859,13 @@ class Orders extends Model
                 'created_at' => now()
             ]);
 
-            if( $basket['coupon_type']!="friend" && $basket['coupon_type']!="universal"  && $basket['coupon_type']!="free_delivery") {
-                DB::table('coupons')->where('id', $basket['coupon_id'])->delete();
-            }
+            app(\App\Services\CheckoutCouponService::class)->consume($basket);
 
         }
 
         Session::forget('basket');
+        Session::forget('coupon_provisional');
+        Session::forget('coupon_error');
         Session::forget('is_coupon_def');
         Session::forget('sale_dated');
         Session::forget('phone_rec');
@@ -847,11 +881,7 @@ class Orders extends Model
         $user->is_coupon_dates = null;
         $user->save();
 
-        $orders = $this->getOrdersByUserId($user->id);
-
-        $orders = (array) $orders[0];
-
-        return $orders['id'];
+        return $order_id;
     }
 
     public static function renameUploadsPhoto($orderId)

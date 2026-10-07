@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'without_coupon' => 'Kontynuuj bez kuponu',
+    'not_found' => 'Nie znaleziono kodu.',
+    'inactive' => 'Kod jest nieaktywny lub został już wykorzystany.',
+    'email_required' => 'Podaj e-mail, aby zastosować kod.',
+    'recipient_mismatch' => 'Ten kod jest przeznaczony dla innego adresu e-mail.',
+    'referral_unavailable' => 'Rabat za polecenie jest niedostępny.',
+    'invalid_value' => 'Nieprawidłowa wartość kuponu.',
+    'invalid_request' => 'Sprawdź kod i e-mail.',
+    'provisional' => 'Rabat wstępny. Potwierdzimy go po zalogowaniu na etapie danych klienta.',
+    'email_label' => 'Twój e-mail',
+    'giftcard_terms' => 'Pokrywa produkty zwykłe i promocyjne. Jednorazowa; niewykorzystane saldo nie jest zachowane. Dostawa płatna osobno.',
+    'size_offer' => 'Rozmiar :size za dopłatą :extra €',
+    'choose_size' => 'Wybierz rozmiar',
+    'size_upgrade_title' => 'Powiększ ten obraz',
+    'size_current' => 'Obecnie w zamówieniu',
+    'size_proposed' => 'Proponowany rozmiar',
+    'size_cm' => 'cm',
+    'size_preserve_photo' => 'Zmienimy rozmiar tego obrazu. Twoje zdjęcie pozostanie.',
+    'size_extra' => 'Dopłata :extra € za obraz',
+    'size_replace' => 'Zmień na :size cm',
+    'giftcard_note_title' => 'Jak działa karta podarunkowa',
+    'size_discount_terms' => '15% rabatu tylko na płótno. Kod rabatowy dodatkowo obniża cenę płótna; dodatki są płatne w pełnej cenie.',
+];

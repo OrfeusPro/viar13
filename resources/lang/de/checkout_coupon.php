@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'without_coupon' => 'Ohne Gutschein fortfahren',
+    'not_found' => 'Code nicht gefunden.',
+    'inactive' => 'Dieser Code ist inaktiv oder wurde bereits verwendet.',
+    'email_required' => 'Geben Sie Ihre E-Mail-Adresse ein, um den Code anzuwenden.',
+    'recipient_mismatch' => 'Dieser Code gehört zu einer anderen E-Mail-Adresse.',
+    'referral_unavailable' => 'Der Empfehlungsrabatt ist nicht verfügbar.',
+    'invalid_value' => 'Ungültiger Gutscheinwert.',
+    'invalid_request' => 'Prüfen Sie den Code und die E-Mail-Adresse.',
+    'provisional' => 'Vorläufiger Rabatt. Wir bestätigen ihn nach der Anmeldung im Schritt Kundendaten.',
+    'email_label' => 'Ihre E-Mail-Adresse',
+    'giftcard_terms' => 'Gilt für reguläre und reduzierte Artikel. Einmalig nutzbar; Restguthaben verfällt. Versand wird separat bezahlt.',
+    'size_offer' => 'Größe :size für einen Aufpreis von :extra €',
+    'choose_size' => 'Größe wählen',
+    'size_upgrade_title' => 'Vergrößern Sie dieses Bild',
+    'size_current' => 'Aktuell im Auftrag',
+    'size_proposed' => 'Vorgeschlagene Größe',
+    'size_cm' => 'cm',
+    'size_preserve_photo' => 'Wir ändern die Größe dieses Bildes. Ihr Foto bleibt erhalten.',
+    'size_extra' => 'Aufpreis :extra € pro Bild',
+    'size_replace' => 'Auf :size cm ändern',
+    'giftcard_note_title' => 'So funktioniert die Geschenkkarte',
+    'size_discount_terms' => '15% Rabatt nur auf die Leinwand. Ein Gutscheincode reduziert den Leinwandpreis zusätzlich; Extras kosten den vollen Preis.',
+];

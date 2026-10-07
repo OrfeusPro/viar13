@@ -1,3 +1,7 @@
+function checkoutEndpoint(name) {
+    var endpoints = document.getElementById('checkout-endpoints');
+    return endpoints && endpoints.getAttribute('data-' + name) || '/cart/' + name;
+}
 $(document).ready(function() {
 
     let portraitsSlider = $(".examples-portrait__slider");
@@ -278,26 +282,21 @@ $(document).ready(function() {
   }), $(".cart-page-item").on("click", ".cart_item_delete", function() {
       basketId = $(this).data("id"), d(basketId)
   }), $(document).on("click", ".cart-page-sidebar__certificate--btn", function(e) {
-      var t;
-      console.log("Применен купон"), e.preventDefault();
-      let a = $(this).prev().val();
-      a && (t = a, $.ajax({
-          type: "post",
-          dataType: "html",
-          headers: {
-              "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-          },
-          url: "/basket/coupon_use",
-          data: {
-              couponData: t
-          },
-          success: function(e) {
-              if (e) {
-                  var t = jQuery.parseJSON(e);
-                  "user" == t.finded && $(".js-popup-login").click(), 1 == t.finded && u()
-              }
-          }
-      }))
+      e.preventDefault();
+      const $block = $(this).closest('.cart-page-sidebar__certificate');
+      const $error = $block.find('.js-coupon-error');
+      const $button = $(this);
+      if ($button.data('pending')) return;
+      const code = $block.find('input[name="coupon"]').val();
+      if (!code) return;
+      $button.data('pending', true);
+      $.ajax({type: 'POST', dataType: 'json', url: $button.data('url') || '/basket/coupon_use',
+          headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+          data: {couponData: code, email: $block.find('input[name="coupon_email"]').val()},
+          success: function(response) { $error.text(''); if (response.finded == 1) u(); },
+          error: function(xhr) { $error.text((xhr.responseJSON || {}).message || ''); },
+          complete: function() { $button.data('pending', false); }
+      });
   }), $(document).on("click", "#country_block .select__option", function(e) {
       e.preventDefault();
       let t = $(this).data("value");
@@ -330,7 +329,7 @@ $(document).ready(function() {
               headers: {
                   "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
               },
-              url: "/cart/updateimg",
+              url: checkoutEndpoint("updateimg"),
               data: {
                   curId: n.curId,
                   imgSrc: n.imgSrc,
@@ -364,7 +363,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/delimage",
+          url: checkoutEndpoint("delimage"),
           data: {
               curId: t.curId,
               imgSrc: t.imgSrc,
@@ -389,7 +388,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setmaking",
+          url: checkoutEndpoint("setmaking"),
           data: {
               makeInfo: t,
               makePrice: 0,
@@ -533,7 +532,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setmaking",
+          url: checkoutEndpoint("setmaking"),
           data: {
               makeInfo: t,
               makePrice: 0,
@@ -565,7 +564,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setdelivery",
+          url: checkoutEndpoint("setdelivery"),
           data: t,
           success: function(t) {
               if (t) {
@@ -599,7 +598,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setpay",
+          url: checkoutEndpoint("setpay"),
           data: {
               paymentMethod: e,
               paymentData: t
@@ -690,7 +689,7 @@ $(document).ready(function() {
             headers: {
                 "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
             },
-            url: "/cart/setuser",
+            url: checkoutEndpoint("setuser"),
             data: {
                 name: t,
                 surname: a,
@@ -776,8 +775,9 @@ $(document).ready(function() {
           }
       })
   }), $(document).on("click", ".clear_coupon", function(e) {
+      e.preventDefault();
       $.ajax({
-          url: "/cart/clear_coupon",
+          url: checkoutEndpoint("clear_coupon"),
           type: "get",
           success: function(e) {
               u(), console.log("AJAX request successful")
@@ -1196,4 +1196,18 @@ $(document).ready(function () {
 
     initGoogleRatingBadge();
     initGoogleReviewsSection();
+});
+
+$(document).on('click', '.js-checkout-size-offer', function () {
+    const button = this;
+    if (button.disabled) return;
+    button.disabled = true;
+    const $error = $(button).closest('.checkout-size-offer').find('.js-checkout-size-error');
+    $.ajax({type: 'POST', dataType: 'json', url: $(button).data('url'),
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data: {basket_key: $(button).data('basket-key'), new_size: $(button).data('size')},
+        success: function(response) { if (response.success) window.location.reload(); else $error.text(response.message); },
+        error: function(xhr) { $error.text((xhr.responseJSON || {}).message || ''); },
+        complete: function() { button.disabled = false; }
+    });
 });

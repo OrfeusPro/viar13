@@ -1,3 +1,4 @@
+@php $checkoutAdsAllowed = !in_array(Route::currentRouteName(), ['cart.step2', 'cart.step3', 'cart.step4'], true); @endphp
 <!DOCTYPE html>
 @if (Config::get('app.locale') == 'ee')
     <html lang="et">
@@ -569,7 +570,7 @@
         @include((config('theme.resource') ?: 'theme.viar.') . 'partials.seo_city')
     @endif
 
-    @if(Route::currentRouteName() == 'ads.canvas')
+    @if($checkoutAdsAllowed && Route::currentRouteName() == 'ads.canvas')
 <!-- sticky offer -->
 
         <div id="offer" class="offer offer-hidden">
@@ -1089,10 +1090,7 @@
 @endif
 
 
-@if(Route::currentRouteName() != 'ads.canvas'
-&& Route::currentRouteName() != 'cart.step2'
-&& Route::currentRouteName() != 'cart.step3'
-&& Route::currentRouteName() != 'cart.step4')
+@if($checkoutAdsAllowed && Route::currentRouteName() != 'ads.canvas')
 <!-- sticky offer -->
 
     <div id="offer" class="offer offer-hidden">

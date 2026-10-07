@@ -429,6 +429,7 @@ class PublicBasketSessionContractTest extends TestCase
         Schema::create('gallery_items', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
+            $table->boolean('active')->default(true);
             $table->decimal('price_from', 10, 2);
             $table->text('images')->nullable();
             $table->timestamps();
@@ -464,6 +465,7 @@ class PublicBasketSessionContractTest extends TestCase
         Schema::create('gallery_items', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
+            $table->boolean('active')->default(true);
             $table->decimal('price_from', 10, 2);
             $table->text('images')->nullable();
             $table->timestamps();
@@ -492,6 +494,7 @@ class PublicBasketSessionContractTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('id_type')->nullable();
             $table->string('name');
+            $table->boolean('active')->default(true);
             $table->decimal('price_from', 10, 2);
             $table->text('images')->nullable();
             $table->text('custom_size_prices')->nullable();
@@ -532,7 +535,7 @@ class PublicBasketSessionContractTest extends TestCase
     {
         $this->post('/basket/add-canvas-recommendation', [
             'size' => '60x40',
-            'full_size' => '60x40h',
+            'full_size' => '60x40r',
             'price' => 0.01,
             'userImage' => UploadedFile::fake()->image('canvas.jpg'),
         ])->assertBadRequest()
@@ -564,7 +567,7 @@ class PublicBasketSessionContractTest extends TestCase
 
         try {
             DB::table('canvas_header')->insert([
-                'sizes_30x40' => '60x40h[100]',
+                'sizes_30x40' => '60x40r[100]',
             ]);
             DB::table('a_production_time')->insert([
                 'category' => 'canvas',
@@ -574,12 +577,13 @@ class PublicBasketSessionContractTest extends TestCase
 
             $repository = $this->mock(BasketRepository::class);
             $repository->shouldReceive('saveBasketToAbandonedCartModel')->once();
+            $repository->shouldReceive('getRecommendedItems')->once()->andReturn([['is_canvas_recommendation'=>true,'size'=>'60x40r','discounted_price'=>100]]);
 
             $this->withSession([
                 'basket' => [['pid' => 10, 'name' => 'Base item', 'count' => 1]],
             ])->post('/basket/add-canvas-recommendation', [
                 'size' => '60x40',
-                'full_size' => '60x40h',
+                'full_size' => '60x40r',
                 'price' => 0.01,
                 'userImage' => UploadedFile::fake()->image('canvas.jpg')->size(102400),
             ])->assertOk()

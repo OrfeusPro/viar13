@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'without_coupon' => 'Continue without a coupon',
+    'not_found' => 'Code not found.',
+    'inactive' => 'This code is inactive or has already been used.',
+    'email_required' => 'Enter your email to apply the code.',
+    'recipient_mismatch' => 'This code belongs to another email address.',
+    'referral_unavailable' => 'The referral discount is unavailable.',
+    'invalid_value' => 'Invalid coupon value.',
+    'invalid_request' => 'Check the code and email.',
+    'provisional' => 'Provisional discount. We will confirm it after sign-in at the customer details step.',
+    'email_label' => 'Your email',
+    'giftcard_terms' => 'Covers regular and sale items. Single use; unused balance is not retained. Delivery is paid separately.',
+    'size_offer' => 'Size :size for an extra :extra €',
+    'choose_size' => 'Choose size',
+    'size_upgrade_title' => 'Make this canvas larger',
+    'size_current' => 'Currently in your order',
+    'size_proposed' => 'Suggested size',
+    'size_cm' => 'cm',
+    'size_preserve_photo' => 'This replaces the size of this canvas. Your photo stays.',
+    'size_extra' => 'Extra :extra € per canvas',
+    'size_replace' => 'Replace with :size cm',
+    'giftcard_note_title' => 'Using a gift card',
+    'size_discount_terms' => '15% off the canvas only. A promo code gives an additional canvas discount; extras are charged in full.',
+];

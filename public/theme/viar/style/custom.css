@@ -1457,3 +1457,77 @@ details[open] .faq-icon::after {
     cursor: pointer;
 }
 
+.cart-page-item .checkout-size-offer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 20px;
+    margin-top: 20px;
+    padding: 16px 20px;
+    background: #fff8f2;
+    border: 1px solid #f5e6da;
+    border-radius: 12px;
+}
+.checkout-size-offer__details { flex: 1 1 240px; min-width: 0; }
+.checkout-size-offer__comparison { display: flex; align-items: center; gap: 14px; margin: 12px 0 8px; }
+.checkout-size-offer__comparison > div { display: flex; flex-direction: column; gap: 2px; }
+.checkout-size-offer__comparison span { font-size: 13px; color: #666b73; line-height: 1.5; }
+.checkout-size-offer__comparison b { font-size: 18px; line-height: 1.5; font-weight: 600; }
+.checkout-size-offer__arrow { padding: 0 6px; }
+.checkout-size-offer__action { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.checkout-size-offer__action > strong { font-size: 16px; line-height: 1.5; font-weight: 600; }
+.checkout-size-offer__details strong { display: block; font-size: 16px; line-height: 1.5; font-weight: 600; }
+.checkout-size-offer__details p { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 4px 0 0; color: #74777e; font-size: 14px; line-height: 1.5; }
+.cart-page-item .checkout-size-offer .js-checkout-size-offer {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 148px;
+    min-height: 44px;
+    margin: 0;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 600;
+}
+.checkout-size-offer__error:empty { display: none; }
+.checkout-size-offer__error { flex-basis: 100%; margin: 0; color: #b42318; font-size: 14px; }
+@media (max-width: 575px) {
+    .cart-page-item .checkout-size-offer { padding: 14px; gap: 12px; }
+    .checkout-size-offer__details { flex-basis: 100%; }
+    .checkout-size-offer__action { width: 100%; align-items: stretch; }
+    .cart-page-item .checkout-size-offer .js-checkout-size-offer { width: 100%; }
+}
+
+
+.cart-page-sidebar__certificate .checkout-giftcard-note {
+    clear: both;
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border-left: 3px solid #f7b18c;
+    background: #fff;
+    border-radius: 0 8px 8px 0;
+    color: #636973;
+    text-align: left;
+}
+.cart-page-sidebar__certificate .checkout-giftcard-note strong {
+    display: block;
+    margin: 0 0 4px;
+    color: #343a43;
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 600;
+}
+.cart-page-sidebar__certificate .checkout-giftcard-note p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.checkout-size-offer__discount{display:inline-block;margin-left:10px;padding:4px 9px;border-radius:6px;background:#ff7b47;color:#fff;font-weight:700;font-size:14px;white-space:nowrap}
+.checkout-size-offer__comparison s{font-size:14px;opacity:.7;margin-right:6px}
+
+.checkout-size-offer__heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.checkout-size-offer__heading .checkout-size-offer__discount{margin-left:0}
+.checkout-size-offer__comparison span strong{display:inline;font-size:15px}

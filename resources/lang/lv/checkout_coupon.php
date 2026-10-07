@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'without_coupon' => 'Turpināt bez kupona',
+    'not_found' => 'Kods nav atrasts.',
+    'inactive' => 'Kods nav aktīvs vai jau ir izmantots.',
+    'email_required' => 'Lai izmantotu kodu, ievadiet e-pastu.',
+    'recipient_mismatch' => 'Šis kods ir paredzēts citai e-pasta adresei.',
+    'referral_unavailable' => 'Atlaide par ielūgumu nav pieejama.',
+    'invalid_value' => 'Nederīga kupona vērtība.',
+    'invalid_request' => 'Pārbaudiet kodu un e-pastu.',
+    'provisional' => 'Provizoriska atlaide. Apstiprināsim pēc pieteikšanās klienta datu solī.',
+    'email_label' => 'Jūsu e-pasts',
+    'giftcard_terms' => 'Apmaksā parastās un akcijas preces. Izmantojama vienu reizi; atlikums netiek saglabāts. Piegāde jāapmaksā atsevišķi.',
+    'size_offer' => 'Izmērs :size ar piemaksu :extra €',
+    'choose_size' => 'Izvēlēties izmēru',
+    'size_upgrade_title' => 'Palieliniet šīs gleznas izmēru',
+    'size_current' => 'Pašlaik pasūtījumā',
+    'size_proposed' => 'Piedāvātais izmērs',
+    'size_cm' => 'cm',
+    'size_preserve_photo' => 'Mainīsim šīs gleznas izmēru. Jūsu foto saglabāsies.',
+    'size_extra' => 'Piemaksa :extra € par gleznu',
+    'size_replace' => 'Mainīt uz :size cm',
+    'giftcard_note_title' => 'Dāvanu kartes izmantošana',
+    'size_discount_terms' => '15% atlaide tikai audeklam. Atlaižu kods dod papildu atlaidi audeklam; papildpakalpojumi par pilnu cenu.',
+];

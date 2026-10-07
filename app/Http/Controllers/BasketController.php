@@ -33,6 +33,7 @@ use App\Models\GalleryDecoration;
 use App\Services\ImageSaverService;
 use App\Services\BestEffortMailService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Repositories\BasketRepository;
@@ -122,69 +123,41 @@ class BasketController extends Controller
     //// TODO:  Нажатие на кнопку применить купон
     public function coupon_use(Request $request)
     {
-        $cur_coupon = $request->couponData;
-        $user = \Auth::user();
-        if (!auth()->check()) {
-            return response()->json([
-                'finded' => "user",
-            ]);
-        }
-        $coupon = DB::table('coupons')->where('text', $cur_coupon)->first();
-
-        Session::put('coupon_type', 'none');
-
-        if ($coupon)
-        {
-            Session::put('coupon_id', $coupon->id);
-            Session::put('coupon_val', $coupon->value);
-
-            if ($coupon->is_dates_sale)   {  Session::put('coupon_type', 'date');   }
-
-            if ($coupon->is_30_40_free)   {  Session::put('coupon_type', '30_40');   }
-
-            if ($coupon->is_universal)   {  Session::put('coupon_type', 'universal');   }
-
-            if ($coupon->is_facebook)   {  Session::put('coupon_type', 'facebook');   }
-
-            if ($coupon->is_1free)   {  Session::put('coupon_type', '1free');   }
-
-            if ($coupon->free_delivery)   {  Session::put('coupon_type', 'free_delivery');   }
-
-            if ($coupon->is_40_60)   {  Session::put('coupon_type', '40_60');   }
-
-            if ($coupon->is_abandoned_basket)   {  Session::put('coupon_type', 'abandoned_basket');   }
-
-            if ($coupon->is_giftcard)   {  Session::put('coupon_type', 'giftcard');   }
-
-            if ($user->is_active_friend_inv==0 && Session::get('coupon_type')=='none'){
-                $friend = DB::table('users')->where('inv_sale_code', $cur_coupon)->first();
-
-                if ($friend && $friend->id==$coupon->user_id && $coupon->user_id!=$user->id ) {   Session::put('coupon_type', 'friend');   }
-                else {
-                    $user->active_coupon = null;
-                    $user->save();
-                    Session::put('coupon_id', -2);
-                }
-
-                }
-            $user->active_coupon = $coupon->id;
-            $user->save();
-        }
-        else
-        {
-            $user->active_coupon = null;
-            $user->save();
-            Session::put('coupon_id', -1);
-        }
-
-        return response()->json([
-            'finded' => "1",
+        $validator = Validator::make($request->all(), [
+            'couponData' => 'required|string|max:255', 'email' => 'nullable|email|max:255',
         ]);
+        $service = app(\App\Services\CheckoutCouponService::class);
+        if ($validator->fails()) {
+            Log::notice('Checkout coupon validation rejected');
+            return response()->json(['finded' => 'error', 'status' => 'error',
+                'message' => __('checkout_coupon.invalid_request'), 'details' => $validator->errors()], 422);
+        }
+        if (!auth()->check() && $request->filled('email')) {
+            session()->put('email', strtolower(trim($request->email)));
+        }
+        $email = auth()->check() ? auth()->user()->email : (string) session('email', '');
+        if (!$email) {
+            return response()->json(['finded' => 'email', 'message' => __('checkout_coupon.email_required')], 422);
+        }
+        $coupon = DB::table('coupons')->where('text', trim($request->couponData))->first();
+        $result = $service->inspect($coupon, $email, auth()->user());
+        if (!$result['valid']) {
+            Log::notice('Checkout coupon rejected', ['coupon_id' => $coupon->id ?? null, 'reason' => $result['reason']]);
+            return response()->json(['finded' => 'error', 'status' => 'error',
+                'code' => $result['reason'], 'message' => $result['message']], 422);
+        }
+        $duplicate = (int) session('coupon_id') === (int) $coupon->id;
+        $service->remember($coupon, $result);
+        return response()->json(['finded' => '1', 'status' => $duplicate ? 'duplicate' : 'applied',
+            'provisional' => $result['provisional'], 'message' => $result['provisional'] ? __('checkout_coupon.provisional') : null]);
+
     }
 
     //// TODO: Удаление уже выбраного Купона
     static function clearcart()
     {
+        app(\App\Services\CheckoutCouponService::class)->clear();
+        Session::forget('coupon_error');
         Session::put('coupon_id', 0);
         Session::put('coupon_val', 0);
         Session::put('coupon_type', "none");
@@ -562,6 +535,7 @@ class BasketController extends Controller
         }
 
         $request->validate([
+            'email' => 'required|email|max:255',
             'phone' => 'required|min:7|regex:/^\+?[0-9\s()-]+$/'
         ]);
 
@@ -644,6 +618,9 @@ class BasketController extends Controller
         }
 
 
+        app(\App\Services\CheckoutCouponService::class)->refresh([
+            'totalPrice' => 0,
+        ]);
         return json_encode($response);
     }
 
@@ -792,7 +769,12 @@ class BasketController extends Controller
                     }
 
                     if (isset($item['terms'])) {
-                        $basket[$index]['terms'] = GalleryItem::getTermsByPrice($item['terms']) . ($item['terms_price'] === 0.0 ? '' : ' '.intval($item['terms_price']). ' €');
+                        $isCanvas = !empty($item['is_canvas_inter']) || !empty($item['is_canvas_collage']) ||
+                            ((int) ($item['basketType'] ?? 0) === 1 && empty($item['is_def_product']));
+                        $production = $isCanvas ? AProductionTime::where('category', 'canvas')->first()?->translate($lang, 'ru') : null;
+                        $termPrice = (float) ($item['terms_price'] ?? 0);
+                        $termText = $production ? ($termPrice > (float) $production->standart_price ? $production->express_text : $production->standart_text) : null;
+                        $basket[$index]['terms'] = $termText ? $termText . ' ' . $termPrice . ' €' : $item['terms'];
                     }
 
                     if (isset($item['type'])) {
@@ -888,7 +870,16 @@ class BasketController extends Controller
 
         $recommendedItems = $this->basketRepository->getRecommendedItems($basket, 3, $contry_mult);
 
+        $sizeOffers = [];
+        foreach ($basket as $key => $item) {
+            if (is_array($item) && isset($item['sumPrice'])) {
+                $offer = app(\App\Services\CheckoutSizeOfferService::class)->offer($item, (float) $contry_mult);
+                if ($offer) { $sizeOffers[$key] = $offer; }
+            }
+        }
+
         $content = view(config('theme.resource') . 'cart.step1')
+            ->with('sizeOffers', $sizeOffers)
             ->with('basket', $basket)
             ->with('data', $data)
             ->with('friend_sale_count', $friend_sale_count)
@@ -958,72 +949,6 @@ class BasketController extends Controller
         $c_tels = CountryTel::orderBy('sort', 'asc')->get()->translate(App::getLocale(), 'ru');
         $friend_sale_count = DB::table('stocks')->where('id', 1)->pluck('friend_sale')->first();
 
-        $alternativeSizeData = null;
-        $recommendationData = null;
-        $showModal = false;
-
-        $modalShown = Session::get('cart_step2_modal_shown', false);
-        if (!$modalShown) {
-            $realItemsCount = 0;
-            $firstItemKey = null;
-            $firstItem = null;
-
-            foreach ($basket as $key => $item) {
-                if (is_array($item) && isset($item['pid'])) {
-                    $realItemsCount++;
-                    if ($realItemsCount === 1) {
-                        $firstItemKey = $key;
-                        $firstItem = $item;
-                    }
-                }
-            }
-
-            if ($realItemsCount === 1 && $firstItem) {
-                $hasSpecialLabel = $firstItem['has_special_label'] ?? false;
-
-                if (!$hasSpecialLabel) {
-                    $alternativeSizeData = $this->basketRepository->getAlternativeSizeWithDiscount($firstItem);
-
-                    if ($alternativeSizeData) {
-                        $alternativeSizeData['basket_key'] = $firstItemKey;
-                        $showModal = true;
-                    }
-                }
-            }
-
-            $hasRecommendationInBasket = false;
-            foreach ($basket as $item) {
-                if (is_array($item) && !empty($item['is_recommendation'])) {
-                    $hasRecommendationInBasket = true;
-                    break;
-                }
-            }
-
-            if ($realItemsCount > 1 && !$alternativeSizeData && !$hasRecommendationInBasket) {
-                $basket_country = request()->session()->get('basket_country');
-                $contry_mult = 1;
-                if ($basket_country) {
-                    $contry_mult = DB::table('country_tels')->where('country_code', $basket_country)->pluck('price_country_mltpr')->first();
-                    if (!$contry_mult || $contry_mult == null) {
-                        $contry_mult = 1;
-                    }
-                }
-
-                $recommendedItems = $this->basketRepository->getRecommendedItems($basket, 1, $contry_mult);
-
-                if (!empty($recommendedItems)) {
-                    $recommendationData = $recommendedItems[0];
-                    $showModal = true;
-
-                    Session::put('recommendation_discount_' . $recommendationData['id'], 30);
-                }
-            }
-
-            if ($showModal) {
-                Session::put('cart_step2_modal_shown', true);
-            }
-        }
-
         $content = view(config('theme.resource') . 'cart.step2_data')
             ->with('basket', $basket)
             ->with('data', $data)
@@ -1032,8 +957,6 @@ class BasketController extends Controller
             ->with('stocks', $stocks)
             ->with('empty', $this->chek_for_empty($basket))
             ->with('user', $user)
-            ->with('alternativeSizeData', $alternativeSizeData)
-            ->with('recommendationData', $recommendationData)
             ->render();
 
         $this->vars = Arr::add($this->vars, 'content', $content);
@@ -1549,144 +1472,72 @@ class BasketController extends Controller
 
     public function replaceItemSize(Request $request)
     {
-        try {
-            $basketKey = $request->input('basket_key');
-            $itemId = $request->input('item_id');
-            $newSize = $request->input('new_size');
-
-            if ($basketKey === null || $basketKey === '' || !$newSize) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.invalid_parameters')
-                ]);
-            }
-
-            $basket = $this->basketRepository->normalizeBasket(request()->session()->get('basket'));
-            request()->session()->put('basket', $basket);
-
-            if (!isset($basket[$basketKey])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.item_not_found')
-                ]);
-            }
-
-            $basketItem = $basket[$basketKey];
-            if (!is_array($basketItem)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.item_not_found')
-                ]);
-            }
-            $basketType = $basketItem['basketType'] ?? null;
-            $isCanvasInter = isset($basketItem['is_canvas_inter']);
-            $isCanvasCollage = isset($basketItem['is_canvas_collage']);
-            $hasPid = isset($basketItem['pid']) && $basketItem['pid'];
-
-            $newPrice = null;
-
-            if ($isCanvasInter || $isCanvasCollage || ($basketType == '1' && !$hasPid)) {
-                $newPrice = $this->getCanvasSizePrice($newSize);
-            } elseif ($hasPid) {
-                $item = GalleryItem::find($basketItem['pid']);
-                if ($item) {
-                    $newPrice = $this->getGalleryItemSizePrice($item, $newSize);
-                }
-            }
-
-            if ($newPrice === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.size_not_found')
-                ]);
-            }
-
-            $cleanSize = preg_replace('/[htsr]$/i', '', $newSize);
-            $basket[$basketKey]['size'] = $cleanSize;
-
-            if (isset($basketItem['sizeId'])) {
-                $basket[$basketKey]['sizeId'] = $cleanSize;
-                unset($basket[$basketKey]['size_name']);
-            } else {
-                $basket[$basketKey]['size_name'] = $cleanSize;
-                unset($basket[$basketKey]['sizeId']);
-            }
-            $basket[$basketKey]['price'] = $newPrice;
-            $basket[$basketKey]['has_special_label'] = hasSpecialLabel($newSize);
-
-            if ($basket[$basketKey]['has_special_label']) {
-                $basket[$basketKey]['label_type'] = getLabelType($newSize);
-            } else {
-                unset($basket[$basketKey]['label_type']);
-            }
-
-            if (isset($basket[$basketKey]['terms_price'])) {
-                $basket[$basketKey]['total_item_price'] = ($basket[$basketKey]['count'] * $newPrice) + (float)$basket[$basketKey]['terms_price'];
-            } else {
-                $basket[$basketKey]['total_item_price'] = $basket[$basketKey]['count'] * $newPrice;
-            }
-
-            session(['basket' => $basket]);
-            $this->basketRepository->saveBasketToAbandonedCartModel($basket);
-
-            return response()->json([
-                'success' => true,
-                'message' => trans('cart_new.size_replaced_successfully')
-            ]);
-
-        } catch (Exception $e) {
-            \Log::error('Error replacing item size: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => trans('cart_new.error_replacing_size')
-            ]);
+        $request->validate(['basket_key' => 'required|integer|min:0', 'new_size' => 'required|string|max:32']);
+        $basket = $this->get_basket();
+        $key = $request->input('basket_key');
+        $service = app(\App\Services\CheckoutSizeOfferService::class);
+        $offer = isset($basket[$key]) && is_array($basket[$key]) ?
+            $service->offer($basket[$key], $service->multiplier()) : null;
+        if (!$offer || $offer['alternative_size'] !== $request->input('new_size')) {
+            Log::notice('Checkout size replacement rejected', ['basket_key' => $key]);
+            return response()->json(['success' => false, 'message' => __('cart_new.size_not_found')], 422);
         }
+        $basket[$key]['sizeId'] = $service->clean($offer['alternative_size']);
+        $basket[$key]['size'] = $basket[$key]['sizeId'];
+        unset($basket[$key]['size_name']);
+        $basket[$key]['checkout_unit_price'] = $offer['unit_base_price'];
+        $basket[$key]['price'] = $offer['alternative_price'];
+        $basket[$key]['has_special_label'] = hasSpecialLabel($offer['alternative_size']);
+        $basket[$key]['label_type'] = getLabelType($offer['alternative_size']);
+        $basket[$key]['checkout_size_upgraded'] = true;
+        $basket[$key]['checkout_size_base_price'] = $offer['canvas_base_price'];
+        $basket[$key]['checkout_size_extras_price'] = $offer['extras_price'];
+        if (isset($basket[$key]['add_price'])) { $basket[$key]['add_price'] = $offer['unit_base_price']; }
+        // Store product rows only: calculated totals/coupon fields are not products.
+        $basket = array_filter($basket, function ($item) {
+            return is_array($item) && isset($item['basketType']);
+        });
+        session()->put('basket', $basket);
+        $this->basketRepository->saveBasketToAbandonedCartModel($basket);
+        return response()->json(['success' => true, 'message' => __('cart_new.size_replaced_successfully')]);
     }
 
     public function addRecommendedItem(RecommendedBasketItemRequest $request)
     {
+        if ($this->hasCheckoutRecommendation()) {
+            return response()->json(['success' => true, 'status' => 'duplicate']);
+        }
         try {
             $itemId = $request->input('item_id');
+            if (!session()->has('recommendation_discount_' . $itemId)) {
+                return response()->json(['success'=>false, 'message'=>__('cart_new.discount_not_found')], 400);
+            }
 
-            $item = GalleryItem::find($itemId);
-            if (!$item) {
+            if (!$itemId) {
                 return response()->json([
                     'success' => false,
                     'message' => trans('cart_new.item_not_found')
                 ]);
             }
 
-            $sessionKey = 'recommendation_discount_' . $itemId;
-            if (! $request->session()->has($sessionKey)) {
+            $item = GalleryItem::find($itemId);
+            if (!$item || !$item->active) {
                 return response()->json([
                     'success' => false,
-                    'message' => trans('cart_new.discount_not_found'),
-                ], 400);
-            }
-
-            $discountedPrice = $this->getRecommendedGalleryPrice($item, $request);
-            if ($discountedPrice <= 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.item_not_found'),
-                ], 422);
+                    'message' => trans('cart_new.item_not_found')
+                ]);
             }
 
             $itemType = GalleryType::find($item->id_type);
+            $multiplier = app(\App\Services\CheckoutSizeOfferService::class)->multiplier();
+            $regular = app(\App\Services\CheckoutSizeOfferService::class)->galleryRecommendation($item);
+            if (!$regular) { return response()->json(['success' => false, 'message' => __('cart_new.discount_not_found')], 422); }
+            $discountedPrice = round($regular['price'] * .7 * $multiplier, 2);
 
-            $images = json_decode($item->images, true);
-            $imageUrl = is_array($images) && !empty($images) ? $images[0] : $item->images;
+            $images = json_decode($item->image, true);
+            $imageUrl = is_array($images) && !empty($images) ? $images[0] : $item->image;
 
-            $firstSize = '30x40';
-            if ($item->custom_size_prices) {
-                $sizesArray = explode(',', $item->custom_size_prices);
-                if (!empty($sizesArray[0])) {
-                    preg_match('/^(.+?)\[/', trim($sizesArray[0]), $matches);
-                    if ($matches) {
-                        $firstSize = $matches[1];
-                    }
-                }
-            }
+            $firstSize = $regular['size'];
 
             $basket = session('basket', []);
 
@@ -1696,6 +1547,7 @@ class BasketController extends Controller
                 'size' => $firstSize,
                 'size_name' => $firstSize,
                 'price' => (float)$discountedPrice,
+                'checkout_unit_price' => $discountedPrice / $multiplier,
                 'count' => 1,
                 'total_item_price' => (float)$discountedPrice,
                 'activeImage' => 'storage/' . $imageUrl,
@@ -1715,7 +1567,7 @@ class BasketController extends Controller
             $basket[] = $basketItem;
 
             session(['basket' => $basket]);
-            $request->session()->forget($sessionKey);
+            session()->forget('recommendation_discount_' . $itemId);
             $this->basketRepository->saveBasketToAbandonedCartModel($basket);
 
             return response()->json([
@@ -2462,12 +2314,15 @@ class BasketController extends Controller
 
     public function addRecommendedToBasket(RecommendedBasketItemRequest $request)
     {
+        if ($this->hasCheckoutRecommendation()) {
+            return response()->json(['success' => true, 'status' => 'duplicate']);
+        }
         try {
             $itemId = $request->input('item_id');
 
             $item = GalleryItem::find($itemId);
 
-            if (!$item) {
+            if (!$item || !$item->active) {
                 return response()->json([
                     'success' => false,
                     'message' => __('basket.item_not_found'),
@@ -2486,24 +2341,18 @@ class BasketController extends Controller
             }
             $recommendationDiscount = 30;
 
-            $originalPrice = round(
-                (float) ($item->price_from ?? 0) * $this->getCountryPriceMultiplier($request),
-                2
-            );
-            $discountedPrice = $this->getRecommendedGalleryPrice($item, $request);
-
-            if ($discountedPrice <= 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => __('basket.item_not_found'),
-                ], 422);
-            }
+            $multiplier = app(\App\Services\CheckoutSizeOfferService::class)->multiplier();
+            $regular = app(\App\Services\CheckoutSizeOfferService::class)->galleryRecommendation($item);
+            if (!$regular) { return response()->json(['success' => false, 'message' => __('cart_new.discount_not_found')], 422); }
+            $originalPrice = $regular['price'] * $multiplier;
+            $discountedPrice = round($originalPrice * .7, 2);
 
 
             $basketItem = [
                 'pid' => $item->id,
                 'name' => $item->name,
                 'price' => $discountedPrice,
+                'checkout_unit_price' => $discountedPrice / $multiplier,
                 'original_price' => floatval($originalPrice),
                 'count' => 1,
                 'sumPrice' => $discountedPrice,
@@ -2515,6 +2364,7 @@ class BasketController extends Controller
                 'is_recommendation' => true,
                 'recommendation_discount' => $recommendationDiscount,
                 'recommendation_original_price' => floatval($originalPrice),
+                'size_name' => $regular['size'],
                 'has_special_label' => true,
                 'label_type' => 'recommendation',
                 'decor_id' => 0,
@@ -2562,25 +2412,40 @@ class BasketController extends Controller
 
     public function addCanvasRecommendation(CanvasRecommendationRequest $request)
     {
+        if ($this->hasCheckoutRecommendation()) {
+            return response()->json(['success' => true, 'status' => 'duplicate']);
+        }
         try {
-            if (! $this->hasBaseBasketItem($request->session()->get('basket', []))) {
+            if (! $this->hasBaseBasketItem(session("basket", []))) {
+                return response()->json(["success" => false, "message" => __("cart_new.discount_not_found")], 400);
+            }
+            $size = $request->input('size');
+            $full_size = $request->input('full_size');
+            $offerService = app(\App\Services\CheckoutSizeOfferService::class);
+            $recommended = $this->basketRepository->getRecommendedItems((array) session('basket', []), 3, $offerService->multiplier());
+            $matched = null;
+            foreach ($recommended as $candidate) {
+                if (!empty($candidate['is_canvas_recommendation']) && $candidate['size'] === $full_size) { $matched = $candidate; break; }
+            }
+            if (!$matched || $offerService->clean($full_size) !== $size) {
+                return response()->json(['success' => false, 'message' => __('cart_new.size_not_found')], 422);
+            }
+            $price = round((float) $matched['discounted_price'] * .7, 2);
+
+
+            if (!$size || !$price) {
                 return response()->json([
                     'success' => false,
-                    'message' => trans('cart_new.discount_not_found'),
+                    'message' => __('cart_new.missing_data'),
                 ], 400);
             }
 
-            $size = $request->input('size');
-            $full_size = $request->input('full_size');
-            $catalogPrice = $this->getCanvasSizePrice($full_size);
-            if ($catalogPrice === null) {
+            if (!$request->hasFile('userImage')) {
                 return response()->json([
                     'success' => false,
-                    'message' => trans('cart_new.size_not_found'),
-                ], 422);
+                    'message' => __('gl.error_image_canvas'),
+                ], 400);
             }
-
-            $price = round($catalogPrice * 0.7, 2);
 
             $savedImagePath = \Storage::disk('uploads')->putFile('uploads', $request->file('userImage'));
             $savedImage = \URL::to('/') . '/' . $savedImagePath;
@@ -2611,6 +2476,9 @@ class BasketController extends Controller
                 'userComment'              => '',
                 'count'                    => 1,
                 'is_canvas_recommendation' => true,
+                'is_recommendation' => true,
+                'recommendation_discount' => 30,
+                'checkout_unit_price' => $price / $offerService->multiplier(),
                 'improve_photo'            => null,
                 'photo_ex'                 => '',
                 'is_canvas_collage'        => 1,
@@ -2674,6 +2542,15 @@ class BasketController extends Controller
             }
         }
 
+        return false;
+    }
+    private function hasCheckoutRecommendation(): bool
+    {
+        foreach ((array) session('basket', []) as $item) {
+            if (is_array($item) && (!empty($item['is_recommendation']) || !empty($item['is_canvas_recommendation']))) {
+                return true;
+            }
+        }
         return false;
     }
 }

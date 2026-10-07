@@ -77,6 +77,7 @@ class UserManageController extends Controller
         $cart = request()->session()->get('basket');
         $this->basketRepository->saveBasketToAbandonedCartModel($cart);
         session()->put('email', auth()->user()->email);
+        app(\App\Services\CheckoutCouponService::class)->refresh(['totalPrice' => 0]);
         return response()->json([
             'status' => true,
         ]);
