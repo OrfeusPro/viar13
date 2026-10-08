@@ -8,10 +8,17 @@ use Tests\TestCase;
 
 class SaLeadsCreateTest extends TestCase
 {
+    use \Tests\Support\CreatesSaLeadFixtures;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createSaLeadFixtures();
+    }
     private const ENDPOINT = '/api/sa/leads';
     private const API_KEY = 'test-key';
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_001_minimal_valid_payload_returns_ok()
     {
         $response = $this->postJson(self::ENDPOINT, $this->payloadMinimal(), $this->apiHeaders());
@@ -23,7 +30,7 @@ class SaLeadsCreateTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_002_full_payload_with_service_fields_returns_ok()
     {
         $response = $this->postJson(self::ENDPOINT, $this->payloadFull(), $this->apiHeaders());
@@ -34,7 +41,7 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('data.stage.id', 'pegging');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_003_duplicate_idempotency_key_returns_duplicate()
     {
         $payload = $this->payloadMinimal();
@@ -47,7 +54,7 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('status', 'duplicate');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_004_missing_client_phone_returns_validation_error()
     {
         $payload = $this->payloadMinimal();
@@ -60,7 +67,7 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005_invalid_channel_returns_validation_error()
     {
         $payload = $this->payloadMinimal();
@@ -74,7 +81,7 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005j_legacy_stg_stage_is_rejected_with_validation_error()
     {
         $payload = $this->payloadMinimal();
@@ -88,7 +95,7 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005a_overlong_phone_returns_validation_error()
     {
         $payload = $this->payloadMinimal();
@@ -102,7 +109,7 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005b_phone_is_sanitized_before_persist()
     {
         $payload = $this->payloadMinimal();
@@ -115,7 +122,7 @@ class SaLeadsCreateTest extends TestCase
         $response->assertStatus(200)->assertJsonPath('status', 'ok');
 
         if (!Schema::hasTable('orders') || !Schema::hasColumn('orders', 'sa_client_phone')) {
-            $this->markTestSkipped('orders.sa_client_phone is not available in current test DB connection');
+            $this->fail('orders.sa_client_phone is not available in current test DB connection');
         }
 
         $leadIdRaw = (string) $response->json('data.lead_id', '');
@@ -126,11 +133,11 @@ class SaLeadsCreateTest extends TestCase
         $this->assertSame('+37129123456789', $storedPhone);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005c_recipient_block_is_persisted_into_delivery_json()
     {
         if (!Schema::hasTable('orders') || !Schema::hasColumn('orders', 'delivery')) {
-            $this->markTestSkipped('orders.delivery is not available in current test DB connection');
+            $this->fail('orders.delivery is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-2', [
@@ -163,7 +170,7 @@ class SaLeadsCreateTest extends TestCase
         $this->assertEquals(1, (int) ($delivery['is_no_payer'] ?? 0));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005d_billing_company_fields_are_persisted_to_order()
     {
         $requiredColumns = [
@@ -178,7 +185,7 @@ class SaLeadsCreateTest extends TestCase
         ];
         foreach ($requiredColumns as $column) {
             if (!Schema::hasTable('orders') || !Schema::hasColumn('orders', $column)) {
-                $this->markTestSkipped('orders.' . $column . ' is not available in current test DB connection');
+                $this->fail('orders.' . $column . ' is not available in current test DB connection');
             }
         }
 
@@ -222,7 +229,7 @@ class SaLeadsCreateTest extends TestCase
         $this->assertSame('LV99HABA0551000000001', (string) ($order->ur_bank_acc_code ?? ''));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005e_coupon_and_bonus_together_return_validation_error()
     {
         $payload = $this->payloadWithService('HM-2', [
@@ -241,11 +248,11 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.details.0.field', 'lead.pricing');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005f_invalid_coupon_returns_validation_error()
     {
         if (!Schema::hasTable('coupons')) {
-            $this->markTestSkipped('coupons table is not available in current test DB connection');
+            $this->fail('coupons table is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-2', [
@@ -263,15 +270,15 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.details.0.field', 'lead.pricing.coupon_code');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005g_universal_coupon_sets_sale_price_on_order()
     {
         if (!Schema::hasTable('coupons') || !Schema::hasTable('orders')) {
-            $this->markTestSkipped('coupons/orders tables are not available in current test DB connection');
+            $this->fail('coupons/orders tables are not available in current test DB connection');
         }
 
         if (!Schema::hasColumn('orders', 'sale_price') || !Schema::hasColumn('orders', 'delivery')) {
-            $this->markTestSkipped('orders.sale_price or orders.delivery is not available in current test DB connection');
+            $this->fail('orders.sale_price or orders.delivery is not available in current test DB connection');
         }
 
         $couponCode = 'SA-UNIV-' . strtoupper($this->uniqueSuffix());
@@ -313,15 +320,15 @@ class SaLeadsCreateTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005h_free_delivery_coupon_zeroes_delivery_price()
     {
         if (!Schema::hasTable('coupons') || !Schema::hasTable('orders')) {
-            $this->markTestSkipped('coupons/orders tables are not available in current test DB connection');
+            $this->fail('coupons/orders tables are not available in current test DB connection');
         }
 
         if (!Schema::hasColumn('orders', 'delivery') || !Schema::hasColumn('orders', 'sale_price')) {
-            $this->markTestSkipped('orders.delivery or orders.sale_price is not available in current test DB connection');
+            $this->fail('orders.delivery or orders.sale_price is not available in current test DB connection');
         }
 
         $couponCode = 'SA-FREE-' . strtoupper($this->uniqueSuffix());
@@ -364,11 +371,11 @@ class SaLeadsCreateTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005i_use_bonus_persists_sale_price_and_decrements_user_balance()
     {
         if (!Schema::hasTable('orders') || !Schema::hasColumn('orders', 'use_bonus') || !Schema::hasColumn('orders', 'sale_price')) {
-            $this->markTestSkipped('orders.use_bonus or orders.sale_price is not available in current test DB connection');
+            $this->fail('orders.use_bonus or orders.sale_price is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-2', [
@@ -417,11 +424,11 @@ class SaLeadsCreateTest extends TestCase
         $this->assertEquals(round($initialBonuses - $usedBonus, 2), round($remainingBonuses, 2));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005j_supported_delivery_payment_code_is_persisted()
     {
         if (!Schema::hasTable('orders') || !Schema::hasColumn('orders', 'payment') || !Schema::hasColumn('orders', 'delivery')) {
-            $this->markTestSkipped('orders.payment or orders.delivery is not available in current test DB connection');
+            $this->fail('orders.payment or orders.delivery is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-2', [
@@ -450,11 +457,11 @@ class SaLeadsCreateTest extends TestCase
         $this->assertSame('online_paysera', (string) ($delivery['payment'] ?? ''));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005k_legacy_delivery_payment_alias_is_normalized()
     {
         if (!Schema::hasTable('orders') || !Schema::hasColumn('orders', 'payment') || !Schema::hasColumn('orders', 'delivery')) {
-            $this->markTestSkipped('orders.payment or orders.delivery is not available in current test DB connection');
+            $this->fail('orders.payment or orders.delivery is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-2', [
@@ -483,7 +490,7 @@ class SaLeadsCreateTest extends TestCase
         $this->assertSame('online_paysera', (string) ($delivery['payment'] ?? ''));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_005l_invalid_delivery_payment_returns_validation_error()
     {
         $payload = $this->payloadWithService('HM-2', [
@@ -500,7 +507,7 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.details.0.field', 'lead.delivery.payment');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_006_missing_api_key_returns_unauthorized()
     {
         $response = $this->postJson(self::ENDPOINT, $this->payloadMinimal());
@@ -508,11 +515,11 @@ class SaLeadsCreateTest extends TestCase
         $this->assertContains($response->getStatusCode(), [401, 403]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_007_hm27_persists_portrait_completeness_fields()
     {
         if (!Schema::hasTable('orders')) {
-            $this->markTestSkipped('orders table is not available in current test DB connection');
+            $this->fail('orders table is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-27', [
@@ -556,11 +563,11 @@ class SaLeadsCreateTest extends TestCase
         $this->assertEquals('/new/caricature', (string) $item['service_path']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_008_hm44_persists_gallery_completeness_fields()
     {
         if (!Schema::hasTable('orders')) {
-            $this->markTestSkipped('orders table is not available in current test DB connection');
+            $this->fail('orders table is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-44', [
@@ -600,11 +607,11 @@ class SaLeadsCreateTest extends TestCase
         $this->assertArrayHasKey('size', (array) $item['show']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_009_hm2_persists_canvas_size_fields()
     {
         if (!Schema::hasTable('orders')) {
-            $this->markTestSkipped('orders table is not available in current test DB connection');
+            $this->fail('orders table is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-2', [
@@ -626,13 +633,19 @@ class SaLeadsCreateTest extends TestCase
         $this->assertArrayHasKey('size_name', $item);
         $this->assertEquals('60x80', (string) $item['size']);
         $this->assertEquals('60x80', (string) $item['size_name']);
+
+        $this->getJson('/api/sa/orders/lookup?order_id=' . $leadId, $this->apiHeaders())
+            ->assertOk()
+            ->assertJsonCount(1, 'data.orders.0.products')
+            ->assertJsonPath('data.orders.0.products.0.service_id', 'HM-2')
+            ->assertJsonPath('data.orders.0.products.0.size', '60x80');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_010_real_delivery_methods_are_accepted_and_persisted()
     {
         if (!Schema::hasTable('orders')) {
-            $this->markTestSkipped('orders table is not available in current test DB connection');
+            $this->fail('orders table is not available in current test DB connection');
         }
 
         $cases = [
@@ -690,7 +703,7 @@ class SaLeadsCreateTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_011_invalid_delivery_method_returns_validation_error()
     {
         $payload = $this->payloadWithService('HM-2', [
@@ -705,11 +718,11 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_012_hm3_persists_collage_completeness_fields()
     {
         if (!Schema::hasTable('orders')) {
-            $this->markTestSkipped('orders table is not available in current test DB connection');
+            $this->fail('orders table is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-3', [
@@ -781,11 +794,11 @@ class SaLeadsCreateTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_013_hm43_persists_modular_completeness_fields()
     {
         if (!Schema::hasTable('orders')) {
-            $this->markTestSkipped('orders table is not available in current test DB connection');
+            $this->fail('orders table is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-43', [
@@ -855,11 +868,11 @@ class SaLeadsCreateTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_014_hm43_layout_svg_is_used_for_exact_price()
     {
         if (!Schema::hasTable('orders')) {
-            $this->markTestSkipped('orders table is not available in current test DB connection');
+            $this->fail('orders table is not available in current test DB connection');
         }
 
         $payload = $this->payloadWithService('HM-43', [
@@ -892,7 +905,7 @@ class SaLeadsCreateTest extends TestCase
         $this->assertEquals($expectedExecutionPrice, round((float) $item['total_item_price'], 2));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_015_hm43_invalid_layout_blocks_return_validation_error()
     {
         $payload = $this->payloadWithService('HM-43', [
@@ -909,22 +922,22 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_016_gc5_persists_gift_card_item_and_email_delivery_for_online_card()
     {
         if (!Schema::hasTable('orders') || !Schema::hasTable('gift_card_noms')) {
-            $this->markTestSkipped('orders or gift_card_noms tables are not available in current test DB connection');
+            $this->fail('orders or gift_card_noms tables are not available in current test DB connection');
         }
 
         $nominalText = DB::table('gift_card_noms')->orderBy('id')->value('text');
         if (!is_string($nominalText) || trim($nominalText) === '') {
-            $this->markTestSkipped('gift_card_noms does not contain any nominal value');
+            $this->fail('gift_card_noms does not contain any nominal value');
         }
 
         preg_match('/\d+(?:[.,]\d+)?/', $nominalText, $matches);
         $nominal = isset($matches[0]) ? str_replace(',', '.', $matches[0]) : null;
         if ($nominal === null) {
-            $this->markTestSkipped('Unable to parse nominal from gift_card_noms.text');
+            $this->fail('Unable to parse nominal from gift_card_noms.text');
         }
 
         $payload = $this->payloadWithService('GC-5', [
@@ -992,22 +1005,22 @@ class SaLeadsCreateTest extends TestCase
         $this->assertEquals(0.0, round((float) ($delivery['deliv_price'] ?? 999), 2));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_017_gc5_rejects_pricing_and_non_email_delivery_for_online_card()
     {
         if (!Schema::hasTable('gift_card_noms')) {
-            $this->markTestSkipped('gift_card_noms table is not available in current test DB connection');
+            $this->fail('gift_card_noms table is not available in current test DB connection');
         }
 
         $nominalText = DB::table('gift_card_noms')->orderBy('id')->value('text');
         if (!is_string($nominalText) || trim($nominalText) === '') {
-            $this->markTestSkipped('gift_card_noms does not contain any nominal value');
+            $this->fail('gift_card_noms does not contain any nominal value');
         }
 
         preg_match('/\d+(?:[.,]\d+)?/', $nominalText, $matches);
         $nominal = isset($matches[0]) ? str_replace(',', '.', $matches[0]) : null;
         if ($nominal === null) {
-            $this->markTestSkipped('Unable to parse nominal from gift_card_noms.text');
+            $this->fail('Unable to parse nominal from gift_card_noms.text');
         }
 
         $payload = $this->payloadWithService('GC-5', [
@@ -1027,16 +1040,16 @@ class SaLeadsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_018_fc1_persists_family_constructor_item()
     {
         if (!Schema::hasTable('family_constructor')) {
-            $this->markTestSkipped('family_constructor table is not available in current test DB connection');
+            $this->fail('family_constructor table is not available in current test DB connection');
         }
 
         $sizesRaw = (string) DB::table('family_constructor')->orderBy('id')->value('sizes');
         if (trim($sizesRaw) === '') {
-            $this->markTestSkipped('family_constructor.sizes is empty');
+            $this->fail('family_constructor.sizes is empty');
         }
 
         $payload = $this->payloadWithService('FC-1', [
@@ -1069,11 +1082,11 @@ class SaLeadsCreateTest extends TestCase
         $this->assertGreaterThanOrEqual((float) ($item['price'] ?? 0), (float) ($item['total_item_price'] ?? 0));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_019_hm44_exact_gallery_item_is_persisted()
     {
         if (!Schema::hasTable('gallery_items') || !Schema::hasTable('orders')) {
-            $this->markTestSkipped('gallery_items or orders tables are not available in current test DB connection');
+            $this->fail('gallery_items or orders tables are not available in current test DB connection');
         }
 
         $galleryItem = DB::table('gallery_items')
@@ -1084,11 +1097,11 @@ class SaLeadsCreateTest extends TestCase
             ->orderBy('id')
             ->first(['id', 'name', 'custom_size_prices']);
         if (!$galleryItem) {
-            $this->markTestSkipped('No active gallery_items with custom_size_prices found for HM-44 exact test');
+            $this->fail('No active gallery_items with custom_size_prices found for HM-44 exact test');
         }
 
         if (!preg_match('/([0-9]+\s*x\s*[0-9]+)\s*\[/', (string) $galleryItem->custom_size_prices, $matches)) {
-            $this->markTestSkipped('Unable to parse size from gallery_items.custom_size_prices');
+            $this->fail('Unable to parse size from gallery_items.custom_size_prices');
         }
 
         $size = strtolower(str_replace(' ', '', (string) $matches[1]));
@@ -1128,7 +1141,7 @@ class SaLeadsCreateTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t05_020_hm44_invalid_gallery_item_returns_validation_error()
     {
         $payload = $this->payloadWithService('HM-44', [

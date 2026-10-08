@@ -17,10 +17,15 @@ class SaServicesCatalogTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->assertSame('sqlite', config('database.default'));
+        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        config(['services.sa_integration.api_key' => 'test-key', 'cache.default' => 'array']);
+        \Illuminate\Support\Facades\Http::preventStrayRequests();
+        \Illuminate\Support\Facades\Mail::fake();
         $this->prepareCatalogFixtures();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_001_request_without_params_returns_active_catalog()
     {
         $response = $this->getJson(self::ENDPOINT, $this->apiHeaders());
@@ -28,7 +33,7 @@ class SaServicesCatalogTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('status', 'ok')
             ->assertJsonPath('meta.country_code', 'LV')
-            ->assertJsonPath('meta.country_multiplier', 1.0);
+            ->assertJsonPath('meta.country_multiplier', fn ($value) => (is_int($value) || is_float($value)) && (float) $value === 1.0);
 
         $services = $response->json('data.services');
         $this->assertNotEmpty($services);
@@ -40,7 +45,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertNotContains('HM-3', $serviceIds);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_002_lang_ru_returns_ru_content()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=ru', $this->apiHeaders());
@@ -52,7 +57,7 @@ class SaServicesCatalogTest extends TestCase
         );
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_003_lang_en_returns_localized_content()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=en', $this->apiHeaders());
@@ -61,7 +66,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame('Custom Caricature', $response->json('data.services.0.name'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_004_updated_since_filters_out_old_records()
     {
         $response = $this->getJson(
@@ -76,7 +81,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertNotContains('HM-2', $serviceIds);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_005_include_inactive_flag_works()
     {
         $activeOnly = $this->getJson(self::ENDPOINT . '?include_inactive=false', $this->apiHeaders());
@@ -93,7 +98,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertGreaterThan(count($activeIds), count($allIds));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_006_invalid_lang_returns_validation_error()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=invalid-lang', $this->apiHeaders());
@@ -103,7 +108,7 @@ class SaServicesCatalogTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_007_missing_api_key_returns_unauthorized()
     {
         $response = $this->getJson(self::ENDPOINT);
@@ -111,17 +116,17 @@ class SaServicesCatalogTest extends TestCase
         $this->assertContains($response->getStatusCode(), [401, 403]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_008_country_code_lv_returns_meta_multiplier()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=en&country_code=LV', $this->apiHeaders());
 
         $response->assertStatus(200)
             ->assertJsonPath('meta.country_code', 'LV')
-            ->assertJsonPath('meta.country_multiplier', 1.0);
+            ->assertJsonPath('meta.country_multiplier', fn ($value) => (is_int($value) || is_float($value)) && (float) $value === 1.0);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_009_country_multiplier_affects_price()
     {
         $lv = $this->getJson(self::ENDPOINT . '?lang=en&country_code=LV', $this->apiHeaders());
@@ -138,17 +143,17 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame(1.3, (float) $fi->json('meta.country_multiplier'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_010_invalid_country_code_falls_back_to_lv()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=en&country_code=ZZZ', $this->apiHeaders());
 
         $response->assertStatus(200)
             ->assertJsonPath('meta.country_code', 'LV')
-            ->assertJsonPath('meta.country_multiplier', 1.0);
+            ->assertJsonPath('meta.country_multiplier', fn ($value) => (is_int($value) || is_float($value)) && (float) $value === 1.0);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_011_new_gallery_price_uses_real_types_2_3_4()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=en&country_code=LV&include_inactive=true', $this->apiHeaders());
@@ -161,7 +166,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame(5.0, (float) data_get($service, 'price.amount'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_012_modular_generator_price_uses_type_2_only()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=en&country_code=LV&include_inactive=true', $this->apiHeaders());
@@ -174,7 +179,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame(25.0, (float) data_get($service, 'price.amount'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_013_simpsons_price_fallbacks_to_slug_simpsons_when_main_slug_missing()
     {
         DB::table('gallery_items')->where('slug', 'simpsons-portrait')->delete();
@@ -201,7 +206,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame(44.0, (float) data_get($service, 'price.amount'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_014_ru_uses_translated_header_menu_title_and_link()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=ru&country_code=LV&include_inactive=true', $this->apiHeaders());
@@ -216,7 +221,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertStringContainsString('/ru/new/caricature', (string) data_get($service, 'description'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_015_uk_falls_back_to_ru_when_uk_translation_missing()
     {
         DB::table('translations')
@@ -247,7 +252,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertStringContainsString('/ru/new/caricature', (string) data_get($service, 'description'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_016_uk_categories_follow_ru_contract()
     {
         $ru = $this->getJson(self::ENDPOINT . '?lang=ru&country_code=LV&include_inactive=true', $this->apiHeaders());
@@ -262,7 +267,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame($ruCategories, $ukCategories);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_017_uk_full_catalog_matches_ru_when_uk_translations_absent()
     {
         DB::table('translations')
@@ -280,7 +285,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame($ru->json('data.services'), $uk->json('data.services'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_018_gift_card_service_is_exposed_in_catalog_from_real_tables()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=en&country_code=FI&include_inactive=true', $this->apiHeaders());
@@ -297,7 +302,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertSame('Gift cards', (string) $categories->get('CAT-GIFTS'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_019_family_constructor_service_is_exposed_in_catalog()
     {
         $response = $this->getJson(self::ENDPOINT . '?lang=ru&country_code=LV&include_inactive=true', $this->apiHeaders());
@@ -312,7 +317,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertStringContainsString('Семей', (string) data_get($service, 'name'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_020_full_catalog_returns_sizes_and_photo_for_each_service()
     {
         $response = $this->getJson(self::FULL_ENDPOINT . '?lang=en&country_code=LV&include_inactive=true', $this->apiHeaders());
@@ -320,7 +325,7 @@ class SaServicesCatalogTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('status', 'ok')
             ->assertJsonPath('meta.country_code', 'LV')
-            ->assertJsonPath('meta.country_multiplier', 1.0);
+            ->assertJsonPath('meta.country_multiplier', fn ($value) => (is_int($value) || is_float($value)) && (float) $value === 1.0);
 
         $caricature = collect($response->json('data.services'))->firstWhere('id', 'HM-1');
         $this->assertNotNull($caricature);
@@ -350,7 +355,7 @@ class SaServicesCatalogTest extends TestCase
         $this->assertFalse((bool) data_get($giftCard, 'sizes.0.price.is_discounted'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t03_021_full_catalog_infers_country_from_client_phone_when_country_not_provided()
     {
         $response = $this->getJson(self::FULL_ENDPOINT . '?lang=en&include_inactive=true&client_phone=%2B358401234567', $this->apiHeaders());

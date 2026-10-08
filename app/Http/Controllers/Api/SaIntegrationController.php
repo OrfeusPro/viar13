@@ -4782,7 +4782,12 @@ class SaIntegrationController extends Controller
         $products = [];
 
         foreach ($items as $key => $item) {
-            if (!is_numeric($key) || !is_array($item)) {
+            if (!is_array($item)) {
+                continue;
+            }
+            // SA creation stores named basket items alongside totals and coupon metadata.
+            if (!is_numeric($key) && !(str_ends_with((string) $key, '_item')
+                && (isset($item['pid']) || ($item['type'] ?? null) === 'sa_service'))) {
                 continue;
             }
 
@@ -4839,6 +4844,12 @@ class SaIntegrationController extends Controller
         $explicit = trim((string) (data_get($item, 'sa_service_id') ?: data_get($item, 'service_id') ?: ''));
         if ($explicit !== '') {
             return $explicit;
+        }
+
+        $basketServiceId = trim((string) ($item['id'] ?? ''));
+        if (($item['type'] ?? null) === 'sa_service'
+            && preg_match('/^(?:HM-\d+|FC-1|GC-5)$/', $basketServiceId)) {
+            return $basketServiceId;
         }
 
         $pid = trim((string) data_get($item, 'pid', ''));
