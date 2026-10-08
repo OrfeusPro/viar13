@@ -86,7 +86,7 @@ class OrderSaChatActions
                     'action' => $name === 'sendSaMessage' ? 'send' : null, 'handoff' => false];
             })
             ->modalSubmitActionLabel('Подтвердить')
-            ->action(function ($record, array $data) use ($name): void {
+            ->action(function ($record, array $data, Action $action) use ($name): void {
                 // Hidden fields are not an authorization boundary.
                 if ($name === 'sendSaMessage') {
                     $data['action'] = 'send';
@@ -104,7 +104,7 @@ class OrderSaChatActions
                     Notification::make()->warning()->title('Команда не выполнена')
                         ->body(collect($exception->errors())->flatten()->first())->send();
 
-                    return;
+                    $action->halt();
                 }
                 $record->unsetRelation('saMessages')->unsetRelation('saConversations')->unsetRelation('order_user_comments');
                 $description = match ($result['status']) {
@@ -118,6 +118,9 @@ class OrderSaChatActions
                     ->body($description);
                 in_array($result['status'], ['accepted', 'uat_suppressed'], true) ? $notification->success() : $notification->warning();
                 $notification->send();
+                if (! in_array($result['status'], ['accepted', 'uat_suppressed'], true)) {
+                    $action->halt();
+                }
             })
             ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
             ->extraAttributes(['class' => 'hidden']);

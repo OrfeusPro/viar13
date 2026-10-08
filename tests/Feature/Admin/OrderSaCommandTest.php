@@ -324,6 +324,23 @@ class OrderSaCommandTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function test_uncertain_order_modal_keeps_token_and_draft_without_resending(): void
+    {
+        config(['admin_migration.sa_commands_enabled' => true]);
+        Http::fake(['sa.test.invalid/*' => Http::response([], 500)]);
+        $this->actingAs($this->editor, 'filament');
+        $action = TestAction::make('sendSaMessage')->table($this->order);
+        $page = Livewire::test(SaCommandsTestTable::class)
+            ->mountAction($action, ['conversation_id' => $this->conversation->id])
+            ->fillForm(['text' => 'Order modal uncertain', 'handoff' => false]);
+        $token = $page->get('mountedActions')[0]['data']['token'];
+        $page->callMountedAction()->assertActionMounted($action)
+            ->assertActionDataSet(['text' => 'Order modal uncertain', 'token' => $token]);
+        $page->callMountedAction()->assertActionMounted($action);
+        $this->assertDatabaseCount('sa_messages', 1);
+        Http::assertSentCount(1);
+    }
+
     public function test_livewire_expired_form_shows_visible_warning_without_dispatch(): void
     {
         $this->actingAs($this->editor, 'filament');

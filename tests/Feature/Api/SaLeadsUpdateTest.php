@@ -3,13 +3,23 @@
 namespace Tests\Feature\Api;
 
 use Tests\TestCase;
+use Tests\Support\CreatesSaChatSchema;
+use PHPUnit\Framework\Attributes\Test;
+use Illuminate\Support\Facades\DB;
 
 class SaLeadsUpdateTest extends TestCase
 {
+    use CreatesSaChatSchema;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createSaChatSchema();
+    }
     private const CREATE_ENDPOINT = '/api/sa/leads';
     private const API_KEY = 'test-key';
 
-    /** @test */
+    #[Test]
     public function t06_001_update_fields_valid_returns_ok()
     {
         $leadId = $this->createLeadForUpdate();
@@ -19,9 +29,13 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('status', 'ok')
             ->assertJsonPath('data.updated', true)
             ->assertJsonPath('data.fields_updated.0', 'email');
+        $delivery = json_decode(DB::table('orders')->find($leadId)->delivery, true);
+        $this->assertSame('ivan@gmail.com', $delivery['email']);
+        $this->assertSame('Kyiv', $delivery['city']);
+        $this->assertSame(1500, $delivery['sa_lead']['fields']['budget']);
     }
 
-    /** @test */
+    #[Test]
     public function t06_002_update_stage_valid_returns_ok()
     {
         $leadId = $this->createLeadForUpdate();
@@ -32,7 +46,7 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('data.stage.id', 'pegging');
     }
 
-    /** @test */
+    #[Test]
     public function t06_003_non_sequential_stage_transition_returns_ok()
     {
         $leadId = $this->createLeadForUpdate();
@@ -43,7 +57,7 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('data.stage.id', 'pegging');
     }
 
-    /** @test */
+    #[Test]
     public function t06_003b_direct_jump_to_completed_returns_ok()
     {
         $leadId = $this->createLeadForUpdate();
@@ -65,7 +79,7 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('data.stage.id', 'completed');
     }
 
-    /** @test */
+    #[Test]
     public function t06_003a_legacy_stg_stage_returns_validation_error()
     {
         $leadId = $this->createLeadForUpdate();
@@ -87,7 +101,7 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function t06_003c_unknown_stage_returns_validation_error()
     {
         $leadId = $this->createLeadForUpdate();
@@ -108,7 +122,7 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function t06_004_tags_add_remove_returns_ok()
     {
         $leadId = $this->createLeadForUpdate();
@@ -118,9 +132,12 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('status', 'ok')
             ->assertJsonPath('data.tags.added.0', 'vip')
             ->assertJsonPath('data.tags.removed.0', 'cold');
+        $order = DB::table('orders')->find($leadId);
+        $this->assertSame(['vip'], json_decode($order->delivery, true)['sa_lead']['tags']);
+        $this->assertStringContainsString('Client confirmed email', $order->admin_comment);
     }
 
-    /** @test */
+    #[Test]
     public function t06_005_duplicate_idempotency_key_returns_duplicate()
     {
         $leadId = $this->createLeadForUpdate();
@@ -133,7 +150,7 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('status', 'duplicate');
     }
 
-    /** @test */
+    #[Test]
     public function t06_006_unknown_lead_id_returns_not_found()
     {
         $endpoint = '/api/sa/leads/UNKNOWN-LEAD-999';
@@ -144,7 +161,7 @@ class SaLeadsUpdateTest extends TestCase
             ->assertJsonPath('error.code', 'LEAD_NOT_FOUND');
     }
 
-    /** @test */
+    #[Test]
     public function t06_007_missing_api_key_returns_unauthorized()
     {
         $leadId = $this->createLeadForUpdate();

@@ -2,12 +2,14 @@
     @php
         ['conversation' => $conversation, 'messages' => $messages, 'commands' => $commands] = $this->history();
         $snapshot = app(\App\Services\Admin\SaInboxService::class)->readToken($conversation, (int) $messages->max('id'));
+        $lastMessageAt = $conversation->last_message_at ?? $messages->last()?->sent_at ?? $messages->last()?->created_at;
     @endphp
     <div wire:poll.10s style="display:grid;gap:20px;min-width:0;">
         <x-filament::section>
             <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;overflow-wrap:anywhere;">
                 <div><strong>{{ $conversation->client_name ?: 'Без имени' }}</strong><br>{{ $conversation->client_phone }}</div>
                 <div>Канал: {{ $conversation->channel }}<br>Бот: {{ ['active' => 'Активен', 'paused' => 'Пауза', 'handoff_to_manager' => 'Менеджер'][$conversation->bot_mode] ?? ($conversation->bot_mode ?: 'Не задан') }}</div>
+                <div>Последнее сообщение:<br>{{ optional($lastMessageAt)->format('d.m.Y H:i:s') ?: 'Нет сообщений' }}</div>
                 <div>Диалог: {{ $conversation->conversation_id }}<br>Заказ:
                     @if($conversation->orders_id)
                         <a href="{{ \App\Filament\Resources\Orders\OrdersResource::getUrl('edit', ['record' => $conversation->orders_id]) }}" style="color:#2563eb;text-decoration:underline;">#{{ $conversation->orders_id }}</a>
@@ -26,7 +28,7 @@
                 @endphp
                 <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0;" aria-label="Управление ботом">
                     @foreach(['resume_bot' => ['Включить бота', 'success', 'heroicon-o-play'], 'pause_bot' => ['Пауза', 'warning', 'heroicon-o-pause'], 'handoff_to_manager' => ['Передать менеджеру', 'danger', 'heroicon-o-user']] as $action => [$label, $color, $icon])
-                        <x-filament::button size="sm" :color="$color" :icon="$icon" wire:loading.attr="disabled" wire:target="controlBot" x-on:click="$wire.controlBot({{ \Illuminate\Support\Js::from($action) }}, {{ \Illuminate\Support\Js::from($botToken) }})">{{ $label }}</x-filament::button>
+                        <x-filament::button size="sm" :color="$color" :icon="$icon" wire:loading.attr="disabled" wire:target="controlBot" x-on:click="if (window.confirm('Изменить режим бота для этого диалога?')) $wire.controlBot({{ \Illuminate\Support\Js::from($action) }}, {{ \Illuminate\Support\Js::from($botToken) }})">{{ $label }}</x-filament::button>
                     @endforeach
                 </div>
             @endif
@@ -41,8 +43,11 @@
                     @endphp
                     <article wire:key="inbox-message-{{ $message->id }}" class="viar-sa-message {{ $message->direction === 'inbound' ? 'is-inbound' : 'is-outbound' }}">
                         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;"><strong>{{ $sender }}</strong><small>{{ optional($message->sent_at ?? $message->created_at)->format('d.m.Y H:i:s') }}</small></div>
-                        <div style="white-space:pre-wrap;margin-top:8px;">{{ $message->text }}</div>
+                        <div style="white-space:pre-wrap;margin-top:8px;">{{ $message->text ?: '[пустое сообщение]' }}</div>
                         <small style="color:#64748b;">Статус: {{ $message->status ?: 'Не задан' }}</small>
+                        @if($message->orders_id)
+                            <small> · заказ #{{ $message->orders_id }}</small>
+                        @endif
                         @foreach(is_array($attachments) ? $attachments : [] as $attachment)
                             @php($file = \App\Support\Admin\SaChatAttachment::describe($attachment))
                             @if($file['url'])

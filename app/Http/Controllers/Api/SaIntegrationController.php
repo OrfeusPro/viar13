@@ -1058,6 +1058,13 @@ class SaIntegrationController extends Controller
                     ]) > 0;
         }
 
+        $botMode = $request->input('data.bot_control.mode');
+        if ($botMode !== null) {
+            $conversationId = $this->resolveConversationIdForLead($resolvedOrderId);
+            $this->persistBotControl($resolvedOrderId, $conversationId, 'pipeline_changed', $botMode,
+                (array) $request->input('data.changed_by', []), $request->all());
+        }
+
         return response()->json([
             'status' => 'ok',
             'data' => [
@@ -1397,103 +1404,65 @@ class SaIntegrationController extends Controller
 
     public function updateLead(Request $request, string $leadId): JsonResponse
     {
+        $request = $this->normalizePhoneFields($request, ['update.fields.phone']);
         $validator = Validator::make($request->all(), [
             'idempotency_key' => 'required|string|max:255',
             'source' => 'required|string|in:SA',
             'update' => 'required|array',
-            'update.fields' => 'nullable|array',
+            'update.fields' => 'nullable|array|max:100',
+            'update.fields.*' => [function ($attribute, $value, $fail): void {
+                if (!is_scalar($value) && $value !== null) { $fail('Field values must be scalar or null.'); }
+                if (is_string($value) && strlen($value) > 10000) { $fail('Field value is too large.'); }
+            }],
+            'update.fields.email' => 'sometimes|nullable|email|max:255',
+            'update.fields.phone' => ['sometimes', 'required', 'string', 'regex:/^\+[0-9]{7,15}$/'],
+            'update.fields.city' => 'sometimes|nullable|string|max:255',
+            'update.fields.address' => 'sometimes|nullable|string|max:255',
+            'update.fields.postal_index' => 'sometimes|nullable|string|max:255',
+            'update.fields.first_name' => 'sometimes|nullable|string|max:255',
+            'update.fields.last_name' => 'sometimes|nullable|string|max:255',
+            'update.fields.comment' => 'sometimes|nullable|string|max:10000',
             'update.stage' => 'nullable|array',
             'update.stage.id' => 'nullable|string|in:' . implode(',', $this->supportedLeadStageStatuses()),
             'update.stage.from.id' => 'nullable|string|in:' . implode(',', $this->supportedLeadStageStatuses()),
-            'update.tags_add' => 'nullable|array',
-            'update.tags_add.*' => 'string|max:100',
-            'update.tags_remove' => 'nullable|array',
-            'update.tags_remove.*' => 'string|max:100',
-            'update.notes_append' => 'nullable|array',
-            'update.notes_append.*.text' => 'required_with:update.notes_append|string',
+            'update.tags_add' => 'nullable|array|max:100',
+            'update.tags_add.*' => 'required|string|max:100',
+            'update.tags_remove' => 'nullable|array|max:100',
+            'update.tags_remove.*' => 'required|string|max:100',
+            'update.notes_append' => 'nullable|array|max:100',
+            'update.notes_append.*' => 'array:text,created_at',
+            'update.notes_append.*.text' => 'required|string|max:10000',
             'update.notes_append.*.created_at' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
+            Log::warning('SA lead update rejected.', ['lead_id' => $leadId, 'reason' => 'validation']);
             return $this->validationError($validator);
         }
 
-        $idempotencyKey = (string) $request->input('idempotency_key');
-        if ($this->isDuplicateEvent('sa:leads:update:key', $idempotencyKey, [
-            'idempotency_key' => $idempotencyKey,
-            'event_type' => 'sa.lead.update',
-            'source' => (string) $request->input('source'),
-            'payload' => $request->all(),
-        ])) {
-            return response()->json(['status' => 'duplicate'], 200);
-        }
-
-        $newStageId = (string) $request->input('update.stage.id', '');
-        $fromStageId = (string) $request->input('update.stage.from.id', '');
-
-        // If from.id not provided, try to detect current stage from order
-        if ($newStageId !== '' && $fromStageId === '' && Schema::hasTable('orders')) {
-            $currentStatus = DB::table('orders')->where('id', (int) $leadId)->value('status');
-            if ($currentStatus) {
-                $fromStageId = $this->mapOrderStatusToStageId($currentStatus);
+        foreach (array_keys((array) $request->input('update.fields', [])) as $field) {
+            if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,99}$/D', $field)) {
+                Log::warning('SA lead update rejected.', ['lead_id' => $leadId, 'reason' => 'field_name']);
+                return $this->validationErrorFromDetails([['field' => 'update.fields', 'issue' => 'Invalid field name.']]);
             }
         }
-
-        $leadExists = true;
-        $orderUpdated = false;
-        if (Schema::hasTable('orders')) {
-            // Check if lead exists WITHOUT auto-creating
-            $resolvedOrderId = DB::table('orders')->where('id', (int) $leadId)->value('id');
-            if ($resolvedOrderId === null) {
-                $resolvedOrderId = DB::table('orders')->where('sa_conversation_id', $leadId)->value('id');
-            }
-            $leadExists = $resolvedOrderId !== null;
-
-            if (!$leadExists) {
-                return response()->json([
-                    'status' => 'error',
-                    'error' => [
-                        'code' => 'LEAD_NOT_FOUND',
-                        'message' => 'Lead not found',
-                        'details' => [['field' => 'lead_id', 'issue' => 'not_found']],
-                    ],
-                ], 404);
-            }
-
-            $mappedOrderStatus = $this->mapStageIdToOrderStatus($newStageId);
-            if ($resolvedOrderId !== null && $mappedOrderStatus !== null) {
-                $orderUpdated = DB::table('orders')
-                        ->where('id', $resolvedOrderId)
-                        ->update([
-                            'status' => $mappedOrderStatus,
-                            'updated_at' => now(),
-                        ]) > 0;
-            }
-        } else {
-            $leadExists = false;
+        try {
+            $result = app(\App\Services\SaLeadUpdateService::class)->apply($leadId, $request->all());
+            return $result === null ? response()->json(['status' => 'duplicate'], 200)
+                : response()->json(['status' => 'ok', 'data' => $result], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            Log::warning('SA lead update rejected.', ['lead_id' => $leadId, 'reason' => 'not_found']);
+            return response()->json(['status' => 'error', 'error' => ['code' => 'LEAD_NOT_FOUND',
+                'message' => 'Lead not found', 'details' => [['field' => 'lead_id', 'issue' => 'not_found']]]], 404);
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            Log::warning('SA lead update rejected.', ['lead_id' => $leadId, 'reason' => 'storage_limit']);
+            return $this->validationError($exception->validator);
+        } catch (\Throwable $exception) {
+            Log::error('SA lead update failed.', ['lead_id' => $leadId, 'exception_type' => $exception::class,
+                'dedupe_key' => 'sa:leads:update:key:'.sha1((string) $request->input('idempotency_key'))]);
+            return response()->json(['status' => 'error', 'error' => ['code' => 'PERSISTENCE_ERROR',
+                'message' => 'Lead update could not be saved. Retry with the same idempotency key.', 'details' => []]], 503);
         }
-
-        $tagsAdd = (array) $request->input('update.tags_add', []);
-        $tagsRemove = (array) $request->input('update.tags_remove', []);
-        $notesAppend = (array) $request->input('update.notes_append', []);
-
-        return response()->json([
-            'status' => 'ok',
-            'data' => [
-                'lead_id' => $leadId,
-                'updated' => true,
-                'stage' => ['id' => $this->normalizeStageId($newStageId)],
-                'fields_updated' => array_keys((array) $request->input('update.fields', [])),
-                'tags' => [
-                    'added' => $tagsAdd,
-                    'removed' => $tagsRemove,
-                ],
-                'notes_appended' => count($notesAppend),
-                'order_updated' => $orderUpdated,
-                // Policy-based behavior for unknown lead_id in MVP.
-                'temporary_lead_created' => !$leadExists,
-            ],
-        ], 200);
     }
 
     public function createEscalation(Request $request): JsonResponse
@@ -4678,6 +4647,8 @@ class SaIntegrationController extends Controller
     private function buildOrderLookupPayload($order, string $lang = 'ru'): array
     {
         $delivery = $this->decodeJsonAssoc($order->delivery ?? null);
+        $leadFields = (array) data_get($delivery, 'sa_lead.fields', []);
+        $contact = fn ($field, $fallback) => array_key_exists($field, $leadFields) ? $leadFields[$field] : $fallback;
         $items = $this->decodeJsonAssoc($order->items ?? null);
         $products = $this->extractLookupProducts($items);
         $itemComments = [];
@@ -4723,10 +4694,10 @@ class SaIntegrationController extends Controller
             ],
             'client' => [
                 'user_id' => isset($order->user_id) ? (int) $order->user_id : null,
-                'phone' => (string) ($order->lookup_user_phone ?? data_get($delivery, 'payer_phone', data_get($delivery, 'phone', ''))),
-                'email' => (string) ($order->lookup_user_email ?? data_get($delivery, 'email', '')),
-                'first_name' => (string) ($order->lookup_user_name ?? data_get($delivery, 'first_name', '')),
-                'last_name' => (string) ($order->lookup_user_last_name ?? data_get($delivery, 'last_name', '')),
+                'phone' => (string) $contact('phone', $order->lookup_user_phone ?? data_get($delivery, 'payer_phone', data_get($delivery, 'phone', ''))),
+                'email' => (string) $contact('email', $order->lookup_user_email ?? data_get($delivery, 'email', '')),
+                'first_name' => (string) $contact('first_name', $order->lookup_user_name ?? data_get($delivery, 'first_name', '')),
+                'last_name' => (string) $contact('last_name', $order->lookup_user_last_name ?? data_get($delivery, 'last_name', '')),
             ],
             'recipient' => [
                 'phone' => (string) data_get($delivery, 'phone', ''),

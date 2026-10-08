@@ -2,127 +2,82 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Http\Controllers\Admin\AdminSaIntegrationController;
-use Illuminate\Http\Request;
+use App\Models\SaConversation;
+use App\Models\User;
+use App\Services\Admin\OrderSaCommandService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\CreatesSaChatSchema;
 use Tests\TestCase;
 
 class SaConversationBotControlTest extends TestCase
 {
-    public function test_admin_bot_control_accepts_conversation_id_without_order_id(): void
+    use CreatesSaChatSchema;
+
+    protected function setUp(): void
     {
-        if (!Schema::hasTable('sa_conversations')) {
-            $this->markTestSkipped('sa_conversations is not available in current test DB connection');
-        }
-
-        $conversationId = 'CONV-ADMIN-NO-ORDER-' . substr(str_replace('-', '', $this->uuidV4()), 0, 12);
-
-        DB::table('sa_conversations')->insert([
-            'conversation_id' => $conversationId,
-            'orders_id' => null,
-            'client_phone' => '+37129999999',
-            'client_name' => 'No Order Client',
-            'channel' => 'whatsapp',
-            'bot_mode' => 'handoff_to_manager',
-            'last_message_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        try {
-            $controller = new FakeAdminSaIntegrationController();
-            $synvolve = new FakeSynvolveWebhookService();
-            app()->instance(\App\Services\SynvolveWebhookService::class, $synvolve);
-
-            $request = Request::create('/admin/sa/bot-control', 'POST', [
-                'conversation_id' => $conversationId,
-                'action' => 'pause_bot',
-            ]);
-
-            $response = $controller->botControl($request);
-            $payload = $controller->lastPayload;
-
-            $this->assertSame(200, $response->getStatusCode());
-            $this->assertSame('ok', $response->getData(true)['status']);
-            $this->assertSame('/api/crm/webhooks/bot-control', $controller->lastEndpoint);
-            $this->assertSame('POST', $controller->lastMethod);
-            $this->assertSame('crm.bot_control', $payload['event_type']);
-            $this->assertSame('pause_bot', $payload['data']['action']);
-            $this->assertSame($conversationId, $payload['data']['conversation_id']);
-            $this->assertArrayNotHasKey('lead_id', $payload['data']);
-            $this->assertSame('conversation', $synvolve->lastType);
-            $this->assertSame($conversationId, $synvolve->lastConversationId);
-            $this->assertSame('paused', $synvolve->lastBotStatus);
-            $this->assertSame('+37129999999', $synvolve->lastPhone);
-        } finally {
-            app()->forgetInstance(\App\Services\SynvolveWebhookService::class);
-            DB::table('sa_conversations')->where('conversation_id', $conversationId)->delete();
-        }
+        parent::setUp();
+        $this->createSaChatSchema();
+        config(['services.synvolve.bot_status_webhook_url' => 'https://sa.test.invalid/bot']);
     }
 
-    private function uuidV4(): string
+    #[DataProvider('actions')]
+    public function test_bot_control_without_order_uses_conversation_and_retries_once(string $action, string $mode): void
     {
-        $data = random_bytes(16);
-        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
-        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
-
-        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        config(['admin_migration.sa_commands_enabled' => true]);
+        Http::fake(['sa.test.invalid/bot' => Http::response([], 200)]);
+        $conversation = $this->conversation();
+        $author = $this->author();
+        $service = app(OrderSaCommandService::class);
+        $input = ['action' => $action, 'token' => $service->inboxToken($conversation, $author)];
+        $result = $service->executeInbox($conversation, $author, $input);
+        $this->assertSame('accepted', $result['status']);
+        $this->assertSame($mode, $conversation->fresh()->bot_mode);
+        $this->assertNull($conversation->fresh()->orders_id);
+        Http::assertSent(fn ($request) => $request->url() === 'https://sa.test.invalid/bot'
+            && $request['event'] === 'bot_status_changed' && $request['client_id'] === 'CONV-NO-ORDER'
+            && $request['phone'] === '+12025550123' && $request['bot_status'] === $mode
+            && empty($request['context']['order_id']));
+        $service->executeInbox($conversation->fresh(), $author, $input);
+        Http::assertSentCount(1);
+        $this->assertDatabaseCount('sa_bot_controls', 1);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('order_user_comments', 0);
+        Mail::assertNothingSent();
     }
-}
 
-class FakeAdminSaIntegrationController extends AdminSaIntegrationController
-{
-    public $lastEndpoint;
-    public $lastPayload = [];
-    public $lastMethod;
-
-    public function __construct()
+    public function test_disabled_transport_records_suppression_without_changing_mode(): void
     {
-        parent::__construct(new \Illuminate\Support\Facades\Request());
+        config(['admin_migration.sa_commands_enabled' => false]);
+        $conversation = $this->conversation();
+        $author = $this->author();
+        $service = app(OrderSaCommandService::class);
+        $result = $service->executeInbox($conversation, $author, ['action' => 'resume_bot', 'token' => $service->inboxToken($conversation, $author)]);
+        $this->assertSame('uat_suppressed', $result['status']);
+        $this->assertSame('active', $conversation->fresh()->bot_mode);
+        $this->assertDatabaseCount('orders', 0);
+        Http::assertNothingSent(); Mail::assertNothingSent();
     }
 
-    protected function dispatchInternalWebhook(string $endpoint, array $payloadArray = [], string $method = 'POST'): array
+    public static function actions(): array
     {
-        $this->lastEndpoint = $endpoint;
-        $this->lastPayload = $payloadArray;
-        $this->lastMethod = $method;
-        $action = (string) ($payloadArray['data']['action'] ?? '');
-        $botMode = [
-            'resume_bot' => 'active',
-            'pause_bot' => 'paused',
-            'handoff_to_manager' => 'handoff_to_manager',
-        ][$action] ?? 'active';
-
-        return [
-            'http_code' => 200,
-            'api_response' => [
-                'status' => 'ok',
-                'data' => [
-                    'lead_id' => null,
-                    'resolved_lead_id' => null,
-                    'conversation_id' => $payloadArray['data']['conversation_id'] ?? null,
-                    'bot_mode' => $botMode,
-                ],
-            ],
-        ];
+        return [['pause_bot', 'paused'], ['resume_bot', 'active'], ['handoff_to_manager', 'handoff_to_manager']];
     }
-}
 
-class FakeSynvolveWebhookService extends \App\Services\SynvolveWebhookService
-{
-    public $lastType;
-    public $lastConversationId;
-    public $lastBotStatus;
-    public $lastPhone;
-
-    public function notifyBotStatusForConversation(string $conversationId, string $botStatus, ?string $phone = null, array $context = []): bool
+    private function conversation(): SaConversation
     {
-        $this->lastType = 'conversation';
-        $this->lastConversationId = $conversationId;
-        $this->lastBotStatus = $botStatus;
-        $this->lastPhone = $phone;
+        return SaConversation::create(['conversation_id' => 'CONV-NO-ORDER', 'orders_id' => null,
+            'client_phone' => '+12025550123', 'client_name' => 'No Order Client', 'channel' => 'whatsapp', 'bot_mode' => 'active']);
+    }
 
-        return true;
+    private function author(): User
+    {
+        DB::table('users')->insert(['id' => 123, 'email' => 'manager@example.invalid']);
+        $author = \Mockery::mock(User::class)->makePartial();
+        $author->id = 123;
+        $author->shouldReceive('hasPermission')->andReturn(true);
+        return $author;
     }
 }

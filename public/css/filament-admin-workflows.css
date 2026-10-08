@@ -1,4 +1,16 @@
 /* Shared BREAD appearance for the SEO and SA workflows. */
+.viar-sa-global { position:fixed; top:70px; right:20px; z-index:40; display:flex; align-items:center; gap:5px; user-select:none; touch-action:none; cursor:ns-resize; }
+.viar-sa-global-link { display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:5px; color:white; background:#f9a51a; white-space:nowrap; font-size:16px; line-height:24px; }
+.viar-sa-global-link:hover { background:#ed9510; }
+.viar-sa-global-link:focus-visible { outline:2px solid #2563eb; outline-offset:3px; }
+.viar-sa-global-link > .fi-icon { width:22px; height:22px; }
+.viar-sa-global-count { display:inline-flex; align-items:center; justify-content:center; min-width:27px; height:27px; padding-inline:6px; border-radius:999px; background:#ed7268; color:white; font-size:14px; font-weight:600; }
+.viar-sa-global-sound { padding:5px; color:#64748b; }
+@media(max-width:640px) {
+    .viar-sa-global { right:10px; gap:2px; }
+    .viar-sa-global-link { gap:6px; padding:8px 10px; font-size:14px; line-height:22px; }
+    .viar-sa-global-sound { padding:2px; }
+}
 .viar-seo-editor { min-width:280px; max-width:380px; white-space:normal; overflow-wrap:anywhere; }
 .viar-seo-field { display:grid; gap:3px; margin-bottom:8px; border-inline-start:2px solid #38bdf8; padding-inline-start:8px; }
 .viar-seo-field:last-child { margin-bottom:0; }
@@ -58,3 +70,25 @@
 .dark .viar-admin-table .fi-ta-row > .fi-ta-cell:last-child { background:#111827; }
 .dark .viar-admin-table .viar-sa-unread > .fi-ta-cell:last-child { background:#422006; }
 .dark .viar-seo-field textarea, .dark .viar-seo-bulk select { background:#111827; color:#e2e8f0; border-color:#475569; }
+.viar-sa-simulator .page-content { padding:0!important; }
+.viar-sa-simulator .page-title { display:none; }
+.viar-sa-simulator .row { display:flex; flex-wrap:wrap; gap:20px; }
+.viar-sa-simulator .col-md-12 { width:100%; }
+.viar-sa-simulator .col-md-4 { flex:1 1 290px; min-width:0; }
+.viar-sa-simulator .col-md-8 { flex:2 1 520px; min-width:0; }
+.viar-sa-simulator .panel { background:white; border:1px solid #e2e8f0; border-radius:12px; margin-top:20px; overflow:hidden; }
+.viar-sa-simulator .panel-heading { padding:16px 20px; background:#eef2f8; font-weight:600; }
+.viar-sa-simulator .panel-body { padding:20px; }
+.viar-sa-simulator .list-group { display:grid; gap:8px; max-height:75vh; overflow:auto; }
+.viar-sa-simulator .list-group-item { padding:12px; border-radius:6px; border:1px solid #e2e8f0; display:block; }
+.viar-sa-simulator a.list-group-item:hover { background:#eff6ff; border-color:#93c5fd; }
+.viar-sa-simulator .list-group-item-heading { font-weight:600; }
+.viar-sa-simulator .list-group-item-text,.viar-sa-simulator .text-muted { color:#64748b; font-size:13px; }
+.viar-sa-simulator .form-group { margin-bottom:20px; }
+.viar-sa-simulator label { display:block; font-weight:600; margin-bottom:8px; }
+.viar-sa-simulator .form-control { width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; background:white; }
+.viar-sa-simulator .btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:8px; background:#2563eb; color:white; }
+.viar-sa-simulator .btn-default { background:#f1f5f9; color:#334155; }
+.viar-sa-simulator .label { padding:3px 7px; border-radius:5px; background:#dbeafe; color:#1e40af; font-size:12px; }
+.viar-sa-simulator pre { overflow:auto; max-height:65vh; font-size:13px; }
+.viar-sa-simulator .sa-simulator-notice { padding:14px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; color:#92400e; }

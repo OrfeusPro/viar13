@@ -428,9 +428,10 @@
   messages; JOIN с существующими orders возвращает 0. Нельзя переносить ссылки
   на другие заказы автоматически. Созданный UAT-диалог 18451 позволяет проверить
   UI, но не подтверждает корректность связей исходных импортированных данных.
-- [TODO] Перед итоговой приёмкой закрыть гонку ingress/read: legacy webhook
-  обновляет conversation и message отдельными операциями. Новый snapshot
-  защищает от уже сохранённых изменений, но не заменяет атомарный ingress.
+- [DONE: код атомарного ingress; production concurrency UAT открыто] Входящие
+  сообщения обрабатываются SaMessageIngressService в транзакции с receipt и
+  блокировками conversation/order; старый TODO о раздельных записях устарел.
+  Подтверждение конкуренции на production MySQL остаётся отдельной проверкой.
 - Ответы и pause/resume/handoff реализованы отдельным подблоком выше с транзакцией,
   идемпотентностью и UAT-изоляцией. Аудит обнаружил: legacy пишет `sent` до
   внешней доставки, подставляет `CONV-*`/`+0000000`, а send/handoff обновляет
@@ -1415,3 +1416,56 @@ ADM-FIL-029, а не считается подтверждённым стати�
 - Исправлены статус заказа, original_name и fallback имени вложения, локальные public-disk URL для сохранённых новых файлов, обновление активности accepted send без перезаписи более позднего callback, snapshot read именно показанной истории. Modal Reply/Bot скрыты на non-WhatsApp.
 - 6 новых regression tests. Inbox + общие command/chat: 67 tests / 587 assertions PASS, SQLite :memory:, HTTP/mail/storage fakes. PHP lint, view:cache, diff-check PASS. Рабочие данные и live отправка не менялись.
 - Осталось внешнее SA UAT send/callback/delivery/bot и проверка MySQL concurrency/production transport; MIG-TEST-SA-LEGACY и ADM-AUD-11 simulator остаются открыты. Следующая задача админки ADM-AUD-04 — массовая Email Рассылка.
+
+# IN PROGRESS — ADM-AUD-03: глобальная кнопка SA как в Voyager (2026-10-08)
+- Global hook уже подключал badge на всех страницах, но показывал компактное синее SA. Возвращены полное название SA-диалоги, оранжевый фон и круглый красный unread counter; права/poll10s/звук сохранены.
+- Следующее: Chrome несколько страниц/mobile, переход без открытия карточек и изменения read flags; проверка badge tests.
+
+# DONE — ADM-AUD-03: плавающая кнопка SA и сохранение позиции (2026-10-08)
+- Перенесены вертикальное перетаскивание мышью/Pointer Events для touch, сохранение позиции между страницами, ограничение положения границами окна и подавление перехода после drag. Полное название, оранжевый фон, unread badge, poll 10s, toast при росте count и сохраняемый переключатель звука.
+- Chrome: кнопка на roles, SEO Meta и SA inbox; drag меняет top, reload сохраняет (70 → 87 → 104 px), обычный клик открывает inbox. Звук true сохраняется после reload; после проверки возвращён false. На мобильной ширине 375 px кнопка помещается в окно. Console errors отсутствуют.
+- Badge/revocation: 2 tests / 16 assertions PASS; view:cache PASS. Screenshot: storage/app/testing/sa-floating-button-2026-10-08.png. Рабочие сообщения/read flags/заказы не менялись.
+- Осталось UAT: реальное новое входящее с toast/звуком, физическое touch устройство и ранее открытые проверки production SA transport/MySQL concurrency. Следующая задача общего аудита — ADM-AUD-04.
+## DONE — ADM-AUD-03: исправление свободного drag SA (2026-10-08)
+- Исправлена причина прерывания drag: нативное перетаскивание ссылки браузером. Добавлены draggable=false и dragstart.prevent. Убран повторный pointer capture/lostpointercapture; движение и завершение отслеживаются на window.
+- Предыдущая проверка движения на 17 px была недостаточной: она подтверждала начало движения, но не свободное перетаскивание.
+- Chrome после исправления: полный drag вверх 425 → 128 px (−297), вниз 128 → 300 px (+172), reload сохраняет 300 px, URL roles не меняется. Blade view:cache PASS. Screenshot storage/app/testing/sa-floating-drag-fixed-2026-10-08.png.
+- БД/API/transport не менялись, новых статических данных нет. Осталось ранее отмеченное UAT реального входящего toast/beep и физический touch.
+# IN PROGRESS — ADM-AUD-03: полнота SA и сохранение модальных ответов (2026-10-08)
+- Найдено: modal Reply/Bot в inbox и чате заказа закрываются при uncertain/partial/state_conflict, теряя token/черновик. Исправить сохранение открытой формы и проверить повтор без второго transport call.
+- Сверить оставшиеся metadata карточки, подтверждение bot control, simulator и актуальность старых TODO ingress/read/imported data. Не включать внешнюю отправку и не перепривязывать рабочие данные.
+## ADM-AUD-03 — повторная проверка полноты SA (2026-10-08)
+Статус всей задачи: IN PROGRESS; исправления ниже DONE. Ранее DONE относилось к отдельным блокам, не полной приёмке SA.
+- Исправлены модальные Reply/Bot в inbox и чате заказа: при uncertain/partial/state_conflict/ошибке token форма остаётся открытой с прежним ключом и черновиком. Повтор не создаёт вторую внешнюю отправку. Добавлены 2 Livewire regression tests на uncertain retry обеих форм.
+- В карточку возвращены дата последнего сообщения (fallback из истории, если last_message_at пуст), номер заказа у сообщения, явный текст пустого сообщения и подтверждение bot control, как в оригинале.
+- Проверки: Inbox + OrderSaCommand + OrderSaChat 69 tests / 616 assertions PASS; PHP lint, Blade view:cache PASS. Chrome: UAT-card /sa-conversations/39, сведения и confirmation dialog проверены, подтверждение отменено. Screenshot storage/app/testing/sa-card-completeness-2026-10-08.png. Внешних отправок и изменений live сообщений/read flags нет.
+- Read-only текущая БД: 39 conversations / 140 messages; 1 связь с существующим заказом (UAT), 4 orders_id с отсутствующими orders. Это состояние локального снимка, а не основание для исправления production данных. Связи не менялись.
+- Runtime config sa_commands_enabled=false: настоящая отправка/bot отключены. Настройки не изменялись. SA Simulator не перенесён (ADM-AUD-11).
+- Старый TODO атомарного ingress устарел: SaMessageIngressService уже обеспечивает receipt и business writes в транзакции, контроллер блокирует order/conversation. Остаётся MySQL concurrency UAT; mock/SQLite не подтверждают production provider.
+- Осталось: (1) повторный read-only аудит связей после импорта базы прода; (2) согласованный тестовый live send/callback/delivery/bot и входящее с toast/beep; (3) touch на физическом телефоне; (4) отдельный перенос нужных сценариев SA Simulator. Следующий шаг — SA UAT на тестовом контакте с проверкой настройки и endpoint, до перехода к Email Рассылке.
+# IN PROGRESS — ADM-AUD-11: перенос SA Simulator (2026-10-08)
+- Перенести все legacy presets, JSON editor, справку/cURL, validation details и результат API в Filament. Defaults брать из существующего DB resolver. API key остаётся только на сервере.
+- Исполнение ограничить явным списком SA/Blog endpoints с проверкой прав; POST/PATCH подтверждаются пользователем. Не запускать сценарии над рабочей БД при проверке, исходящие CRM→SA сохраняют текущий выключатель отправки.
+- Следующее: реализация страницы/dispatcher, изолированные success/validation/duplicate/permission tests и Chrome readonly UI.
+## DONE — ADM-AUD-11: перенос SA Simulator (2026-10-08)
+- Страница /filament/sa-simulator, меню и ссылки из списка/карточки SA. Все 34 legacy presets, editor, docs/cURL, response/validation details; defaults из существующего DB resolver. API key server-only, URL allowlist, повтор сохраняет idempotency keys, POST/PATCH с подтверждением.
+- Исполнение через существующие API handlers + VerifyIntegrationApiKey, без loopback HTTP. Права перепроверяются; Blog writes требуют отдельные разрешения. Текущий выключатель внешних SA-команд сохранён, ADM-FIL-UAT outgoing блокируются всегда.
+- SaSimulatorTest 6 tests / 38 assertions PASS. Совместный Simulator/Inbox/OrderSaCommand до дополнительного guard test 52 tests / 452 assertions PASS. Lint/view:cache PASS. Chrome GET catalog 200 и переключение presets/editor/docs, JS errors 0. Рабочие POST/PATCH не запускались.
+- Evidence/ограничения: docs/sa_simulator_migration_2026-10-08.md; storage/app/testing/sa-simulator-2026-10-08.png. Multipart Blog media остаётся cURL, как в оригинале. Схема БД/API контракты не менялись, новых статических mappings нет; legacy sample payloads/docs сохранены.
+- Следующее: согласованный SA live UAT на тестовом контакте (ingress/reply/callback/delivery/bot), звук/touch и связи после импорта production DB. ADM-AUD-03 целиком остаётся IN PROGRESS; реализация Simulator завершена.
+# DONE — ADM-AUD-11: локальный прогон всех записывающих presets (2026-10-08)
+- Подготовить отдельную временную MySQL БД с копией структуры и локальных справочников; рабочая БД только читается. Seed только тестовых клиентов/заказов/диалогов, внешние HTTP/mail/queue блокируются.
+- Выполнить настоящие API handlers через simulator service для каждого write preset; проверить записи, duplicate и validation. Media проверить локальным файлом/изолированным storage. Результаты и найденные исправления фиксировать отдельно.
+- Выполнено: 23/23 presets, 11 validation/no-mutation probes, pause/resume; отдельная локальная MySQL, Mail/Queue/HTTP/Storage fake. Исправлено сохранение data.bot_control.mode в pipeline-changed; 7 simulator tests / 47 assertions PASS. Полная регрессия 86 tests / 795 assertions, 1 legacy skipped. Evidence: docs/sa_simulator_local_write_audit_2026-10-08.md. Тестовые схемы удалены, рабочие данные/изображения не менялись.
+
+## DONE — ADM-SA-UPDATE-01: реальная запись fields/tags/notes при PATCH lead
+- Локальная проверка обнаружила: updateLead сообщает успех для update.fields/tags_add/tags_remove/notes_append, но сохраняет их только в event payload; бизнес-сущности не обновляются. Этап при update.stage сохраняется.
+- Исходный план выполнен: сверены реальные источники, определено отображение полей, реализованы транзакционная запись и persistence/duplicate/rollback тесты. Полная приёмка SA остаётся IN PROGRESS по отдельным внешним/UAT задачам.
+- Закрыто 2026-10-08: SaLeadUpdateService сохраняет поля/теги/структурированные notes в delivery.sa_lead, известные контакты — в существующие delivery keys, заметки — также append admin_comment; stage/phone синхронизируются с заказом/диалогом. Receipt и бизнес-запись транзакционны; lookup возвращает новый контакт, users профиль не меняется. Схема БД без изменений.
+- Проверки: 18 новых tests / 152 assertions PASS; совместно Simulator 25 / 199 PASS. Общая регрессия до дополнительных cases 101 / 928, 1 legacy skipped. Local MySQL: 23 presets + fields/tags/notes persistence/duplicate/lookup и SQL failure rollback/retry PASS. Evidence docs/sa_lead_update_persistence_2026-10-08.md; рабочие данные/картинки не менялись. Следующий шаг — оставшиеся независимые SA UAT, общий SA IN PROGRESS.
+# DONE — MIG-TEST-SA-LEGACY-01: PATCH lead, bot control и эскалации (2026-10-08)
+- Восстановить обнаружение legacy SaLeadsUpdateTest в PHPUnit 12 и убрать зависимость SaConversationBotControlTest от рабочей схемы. Проверки SQLite :memory: с HTTP/Mail/Synvolve fakes; живые API/MySQL/browser write/UAT не запускать по просьбе пользователя.
+- Следующее: поднять fixture schema, выполнить прежние сценарии, исправить устаревшие тестовые предположения и добавить проверки фактического сохранения. Остальные legacy suites учитывать отдельно, не считать весь backlog закрытым.
+- Выполнено: SaLeadsUpdateTest (10 scenarios) и SaEscalationsCreateTest (8) используют PHPUnit attributes и CreatesSaChatSchema. Добавлены persistence assertions email/city/budget/tags/admin notes. Старый bot test заменён 4 актуальными сценариями OrderSaCommandService без заказа: pause/resume/handoff, повтор без второй отправки, отключённый transport.
+- Общий запуск с messages/atomicity/persistence/Simulator/Inbox/OrderSaCommand/OrderSaChat: 136 tests / 1198 assertions PASS, без skipped. SQLite :memory:, HTTP/Mail/Synvolve fake; реальных отправок, MySQL прогонов и browser writes не было. Lint PASS.
+- MIG-TEST-SA-LEGACY в целом IN PROGRESS: недоступные через /** @test */ остаются SaLeadsCreateTest, SaServicesCatalogTest, SaOrdersLookupTest, SaServiceSizesTest. Следующий точный шаг — изолированные fixtures/discovery для lookup/catalog/sizes, затем расширенный create suite. Live SA UAT отложен по просьбе пользователя.

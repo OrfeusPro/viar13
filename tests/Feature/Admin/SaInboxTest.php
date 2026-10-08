@@ -132,6 +132,21 @@ class SaInboxTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_uncertain_modal_reply_keeps_draft_and_token_for_duplicate_retry(): void
+    {
+        config(['admin_migration.sa_commands_enabled' => true, 'services.synvolve.manager_message_webhook_url' => 'https://sa.test.invalid/message']);
+        Http::fake(['sa.test.invalid/*' => Http::response([], 500)]);
+        $page = Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id])
+            ->mountAction('reply')->fillForm(['text' => 'Modal uncertain', 'handoff' => false]);
+        $token = $page->get('mountedActions')[0]['data']['token'];
+        $page->callMountedAction()->assertActionMounted('reply')
+            ->assertActionDataSet(['text' => 'Modal uncertain', 'token' => $token]);
+        $page->callMountedAction()->assertActionMounted('reply')
+            ->assertActionDataSet(['text' => 'Modal uncertain', 'token' => $token]);
+        $this->assertDatabaseCount('sa_messages', 1);
+        Http::assertSentCount(1);
+    }
+
     public function test_inline_reply_validates_and_clears_only_confirmed_draft(): void
     {
         $page = Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id]);

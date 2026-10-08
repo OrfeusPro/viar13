@@ -65,6 +65,8 @@ class ViewSaConversation extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('simulator')->label('SA Simulator')->icon('heroicon-o-beaker')
+                ->visible(fn () => \App\Filament\Pages\SaSimulator::canAccess())->url(fn () => \App\Filament\Pages\SaSimulator::getUrl()),
             Action::make('list')->label('К списку')->color('gray')->url(SaConversationResource::getUrl()),
             Action::make('order')->label('Открыть заказ')->visible(fn () => (bool) $this->getRecord()->orders_id)
                 ->url(fn () => OrdersResource::getUrl('edit', ['record' => $this->getRecord()->orders_id])),
@@ -85,19 +87,29 @@ class ViewSaConversation extends ViewRecord
             Action::make('reply')->label('Ответить')->icon('heroicon-o-paper-airplane')->iconButton()->tooltip('Ответить в отдельном окне')->visible(fn () => $this->editable() && $this->getRecord()->channel === 'whatsapp')
                 ->schema([\Filament\Forms\Components\Hidden::make('token')->required(), Textarea::make('text')->label('Сообщение')->required()->maxLength(10000), Toggle::make('handoff')->label('Передать менеджеру после ответа')])
                 ->fillForm(fn () => ['token' => app(OrderSaCommandService::class)->inboxToken($this->getRecord(), auth('filament')->user())])
-                ->action(fn ($data) => $this->command($data + ['action' => 'send'])),
+                ->action(function (array $data, Action $action): void {
+                    if (! in_array($this->command($data + ['action' => 'send']), ['accepted', 'uat_suppressed'], true)) {
+                        $action->halt();
+                    }
+                }),
             Action::make('bot')->label('Управление ботом')->icon('heroicon-o-cpu-chip')->iconButton()->tooltip('Управление ботом в отдельном окне')->visible(fn () => $this->editable() && $this->getRecord()->channel === 'whatsapp')
                 ->schema([\Filament\Forms\Components\Hidden::make('token')->required(), \Filament\Forms\Components\Select::make('action')->label('Команда')->required()
                     ->options(['pause_bot' => 'Пауза', 'resume_bot' => 'Включить', 'handoff_to_manager' => 'Передать менеджеру'])])
                 ->fillForm(fn () => ['token' => app(OrderSaCommandService::class)->inboxToken($this->getRecord(), auth('filament')->user())])
-                ->action(fn ($data) => $this->command($data)),
+                ->action(function (array $data, Action $action): void {
+                    if (! in_array($this->command($data), ['accepted', 'uat_suppressed'], true)) {
+                        $action->halt();
+                    }
+                }),
         ];
     }
 
-    private function command(array $data, bool $fromComposer = false): void
+    private function command(array $data, bool $fromComposer = false): ?string
     {
-        $this->run(function () use ($data, $fromComposer) {
+        $status = null;
+        $this->run(function () use ($data, $fromComposer, &$status) {
             $result = app(OrderSaCommandService::class)->executeInbox($this->getRecord(), auth('filament')->user(), $data);
+            $status = $result['status'];
             Notification::make()->title(match ($result['status']) {
                 'accepted' => 'Запрос принят сервисом SA', 'uat_suppressed' => 'Тестовая команда: внешняя отправка отключена',
                 'uncertain' => 'Результат отправки не подтверждён. Проверьте историю перед повтором.',
@@ -110,6 +122,7 @@ class ViewSaConversation extends ViewRecord
                 $this->newReply();
             }
         }, false);
+        return $status;
     }
 
     private function run(callable $operation, bool $notify = true): void
