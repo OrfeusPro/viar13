@@ -22,6 +22,43 @@ class ViewSaConversation extends ViewRecord
     protected static string $resource = SaConversationResource::class;
     protected string $view = 'filament.pages.sa-conversation';
 
+    public string $replyText = '';
+    public bool $replyHandoff = false;
+    #[\Livewire\Attributes\Locked]
+    public ?string $replyToken = null;
+
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+        if ($this->editable() && $this->getRecord()->channel === 'whatsapp') {
+            $this->replyToken = app(OrderSaCommandService::class)->inboxToken($this->getRecord(), auth('filament')->user());
+        }
+    }
+
+    public function newReply(): void
+    {
+        SaInboxService::authorize(auth('filament')->user(), 'edit');
+        $this->replyToken = app(OrderSaCommandService::class)->inboxToken($this->getRecord()->fresh(), auth('filament')->user());
+        $this->replyText = '';
+        $this->replyHandoff = false;
+        $this->resetValidation();
+    }
+
+    public function sendReply(): void
+    {
+        SaInboxService::authorize(auth('filament')->user(), 'edit');
+        $this->replyText = trim($this->replyText);
+        $this->validate(['replyText' => 'required|string|max:10000', 'replyHandoff' => 'boolean']);
+        $this->command(['action' => 'send', 'token' => $this->replyToken, 'text' => $this->replyText, 'handoff' => $this->replyHandoff], true);
+    }
+
+    public function controlBot(string $action, string $token): void
+    {
+        SaInboxService::authorize(auth('filament')->user(), 'edit');
+        validator(compact('action', 'token'), ['action' => 'required|in:pause_bot,resume_bot,handoff_to_manager', 'token' => 'required|string|max:4096'])->validate();
+        $this->command(compact('action', 'token'));
+    }
+
     public function getTitle(): string { return 'Диалог: '.($this->getRecord()->client_name ?: $this->getRecord()->conversation_id); }
     public function editable(): bool { return auth('filament')->user()?->hasPermission('edit_orders') ?? false; }
 
@@ -45,11 +82,11 @@ class ViewSaConversation extends ViewRecord
                         $this->redirect(OrdersResource::getUrl('edit', ['record' => $order->id]));
                     });
                 }),
-            Action::make('reply')->label('Ответить')->icon('heroicon-o-paper-airplane')->visible(fn () => $this->editable())
+            Action::make('reply')->label('Ответить')->icon('heroicon-o-paper-airplane')->iconButton()->tooltip('Ответить в отдельном окне')->visible(fn () => $this->editable() && $this->getRecord()->channel === 'whatsapp')
                 ->schema([\Filament\Forms\Components\Hidden::make('token')->required(), Textarea::make('text')->label('Сообщение')->required()->maxLength(10000), Toggle::make('handoff')->label('Передать менеджеру после ответа')])
                 ->fillForm(fn () => ['token' => app(OrderSaCommandService::class)->inboxToken($this->getRecord(), auth('filament')->user())])
                 ->action(fn ($data) => $this->command($data + ['action' => 'send'])),
-            Action::make('bot')->label('Управление ботом')->icon('heroicon-o-cpu-chip')->visible(fn () => $this->editable())
+            Action::make('bot')->label('Управление ботом')->icon('heroicon-o-cpu-chip')->iconButton()->tooltip('Управление ботом в отдельном окне')->visible(fn () => $this->editable() && $this->getRecord()->channel === 'whatsapp')
                 ->schema([\Filament\Forms\Components\Hidden::make('token')->required(), \Filament\Forms\Components\Select::make('action')->label('Команда')->required()
                     ->options(['pause_bot' => 'Пауза', 'resume_bot' => 'Включить', 'handoff_to_manager' => 'Передать менеджеру'])])
                 ->fillForm(fn () => ['token' => app(OrderSaCommandService::class)->inboxToken($this->getRecord(), auth('filament')->user())])
@@ -57,9 +94,9 @@ class ViewSaConversation extends ViewRecord
         ];
     }
 
-    private function command(array $data): void
+    private function command(array $data, bool $fromComposer = false): void
     {
-        $this->run(function () use ($data) {
+        $this->run(function () use ($data, $fromComposer) {
             $result = app(OrderSaCommandService::class)->executeInbox($this->getRecord(), auth('filament')->user(), $data);
             Notification::make()->title(match ($result['status']) {
                 'accepted' => 'Запрос принят сервисом SA', 'uat_suppressed' => 'Тестовая команда: внешняя отправка отключена',
@@ -68,6 +105,10 @@ class ViewSaConversation extends ViewRecord
                 'state_conflict' => 'Диалог изменился во время выполнения команды',
                 default => 'Результат команды: '.$result['status'],
             })->color(in_array($result['status'], ['accepted', 'uat_suppressed'], true) ? 'success' : 'warning')->send();
+            // Keep the same token and draft for uncertain results: retries must remain idempotent.
+            if ($fromComposer && in_array($result['status'], ['accepted', 'uat_suppressed'], true)) {
+                $this->newReply();
+            }
         }, false);
     }
 

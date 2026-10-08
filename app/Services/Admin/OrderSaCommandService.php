@@ -179,6 +179,13 @@ class OrderSaCommandService
                 // Do not overwrite a delivery callback that arrived during dispatch.
                 SaMessage::query()->where('message_id', $prepared['message_id'])->where('status', 'pending')
                     ->update(['status' => $messageAccepted ? 'queued' : 'delivery_unknown']);
+                if ($messageAccepted && $stillLinked) {
+                    // Keep a later incoming message's activity when dispatch overlaps a callback.
+                    $sentAt = SaMessage::where('message_id', $prepared['message_id'])->value('created_at');
+                    if ($sentAt && (! $conversation->last_message_at || $conversation->last_message_at->lt($sentAt))) {
+                        $conversation->update(['last_message_at' => $sentAt]);
+                    }
+                }
                 if ($order && $messageAccepted && $stillLinked && ! DB::table('order_user_comments')
                     ->where('order_id', $order?->id)->where('sa_message_id', $prepared['message_id'])->exists()) {
                     DB::table('order_user_comments')->insert([

@@ -25,10 +25,10 @@ class SaInboxService
             && $user->hasPermission($ability === 'edit' ? 'edit_orders' : 'read_orders'), 403);
     }
 
-    public function readToken(SaConversation $conversation): string
+    public function readToken(SaConversation $conversation, ?int $displayedLastId = null): string
     {
         return Crypt::encryptString(json_encode(['id' => $conversation->id,
-            'last_id' => (int) SaMessage::where('conversation_id', $conversation->conversation_id)->max('id'),
+            'last_id' => $displayedLastId ?? (int) SaMessage::where('conversation_id', $conversation->conversation_id)->max('id'),
             'updated_at' => $conversation->getRawOriginal('updated_at'),
             'last_message_at' => $conversation->getRawOriginal('last_message_at')], JSON_THROW_ON_ERROR));
     }

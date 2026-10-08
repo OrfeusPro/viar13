@@ -9,6 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class SeoMetaSummary extends StatsOverviewWidget
 {
+    protected int|array|null $columns = ['default' => 2, 'md' => 4];
     public static function canView(): bool { return SeoMetaSuggestionResource::canViewAny(); }
 
     protected function getStats(): array

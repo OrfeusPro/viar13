@@ -1345,3 +1345,73 @@ ADM-FIL-029, а не считается подтверждённым стати�
 - Chrome: 39 диалогов/38 unread; карточка standalone №35 и bind modal без сохранения, unread остаётся 38. Карточка существующего UAT №39; мобильная ширина 390 px, устранено наложение badge на avatar, overflow нет, desktop viewport восстановлен. Evidence: storage/app/testing/sa-inbox-after-2026-10-08.png и sa-inbox-mobile-2026-10-08.png.
 - Рабочие сообщения/заказы/read flags/изображения не изменялись. Реальная отправка в окружении выключена admin_migration.sa_commands_enabled=false; config/.env не менялись. Live bind/create/send/bot, реальный звук и provider callbacks требуют отдельной UAT при разрешённой отправке. Не обнаруживаемые PHPUnit12 старые API annotation tests вынесены в MIG-TEST-SA-LEGACY; не считаются выполненными.
 - Следующее точное действие: ADM-AUD-04 — массовая Email Рассылка; ADM-AUD-05..12 и MIG-TEST-SA-LEGACY остаются открыты.
+
+# TODO — Визуальное согласование SEO Meta и SA inbox (2026-10-08)
+- Проведён сравнительный Chrome-аудит Voyager, новых SEO/SA страниц и оформленных BREAD roles. Совпадение дизайна частичное; функциональные ADM-AUD-02/03 остаются DONE в ранее описанном scope.
+- TODO ADM-DES-01/P2: SEO — единая шапка/поиск/действия BREAD, компактные счётчики и вкладки, видимые основные фильтры, явные ссылки, согласование редактора предложений.
+- TODO ADM-DES-02/P2: SA — единая таблица, объединение колонок, заметные unread/направления/ссылки заказа, компактная переписка и расположение формы ответа/управления ботом.
+- Evidence и подробности: docs/filament_design_audit_2026-10-08.md. Код/рабочая БД не менялись; аудит desktop не закрывает мобильный UAT.
+- Следующее точное действие по дизайну: ADM-DES-01, затем ADM-DES-02; реализация в рамках текущего аудита не выполнялась.
+
+# IN PROGRESS — ADM-DES-01 / ADM-DES-02 (2026-10-08)
+- Пользователь согласовал визуальную доработку. Реализуется единый BREAD стиль SEO/SA таблиц, видимые фильтры, компактные счётчики, действия-иконки и ссылки.
+- SA: объединяются колонки, выделяются непрочитанные, сообщения располагаются слева/справа; форма ответа добавляется под историей с прежним signed-token/idempotency сервисом.
+- Следующее: изолированные тесты формы и регрессии, затем Chrome desktop/mobile без отправки и изменений рабочей БД.
+
+# DONE — ADM-DES-01 / ADM-DES-02: согласование оформления (2026-10-08)
+- SEO/SA: единая светло-синяя шапка BREAD, границы/отступы, поиск слева, видимые фильтры, действия-иконки с названиями/подсказками и закреплением справа. Ссылки на сущность/страницу/заказ выделены синим.
+- SEO: компактная статистика (2 колонки на мобильном, 4 на desktop), вкладки выровнены слева и прокручиваются. Редактор предложений согласован как явное действие «Редактировать и одобрить» (карандаш); штатная модальная валидация сохранена, inline редактор Voyager не копировался.
+- SA: 7 основных колонок вместо 10 + unread-иконки; имя/телефон и диалог/дата объединены, непрочитанные строки выделены. Дополнительная сортируемая активность доступна через выбор колонок. Компактные входящие/исходящие слева/справа; кнопки бота в карточке, постоянная форма ответа под историей.
+- Composer: подписанный Locked token сохраняется при polling и uncertain/partial результатах; подтверждённый ответ очищает черновик и создаёт токен следующего ответа. Прямые вызовы проверяют права; повтор неподтверждённого ответа не отправляет дубль. «Начать новый ответ» явно сбрасывает черновик.
+- Проверки: BREAD/SEO + SA inbox + прежние команды — 92 tests/821 assertions PASS на PHP 8.3 с CLI memory_limit=512M. После добавления inline bot итоговый SaInboxTest — 15 tests/127 assertions PASS. PHP lint, view:cache и diff-check PASS. SQLite :memory:, fake HTTP/mail.
+- Chrome desktop: SEO/SA список/карточка. Mobile 390px: SEO статистика/прокрутка вкладок, SA список/форма; document width 375px, overflow страницы нет, действие SA position:sticky и right=358px. Снимки design-*-updated и design-*-mobile в storage/app/testing.
+- Подключение Chrome временно зависало при последнем снимке; восстановлено через свежую вкладку, финальный mobile список проверен, viewport reset выполнен. Рабочие данные/изображения/read flags не менялись; реальной отправки не было.
+- DONE относится к согласованному оформлению новой панели, не к копии Voyager пиксель-в-пиксель. Следующее: ADM-AUD-04 Email Рассылка; внешний SA UAT, production queue и общий backlog остаются открыты.
+
+# IN PROGRESS — ADM-DES-01: восстановить полный состав SEO полей (2026-10-08)
+- Повторное сравнение оригинала выявило пропуск inline редактора keywords/title/description, полей источника, generated_at и ошибки в предложении. Прежний DONE по составу SEO интерфейса был преждевременным.
+- Добавляются три редактируемых поля в каждой строке с подсказками/счётчиками, inline generate/approve, поля источника и дата/ошибка. Черновики сохраняются при polling. Следующее: изолированные тесты сохранения/прав/валидации и Chrome без изменений рабочей БД.
+
+# DONE — ADM-DES-01: полный редактор SEO полей в строке (2026-10-08)
+- Восстановлены постоянно видимые keywords/Meta Title/Meta Description в каждой строке, placeholder и подсказка keywords, счётчики длины. Возвращены title_field/description_field под URL, generated_at под статусом и ошибка рядом с редактором.
+- Inline generate учитывает черновик keywords; inline approve сохраняет отредактированные meta/keywords через прежний сервис с проверкой статуса/прав/лимитов. Apply остаётся отдельным действием после одобрения. Модальные действия тоже загружают текущий черновик строки.
+- Черновики не перезаписываются polling; после асинхронной генерации нетронутый черновик обновляется из результата. Read-only пользователь видит значения без редактора и прямую запись выполнить не может. Данных/миграций/БД-схемы не меняли.
+- Проверки: 13 SEO tests/103 assertions PASS на SQLite :memory:, включая 3 новых теста inline approval, async refresh/keywords/limits и отказ без прав. PHP lint, view:cache, git diff --check PASS.
+- Chrome: 10 редакторов и 30 полей (keywords1000/title60/description155), счётчик «Проверка»=8/60, тестовый черновик очищен. Операции generate/approve/apply в рабочей БД не выполнялись. Evidence storage/app/testing/seo-meta-fields-restored-2026-10-08.png.
+- Уточнение предыдущего итога: сохранение только модального редактора не соответствовало оригиналу; этот пропуск исправлен. Следующее: внешний SEO UAT/production queue и прежний backlog ADM-AUD-04..12.
+
+# IN PROGRESS — ADM-DES-01: компоновка SEO по before/after (2026-10-08)
+- Убираются дубли генерации и лишние ID/язык/ошибка колонки; язык объединён с сущностью, ошибка остаётся в редакторе. Ячейки сверху, компактные поля с боковыми маркерами, действия справа.
+- Возвращается постоянный select массового действия с подтверждением через штатный BulkAction. Следующее: SEO regression, Chrome desktop/mobile и evidence без записи рабочей БД.
+
+# DONE — ADM-DES-01: компоновка SEO по before/after (2026-10-08)
+- Строки выровнены сверху; keywords/title/description по 54px, обычные подписи и компактные счётчики. Блоки текущих meta с серыми маркерами, предложения — с голубыми.
+- Генерация/одобрение перенесены в правую колонку и работают с текущим inline черновиком; нижние дубли удалены. Штатные модальные API, Apply/Reject и их подтверждения сохранены.
+- Язык объединён с сущностью; отдельные ID/язык/ошибка убраны из компоновки, ошибка остаётся рядом с редактором. Поиск, фильтр языка, generated_at, поля источника и редактирование сущности сохранены.
+- Постоянный select Generate/Approve/Apply/Reject + Применить использует штатные BulkAction/отбор/права/подтверждение. При нулевом выборе кнопка выключена; дубли штатных bulk-кнопок скрыты. Browser проверил выбор 1 записи и окно подтверждения, выполнение не подтверждалось.
+- Проверки: 13 SEO tests / 103 assertions PASS (SQLite :memory:, Queue fake); PHP lint, view:cache и git diff --check PASS. Chrome desktop: 7 колонок вместе с checkbox, все TD vertical-align:top; первая строка около 324px. Mobile 390: document scrollWidth=clientWidth=375px, действия 32px; viewport reset.
+- Evidence: storage/app/testing/seo-meta-layout-2026-10-08.png и seo-meta-layout-mobile-2026-10-08.png. Mobile снимок браузерного расширения масштабирован некорректно, размеры подтверждены DOM. Данные рабочей БД не редактировались, генерация/approve/apply не запускались.
+- Следующее: внешний SEO UAT/production queue; задачи ADM-AUD-04..12 остаются в прежнем backlog.
+
+# IN PROGRESS — ADM-AUD-02: аудит функциональной полноты SEO Meta (2026-10-08)
+- Источники: legacy SeoMetaSuggestionController/browse, новый resource/List/service/job, общий scan/generator/config и BREAD generateSeoMeta.
+- Найдено: entity_label отсутствовал в поиске; inline keywords не сохранялись в Apply/Reject; bulk approve допускал повторное одобрение approved с перезаписью редакции; null/пустое поле approve и draft fallback могли возвращать сгенерированный текст. Default scan only_empty отличался от Voyager.
+- Следующее: исправления + изолированные тесты пустых полей/повторного bulk/keywords/поиска/default scan и сверка общей матрицы сценариев. Рабочие SEO/БД не изменять.
+
+# DONE — ADM-AUD-02: аудит кода SEO Meta и исправление пропусков (2026-10-08)
+- Сверены legacy controller/view и новый resource/page/service/job; общие scan/context/generator/client/config и генерация из BREAD сохранены. Матрица: docs/seo_meta_functionality_audit_2026-10-08.md.
+- Исправлено: поиск entity_label и порядок updated_at/id; default scan only_empty=false; сохранение inline keywords при Apply/Reject с валидацией; bulk approve пропускает approved и не затирает ручную редакцию; пустые approved поля не возвращаются из generated. Snapshot после Apply читает фактические meta источника, включая поле, оставленное неизменным.
+- 5 новых регрессионных тестов. Итог 18 SEO tests / 161 assertions PASS, SQLite :memory:, Queue fake/mock generator. PHP lint и diff-check PASS.
+- Read-only сверка подключённой БД: 19 targets, все заданные title/description колонки существуют, 7 языков ru/en/lv/ee/lt/pl/de. Локальная очередь sync, API key настроен (значение не выводилось). Рабочие данные не изменялись.
+- Осталось внешнее UAT: реальный вызов генератора и production queue/config. Наличие ключа и mock-тесты не доказывают внешний запрос. Реальный API в рамках аудита не вызывался. Следующее действие — согласованный сквозной тест на тестовой сущности; общий backlog остаётся открытым.
+
+# IN PROGRESS — ADM-AUD-03: повторная сверка кода отдельных SA-диалогов (2026-10-08)
+- Сверяются legacy AdminSaIntegrationController/views и новый resource/card/inbox/command/transport/badge/attachments.
+- Найдено: отсутствует статус заказа; original_name старых вложений игнорируется; manager send не обновляет last_message_at; readToken вычисляет max после получения истории и может включить ещё не показанное сообщение. Модальные reply/bot видны на неподдерживаемых каналах.
+- Следующее: исправить и проверить SQLite/fake transport, не отправлять клиентам и не менять рабочие read flags/orders/images.
+
+# DONE — ADM-AUD-03: повторный аудит кода SA inbox (2026-10-08)
+- Матрица сверки legacy/new: docs/sa_inbox_functionality_audit_2026-10-08.md. Проверены список/фильтры/карточка/создание и bind заказа/отправка/bot/read/attachments/права/idempotency.
+- Исправлены статус заказа, original_name и fallback имени вложения, локальные public-disk URL для сохранённых новых файлов, обновление активности accepted send без перезаписи более позднего callback, snapshot read именно показанной истории. Modal Reply/Bot скрыты на non-WhatsApp.
+- 6 новых regression tests. Inbox + общие command/chat: 67 tests / 587 assertions PASS, SQLite :memory:, HTTP/mail/storage fakes. PHP lint, view:cache, diff-check PASS. Рабочие данные и live отправка не менялись.
+- Осталось внешнее SA UAT send/callback/delivery/bot и проверка MySQL concurrency/production transport; MIG-TEST-SA-LEGACY и ADM-AUD-11 simulator остаются открыты. Следующая задача админки ADM-AUD-04 — массовая Email Рассылка.

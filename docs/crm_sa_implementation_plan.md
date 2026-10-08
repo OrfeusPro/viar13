@@ -9526,3 +9526,16 @@ Extra checks:
 - Chrome: 39 диалогов/38 unread; карточка standalone №35 и bind modal без сохранения, unread остаётся 38. Карточка существующего UAT №39; мобильная ширина 390 px, устранено наложение badge на avatar, overflow нет, desktop viewport восстановлен. Evidence: storage/app/testing/sa-inbox-after-2026-10-08.png и sa-inbox-mobile-2026-10-08.png.
 - Рабочие сообщения/заказы/read flags/изображения не изменялись. Реальная отправка в окружении выключена admin_migration.sa_commands_enabled=false; config/.env не менялись. Live bind/create/send/bot, реальный звук и provider callbacks требуют отдельной UAT при разрешённой отправке. Не обнаруживаемые PHPUnit12 старые API annotation tests вынесены в MIG-TEST-SA-LEGACY; не считаются выполненными.
 - Следующее точное действие: ADM-AUD-04 — массовая Email Рассылка; ADM-AUD-05..12 и MIG-TEST-SA-LEGACY остаются открыты.
+
+## 2026-10-08 — ADM-DES-02: оформление SA inbox
+- Список согласован с BREAD: объединённые колонки, видимые фильтры, выделение unread и закреплённые действия. В карточке компактные сообщения слева/справа, постоянный composer и inline bot controls.
+- Новые UI методы sendReply/newReply/controlBot используют прежний OrderSaCommandService; signed token/CSRF/права/idempotency/UAT сохраняются. Locked replyToken не обновляется polling; uncertain/partial сохраняют токен/черновик, чтобы повтор не отправил сообщение ещё раз. Подтверждённый ответ очищает форму, явная новая форма сбрасывает черновик.
+- API/auth X-Api-Key/схема БД не менялись, новых endpoints и миграций нет. Статическим остаётся только прежняя конфигурация транспорта/отключение live отправки; новые роли/модели не захардкожены.
+- Проверки: регрессия 92 tests/821 assertions, итоговый inbox 15 tests/127 assertions PASS (SQLite :memory:, fake HTTP/mail); PHP lint/Blade cache/diff-check PASS. Chrome desktop/mobile390 без отправки, read38 сохранён, overflow нет, viewport восстановлен.
+- Следующее точное действие SA: согласованный UAT реальной отправки и callback в тестовом контуре. admin_migration.sa_commands_enabled=false не менялся. Следующая задача админки ADM-AUD-04.
+
+# DONE — ADM-AUD-03: повторный аудит кода SA inbox (2026-10-08)
+- Матрица сверки legacy/new: docs/sa_inbox_functionality_audit_2026-10-08.md. Проверены список/фильтры/карточка/создание и bind заказа/отправка/bot/read/attachments/права/idempotency.
+- Исправлены статус заказа, original_name и fallback имени вложения, локальные public-disk URL для сохранённых новых файлов, обновление активности accepted send без перезаписи более позднего callback, snapshot read именно показанной истории. Modal Reply/Bot скрыты на non-WhatsApp.
+- 6 новых regression tests. Inbox + общие command/chat: 67 tests / 587 assertions PASS, SQLite :memory:, HTTP/mail/storage fakes. PHP lint, view:cache, diff-check PASS. Рабочие данные и live отправка не менялись.
+- Осталось внешнее SA UAT send/callback/delivery/bot и проверка MySQL concurrency/production transport; MIG-TEST-SA-LEGACY и ADM-AUD-11 simulator остаются открыты. Следующая задача админки ADM-AUD-04 — массовая Email Рассылка.

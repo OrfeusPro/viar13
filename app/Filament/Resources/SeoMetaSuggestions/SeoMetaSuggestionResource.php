@@ -19,6 +19,7 @@ use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -66,19 +67,22 @@ class SeoMetaSuggestionResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id', 'desc')->poll('15s')->columns([
-            TextColumn::make('id')->label('ID')->sortable(),
-            TextColumn::make('entity_title')->label('Сущность')->description(fn ($record) => $record->entity_label . ' #' . $record->metaable_id)
-                ->searchable(['entity_title', 'current_meta_title', 'current_meta_description',
+        return $table->extraAttributes(['class' => 'viar-admin-table viar-seo-table'])->recordActionsColumnLabel('Действия')->filtersLayout(FiltersLayout::AboveContent)
+            ->header(fn () => view('filament.tables.seo-bulk'))
+            ->filtersFormColumns(['default' => 1, 'md' => 3, 'xl' => 6])->defaultSort(fn (Builder $query) => $query->orderByDesc('updated_at')->orderByDesc('id'))->poll('15s')->columns([
+            TextColumn::make('entity_title')->label('Сущность')->description(fn ($record) => $record->entity_label . ' #' . $record->metaable_id . ' · ' . $record->locale)
+                ->searchable(['entity_title', 'entity_label', 'current_meta_title', 'current_meta_description',
                     'suggested_meta_title', 'suggested_meta_description', 'approved_meta_title',
                     'approved_meta_description', 'seo_keywords', 'error'])
-                ->wrap()->url(fn ($record) => static::editUrl($record)),
-            TextColumn::make('locale')->label('Язык')->sortable(),
-            TextColumn::make('page_url')->label('Страница')->searchable()->wrap()->limit(80),
+                ->wrap()->color('primary')->url(fn ($record) => static::editUrl($record)),
+            TextColumn::make('page_url')->label('Страница')->searchable()->wrap()->limit(80)->color('primary')
+                ->getStateUsing(fn ($record) => $record->page_url ?: 'Без URL страницы')
+                ->description(fn ($record) => $record->title_field.' / '.$record->description_field)
+                ->url(fn ($record) => preg_match('~^https?://~i', (string) $record->page_url) ? $record->page_url : null)->openUrlInNewTab(),
             ViewColumn::make('current_meta')->label('Текущие meta')->view('filament.tables.columns.seo-current'),
             ViewColumn::make('proposal')->label('Предложение')->view('filament.tables.columns.seo-proposal'),
-            TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn ($state) => static::statuses()[$state] ?? $state),
-            TextColumn::make('error')->label('Ошибка')->wrap()->limit(180)->toggleable(),
+            TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn ($state) => static::statuses()[$state] ?? $state)
+                ->description(fn ($record) => $record->generated_at?->format('d.m.Y H:i')),
             TextColumn::make('updated_at')->label('Обновлено')->dateTime('d.m.Y H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
         ])->filters([
             SelectFilter::make('status')->label('Статус')->options(static::statuses()),
@@ -104,37 +108,55 @@ class SeoMetaSuggestionResource extends Resource
             Filter::make('url')->schema([TextInput::make('value')->label('URL содержит')])
                 ->query(fn ($query, $data) => $query->when(filled($data['value'] ?? null), fn ($q) => $q->where('page_url', 'like', '%' . $data['value'] . '%'))),
         ])->recordActions([
-            Action::make('generate')->label('Сгенерировать')->icon('heroicon-o-sparkles')->visible(fn () => static::permitted('edit'))
+            Action::make('generate')->label('Сгенерировать')->icon('heroicon-o-sparkles')->iconButton()->tooltip('Сгенерировать')->visible(fn () => static::permitted('edit'))
+                ->view('filament.actions.seo-draft')
                 ->schema([Textarea::make('seo_keywords')->label('Ключевые слова')->maxLength(1000)])
-                ->fillForm(fn ($record) => ['seo_keywords' => $record->seo_keywords])
+                ->fillForm(fn ($record, $livewire) => ['seo_keywords' => $livewire->draftFor($record)['seo_keywords']])
                 ->action(function ($record, $data): void {
                     static::requireEditPermission();
                     $record->update(['seo_keywords' => trim((string) ($data['seo_keywords'] ?? '')) ?: null]);
                     static::perform($record, 'generate');
                 }),
-            Action::make('approve')->label('Одобрить')->icon('heroicon-o-check')->visible(fn ($record) => static::permitted('edit') && in_array($record->status, ['pending', 'generated', 'approved'], true))
+            Action::make('approve')->label('Редактировать и одобрить')->icon('heroicon-o-pencil-square')->iconButton()->tooltip('Редактировать и одобрить')->visible(fn ($record) => static::permitted('edit') && in_array($record->status, ['pending', 'generated', 'approved'], true))
+                ->view('filament.actions.seo-draft')
                 ->schema([
                     Textarea::make('meta_title')->label('Meta Title')->maxLength((int) config('seo_meta_generation.limits.meta_title_max', 60)),
                     Textarea::make('meta_description')->label('Meta Description')->maxLength((int) config('seo_meta_generation.limits.meta_description_max', 155)),
                     Textarea::make('seo_keywords')->label('Ключевые слова')->maxLength(1000),
-                ])->fillForm(fn ($record) => ['meta_title' => $record->approved_meta_title ?? $record->suggested_meta_title,
-                    'meta_description' => $record->approved_meta_description ?? $record->suggested_meta_description, 'seo_keywords' => $record->seo_keywords])
+                ])->fillForm(fn ($record, $livewire) => $livewire->draftFor($record))
                 ->action(function ($record, $data): void { static::requireEditPermission(); app(SeoMetaModerationService::class)->approve($record, $data, auth('filament')->id()); }),
-            Action::make('apply')->label('Применить')->icon('heroicon-o-arrow-down-tray')->requiresConfirmation()
+            Action::make('apply')->label('Применить')->icon('heroicon-o-arrow-down-tray')->iconButton()->tooltip('Применить')->color('success')->requiresConfirmation()
                 ->visible(fn ($record) => static::permitted('edit') && $record->status === 'approved')
-                ->action(fn ($record) => static::perform($record, 'apply')),
-            Action::make('reject')->label('Отклонить')->icon('heroicon-o-x-mark')->requiresConfirmation()
+                ->action(function ($record, $livewire): void {
+                    static::saveDraftKeywords($record, $livewire);
+                    static::perform($record, 'apply');
+                }),
+            Action::make('reject')->label('Отклонить')->icon('heroicon-o-x-mark')->iconButton()->tooltip('Отклонить')->color('danger')->requiresConfirmation()
                 ->visible(fn ($record) => static::permitted('edit') && in_array($record->status, ['pending', 'generated', 'approved', 'failed'], true))
-                ->action(fn ($record) => static::perform($record, 'reject')),
+                ->action(function ($record, $livewire): void {
+                    static::saveDraftKeywords($record, $livewire);
+                    static::perform($record, 'reject');
+                }),
         ])->toolbarActions(collect(['generate' => 'Сгенерировать', 'approve' => 'Одобрить', 'apply' => 'Применить', 'reject' => 'Отклонить'])
             ->map(fn ($label, $operation) => BulkAction::make($operation)->label($label)->requiresConfirmation()->visible(fn () => static::permitted('edit'))
+                ->extraAttributes(['class' => 'viar-seo-native-bulk'])
                 ->deselectRecordsAfterCompletion()->action(function (Collection $records) use ($operation): void {
                     static::requireEditPermission(); $done = 0; $failed = 0;
                     foreach ($records as $record) {
-                        if (static::perform($record->fresh(), $operation, false)) { $done++; } else { $failed++; }
+                        $record = $record->fresh();
+                        if ($operation === 'approve' && ! in_array($record->status, ['pending', 'generated'], true)) { $failed++; continue; }
+                        if (static::perform($record, $operation, false)) { $done++; } else { $failed++; }
                     }
                     Notification::make()->title("Обработано: {$done}; пропущено или с ошибкой: {$failed}")->color($failed ? 'warning' : 'success')->send();
                 }))->values()->all());
+    }
+
+    private static function saveDraftKeywords(SeoMetaSuggestion $record, ListSeoMetaSuggestions $livewire): void
+    {
+        static::requireEditPermission();
+        $draft = $livewire->draftFor($record);
+        $livewire->validate(['seoDrafts.'.$record->id.'.seo_keywords' => 'nullable|string|max:1000']);
+        $record->update(['seo_keywords' => trim((string) ($draft['seo_keywords'] ?? '')) ?: null]);
     }
 
     public static function perform(SeoMetaSuggestion $record, string $operation, bool $notify = true): bool

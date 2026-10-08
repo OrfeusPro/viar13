@@ -132,6 +132,53 @@ class SaInboxTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_inline_reply_validates_and_clears_only_confirmed_draft(): void
+    {
+        $page = Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id]);
+        $token = $page->get('replyToken');
+        $page->set('replyText', '   ')->call('sendReply')->assertHasErrors(['replyText']);
+        $this->assertDatabaseCount('sa_messages', 0);
+        $page->set('replyText', ' From composer ')->call('sendReply')->assertHasNoErrors()->assertSet('replyText', '');
+        $this->assertNotSame($token, $page->get('replyToken'));
+        $this->assertDatabaseHas('sa_messages', ['text' => 'From composer', 'status' => 'uat_suppressed']);
+        $this->assertTrue($this->conversation->fresh()->unread_for_manager);
+        Http::assertNothingSent(); Mail::assertNothingSent();
+    }
+
+    public function test_inline_reply_preserves_uncertain_draft_and_retry_is_duplicate(): void
+    {
+        config(['admin_migration.sa_commands_enabled' => true, 'services.synvolve.manager_message_webhook_url' => 'https://sa.test.invalid/message']);
+        Http::fake(['sa.test.invalid/*' => Http::response([], 500)]);
+        $page = Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id]);
+        $token = $page->get('replyToken');
+        $page->set('replyText', 'Uncertain reply')->call('sendReply')->assertSet('replyText', 'Uncertain reply')->assertSet('replyToken', $token);
+        $page->call('sendReply')->assertSet('replyToken', $token);
+        $this->assertDatabaseCount('sa_messages', 1);
+        Http::assertSentCount(1);
+    }
+
+    public function test_read_only_user_cannot_call_inline_reply(): void
+    {
+        $this->actingAs($this->user(['browse_admin', 'browse_orders', 'read_orders']), 'filament');
+        Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id])
+            ->assertDontSee('Ответ менеджера')->set('replyText', 'Forbidden')->call('sendReply')->assertForbidden();
+        $this->assertDatabaseCount('sa_messages', 0);
+        Http::assertNothingSent();
+    }
+
+    public function test_inline_bot_control_uses_signed_command_without_live_send(): void
+    {
+        $token = app(OrderSaCommandService::class)->inboxToken($this->conversation, $this->editor);
+        Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id])
+            ->call('controlBot', 'resume_bot', $token)->assertHasNoErrors();
+        $this->assertDatabaseHas('sa_events', ['event_type' => 'crm.bot_control', 'status' => 'uat_suppressed']);
+        $this->assertSame('paused', $this->conversation->fresh()->bot_mode);
+        Http::assertNothingSent();
+        $this->actingAs($this->user(['browse_admin', 'browse_orders', 'read_orders']), 'filament');
+        Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id])
+            ->call('controlBot', 'resume_bot', $token)->assertForbidden();
+    }
+
     public function test_read_only_user_cannot_bind_or_send(): void
     {
         $reader = $this->user(['browse_admin', 'browse_orders', 'read_orders']);
@@ -195,6 +242,106 @@ class SaInboxTest extends TestCase
         $list->call('$refresh')->assertForbidden();
         Livewire::test(ListSaConversations::class)->assertForbidden();
         Livewire::test(\App\Livewire\Admin\SaInboxBadge::class)->assertDontSee('SA-диалоги, непрочитанных');
+        Http::assertNothingSent();
+    }
+
+    public function test_read_snapshot_only_acknowledges_displayed_messages(): void
+    {
+        $first = $this->message('DISPLAYED');
+        $displayedConversation = $this->conversation->fresh();
+        $this->message('AFTER-HISTORY');
+        $service = app(SaInboxService::class);
+        $token = $service->readToken($displayedConversation, $first->id);
+        try { $service->acknowledge($this->conversation, $this->editor, $token); $this->fail('Unseen message was acknowledged'); }
+        catch (ValidationException $exception) { $this->assertArrayHasKey('snapshot', $exception->errors()); }
+        $this->assertTrue($this->conversation->fresh()->unread_for_manager);
+    }
+
+    public function test_accepted_send_updates_activity_without_acknowledging_or_overwriting_newer_message(): void
+    {
+        config(['admin_migration.sa_commands_enabled' => true, 'services.synvolve.manager_message_webhook_url' => 'https://sa.test.invalid/message']);
+        Http::fake(['sa.test.invalid/*' => Http::response([], 200)]);
+        $this->conversation->update(['last_message_at' => now()->subDays(3)]);
+        $service = app(OrderSaCommandService::class);
+        $service->executeInbox($this->conversation->fresh(), $this->editor, ['token' => $service->inboxToken($this->conversation->fresh(), $this->editor), 'action' => 'send', 'text' => 'First response']);
+        $this->assertSame(SaMessage::first()->created_at->timestamp, $this->conversation->fresh()->last_message_at->timestamp);
+        $this->assertTrue($this->conversation->fresh()->unread_for_manager);
+        Http::assertSentCount(1);
+        $later = now()->addMinute();
+        Http::fake(function () use ($later) {
+            $this->conversation->fresh()->update(['last_message_at' => $later]);
+            return Http::response([], 200);
+        });
+        $service->executeInbox($this->conversation->fresh(), $this->editor, ['token' => $service->inboxToken($this->conversation->fresh(), $this->editor), 'action' => 'send', 'text' => 'Second response']);
+        $this->assertSame($later->timestamp, $this->conversation->fresh()->last_message_at->timestamp);
+        Http::assertSentCount(1);
+    }
+
+    public function test_list_order_status_history_legacy_attachments_and_unsupported_channel_actions(): void
+    {
+        $order = $this->order();
+        $this->conversation->update(['orders_id' => $order->id]);
+        $this->message('LEGACY-FILE', ['attachments_json' => json_encode([
+            ['path' => 'sa/legacy-photo.jpg', 'original_name' => 'Legacy photo name'],
+            ['path' => 'sa/legacy-document.pdf'],
+        ])]);
+        Livewire::test(ListSaConversations::class)->assertSee('watching');
+        Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id])
+            ->assertSee('Legacy photo name')->assertSee('legacy-document.pdf');
+        $this->conversation->update(['channel' => 'email']);
+        $page = Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id])
+            ->assertActionHidden('reply')->assertActionHidden('bot')->assertDontSee('Ответ менеджера');
+        $token = app(OrderSaCommandService::class)->inboxToken($this->conversation->fresh(), $this->editor);
+        $page->call('controlBot', 'resume_bot', $token);
+        $this->assertDatabaseCount('sa_events', 0);
+        Http::assertNothingSent(); Mail::assertNothingSent();
+    }
+
+    public function test_partial_send_keeps_token_and_draft_and_does_not_send_twice(): void
+    {
+        config(['admin_migration.sa_commands_enabled' => true, 'services.synvolve.manager_message_webhook_url' => 'https://sa.test.invalid/message',
+            'services.synvolve.bot_status_webhook_url' => 'https://sa.test.invalid/bot']);
+        Http::fake(['sa.test.invalid/message' => Http::response([], 200), 'sa.test.invalid/bot' => Http::response([], 500)]);
+        $page = Livewire::test(ViewSaConversation::class, ['record' => $this->conversation->id]);
+        $token = $page->get('replyToken');
+        $page->set('replyText', 'Partial response')->set('replyHandoff', true)->call('sendReply')
+            ->assertSet('replyToken', $token)->assertSet('replyText', 'Partial response');
+        $page->call('$refresh')->call('sendReply')->assertSet('replyToken', $token);
+        $this->assertDatabaseHas('sa_events', ['event_type' => 'crm.message.send', 'status' => 'partial']);
+        $this->assertDatabaseCount('sa_messages', 1);
+        $this->assertSame('paused', $this->conversation->fresh()->bot_mode);
+        Http::assertSentCount(2);
+    }
+
+    public function test_locally_stored_attachment_uses_local_public_disk_and_imported_path_keeps_media_base(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        config(['admin_migration.order_media_base_url' => 'https://viarcanvas.com']);
+        $path = 'sa/attachments/Фото #1.jpg';
+        \Illuminate\Support\Facades\Storage::disk('public')->put($path, 'test');
+        $attachment = ['disk' => 'public', 'local_path' => 'storage/'.$path, 'name' => 'Фото'];
+        $file = \App\Support\Admin\SaChatAttachment::describe($attachment);
+        $this->assertSame(\Illuminate\Support\Facades\Storage::disk('public')->url('sa/attachments/'.rawurlencode('Фото #1.jpg')), $file['url']);
+        $this->assertTrue($file['image']);
+        $imported = \App\Support\Admin\SaChatAttachment::describe(['disk' => 'public', 'local_path' => 'storage/sa/remote.pdf']);
+        $this->assertSame('https://viarcanvas.com/storage/sa/remote.pdf', $imported['url']);
+        $this->assertNull(\App\Support\Admin\SaChatAttachment::describe($attachment + ['status' => 'rejected'])['url']);
+    }
+
+    public function test_inbox_scope_filters_use_latest_direction_and_recent_activity(): void
+    {
+        $this->conversation->update(['last_message_at' => now()->subDays(2)]);
+        $this->message('FIRST-IN', ['sent_at' => now()->subDays(2)]);
+        $this->message('LAST-OUT', ['direction' => 'outbound', 'sent_at' => now()->subDay()]);
+        $incoming = SaConversation::create(['conversation_id' => 'WAITING', 'channel' => 'email', 'bot_mode' => 'active', 'last_message_at' => now()]);
+        SaMessage::create(['conversation_id' => 'WAITING', 'message_id' => 'LAST-IN', 'direction' => 'inbound', 'text' => 'Waiting', 'sent_at' => now()]);
+        $linked = SaConversation::create(['conversation_id' => 'LINKED', 'orders_id' => $this->order()->id, 'last_message_at' => now()]);
+        Livewire::test(ListSaConversations::class)
+            ->filterTable('scope', 'awaiting_reply')->assertCanSeeTableRecords([$incoming])->assertCanNotSeeTableRecords([$this->conversation, $linked])
+            ->resetTableFilters()->filterTable('scope', 'recent')->assertCanSeeTableRecords([$incoming, $linked])->assertCanNotSeeTableRecords([$this->conversation])
+            ->resetTableFilters()->filterTable('scope', 'unlinked')->assertCanSeeTableRecords([$incoming, $this->conversation])->assertCanNotSeeTableRecords([$linked])
+            ->resetTableFilters()->filterTable('channel', 'email')->assertCanSeeTableRecords([$incoming])->assertCanNotSeeTableRecords([$this->conversation])
+            ->resetTableFilters()->filterTable('bot_mode', 'paused')->assertCanSeeTableRecords([$this->conversation])->assertCanNotSeeTableRecords([$incoming]);
         Http::assertNothingSent();
     }
 

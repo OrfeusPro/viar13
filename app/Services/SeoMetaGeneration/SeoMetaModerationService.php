@@ -23,8 +23,8 @@ class SeoMetaModerationService
         if (! in_array($suggestion->status, ['generated', 'pending', 'approved'], true)) {
             throw ValidationException::withMessages(['meta_title' => 'Сначала сгенерируйте метаданные.']);
         }
-        $title = trim((string) ($values['meta_title'] ?? $suggestion->suggested_meta_title));
-        $description = trim((string) ($values['meta_description'] ?? $suggestion->suggested_meta_description));
+        $title = trim((string) (array_key_exists('meta_title', $values) ? $values['meta_title'] : $suggestion->suggested_meta_title));
+        $description = trim((string) (array_key_exists('meta_description', $values) ? $values['meta_description'] : $suggestion->suggested_meta_description));
         if ($title === '' && $description === '') {
             throw ValidationException::withMessages(['meta_title' => 'Нет метаданных для одобрения.']);
         }
@@ -130,8 +130,8 @@ class SeoMetaModerationService
 
         $suggestion->approved_meta_title = $title;
         $suggestion->approved_meta_description = $description;
-        $suggestion->current_meta_title = $title;
-        $suggestion->current_meta_description = $description;
+        $suggestion->current_meta_title = $this->readTranslatedValue($entity, (string) $target['title_field'], (string) $suggestion->locale);
+        $suggestion->current_meta_description = $this->readTranslatedValue($entity, (string) $target['description_field'], (string) $suggestion->locale);
         $suggestion->applied_by = $actorId;
         $suggestion->applied_at = Carbon::now();
         $suggestion->error = null;

@@ -1290,6 +1290,47 @@ class VoyagerBreadTest extends TestCase
         $this->assertDatabaseHas('translations', ['table_name' => 'pages', 'foreign_key' => $id, 'locale' => 'ru', 'column_name' => 'meta_title', 'value' => 'Одобрено']);
     }
 
+    public function test_seo_inline_fields_preserve_draft_and_approve_without_applying(): void
+    {
+        $this->seoFixture();
+        $record = \App\Models\SeoMetaSuggestion::create(['status' => 'pending', 'locale' => 'ru', 'suggested_meta_title' => 'Generated',
+            'suggested_meta_description' => 'Description', 'title_field' => 'meta_title', 'description_field' => 'meta_description',
+            'generated_at' => '2026-10-08 09:30:00', 'error' => 'Visible error']);
+        $page = Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->assertSee('Ключевые слова')->assertSee('Будут учтены при следующей генерации.')->assertSee('meta_title / meta_description')->assertSee('Visible error')->assertSee('08.10.2026 09:30')
+            ->set('seoDrafts.'.$record->id.'.meta_title', 'Edited title')->set('seoDrafts.'.$record->id.'.seo_keywords', 'canvas')
+            ->call('$refresh')->assertSet('seoDrafts.'.$record->id.'.meta_title', 'Edited title')
+            ->call('submitSeoDraft', $record->id, 'approve')->assertHasNoErrors();
+        $this->assertDatabaseHas('seo_meta_suggestions', ['id' => $record->id, 'approved_meta_title' => 'Edited title',
+            'approved_meta_description' => 'Description', 'seo_keywords' => 'canvas', 'status' => 'approved', 'error' => null]);
+        $this->assertNull($record->fresh()->applied_at);
+    }
+
+    public function test_seo_inline_generation_uses_keywords_and_refreshes_untouched_draft(): void
+    {
+        $this->seoFixture();
+        \Illuminate\Support\Facades\Queue::fake();
+        $record = \App\Models\SeoMetaSuggestion::create(['status' => 'new', 'locale' => 'ru']);
+        $page = Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->set('seoDrafts.'.$record->id.'.seo_keywords', 'canvas print')->call('submitSeoDraft', $record->id, 'generate')->assertHasNoErrors();
+        $this->assertSame('canvas print', $record->fresh()->seo_keywords);
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\GenerateSeoMetaSuggestion::class);
+        $record->update(['suggested_meta_title' => 'Async result', 'status' => 'pending']);
+        $page->call('$refresh')->assertSet('seoDrafts.'.$record->id.'.meta_title', 'Async result')
+            ->set('seoDrafts.'.$record->id.'.meta_title', str_repeat('X', 61))->call('submitSeoDraft', $record->id, 'approve')
+            ->assertHasErrors(['seoDrafts.'.$record->id.'.meta_title']);
+        $this->assertSame('pending', $record->fresh()->status);
+    }
+
+    public function test_seo_inline_write_requires_edit_permission(): void
+    {
+        $this->seoFixture(false);
+        $record = \App\Models\SeoMetaSuggestion::create(['status' => 'pending', 'suggested_meta_title' => 'Generated']);
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->set('seoDrafts.'.$record->id.'.meta_title', 'Forbidden')->call('submitSeoDraft', $record->id, 'approve')->assertForbidden();
+        $this->assertNull($record->fresh()->approved_meta_title);
+    }
+
     public function test_seo_bulk_approval_skips_invalid_and_apply_requires_approval(): void
     {
         $this->seoFixture();
@@ -1387,6 +1428,94 @@ class VoyagerBreadTest extends TestCase
         $this->assertSame('failed', $record->fresh()->status);
         $this->assertSame('Provider unavailable', $record->fresh()->error);
         $this->assertSame('Unchanged', DB::table('pages')->where('id', $id)->value('meta_title'));
+        $this->assertDatabaseCount('translations', 0);
+    }
+
+    public function test_seo_empty_approved_field_stays_empty_and_apply_snapshot_matches_source(): void
+    {
+        $this->seoFixture();
+        $id = DB::table('pages')->insertGetId(['title' => 'Source', 'meta_title' => 'Keep source title', 'meta_description' => 'Old description']);
+        $record = \App\Models\SeoMetaSuggestion::create(['metaable_type' => \App\Models\Page::class, 'metaable_id' => $id,
+            'locale' => config('voyager.multilingual.default', 'en'), 'status' => 'pending',
+            'suggested_meta_title' => 'Generated title', 'suggested_meta_description' => 'Generated description']);
+        $page = Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->set('seoDrafts.'.$record->id.'.meta_title', null)
+            ->set('seoDrafts.'.$record->id.'.meta_description', 'Only description')
+            ->call('submitSeoDraft', $record->id, 'approve')->assertHasNoErrors()
+            ->call('$refresh')->assertSet('seoDrafts.'.$record->id.'.meta_title', '');
+        $this->assertSame('', $record->fresh()->approved_meta_title);
+        $page->callAction(\Filament\Actions\Testing\TestAction::make('apply')->table($record))->assertHasNoErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_title' => 'Keep source title', 'meta_description' => 'Only description']);
+        $this->assertSame('Keep source title', $record->fresh()->current_meta_title);
+        $this->assertSame('Only description', $record->fresh()->current_meta_description);
+    }
+
+    public function test_seo_bulk_approval_keeps_already_reviewed_edits(): void
+    {
+        $this->seoFixture();
+        $reviewed = \App\Models\SeoMetaSuggestion::create(['status' => 'approved', 'suggested_meta_title' => 'Generated', 'approved_meta_title' => 'Manual review']);
+        $pending = \App\Models\SeoMetaSuggestion::create(['status' => 'pending', 'suggested_meta_title' => 'Ready']);
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->selectTableRecords([$reviewed->id, $pending->id])
+            ->callAction(\Filament\Actions\Testing\TestAction::make('approve')->table()->bulk())->assertHasNoErrors();
+        $this->assertSame('Manual review', $reviewed->fresh()->approved_meta_title);
+        $this->assertSame('Ready', $pending->fresh()->approved_meta_title);
+    }
+
+    public function test_seo_apply_and_reject_save_inline_keywords_and_validate_them(): void
+    {
+        $this->seoFixture();
+        $id = DB::table('pages')->insertGetId(['title' => 'Source']);
+        $record = \App\Models\SeoMetaSuggestion::create(['metaable_type' => \App\Models\Page::class, 'metaable_id' => $id,
+            'locale' => 'ru', 'status' => 'approved', 'approved_meta_title' => 'Approved']);
+        $page = Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->set('seoDrafts.'.$record->id.'.seo_keywords', '  apply keywords  ')
+            ->callAction(\Filament\Actions\Testing\TestAction::make('apply')->table($record))->assertHasNoErrors();
+        $this->assertSame('apply keywords', $record->fresh()->seo_keywords);
+        $rejected = \App\Models\SeoMetaSuggestion::create(['status' => 'pending', 'seo_keywords' => 'Saved']);
+        $page->call('$refresh')->set('seoDrafts.'.$rejected->id.'.seo_keywords', str_repeat('X', 1001))
+            ->callAction(\Filament\Actions\Testing\TestAction::make('reject')->table($rejected))
+            ->assertHasErrors(['seoDrafts.'.$rejected->id.'.seo_keywords']);
+        $this->assertSame('pending', $rejected->fresh()->status);
+        $this->assertSame('Saved', $rejected->fresh()->seo_keywords);
+        $page->set('seoDrafts.'.$rejected->id.'.seo_keywords', ' reject keywords ')
+            ->call('callMountedAction')->assertHasNoErrors();
+        $this->assertSame('rejected', $rejected->fresh()->status);
+        $this->assertSame('reject keywords', $rejected->fresh()->seo_keywords);
+    }
+
+    public function test_seo_search_includes_model_label_and_scan_defaults_include_filled_entities(): void
+    {
+        $this->seoFixture();
+        $record = \App\Models\SeoMetaSuggestion::create(['entity_label' => 'Unique model label']);
+        $other = \App\Models\SeoMetaSuggestion::create(['entity_title' => 'Other']);
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->searchTable('Unique model label')->assertCanSeeTableRecords([$record])->assertCanNotSeeTableRecords([$other])
+            ->mountAction('scan')->assertSchemaStateSet(['only_empty' => false]);
+    }
+
+    public function test_seo_scan_repeat_force_and_locale_preserve_moderation_and_source(): void
+    {
+        $this->seoFixture();
+        $id = DB::table('pages')->insertGetId(['title' => 'Filled source', 'meta_title' => 'Original title', 'meta_description' => 'Original description']);
+        $page = Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class);
+        $options = ['model' => \App\Models\Page::class, 'locale' => 'en', 'limit' => 10, 'only_empty' => false, 'force' => false];
+        $page->callAction('scan', data: $options)->assertHasNoErrors();
+        $record = \App\Models\SeoMetaSuggestion::firstOrFail();
+        $record->update(['status' => 'approved', 'approved_meta_title' => 'Reviewed', 'seo_keywords' => 'Keep keywords']);
+        DB::table('pages')->where('id', $id)->update(['meta_title' => 'Changed source']);
+        $page->callAction('scan', data: $options)->assertHasNoErrors();
+        $this->assertDatabaseCount('seo_meta_suggestions', 1);
+        $this->assertSame('Original title', $record->fresh()->current_meta_title);
+        $page->callAction('scan', data: array_replace($options, ['force' => true]))->assertHasNoErrors();
+        $this->assertSame('Changed source', $record->fresh()->current_meta_title);
+        $this->assertSame('approved', $record->fresh()->status);
+        $this->assertSame('Reviewed', $record->fresh()->approved_meta_title);
+        $this->assertSame('Keep keywords', $record->fresh()->seo_keywords);
+        $page->callAction('scan', data: array_replace($options, ['locale' => 'ru']))->assertHasNoErrors();
+        $this->assertDatabaseCount('seo_meta_suggestions', 2);
+        $this->assertDatabaseHas('seo_meta_suggestions', ['metaable_id' => $id, 'locale' => 'ru', 'status' => 'new']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_title' => 'Changed source', 'meta_description' => 'Original description']);
         $this->assertDatabaseCount('translations', 0);
     }
 

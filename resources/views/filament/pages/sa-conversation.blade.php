@@ -1,14 +1,18 @@
 <x-filament-panels::page>
     @php
         ['conversation' => $conversation, 'messages' => $messages, 'commands' => $commands] = $this->history();
-        $snapshot = app(\App\Services\Admin\SaInboxService::class)->readToken($conversation);
+        $snapshot = app(\App\Services\Admin\SaInboxService::class)->readToken($conversation, (int) $messages->max('id'));
     @endphp
     <div wire:poll.10s style="display:grid;gap:20px;min-width:0;">
         <x-filament::section>
             <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;overflow-wrap:anywhere;">
                 <div><strong>{{ $conversation->client_name ?: 'Без имени' }}</strong><br>{{ $conversation->client_phone }}</div>
                 <div>Канал: {{ $conversation->channel }}<br>Бот: {{ ['active' => 'Активен', 'paused' => 'Пауза', 'handoff_to_manager' => 'Менеджер'][$conversation->bot_mode] ?? ($conversation->bot_mode ?: 'Не задан') }}</div>
-                <div>Диалог: {{ $conversation->conversation_id }}<br>Заказ: {{ $conversation->orders_id ?: 'Не создан' }}</div>
+                <div>Диалог: {{ $conversation->conversation_id }}<br>Заказ:
+                    @if($conversation->orders_id)
+                        <a href="{{ \App\Filament\Resources\Orders\OrdersResource::getUrl('edit', ['record' => $conversation->orders_id]) }}" style="color:#2563eb;text-decoration:underline;">#{{ $conversation->orders_id }}</a>
+                    @else Не создан @endif
+                </div>
                 <div>
                     <x-filament::badge :color="$conversation->unread_for_manager ? 'warning' : 'success'">{{ $conversation->unread_for_manager ? 'Непрочитано' : 'Прочитано' }}</x-filament::badge>
                     @if($conversation->unread_for_manager && $this->editable())
@@ -16,6 +20,16 @@
                     @endif
                 </div>
             </div>
+            @if($this->editable() && $conversation->channel === 'whatsapp')
+                @php
+                    $botToken = app(\App\Services\Admin\OrderSaCommandService::class)->inboxToken($conversation, auth('filament')->user());
+                @endphp
+                <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0;" aria-label="Управление ботом">
+                    @foreach(['resume_bot' => ['Включить бота', 'success', 'heroicon-o-play'], 'pause_bot' => ['Пауза', 'warning', 'heroicon-o-pause'], 'handoff_to_manager' => ['Передать менеджеру', 'danger', 'heroicon-o-user']] as $action => [$label, $color, $icon])
+                        <x-filament::button size="sm" :color="$color" :icon="$icon" wire:loading.attr="disabled" wire:target="controlBot" x-on:click="$wire.controlBot({{ \Illuminate\Support\Js::from($action) }}, {{ \Illuminate\Support\Js::from($botToken) }})">{{ $label }}</x-filament::button>
+                    @endforeach
+                </div>
+            @endif
         </x-filament::section>
         <x-filament::section heading="История сообщений">
             <div role="log" aria-label="История SA-диалога" style="display:grid;gap:14px;max-height:65vh;overflow:auto;">
@@ -25,7 +39,7 @@
                         $sender = $message->direction === 'inbound' ? 'Клиент' : match(strtolower((string) data_get($from, 'type'))) { 'bot' => 'Бот', 'system' => 'Система', default => 'Менеджер' };
                         $attachments = json_decode((string) $message->attachments_json, true);
                     @endphp
-                    <article wire:key="inbox-message-{{ $message->id }}" style="padding:14px;border:1px solid #e2e8f0;border-radius:12px;background:{{ $message->direction === 'inbound' ? '#f8fafc' : '#eff6ff' }};color:#0f172a;overflow-wrap:anywhere;">
+                    <article wire:key="inbox-message-{{ $message->id }}" class="viar-sa-message {{ $message->direction === 'inbound' ? 'is-inbound' : 'is-outbound' }}">
                         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;"><strong>{{ $sender }}</strong><small>{{ optional($message->sent_at ?? $message->created_at)->format('d.m.Y H:i:s') }}</small></div>
                         <div style="white-space:pre-wrap;margin-top:8px;">{{ $message->text }}</div>
                         <small style="color:#64748b;">Статус: {{ $message->status ?: 'Не задан' }}</small>
@@ -45,6 +59,19 @@
                     <p>В диалоге пока нет сообщений.</p>
                 @endforelse
             </div>
+            @if($this->editable() && $conversation->channel === 'whatsapp')
+                <form wire:submit="sendReply" class="viar-sa-reply">
+                    <label for="sa-reply-text"><strong>Ответ менеджера</strong></label>
+                    <textarea id="sa-reply-text" wire:model="replyText" maxlength="10000" placeholder="Введите сообщение…" required></textarea>
+                    @error('replyText')<p role="alert" style="color:#dc2626;">{{ $message }}</p>@enderror
+                    <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" wire:model="replyHandoff"> Передать менеджеру после ответа</label>
+                    <div class="viar-sa-reply-actions">
+                        <x-filament::button type="submit" icon="heroicon-o-paper-airplane" wire:loading.attr="disabled" wire:target="sendReply,newReply">Отправить сообщение</x-filament::button>
+                        <x-filament::button type="button" color="gray" wire:click="newReply" wire:loading.attr="disabled" wire:target="sendReply,newReply">Начать новый ответ</x-filament::button>
+                    </div>
+                    <small style="color:#64748b;">Если отправка не подтверждена, проверьте историю перед новым ответом. Обновление истории сохраняет черновик.</small>
+                </form>
+            @endif
         </x-filament::section>
         @if($commands->isNotEmpty())
             <x-filament::section heading="Последние команды SA" collapsible collapsed>

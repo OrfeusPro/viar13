@@ -9,8 +9,9 @@ class SaChatAttachment
         if (! is_array($attachment)) {
             return ['url' => null, 'name' => 'Вложение недоступно', 'image' => false];
         }
-        $name = is_string($attachment['name'] ?? null) ? $attachment['name'] : 'Вложение';
         $path = $attachment['local_path'] ?? $attachment['path'] ?? null;
+        $name = $attachment['name'] ?? $attachment['original_name'] ?? (is_string($path) ? basename($path) : null);
+        $name = is_string($name) && trim($name) !== '' ? $name : 'Вложение';
         $url = null;
         if (($attachment['status'] ?? 'stored') !== 'rejected' && is_string($path) && trim($path) !== '') {
             $path = trim($path);
@@ -18,6 +19,10 @@ class SaChatAttachment
                 $path = ltrim($path, '/');
                 $path = str_starts_with($path, 'storage/') ? $path : 'storage/'.$path;
                 $url = OrderMediaUrl::resolve($path);
+                $local = substr($path, strlen('storage/'));
+                if ($url && ($attachment['disk'] ?? null) === 'public' && \Illuminate\Support\Facades\Storage::disk('public')->exists($local)) {
+                    $url = \Illuminate\Support\Facades\Storage::disk('public')->url(implode('/', array_map('rawurlencode', explode('/', $local))));
+                }
             }
         }
         $extension = $url ? strtolower(pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION)) : '';

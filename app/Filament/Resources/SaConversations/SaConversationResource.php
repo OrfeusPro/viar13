@@ -10,9 +10,9 @@ use App\Models\SaMessage;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
 
@@ -44,31 +44,36 @@ class SaConversationResource extends Resource
             'last_direction' => SaMessage::select('direction')->whereColumn('conversation_id', 'sa_conversations.conversation_id')
                 ->orderByRaw('COALESCE(sent_at, created_at) desc')->orderByDesc('id')->limit(1),
             'messages_count' => SaMessage::selectRaw('count(*)')->whereColumn('conversation_id', 'sa_conversations.conversation_id'),
+            'order_status' => \App\Models\Orders::select('status')->whereColumn('id', 'sa_conversations.orders_id')->limit(1),
         ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table->poll('10s')->defaultSort(fn (Builder $query) => $query
+        return $table->extraAttributes(['class' => 'viar-admin-table viar-sa-table'])->recordActionsColumnLabel('Действия')->filtersLayout(FiltersLayout::AboveContent)
+            ->filtersFormColumns(['default' => 1, 'md' => 3])->recordClasses(fn ($record) => $record->unread_for_manager ? 'viar-sa-unread' : null)
+            ->poll('10s')->defaultSort(fn (Builder $query) => $query
             ->orderByRaw('COALESCE(last_message_at, updated_at, created_at) desc')->orderByDesc('id'))
             ->recordUrl(fn ($record) => static::getUrl('view', ['record' => $record]))->columns([
-                IconColumn::make('unread_for_manager')->label('Непрочитано')->boolean()
-                    ->trueIcon('heroicon-o-envelope')->trueColor('warning')->falseIcon('heroicon-o-check')->falseColor('gray'),
-                TextColumn::make('client_name')->label('Клиент')->placeholder('Без имени')->searchable()->wrap(),
-                TextColumn::make('client_phone')->label('Телефон')->searchable(),
-                TextColumn::make('conversation_id')->label('Диалог')->searchable()->wrap()->limit(45),
+                TextColumn::make('client_name')->label('Клиент')->placeholder('Без имени')->searchable(['client_name', 'client_phone'])->wrap()
+                    ->description(fn ($record) => $record->client_phone)->weight('semibold'),
+                TextColumn::make('conversation_id')->label('Диалог')->searchable()->wrap()->limit(45)
+                    ->description(fn ($record) => ($record->unread_for_manager ? '● Непрочитано · ' : '') . optional($record->last_message_at ?? $record->updated_at ?? $record->created_at)->format('d.m.Y H:i')),
                 TextColumn::make('channel')->label('Канал')->badge(),
                 TextColumn::make('bot_mode')->label('Режим бота')->badge()->formatStateUsing(fn ($state) => match($state) {
                     'active' => 'Активен', 'paused' => 'Пауза', 'handoff_to_manager' => 'Менеджер', default => $state,
                 }),
                 TextColumn::make('orders_id')->label('Заказ')->searchable()->placeholder('Без заказа')
+                    ->color('primary')
+                    ->description(fn ($record) => $record->order_status)
                     ->url(fn ($record) => $record->orders_id ? OrdersResource::getUrl('edit', ['record' => $record->orders_id]) : null),
-                TextColumn::make('last_text')->label('Последнее сообщение')->wrap()->limit(100)
-                    ->description(fn ($record) => $record->last_direction === 'inbound' ? 'Входящее' : ($record->last_direction ? 'Исходящее' : null)),
+                TextColumn::make('last_text')->label('Последнее сообщение')->wrap()->limit(100)->placeholder('Нет текстовых сообщений')
+                    ->color(fn ($record) => $record->last_direction === 'inbound' ? 'warning' : 'gray')
+                    ->description(fn ($record) => $record->last_direction === 'inbound' ? '↓ Входящее' : ($record->last_direction ? '↑ Исходящее' : null)),
                 TextColumn::make('messages_count')->label('Сообщений'),
                 TextColumn::make('last_message_at')->label('Последняя активность')
                     ->getStateUsing(fn ($record) => $record->last_message_at ?? $record->updated_at ?? $record->created_at)
-                    ->dateTime('d.m.Y H:i')->sortable(),
+                    ->dateTime('d.m.Y H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])->filters([
                 SelectFilter::make('scope')->label('Показать')->options(['unread' => 'Непрочитанные', 'unlinked' => 'Без заказа',
                     'awaiting_reply' => 'Последнее сообщение входящее', 'recent' => 'За последние сутки'])
@@ -81,7 +86,7 @@ class SaConversationResource extends Resource
                     }),
                 SelectFilter::make('channel')->label('Канал')->options(fn () => SaConversation::whereNotNull('channel')->distinct()->pluck('channel', 'channel')->all()),
                 SelectFilter::make('bot_mode')->label('Режим бота')->options(['active' => 'Активен', 'paused' => 'Пауза', 'handoff_to_manager' => 'Менеджер']),
-            ])->recordActions([Action::make('open')->label('Открыть')->icon('heroicon-o-chat-bubble-left-right')
+            ])->recordActions([Action::make('open')->label('Открыть')->icon('heroicon-o-chat-bubble-left-right')->iconButton()->tooltip('Открыть диалог')
                 ->url(fn ($record) => static::getUrl('view', ['record' => $record]))]);
     }
 
