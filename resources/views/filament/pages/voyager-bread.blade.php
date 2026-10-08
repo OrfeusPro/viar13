@@ -48,11 +48,13 @@
         </x-filament::section>
     @elseif ($viewId !== null)
         <x-filament::section>
+            @if ($bread->name !== 'users')
             <div class="mb-4 flex flex-wrap gap-2" style="margin-bottom: 24px;">
                 @foreach (app(\App\Filament\Bread\BreadRegistry::class)->locales() as $language)
                     <x-filament::button size="sm" :color="$locale === $language ? 'primary' : 'gray'" wire:click="changeLocale('{{ $language }}')">{{ strtoupper($language) }}</x-filament::button>
                 @endforeach
             </div>
+            @endif
             <dl class="space-y-4">
                 @foreach ($this->viewedFields() as $field)
                     <div><dt class="text-sm font-semibold">{{ $field['label'] }}</dt><dd class="whitespace-pre-wrap">
@@ -69,6 +71,7 @@
         </x-filament::section>
     @elseif ($editing)
         <x-filament::section>
+            @if ($bread->name !== 'users')
             <div class="mb-4 flex flex-wrap gap-2" style="margin-bottom: 24px;">
                 @foreach (app(\App\Filament\Bread\BreadRegistry::class)->locales() as $language)
                     <x-filament::button size="sm" :color="$locale === $language ? 'primary' : 'gray'" :aria-pressed="$locale === $language ? 'true' : 'false'" wire:click="changeLocale('{{ $language }}')" wire:loading.attr="disabled" wire:target="changeLocale" :disabled="$recordId === null && $language !== config('voyager.multilingual.default', 'en')">
@@ -76,6 +79,7 @@
                     </x-filament::button>
                 @endforeach
             </div>
+            @endif
             <form wire:submit="save" class="space-y-5">
                 @if ($recordId !== null && $this->seoMetaTarget())
                     <div style="margin-bottom:24px;">
@@ -97,11 +101,13 @@
             <div><x-filament::button wire:click="openCreate">Создать запись</x-filament::button></div>
         @endif
         <x-filament::section>
+            @if ($bread->name !== 'users')
             <div class="mb-4 flex flex-wrap gap-2" style="margin-bottom: 24px;" role="group" aria-label="Язык записей">
                 @foreach (app(\App\Filament\Bread\BreadRegistry::class)->locales() as $language)
                     <x-filament::button size="sm" :color="$locale === $language ? 'primary' : 'gray'" :aria-pressed="$locale === $language ? 'true' : 'false'" wire:click="changeLocale('{{ $language }}')">{{ strtoupper($language) }}</x-filament::button>
                 @endforeach
             </div>
+            @endif
             <div class="viar-bread-search"><x-filament::input.wrapper><x-filament::input type="search" wire:model.live.debounce.350ms="search" aria-label="Поиск по текстовым полям" placeholder="Поиск по текстовым полям" /></x-filament::input.wrapper></div>
             <div class="viar-bread-table-scroll" tabindex="0" role="region" aria-label="Таблица записей с горизонтальной прокруткой">
                 <table class="viar-bread-table text-sm">

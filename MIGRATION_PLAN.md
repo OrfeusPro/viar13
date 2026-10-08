@@ -1474,3 +1474,75 @@ ADM-FIL-029, а не считается подтверждённым стати�
 - Исправлено: lookup пропускал товары SA-корзины с именованными ключами (`canvas_item` и др.). Проверка create → lookup воспроизвела дефект; теперь читаются товарные записи, метаданные корзины исключаются, SA service_id сохраняется для всех шести типов.
 - Обнаружение PHPUnit 12 для lookup/catalog/sizes/create; fixture schema и синтетические данные вместо рабочей БД/skip. Внешние запросы/письма подменять, SQLite :memory: проверять явно.
 - Evidence: четыре suites 81 tests / 886 assertions PASS; общий SA regression 217 tests / 2084 assertions PASS, 0 skipped. PHP lint и git diff --check PASS. JSON числа проверяются по числовому значению и типу, без зависимости от сериализации 22/22.0. MIG-TEST-SA-LEGACY закрыт в части восстановления всех обнаруженных suites; внешняя приёмка SA остаётся IN PROGRESS. Следующее — ADM-AUD-04 Email Рассылка; реальные отправки/MySQL/UAT не запускать.
+
+# IN PROGRESS — ADM-AUD-04: аудит Email Рассылки по коду (2026-10-08)
+- Сверить исходный EmailSenderController, UserRepository, AdminMailNotification и обе формы с текущим runtime; определить recipient filters, подписку/язык, preview, права, очередь и unsubscribe.
+- Выполнять чтение кода/маршрутов; не отправлять письма, не запускать worker и не менять рабочую БД. После аудита зафиксировать точный объём переноса и проверки на SQLite/Notification fake.
+- Аудит кода ADM-AUD-04: DONE; перенос рассылки IN PROGRESS. Отчёт: docs/email_sender_audit_2026-10-08.md. Подтверждены отсутствие Filament страницы/menu mapping/маршрута, прежнее пересечение recipient filters и news=YES.
+- Найдены наследованные дефекты: json_decode(settings array) в персональной форме (TypeError воспроизведён без БД), salutation не используется, UserMessage пустая таблица не обработана; нет validation/подтверждения/защиты повтора и отдельного disabled guard массовой отправки. Не выдавать постановку в очередь за доставку.
+- Проверки: SHA256 четыре legacy файла совпадают с исходником; router collection в testing/SQLite содержит unsubscribe, но не email-sender. Artisan route:list на пустой SQLite требует сторонние locales/venipak_data, использован безопасный fallback без создания контроллеров. Реальных HTTP/mail/worker/БД записей нет.
+- Следующий точный шаг ADM-AUD-04A: Filament compose/recipient filters/search/count/preview, персональный вход, права, отдельный disabled guard, защита повторов/partial и Notification fake tests; подробный объём в отчёте. ADM-AUD-04 целиком не DONE.
+
+# IN PROGRESS — ADM-AUD-04A: реализация Email Рассылки (2026-10-08)
+- Страница /filament/email-sender и прежний порядок меню; пользователи/типы/языки, AND фильтры, news=YES, поиск, персональный ?id, фактический mail preview в sandbox.
+- Использовать существующие browse_admin/browse_users/edit_users, повторно проверять доступ в действиях. Права/рабочие записи не менять.
+- Новая таблица admin_email_campaigns: server-side snapshot аудитории/письма, token, владелец, состояние и результат. Транзакционная claim исключает повтор и автоматическую переотправку при uncertain/partial. Миграцию подготовить и проверить на SQLite, рабочую БД не мигрировать в этом прогоне.
+- Отдельный bulk_email_enabled=false; для включённой массовой отправки требуется асинхронная очередь. Проверки только Notification fake, Mail fake и SQLite :memory:.
+
+# ADM-AUD-04A — Email Рассылка: реализация и изолированные проверки (2026-10-08)
+- Реализованы Filament /filament/email-sender, поиск/выбор пользователей, типы/языки, AND фильтры, подписка/email, ?id, sandbox preview фактического письма, подтверждение и точный queued/suppressed/uncertain результат. Пункт меню сопоставлен без изменения menu_items/порядка.
+- Права существующие browse_admin/browse_users/edit_users перепроверяются; служебная миграция admin_email_campaigns хранит snapshot/token/owner/status/result. Claim транзакционный до queue calls; duplicate/partial/interrupted не переотправляются. Превью 30 минут, лимит 1000 адресатов.
+- Отдельный bulk_email_enabled=false, .env и старые флаги не менялись. Включённая отправка требует async driver; Notification worker проверяет flag/news/email. Исправлены salutation, первая UserMessage и понятная ошибка отсутствующего uns_text с locale fallback ru; unsubscribe URL совместим.
+- Проверки: 19 tests / 123 assertions PASS, 0 skipped (EmailCampaign + OrderRecipientEmailService + BreadMenuNavigation), SQLite/Notification/Mail fake/HTTP blocked. PHP lint восьми файлов и diff-check PASS. Миграция up/down проверена только на SQLite; рабочая БД/картинки/SMTP/worker не трогались.
+- Evidence и ограничения: docs/email_sender_implementation_2026-10-08.md; storage/app/testing/email-campaign.xml. Код и офлайн проверки готовы. ADM-AUD-04 IN PROGRESS: осталось применить новую миграцию локально и проверить внешний вид без отправки, затем перейти к ADM-AUD-05 Клиенты. Реальный SMTP/queue UAT и MySQL concurrency остаются отложенными.
+
+# DONE — ADM-AUD-04A / ADM-AUD-04: локальная Email Рассылка (2026-10-08)
+- После изолированного прогона применена только новая служебная миграция к localhost/viar_laravel13; runtime database name и bulk flag проверены до миграции. Ранее указанное ожидание миграции закрыто. Существование browse_admin/browse_users/edit_users подтверждено read-only; права, users и изображения не изменены.
+- Chrome read-only: /filament/email-sender открывается, все поля и тестовый режим видны, пункт меню на исходном месте с активной подсветкой, отступы/форма проверены визуально. Prepare/Confirm не нажимались, рабочие кампании не создавались, SMTP/worker не запускались. Вкладка оставлена открытой.
+- Итог: локальный перенос готов; 19 tests / 123 assertions PASS, PHP lint/diff-check PASS. Отчёт docs/email_sender_implementation_2026-10-08.md. Реальный SMTP/production worker, MySQL concurrency и мобильная визуальная приёмка остаются отдельными проверками; настоящие отправки отключены.
+- Следующее точное действие: ADM-AUD-05 — клиентский список, сравнение /admin/user_filter, колонки/подписка/страна и переход к заказам пользователя.
+
+# IN PROGRESS — ADM-AUD-05: Клиенты (2026-10-08)
+- Источник: legacy Admin/OrdersController::user_filter выбирает users.role_id=2; таблица содержит ID/email/имя/фамилию/телефон/адрес/индекс/страну/news и ссылку на заказы. Сохранить реальное правило роли, не заменять type_id.
+- Добавить отдельную страницу, поиск/подписку/страну, пагинацию и сортировку; показать ссылку на существующий фильтр Orders user_id. Проверять browse_admin/browse_users, отдельно edit_users/browse_orders для ссылок. Бизнес-данные не менять; проверки SQLite.
+
+# DONE — ADM-AUD-05: Клиенты (2026-10-08)
+- Сверены legacy Admin/OrdersController::user_filter и user_filter.blade.php: реальный отбор users.role_id=2 и десять колонок. Новая /filament/clients сохраняет эти данные; добавлены поиск ID/email/имени/телефона/адреса/индекса/страны, пересечение фильтров подписки/страны, разрешённая сортировка и пагинация 10/25/50/100.
+- Подсчёт orders_count подзапросом без N+1. Ссылка открывает filters[user_id][value] и tab=all, чтобы завершённые заказы тоже были видны. Используется существующая вкладка Все без изменения default current (исправлено по итогам browser QA). ID ведёт в существующий редактор users только при edit_users; ссылка заказов требует browse_orders. Страница/чтение/сортировка перепроверяют browse_admin+browse_users.
+- Старый /admin/user_filter или route user_filter сопоставляется с /filament/clients; исходное место меню сохранено. Использовано существующее оформление management-table, горизонтальная прокрутка и Filament pagination. Новые DB поля/миграции не нужны.
+- Проверки: Clients/BreadMenuNavigation/EmailCampaign/OrderRecipientEmailService 23 tests / 160 assertions PASS, 0 skipped; SQLite :memory:. Проверены role scope, фильтры, скрытие staff, количество и ссылки заказов, отсутствие статуса фильтра all, default current, пагинация/reset, сортировка allowlist и отзыв прав. PHP lint/diff-check PASS.
+- Chrome read-only /filament/clients: десять колонок, 24 158 клиентов, фильтры, подсветка Пользователи → Клиенты, хлебные крошки и таблица проверены по AX/screenshot. Вкладка оставлена открытой. Рабочая БД/изображения не менялись, реальных отправок нет. Мобильный вид и реальные сохранения через редактор users этим этапом не проверялись.
+- Следующее точное действие: ADM-AUD-06 — редактор BREAD metadata (поля/типы/связи/видимость); физические DB колонки добавляются миграциями, не автоматически через metadata.
+
+# IN PROGRESS — ADM-AUD-05-QA: browser проверка клиентов
+- Найдено и исправлено: Tab all ошибочно находился в getHeaderActions и давал 500 при переходе к заказам. Удалён из header actions; существующая вкладка all в getTabs сохранена; добавлена проверка типов header actions. Продолжить browser функциональные сценарии и узкий viewport.
+
+# ADM-AUD-05-QA — локальная визуальная и функциональная проверка (2026-10-08)
+- DONE: desktop и сценарии чтения Clients. Chrome: поиск codex-checkout находит 2 существующих тестовых клиента; NO даёт пустой результат, YES+LV оставляют 2; ID asc меняет порядок; 10 записей на странице; страница 2 показывает 11–20 из 24 158; поиск сбрасывает страницу на 1.
+- Исправлен 500: Tabs\Tab ошибочно находился в getHeaderActions. Удалён из действий; существующая getTabs()['all'] сохранена. Добавлена проверка, что header actions являются Filament\Actions\Action.
+- Исправлены URL: Filament принимает tab=all и filters, а не activeTab/tableFilters. Chrome подтвердил выбранную вкладку Все и единственный заказ №18450 клиента 43200. Такие же неверные параметры исправлены в ссылках order-lifecycle: Все заказы ранее и ID объединённых заказов; эти две ссылки отдельно в браузере не нажимались.
+- Визуально: поле поиска расширено до 480px, добавлены интервалы между подписями и контролами; фильтры на узком экране занимают строки. У страны корректные стрелки/aria-sort. Принят и повторно просмотрен сохранённый desktop screenshot storage/app/testing/clients-browser-qa.png (только существующие тестовые клиенты).
+- Проверки: Clients/BreadMenuNavigation/EmailCampaign/OrderRecipientEmailService/OrderLifecycleService — 29 tests / 199 assertions PASS; SQLite :memory:, внешние отправки не выполнялись. PHP lint Clients/ListOrders и git diff --check PASS. Данные users/orders и изображения не изменялись.
+- TODO: мобильная визуальная приёмка — viewport override 390x844 не применился (DOM innerWidth=2560); временный override сброшен. Сравнение с открытой /admin/user_filter не завершено: legacy вкладка не отвечает в пределах timeout. Совместимость колонок/отбора подтверждена предыдущим чтением legacy кода, визуальное совпадение со старой страницей не заявляется. Сохранения в редакторе users не проверялись.
+- Следующий точный шаг: завершить мобильную/legacy визуальную приёмку при доступном браузере; затем ADM-AUD-06 — редактор BREAD metadata.
+
+# IN PROGRESS — ADM-AUD-05A: явное редактирование клиента
+- Legacy user_filter: ID ведёт в users/{id}/edit; отдельного удаления/создания в этом списке нет. Новая ссылка ID уже существует, но действие незаметно.
+- Добавить явную иконку редактирования с подписью/tooltip и edit_users guard; проверить существующую форму users без сохранения рабочих данных.
+
+# DONE — ADM-AUD-05A: явное редактирование клиента (2026-10-08)
+- Проверен resources/views/vendor/voyager/user_filter.blade.php: редактирование через ID и список заказов; отдельные create/delete действия в этом списке отсутствуют.
+- В Clients добавлена явная pencil-square ссылка с доступным названием Редактировать клиента #ID; сохранена исходная ссылка ID, обе требуют edit_users. Последняя колонка закреплена и подписана Заказы / действия.
+- Chrome: иконка клиента 43200 открывает /filament/bread/users/43200/edit; форма загрузила данные тестового клиента (email, имя, фамилию, телефон, адрес), включает остальные metadata-поля, Сохранить/Отмена. Сохранение не нажималось; реальные users/orders/images не изменены.
+- ClientsTest 4 tests / 37 assertions PASS (SQLite :memory:); git diff --check PASS. Screenshot storage/app/testing/clients-edit-action.png. Дополнительная карточка Просмотр клиента в заказах уже существует в OrderLifecycleActions::viewClient; её действия здесь не запускались.
+- Осталось: изолированная проверка сохранения полного редактора users и сравнение его полей с legacy; это не подтверждено проверкой открытия формы.
+
+# IN PROGRESS — ADM-AUD-05B: язык клиента как в оригинале
+- Источник users/edit-add.blade.php: отдельный select locale, верхних кнопок переводов нет. В новом users BREAD скрыты translation buttons; добавлено поле Язык пользователя, чтение settings.locale и сохранение с сохранением остальных settings. Изолированный тест preference/validation/неизменности пароля; рабочие записи не сохранять.
+
+# DONE — ADM-AUD-05B: язык клиента как в оригинале (2026-10-08)
+- Сверен локальный legacy users/edit-add.blade.php: select locale в форме пользователя, без верхнего переключателя переводов. Для users скрыты верхние language buttons в edit/read/list. Другие BREAD-разделы сохраняют переключение переводов.
+- Добавлен Язык пользователя (__user_locale): читает виртуальный User.locale/settings.locale, fallback app.locale; допустимые языки проверяются Rule::in. В транзакции сохраняет settings.locale с сохранением остальных settings; отдельная колонка users.locale и записи translations не создаются. Миграции/изменения схемы не нужны.
+- Изолированные проверки: 3 tests / 26 assertions PASS (новый preference test + существующие base/ru translation и shared draft tests); проверены сохранение языка, сохранность остальных settings и пароля, отклонение неизвестного языка. PHP lint и diff-check PASS.
+- Chrome: верхние EN/RU/etc отсутствуют в редакторе 43200; select Язык пользователя имеет lv; роль и тип заполнены; Сохранить/Отмена видны. Рабочие данные не сохранялись. Screenshot storage/app/testing/client-language-preference.png.
+- Осталось из предыдущих этапов: полная сверка остальных полей клиентского редактора и мобильная приёмка; текущий шаг подтверждает именно поведение языка.

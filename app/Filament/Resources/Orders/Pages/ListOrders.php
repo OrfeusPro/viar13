@@ -14,6 +14,11 @@ class ListOrders extends ListRecords
 {
     protected static string $resource = OrdersResource::class;
 
+    public function getDefaultActiveTab(): string|int|null
+    {
+        return 'current';
+    }
+
     protected function getHeaderActions(): array
     {
         return [

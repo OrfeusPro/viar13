@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'bulk_email_enabled' => (bool) env('ADMIN_BULK_EMAIL_ENABLED', false),
     // Explicit opt-in only after SA UAT. Suppressed commands never reach Synvolve.
     'sa_commands_enabled' => (bool) env('ADMIN_SA_COMMANDS_ENABLED', false),
     // Legacy order artwork is served from production, without local copies.

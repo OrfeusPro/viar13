@@ -1531,6 +1531,27 @@ class VoyagerBreadTest extends TestCase
             'title_field' => 'meta_title', 'description_field' => 'meta_description', 'context_fields' => ['title' => ['title']]]]]);
     }
 
+    public function test_user_language_is_a_preference_and_preserves_other_settings(): void
+    {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
+        $typeId = DB::table('data_types')->insertGetId(['name' => 'users', 'slug' => 'users',
+            'model_name' => User::class, 'display_name_plural' => 'Пользователи']);
+        DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => 'email', 'type' => 'text',
+            'display_name' => 'Email', 'required' => true]);
+        $this->admin(['browse_admin', 'browse_users', 'edit_users']);
+        $client = User::forceCreate(['email' => 'client@example.invalid', 'password' => Hash::make('unchanged'),
+            'settings' => ['locale' => 'lv', 'other' => 'keep']]);
+        $password = $client->password;
+        $page = Livewire::test(\App\Filament\Pages\VoyagerBreadEdit::class, ['type' => 'users', 'record' => $client->id])
+            ->assertSet('data.__user_locale', 'lv')->assertSee('Язык пользователя');
+        $this->assertStringNotContainsString('wire:click="changeLocale(', $page->html());
+        $page->set('data.__user_locale', 'ru')->call('save')->assertHasNoErrors();
+        $this->assertSame(['locale' => 'ru', 'other' => 'keep'], $client->fresh()->settings);
+        $this->assertSame($password, $client->fresh()->password);
+        $page->set('data.__user_locale', 'invalid')->call('save')->assertHasErrors(['data.__user_locale']);
+        $this->assertSame('ru', $client->fresh()->locale);
+    }
+
     private function roleMetadata(): void
     {
         $typeId = DB::table('data_types')->insertGetId([

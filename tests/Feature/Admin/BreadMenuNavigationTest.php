@@ -41,6 +41,8 @@ class BreadMenuNavigationTest extends TestCase
             [7, 2, 'Без прав', 3, null, null],
             [8, null, 'Скрытая категория', 4, null, null],
             [9, 8, 'Скрытый потомок', 1, null, null],
+            [10, null, 'Email Рассылка', 5, null, '/admin/email-sender'],
+            [11, 2, 'Клиенты', 4, 'user_filter', null],
         ] as [$id, $parent, $title, $order, $route, $url]) {
             DB::table('menu_items')->insert(['id' => $id, 'menu_id' => 1, 'parent_id' => $parent,
                 'title' => $title, 'order' => $order, 'route' => $route, 'url' => $url, 'status' => $id !== 8,
@@ -52,16 +54,20 @@ class BreadMenuNavigationTest extends TestCase
             $item('bread-4', '/filament/bread/blog-posts'), $item('bread-5', '/filament/bread/page-faq-desc'),
             $item('bread-7', '/filament/bread/private')->visible(false), $item('bread-9', '/filament/bread/hidden'),
             $item('tool', '/filament/voyager-catalog'),
+            $item('email', '/filament/email-sender'),
+            $item('clients', '/filament/clients'),
         ])];
         $this->app->instance('originalRequest', Request::create('/filament/bread/page-faq-desc/1/edit'));
         $tree = BreadMenuTree::make($navigation);
-        $this->assertSame(['Dashboard', 'Заказы', 'Общие страницы', 'Дополнительно'], array_column($tree, 'label'));
-        $this->assertSame(['Блог', 'FAQ'], array_column($tree[2]['children'], 'label'));
+        $this->assertSame(['Dashboard', 'Заказы', 'Общие страницы', 'Email Рассылка', 'Дополнительно'], array_column($tree, 'label'));
+        $this->assertSame('/filament/email-sender', $tree[3]['url']);
+        $this->assertSame(['Блог', 'FAQ', 'Клиенты'], array_column($tree[2]['children'], 'label'));
+        $this->assertSame('/filament/clients', $tree[2]['children'][2]['url']);
         $this->assertSame('Статьи', $tree[2]['children'][0]['children'][0]['label']);
         $this->assertSame(['Общие страницы', 'FAQ'], array_column(BreadMenuTree::activePath($tree), 'label'));
         $this->assertFalse($tree[0]['active']);
         $this->assertTrue($tree[2]['children'][1]['active']);
-        $this->assertCount(1, $tree[3]['children']);
+        $this->assertCount(1, $tree[4]['children']);
         $this->assertSame('heroicon-o-shopping-bag', $tree[1]['icon']);
 
         $rendered = view('filament.components.menu-tree', compact('navigation'))->render();

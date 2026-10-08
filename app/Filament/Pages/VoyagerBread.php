@@ -302,6 +302,12 @@ class VoyagerBread extends Page
         if ($bread->name === 'roles') {
             $fields[] = View::make('filament.components.role-permissions')->columnSpanFull();
         }
+        if ($bread->name === 'users') {
+            $fields[] = Select::make('__user_locale')->label('Язык пользователя')
+                ->options(array_combine($this->registry()->locales(), $this->registry()->locales()))
+                ->default(config('app.locale', 'en'))->required()
+                ->rules([\Illuminate\Validation\Rule::in($this->registry()->locales())]);
+        }
 
         return $schema->statePath('data')->components($fields);
     }
@@ -491,6 +497,7 @@ class VoyagerBread extends Page
         $allowed = collect($this->registry()->editableRows($bread, $this->recordId ? 'edit' : 'add'));
         $translated = method_exists($model, 'getTranslatableAttributes') ? $model->getTranslatableAttributes() : [];
         $values = $this->form->getState();
+        $userLocale = $bread->name === 'users' ? ($values['__user_locale'] ?? null) : null;
         $rolePermissions = $this->validatedRolePermissions();
         $original = $this->recordId ? $model->newQuery()->findOrFail($this->recordId) : null;
         foreach ($allowed->where('type', 'media_picker') as $row) {
@@ -525,8 +532,13 @@ class VoyagerBread extends Page
                 }
         }
 
-        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns, $rolePermissions): void {
+        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns, $rolePermissions, $userLocale): void {
             $record = $this->recordId ? $model->newQuery()->lockForUpdate()->findOrFail($this->recordId) : $model->newInstance();
+            if ($bread->name === 'users') {
+                $settings = $record->settings ?? [];
+                $settings['locale'] = $userLocale;
+                $record->settings = $settings;
+            }
             if ($this->locale === $default) {
                 foreach ($values as $field => $value) {
                     $row = $allowed->firstWhere('field', $field);
@@ -1357,6 +1369,9 @@ class VoyagerBread extends Page
                 $values['__pivot_' . $relation['row']->id] = DB::table($details['pivot_table'])
                     ->where($relation['sourceKey'], $record->getKey())
                     ->pluck($relation['targetKey'])->all();
+        }
+        if ($bread->name === 'users') {
+            $values['__user_locale'] = $record->locale ?? config('app.locale', 'en');
         }
         $this->form->fill($values);
     }

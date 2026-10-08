@@ -124,6 +124,8 @@ class BreadMenuTree
     private static function dedicatedPath(object $row): ?string
     {
         return match (true) {
+            $row->url === '/admin/user_filter' || $row->route === 'user_filter' => '/filament/clients',
+            $row->url === '/admin/email-sender' || $row->route === 'mail.send' => '/filament/email-sender',
             $row->route === 'voyager.dashboard' => '/filament',
             $row->route === 'voyager.orders.index' => '/filament/orders',
             $row->url === '/admin/sa-conversations' || $row->route === 'admin.sa.conversations.index' => '/filament/sa-conversations',
