@@ -9502,3 +9502,27 @@ Extra checks:
 - Still external/static: production Synvolve workflow availability and the
   rolled-back conversation/lead-update contracts. Next exact action remains a
   separately approved CRM/SA stage, not a frontend release requirement.
+
+# IN PROGRESS — ADM-AUD-03: SA inbox (2026-10-08)
+- Перенести standalone список/карточку диалога, поиск, фильтры unread/unlinked/awaiting/recent, глобальный polling счётчика, историю и локальные вложения.
+- Использовать существующие sa_conversations/sa_messages/sa_events и права browse_orders/read_orders/edit_orders/add_orders; новых статических role IDs не вводить.
+- Привязка/создание заказа: транзакция, блокировка conversation, запрет конфликтующей связи, перенос сообщений/escalations/bot controls и клиентского mirror без дублей. Создание через существующий createLead business flow.
+- Ответы и bot controls: расширить существующий OrderSaCommandService для standalone, сохранив signed token/idempotency/UAT guard/transport. Read — явный snapshot, без изменения unread при открытии страницы.
+- Проверки на SQLite :memory: с fake HTTP/mail. В Chrome только просмотр; рабочие сообщения/заказы/read flags/картинки не менять. Следующее действие: сервисы, страницы и изолированные тесты.
+
+## ADM-AUD-03 — IN PROGRESS: сервисы и UI реализованы (2026-10-08)
+- Добавлены standalone Filament resource, список/карточка, polling 10s, фильтры, история, локальные вложения и глобальный badge. Просмотр не сбрасывает unread, snapshot read отклоняет устаревшую историю.
+- bind/create используют существующие таблицы и createLead business flow. История зеркалируется с dedupe sa_message_id, запрещён rebind/conflict; неподтверждённые и UAT исходящие не попадают в клиентский mirror. unread не сбрасывается привязкой.
+- OrderSaCommandService расширен nullable order для standalone без копирования transport. Signed token/expiry/conversation guard, idempotency, UAT и uncertain outcome сохранены. Standalone bot client_id берётся из conversation_id, адресат — телефон выбранного диалога.
+- 32 tests / 271 assertions PASS: новый inbox и прежние OrderSaCommandTest, SQLite :memory:, fake HTTP/mail. Рабочие данные не менялись. Следующее: отрицательные сценарии, регрессия и Chrome без сохранения/отправки.
+
+# 2026-10-08 — DONE: ADM-AUD-03, SA inbox
+- /filament/sa-conversations и /filament/sa-conversations/{record}: поиск клиента/телефона/диалога/заказа; фильтры unread/unlinked/awaiting_reply/recent/channel/bot_mode; карточка с историей, компактными локальными вложениями, явным snapshot read, bind/create order, reply/bot и журналом команд. История/таблица/badge обновляются каждые 10 секунд. Глобальный SA badge и выключенный по умолчанию звук включаются из верхней панели.
+- Auth: Filament session/CSRF и существующие browse_admin+browse_orders+read_orders; изменения требуют edit_orders, создание дополнительно add_orders. Права проверяются повторно на query/render/actions, токены проверяют выбранный conversation, автора, срок, phone/mode/order. Новых интеграционных API endpoints нет, X-Api-Key контракты не менялись.
+- DB: новых таблиц/колонок/миграций нет. Используются sa_conversations/sa_messages/sa_events/sa_bot_controls/sa_escalations/orders/order_user_comments. bind/create транзакционны, запрещают конфликтующую связь и не сбрасывают unread. История зеркалируется по sa_message_id без дублей и без UAT/неподтверждённых исходящих; createLead вызывается внутри сервиса, HTTP loopback не требуется. Повтор create возвращает уже связанный заказ.
+- Commands: общий OrderSaCommandService поддерживает standalone nullable order, прежние order actions сохранены; идентичный signed command возвращает duplicate без повторной отправки. UAT guard, pending/accepted/uncertain/partial/state_conflict, отсутствие автоматического resend и безопасные логи сохранены. Для standalone bot client_id=conversation_id, phone выбранного диалога; для заказа контракт прежний.
+- Проверки: 11 новых inbox tests; SaInbox+OrderSaChat+OrderSaCommand+BreadMenuNavigation 59 tests/513 assertions PASS. Общая BREAD/SEO/roles/navigation/SA регрессия 113 tests/1011 assertions PASS (PHP 8.3.30, CLI memory_limit=512M). Дополнительная проверка отзыва прав на открытой странице — 1 test/8 assertions PASS. PHP lint, view:cache, diff-check PASS. SQLite :memory:, fake HTTP/mail; никакой реальной отправки.
+- Первый совмещённый прогон с лимитом CLI 128M: 111 passed/2 crop tests failed из-за штатной memory guard при 120M накопленного расхода. С CLI 512M все 113 PASS; приложение и лимиты web runtime не менялись.
+- Chrome: 39 диалогов/38 unread; карточка standalone №35 и bind modal без сохранения, unread остаётся 38. Карточка существующего UAT №39; мобильная ширина 390 px, устранено наложение badge на avatar, overflow нет, desktop viewport восстановлен. Evidence: storage/app/testing/sa-inbox-after-2026-10-08.png и sa-inbox-mobile-2026-10-08.png.
+- Рабочие сообщения/заказы/read flags/изображения не изменялись. Реальная отправка в окружении выключена admin_migration.sa_commands_enabled=false; config/.env не менялись. Live bind/create/send/bot, реальный звук и provider callbacks требуют отдельной UAT при разрешённой отправке. Не обнаруживаемые PHPUnit12 старые API annotation tests вынесены в MIG-TEST-SA-LEGACY; не считаются выполненными.
+- Следующее точное действие: ADM-AUD-04 — массовая Email Рассылка; ADM-AUD-05..12 и MIG-TEST-SA-LEGACY остаются открыты.

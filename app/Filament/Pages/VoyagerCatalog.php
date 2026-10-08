@@ -46,6 +46,7 @@ class VoyagerCatalog extends Page
                     'orders' => OrdersResource::getUrl(),
                     'canvas_slider' => CanvasSliderResource::getUrl(),
                     'image_alt_suggestions' => ImageAltSuggestionResource::getUrl(),
+                    'seo_meta_suggestions' => \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::getUrl(),
                     'menus' => VoyagerMenuItems::getUrl(),
                     default => $registry->model($type) ? VoyagerBread::getUrl(['type' => $type->slug]) : null,
                 },

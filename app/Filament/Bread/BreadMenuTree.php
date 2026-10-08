@@ -126,8 +126,10 @@ class BreadMenuTree
         return match (true) {
             $row->route === 'voyager.dashboard' => '/filament',
             $row->route === 'voyager.orders.index' => '/filament/orders',
+            $row->url === '/admin/sa-conversations' || $row->route === 'admin.sa.conversations.index' => '/filament/sa-conversations',
             $row->route === 'voyager.canvas-slider.index' => '/filament/canvas-sliders',
             $row->url === '/admin/alt-suggestions' => '/filament/image-alt-suggestions',
+            $row->url === '/admin/seo-meta-suggestions' || $row->route === 'voyager.seo-meta-suggestions.index' => '/filament/seo-meta-suggestions',
             $row->url === '/admin/settings' || $row->route === 'voyager.settings.index' => '/filament/voyager-settings',
             $row->url === '/admin/translations' => '/'.config('translation-manager.route.prefix'),
             default => null,

@@ -2369,3 +2369,47 @@ scope; Filament 5 будет рассматриваться отдельным �
 - Проверки: PHP 8.4.1, 65 tests / 387 assertions PASS; lint, JS syntax, view:cache, diff-check PASS. Chrome viar13.loc: 38 × 0,85 × 0,90 + 7,68 = 36,75 €, +1 26,60 €, SUPER DEAL 30 € без купона, второй шаг/email, мобильная ширина 390 px без overflow.
 - Доказательства и ограничения: docs/checkout/implementation.md, docs/checkout/evidence/checkout-port.xml и снимки. Реальная оплата и регистрация не выполнялись. Точечная миграция — Nothing to migrate.
 - Следующий шаг при выпуске: точечный импорт переводов и UAT оплаты в тестовом контуре. Изменения Filament не затронуты.
+
+# 2026-10-08 — DONE: сравнительный аудит функций Voyager/Filament
+- Chrome: сравнены dashboard/menu/tools/users, форма роли №8 и SEO Meta. Снимки role-old/new и seo-old/new сохранены в storage/app/testing с датой 2026-10-08.
+- В старой роли есть Permissions, в новой только name/display_name; в metadata roles связи permissions нет. Старый SEO Meta содержит scan/generate/moderate/apply/bulk, новый generic CRUD.
+- Проверены route:list Filament/admin, исходники специализированных order actions, ALT resource, MenuItems/Settings, старые Email Sender/Клиенты. Создан docs/filament_functionality_audit_2026-10-08.md; backlog ADM-AUD-01..12 внесён в MIGRATION_PLAN.md.
+- Задержки CDP при Email Sender/Клиенты ограничили браузерную проверку этих форм; содержание сверено с исходным кодом, отсутствие новых routes подтверждено. Не объявляем задержки дефектом приложения без отдельной диагностики.
+- Сохранения, удаления, назначения прав, рассылки, генерации meta/ALT, оплаты и Venipak вызовы не выполнялись. Рабочие данные и изображения не изменены. Автотесты не запускались: изменена только документация, это read-only аудит.
+- Следующее действие: ADM-AUD-01 редактор прав ролей; затем SEO Meta и SA inbox. Все типы/роли/мобильные сценарии и внешние операции остаются отдельным UAT.
+
+# 2026-10-08 — DONE: ADM-AUD-01, матрица разрешений ролей
+- В создание/редактирование BREAD roles добавлена матрица из реальных permissions, сгруппированная по таблицам, с поиском и выбором/снятием всей группы/всех прав. Доступные действия подписаны по-русски; технический key показан для различения разрешений.
+- Выбранные права загружаются из permission_role и сохраняются вместе с полями роли в одной транзакции. ID проверяются по существующей таблице permissions; неизвестный ID не позволяет изменить ни имя, ни права. Выбор сохраняется при переключении языка.
+- Прямые вызовы защищены add_roles/edit_roles и проверкой BREAD roles; для других сущностей матрица не отображается и изменение прав запрещено. Структура рабочей БД и data_rows не изменялись, миграция не нужна.
+- Проверки: новые 5 feature tests / 29 assertions; BREAD + navigation 49 tests / 447 assertions PASS (SQLite :memory:). PHP lint, view:cache, diff-check PASS.
+- Chrome роль №8 без сохранения: 136 групп / 675 permission checkboxes / 616 выбранных из БД; поиск pages выводит одну группу, очистка возвращает 136, горизонтального overflow нет. Evidence: storage/app/testing/role-permissions-after-2026-10-08.png.
+- Рабочие права и изображения не менялись. Браузерная проверка live сохранения и физический мобильный экран не выполнялись; сохранение/валидация/авторизация подтверждены изолированными Livewire tests.
+- Следующий точный шаг: ADM-AUD-02 SEO Meta workflow; остальной backlog аудита ADM-AUD-03..12 остаётся открытым.
+
+# 2026-10-08 — DONE: ADM-AUD-02, специализированный SEO Meta workflow
+- Generic CRUD заменён Filament resource /filament/seo-meta-suggestions со scan/generate/approve/reject/apply и bulk, текущими/предложенными значениями, счётчиками, вкладками, поиском и фильтрами. Старый URL перенаправляется; меню обновлено.
+- Используются существующие generator/resolver/scan и seo_meta_suggestions. Генерация через уникальную job; применение approved выполняется в транзакции с блокировкой записи. Исправлена запись неосновного языка через существующую translations; базовые поля не перезаписываются. Проверяются права, status, model, locale, лимиты и параметры scan.
+- Добавлены 7 feature tests: локализованное одобрение/применение, bulk с пропуском невалидных записей, лимиты/отсутствующий источник, scan/job, отказ без прав, redirect/валидация scan, ошибка генератора. Тестовая БД SQLite :memory:, генератор замокан, очередь fake. Рабочая БД не изменялась.
+- Chrome: resource и счётчики загружены, scan modal и filter options проверены без запуска операций; 8456 записей, missing title 499, description/any 510. Снимок storage/app/testing/seo-meta-after-2026-10-08.png.
+- PHP lint / view:cache проверены. CACHE_DRIVER=array в PHPUnit устраняет использование рабочего file cache при тестировании уникальных задач. Миграция не нужна.
+- Ограничения: текущий драйвер queue=sync, генерация выполняется в запросе; фоновая обработка требует отдельной настройки драйвера/worker. Реальная генерация OpenAI и live применение не выполнялись, проверены mock/изолированные тесты. Изображения в БД не менялись.
+- Следующее действие: ADM-AUD-03 — SA inbox/unread/bind/create order; ADM-AUD-04..12 остаются открыты.
+- Итоговая проверка: VoyagerBreadTest + BreadMenuNavigationTest — 56 tests / 518 assertions PASS (PHP 8.3); проверки поиска охватывают предложение и текст ошибки.
+
+## ADM-AUD-03 — IN PROGRESS: сервисы и UI реализованы (2026-10-08)
+- Добавлены standalone Filament resource, список/карточка, polling 10s, фильтры, история, локальные вложения и глобальный badge. Просмотр не сбрасывает unread, snapshot read отклоняет устаревшую историю.
+- bind/create используют существующие таблицы и createLead business flow. История зеркалируется с dedupe sa_message_id, запрещён rebind/conflict; неподтверждённые и UAT исходящие не попадают в клиентский mirror. unread не сбрасывается привязкой.
+- OrderSaCommandService расширен nullable order для standalone без копирования transport. Signed token/expiry/conversation guard, idempotency, UAT и uncertain outcome сохранены. Standalone bot client_id берётся из conversation_id, адресат — телефон выбранного диалога.
+- 32 tests / 271 assertions PASS: новый inbox и прежние OrderSaCommandTest, SQLite :memory:, fake HTTP/mail. Рабочие данные не менялись. Следующее: отрицательные сценарии, регрессия и Chrome без сохранения/отправки.
+
+# 2026-10-08 — DONE: ADM-AUD-03, SA inbox
+- /filament/sa-conversations и /filament/sa-conversations/{record}: поиск клиента/телефона/диалога/заказа; фильтры unread/unlinked/awaiting_reply/recent/channel/bot_mode; карточка с историей, компактными локальными вложениями, явным snapshot read, bind/create order, reply/bot и журналом команд. История/таблица/badge обновляются каждые 10 секунд. Глобальный SA badge и выключенный по умолчанию звук включаются из верхней панели.
+- Auth: Filament session/CSRF и существующие browse_admin+browse_orders+read_orders; изменения требуют edit_orders, создание дополнительно add_orders. Права проверяются повторно на query/render/actions, токены проверяют выбранный conversation, автора, срок, phone/mode/order. Новых интеграционных API endpoints нет, X-Api-Key контракты не менялись.
+- DB: новых таблиц/колонок/миграций нет. Используются sa_conversations/sa_messages/sa_events/sa_bot_controls/sa_escalations/orders/order_user_comments. bind/create транзакционны, запрещают конфликтующую связь и не сбрасывают unread. История зеркалируется по sa_message_id без дублей и без UAT/неподтверждённых исходящих; createLead вызывается внутри сервиса, HTTP loopback не требуется. Повтор create возвращает уже связанный заказ.
+- Commands: общий OrderSaCommandService поддерживает standalone nullable order, прежние order actions сохранены; идентичный signed command возвращает duplicate без повторной отправки. UAT guard, pending/accepted/uncertain/partial/state_conflict, отсутствие автоматического resend и безопасные логи сохранены. Для standalone bot client_id=conversation_id, phone выбранного диалога; для заказа контракт прежний.
+- Проверки: 11 новых inbox tests; SaInbox+OrderSaChat+OrderSaCommand+BreadMenuNavigation 59 tests/513 assertions PASS. Общая BREAD/SEO/roles/navigation/SA регрессия 113 tests/1011 assertions PASS (PHP 8.3.30, CLI memory_limit=512M). Дополнительная проверка отзыва прав на открытой странице — 1 test/8 assertions PASS. PHP lint, view:cache, diff-check PASS. SQLite :memory:, fake HTTP/mail; никакой реальной отправки.
+- Первый совмещённый прогон с лимитом CLI 128M: 111 passed/2 crop tests failed из-за штатной memory guard при 120M накопленного расхода. С CLI 512M все 113 PASS; приложение и лимиты web runtime не менялись.
+- Chrome: 39 диалогов/38 unread; карточка standalone №35 и bind modal без сохранения, unread остаётся 38. Карточка существующего UAT №39; мобильная ширина 390 px, устранено наложение badge на avatar, overflow нет, desktop viewport восстановлен. Evidence: storage/app/testing/sa-inbox-after-2026-10-08.png и sa-inbox-mobile-2026-10-08.png.
+- Рабочие сообщения/заказы/read flags/изображения не изменялись. Реальная отправка в окружении выключена admin_migration.sa_commands_enabled=false; config/.env не менялись. Live bind/create/send/bot, реальный звук и provider callbacks требуют отдельной UAT при разрешённой отправке. Не обнаруживаемые PHPUnit12 старые API annotation tests вынесены в MIG-TEST-SA-LEGACY; не считаются выполненными.
+- Следующее точное действие: ADM-AUD-04 — массовая Email Рассылка; ADM-AUD-05..12 и MIG-TEST-SA-LEGACY остаются открыты.

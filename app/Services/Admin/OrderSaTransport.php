@@ -26,7 +26,7 @@ class OrderSaTransport
         // Preserve the existing Synvolve contracts, addressing the selected conversation's phone.
         $payload = $kind === 'message'
             ? ['event' => 'manager_message', 'phone' => $phone, 'text' => $value]
-            : ['event' => 'bot_status_changed', 'client_id' => (string) $context['order_id'], 'phone' => $phone, 'bot_status' => $value];
+            : ['event' => 'bot_status_changed', 'client_id' => (string) ($context['order_id'] ?: $context['conversation_id']), 'phone' => $phone, 'bot_status' => $value];
         $payload['context'] = $context;
         $payload['sent_at'] = now()->utc()->toIso8601String();
         try {

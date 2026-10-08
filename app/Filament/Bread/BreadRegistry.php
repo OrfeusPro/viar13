@@ -83,7 +83,7 @@ class BreadRegistry
 
     public function isDedicated(stdClass $type): bool
     {
-        return in_array($type->name, ['orders', 'canvas_slider', 'image_alt_suggestions'], true);
+        return in_array($type->name, ['orders', 'canvas_slider', 'image_alt_suggestions', 'seo_meta_suggestions'], true);
     }
 
     public function editableRows(stdClass $type, string $operation): array

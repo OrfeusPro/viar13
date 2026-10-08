@@ -28,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('filament')
             ->brandName('Viar Admin')
+            ->renderHook('panels::global-search.after', fn () => \Illuminate\Support\Facades\Blade::render("@livewire('admin.sa-inbox-badge')"))
             ->renderHook('panels::page.header.heading.before', fn (array $scopes) =>
                 collect($scopes)->contains(fn (string $scope): bool => is_subclass_of($scope, \Filament\Resources\Pages\Page::class))
                     ? '' : view('filament.components.menu-location'))

@@ -23,12 +23,23 @@ class OrderSaCommandService
 
     public function token(Orders $order, User $author, int $conversationId): string
     {
-        Gate::forUser($author)->authorize('update', $order);
+        return $this->commandToken($order, $author, $conversationId);
+    }
+
+    public function inboxToken(SaConversation $conversation, User $author): string
+    {
+        SaInboxService::authorize($author, 'edit');
+        return $this->commandToken($conversation->orders_id ? Orders::findOrFail($conversation->orders_id) : null, $author, $conversation->id);
+    }
+
+    private function commandToken(?Orders $order, User $author, int $conversationId): string
+    {
+        $order ? Gate::forUser($author)->authorize('update', $order) : SaInboxService::authorize($author, 'edit');
         $conversation = SaConversation::query()->findOrFail($conversationId);
-        abort_unless((int) $conversation->orders_id === (int) $order->id, 403);
+        abort_unless((int) $conversation->orders_id === (int) $order?->id, 403);
 
         return Crypt::encryptString(json_encode([
-            'event_id' => (string) Str::uuid(), 'order_id' => (int) $order->id, 'author_id' => (int) $author->id,
+            'event_id' => (string) Str::uuid(), 'order_id' => (int) $order?->id, 'author_id' => (int) $author->id,
             'conversation_id' => (int) $conversation->id, 'external_id' => $conversation->conversation_id,
             'phone' => $conversation->client_phone, 'mode' => $conversation->bot_mode,
             'expires' => now()->addHour()->timestamp,
@@ -37,7 +48,25 @@ class OrderSaCommandService
 
     public function execute(Orders $order, User $author, array $input): array
     {
-        Gate::forUser($author)->authorize('update', $order);
+        return $this->executeCommand($order, $author, $input);
+    }
+
+    public function executeInbox(SaConversation $conversation, User $author, array $input): array
+    {
+        SaInboxService::authorize($author, 'edit');
+        try {
+            $snapshot = json_decode(Crypt::decryptString((string) ($input['token'] ?? '')), true, 512, JSON_THROW_ON_ERROR);
+        } catch (Throwable $exception) {
+            throw ValidationException::withMessages(['token' => 'Откройте форму заново.']);
+        }
+        abort_unless((int) ($snapshot['conversation_id'] ?? 0) === (int) $conversation->id, 403);
+        $result = $this->executeCommand($conversation->orders_id ? Orders::findOrFail($conversation->orders_id) : null, $author, $input);
+        return $result;
+    }
+
+    private function executeCommand(?Orders $order, User $author, array $input): array
+    {
+        $order ? Gate::forUser($author)->authorize('update', $order) : SaInboxService::authorize($author, 'edit');
         if (is_string($input['text'] ?? null)) {
             $input['text'] = trim($input['text']);
         }
@@ -52,19 +81,19 @@ class OrderSaCommandService
         } catch (Throwable $exception) {
             throw ValidationException::withMessages(['token' => 'Откройте форму заново: токен команды недействителен.']);
         }
-        abort_unless($token['order_id'] === (int) $order->id && $token['author_id'] === (int) $author->id, 403);
+        abort_unless($token['order_id'] === (int) $order?->id && $token['author_id'] === (int) $author->id, 403);
         $command = ['action' => $data['action'], 'text' => $data['action'] === 'send' ? $data['text'] : null,
             'handoff' => $data['action'] === 'send' && (bool) ($data['handoff'] ?? false)];
         $fingerprint = hash('sha256', json_encode($command, JSON_THROW_ON_ERROR));
-        $prefix = 'filament-sa:'.$order->id.':'.$token['conversation_id'].':';
+        $prefix = 'filament-sa:'.(int) $order?->id.':'.$token['conversation_id'].':';
         $key = $prefix.$token['event_id'];
         $suppressed = ! config('admin_migration.sa_commands_enabled', false)
             || str_starts_with((string) $token['external_id'], 'ADM-FIL-UAT-');
 
         $prepared = DB::transaction(function () use ($order, $author, $token, $command, $fingerprint, $prefix, $key, $suppressed): array {
-            Orders::query()->lockForUpdate()->findOrFail($order->id);
+            $order ? Orders::query()->lockForUpdate()->findOrFail($order->id) : null;
             $conversation = SaConversation::query()->lockForUpdate()->findOrFail($token['conversation_id']);
-            abort_unless((int) $conversation->orders_id === (int) $order->id, 403);
+            abort_unless((int) $conversation->orders_id === (int) $order?->id, 403);
             $existing = SaEvent::query()->where('dedupe_key', $key)->first();
             if ($existing) {
                 $stored = json_decode($existing->payload, true);
@@ -97,7 +126,7 @@ class OrderSaCommandService
                 'status' => $state, 'payload' => json_encode($payload, JSON_THROW_ON_ERROR), 'processed_at' => $suppressed ? now() : null]);
             $messageId = 'OUT-'.substr(sha1($key), 0, 16);
             if ($command['action'] === 'send') {
-                SaMessage::query()->create(['orders_id' => $order->id, 'conversation_id' => $conversation->conversation_id,
+                SaMessage::query()->create(['orders_id' => $order?->id, 'conversation_id' => $conversation->conversation_id,
                     'message_id' => $messageId, 'event_id' => $event->event_id, 'direction' => 'outbound',
                     'status' => $suppressed ? 'uat_suppressed' : 'pending', 'text' => $command['text'],
                     'from_json' => json_encode(['type' => 'manager', 'id' => (string) $author->id]),
@@ -106,7 +135,7 @@ class OrderSaCommandService
             }
             $botControlId = null;
             if ($mode !== null) {
-                $botControlId = SaBotControl::query()->create(['orders_id' => $order->id, 'conversation_id' => $conversation->conversation_id,
+                $botControlId = SaBotControl::query()->create(['orders_id' => $order?->id, 'conversation_id' => $conversation->conversation_id,
                     'action' => $command['action'] === 'send' ? 'handoff_to_manager' : $command['action'], 'mode_after' => $mode,
                     'changed_by_json' => json_encode(['type' => 'manager', 'id' => (string) $author->id]),
                     'payload' => json_encode(['event_id' => $event->event_id, 'status' => $state])])->id;
@@ -119,10 +148,11 @@ class OrderSaCommandService
             return $prepared;
         }
 
-        $context = ['order_id' => (int) $order->id, 'lead_id' => (int) $order->id,
+        $context = ['order_id' => (int) $order?->id, 'lead_id' => (int) $order?->id,
             'conversation_id' => $token['external_id'], 'manager_id' => (string) $author->id,
             'event_id' => $token['event_id'], 'idempotency_key' => $key, 'message_id' => $prepared['message_id'],
             'trigger' => 'filament_sa_command', 'channel' => 'whatsapp'];
+        if (! $order) { unset($context['lead_id']); }
         $messageAccepted = false;
         $botAccepted = false;
         try {
@@ -141,18 +171,18 @@ class OrderSaCommandService
             : ($botAccepted ? 'accepted' : 'uncertain');
 
         DB::transaction(function () use ($order, $author, $token, $key, $command, $prepared, $messageAccepted, $botAccepted, &$status): void {
-            $lockedOrder = Orders::query()->lockForUpdate()->findOrFail($order->id);
+            $lockedOrder = $order ? Orders::query()->lockForUpdate()->findOrFail($order->id) : null;
             $conversation = SaConversation::query()->lockForUpdate()->findOrFail($token['conversation_id']);
-            $stillLinked = (int) $conversation->orders_id === (int) $order->id
+            $stillLinked = (int) $conversation->orders_id === (int) $order?->id
                 && $conversation->conversation_id === $token['external_id'] && $conversation->client_phone === $token['phone'];
             if ($command['action'] === 'send') {
                 // Do not overwrite a delivery callback that arrived during dispatch.
                 SaMessage::query()->where('message_id', $prepared['message_id'])->where('status', 'pending')
                     ->update(['status' => $messageAccepted ? 'queued' : 'delivery_unknown']);
-                if ($messageAccepted && $stillLinked && ! DB::table('order_user_comments')
-                    ->where('order_id', $order->id)->where('sa_message_id', $prepared['message_id'])->exists()) {
+                if ($order && $messageAccepted && $stillLinked && ! DB::table('order_user_comments')
+                    ->where('order_id', $order?->id)->where('sa_message_id', $prepared['message_id'])->exists()) {
                     DB::table('order_user_comments')->insert([
-                        'order_id' => $order->id, 'user_id' => $author->id, 'comment' => $command['text'],
+                        'order_id' => $order?->id, 'user_id' => $author->id, 'comment' => $command['text'],
                         'is_admin' => 1, 'is_read' => 0, 'admin_is_read' => 1, 'sa_message_id' => $prepared['message_id'],
                         'sa_direction' => 'outbound', 'is_img_sketch' => 0, 'is_img_painter' => 0,
                         'order_painter_image_id' => 0, 'order_user_image_id' => 0, 'created_at' => now(), 'updated_at' => now(),
@@ -162,7 +192,7 @@ class OrderSaCommandService
             if ($botAccepted) {
                 if ($stillLinked && $conversation->bot_mode === $token['mode']) {
                     $conversation->update(['bot_mode' => $prepared['mode']]);
-                    if (! $lockedOrder->sa_conversation_id || $lockedOrder->sa_conversation_id === $token['external_id']) {
+                    if ($lockedOrder && (! $lockedOrder->sa_conversation_id || $lockedOrder->sa_conversation_id === $token['external_id'])) {
                         $lockedOrder->forceFill(['sa_conversation_id' => $token['external_id'], 'sa_client_phone' => $token['phone'],
                             'sa_bot_mode' => $prepared['mode']])->save();
                     }
@@ -180,7 +210,7 @@ class OrderSaCommandService
                 ]);
             }
         });
-        Log::info('SA command recorded.', ['event_id' => $token['event_id'], 'order_id' => $order->id, 'status' => $status]);
+        Log::info('SA command recorded.', ['event_id' => $token['event_id'], 'order_id' => $order?->id, 'status' => $status]);
 
         return ['duplicate' => false, 'status' => $status, 'event_id' => $token['event_id']];
     }

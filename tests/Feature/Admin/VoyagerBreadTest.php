@@ -1175,6 +1175,244 @@ class VoyagerBreadTest extends TestCase
         $this->assertFalse(Storage::disk('public')->directoryExists('pages/New'));
     }
 
+    public function test_role_permissions_save_with_role_and_survive_language_switch(): void
+    {
+        $this->admin(['browse_admin', 'browse_roles', 'edit_roles']);
+        $this->roleMetadata();
+        $target = Role::create(['name' => 'seo_manager', 'display_name' => 'SEO']);
+        $old = Permission::create(['key' => 'browse_pages', 'table_name' => 'pages']);
+        $new = Permission::create(['key' => 'edit_pages', 'table_name' => 'pages']);
+        $target->permissions()->attach($old);
+
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'roles', 'record' => $target->id])
+            ->assertSee('Разрешения роли')->assertSee('Просмотр списка')->assertSee('Редактирование')
+            ->assertSet('rolePermissionIds', [(string) $old->id])
+            ->set('data.display_name', 'Updated SEO')
+            ->set('rolePermissionIds', [(string) $new->id, (string) $new->id])
+            ->call('changeLocale', 'ru')
+            ->assertSet('rolePermissionIds', [(string) $new->id, (string) $new->id])
+            ->call('save')->assertHasNoErrors();
+
+        $this->assertSame('Updated SEO', $target->fresh()->display_name);
+        $this->assertSame([$new->id], $target->permissions()->pluck('permissions.id')->all());
+    }
+
+    public function test_unknown_permission_rejects_role_and_permission_changes(): void
+    {
+        $this->admin(['browse_admin', 'browse_roles', 'edit_roles']);
+        $this->roleMetadata();
+        $target = Role::create(['name' => 'manager', 'display_name' => 'Before']);
+        $permission = Permission::create(['key' => 'browse_pages', 'table_name' => 'pages']);
+        $target->permissions()->attach($permission);
+
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'roles', 'record' => $target->id])
+            ->set('data.display_name', 'Must not save')->set('rolePermissionIds', ['999999'])
+            ->call('save')->assertHasErrors(['rolePermissionIds.0']);
+
+        $this->assertSame('Before', $target->fresh()->display_name);
+        $this->assertSame([$permission->id], $target->permissions()->pluck('permissions.id')->all());
+    }
+
+    public function test_role_permission_group_selection_and_create_then_clear(): void
+    {
+        $this->admin(['browse_admin', 'browse_roles', 'add_roles', 'edit_roles']);
+        $this->roleMetadata();
+        $browse = Permission::create(['key' => 'browse_pages', 'table_name' => 'pages']);
+        $edit = Permission::create(['key' => 'edit_pages', 'table_name' => 'pages']);
+        $other = Permission::create(['key' => 'browse_orders', 'table_name' => 'orders']);
+        $component = Livewire::test(VoyagerBread::class, ['type' => 'roles'])
+            ->call('openCreate')->assertSet('rolePermissionIds', [])
+            ->set('data.name', 'manager')->set('data.display_name', 'Manager')
+            ->call('selectRolePermissions', 'pages', true)
+            ->assertSet('rolePermissionIds', [(string) $browse->id, (string) $edit->id])
+            ->call('selectRolePermissions', 'pages', false)->assertSet('rolePermissionIds', [])
+            ->call('selectRolePermissions', 'pages', true)
+            ->call('save')->assertHasNoErrors();
+        $target = Role::where('name', 'manager')->firstOrFail();
+        $this->assertSame([$browse->id, $edit->id], $target->permissions()->orderBy('permissions.id')->pluck('permissions.id')->all());
+        $this->assertDatabaseMissing('permission_role', ['role_id' => $target->id, 'permission_id' => $other->id]);
+
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'roles', 'record' => $target->id])
+            ->call('selectRolePermissions', null, true)
+            ->assertSet('rolePermissionIds', fn ($ids) => in_array((string) $other->id, $ids, true))
+            ->call('selectRolePermissions', null, false)->assertSet('rolePermissionIds', [])
+            ->call('save')->assertHasNoErrors();
+        $this->assertSame(0, $target->permissions()->count());
+    }
+
+    public function test_role_editor_requires_permission_regardless_of_role_name(): void
+    {
+        $this->admin(['browse_admin', 'browse_roles']);
+        auth('filament')->user()->role->update(['name' => 'manager']);
+        $this->roleMetadata();
+        $target = Role::create(['name' => 'seo_manager']);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'roles', 'record' => $target->id])->assertForbidden();
+        Livewire::test(VoyagerBread::class, ['type' => 'roles'])
+            ->set('editing', true)->set('recordId', $target->id)
+            ->call('selectRolePermissions', null, true)->assertForbidden();
+        Livewire::test(VoyagerBread::class, ['type' => 'roles'])
+            ->set('editing', true)->set('recordId', $target->id)
+            ->set('rolePermissionIds', [1])->call('save')->assertForbidden();
+        $this->assertSame(0, $target->permissions()->count());
+    }
+
+    public function test_role_permission_controls_cannot_change_other_bread(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        $id = DB::table('pages')->insertGetId(['title' => 'Page']);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])
+            ->assertDontSee('Разрешения роли')->call('selectRolePermissions', null, true)->assertStatus(409);
+    }
+
+    public function test_seo_resource_filters_and_approval_apply_localized_values(): void
+    {
+        $this->seoFixture();
+        $id = DB::table('pages')->insertGetId(['title' => 'Source', 'meta_title' => 'Base', 'meta_description' => 'Base description']);
+        $record = \App\Models\SeoMetaSuggestion::create(['metaable_type' => \App\Models\Page::class, 'metaable_id' => $id,
+            'locale' => 'ru', 'entity_title' => 'Source', 'status' => 'pending', 'current_meta_title' => null,
+            'suggested_meta_title' => 'Предложение', 'suggested_meta_description' => 'Описание']);
+        $other = \App\Models\SeoMetaSuggestion::create(['locale' => 'en', 'status' => 'failed', 'error' => 'Example']);
+        $component = Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->assertCanSeeTableRecords([$record, $other])
+            ->searchTable('Предложение')->assertCanSeeTableRecords([$record])->assertCanNotSeeTableRecords([$other])
+            ->searchTable('Example')->assertCanSeeTableRecords([$other])->assertCanNotSeeTableRecords([$record])
+            ->searchTable('')
+            ->filterTable('locale', 'ru')->assertCanSeeTableRecords([$record])->assertCanNotSeeTableRecords([$other])
+            ->resetTableFilters()
+            ->callAction(\Filament\Actions\Testing\TestAction::make('approve')->table($record), data: [
+                'meta_title' => 'Одобрено', 'meta_description' => 'Проверенное описание', 'seo_keywords' => 'холст',
+            ])->assertHasNoErrors();
+        $this->assertSame('approved', $record->fresh()->status);
+        $this->assertSame(auth('filament')->id(), $record->fresh()->reviewed_by);
+        $component->callAction(\Filament\Actions\Testing\TestAction::make('apply')->table($record))->assertHasNoErrors();
+        $this->assertSame('applied', $record->fresh()->status);
+        $this->assertSame('Base', DB::table('pages')->where('id', $id)->value('meta_title'));
+        $this->assertDatabaseHas('translations', ['table_name' => 'pages', 'foreign_key' => $id, 'locale' => 'ru', 'column_name' => 'meta_title', 'value' => 'Одобрено']);
+    }
+
+    public function test_seo_bulk_approval_skips_invalid_and_apply_requires_approval(): void
+    {
+        $this->seoFixture();
+        $good = \App\Models\SeoMetaSuggestion::create(['status' => 'pending', 'locale' => 'ru', 'suggested_meta_title' => 'Good']);
+        $bad = \App\Models\SeoMetaSuggestion::create(['status' => 'new', 'locale' => 'en']);
+        $resource = \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::class;
+        $this->assertFalse($resource::perform($bad, 'apply', false));
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->selectTableRecords([$good->id, $bad->id])
+            ->callAction(\Filament\Actions\Testing\TestAction::make('approve')->table()->bulk())->assertHasNoErrors();
+        $this->assertSame('approved', $good->fresh()->status);
+        $this->assertSame('new', $bad->fresh()->status);
+        $this->assertTrue($resource::perform($good->fresh(), 'reject', false));
+        $this->assertSame('rejected', $good->fresh()->status);
+    }
+
+    public function test_seo_approval_limits_and_missing_source_do_not_change_entity(): void
+    {
+        $this->seoFixture();
+        $record = \App\Models\SeoMetaSuggestion::create(['status' => 'pending', 'locale' => 'ru', 'suggested_meta_title' => str_repeat('x', 61)]);
+        $resource = \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::class;
+        $this->assertFalse($resource::perform($record, 'approve', false));
+        $this->assertSame('pending', $record->fresh()->status);
+        $record->update(['status' => 'approved', 'approved_meta_title' => 'Approved', 'metaable_type' => \App\Models\Page::class, 'metaable_id' => 999]);
+        $this->assertFalse($resource::perform($record, 'apply', false));
+        $this->assertSame('approved', $record->fresh()->status);
+        $this->assertNotNull($record->fresh()->error);
+        $this->assertDatabaseCount('translations', 0);
+    }
+
+    public function test_seo_scan_and_generate_queue_preserve_source_fields(): void
+    {
+        $this->seoFixture();
+        \Illuminate\Support\Facades\Queue::fake();
+        $id = DB::table('pages')->insertGetId(['title' => 'Scan source', 'meta_title' => 'Original']);
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->callAction('scan', data: ['model' => \App\Models\Page::class, 'locale' => 'ru', 'limit' => 10, 'only_empty' => true, 'force' => false])
+            ->assertHasNoErrors();
+        $record = \App\Models\SeoMetaSuggestion::firstOrFail();
+        $this->assertSame('new', $record->status);
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->callAction(\Filament\Actions\Testing\TestAction::make('generate')->table($record), data: ['seo_keywords' => 'Canvas'])
+            ->assertHasNoErrors();
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\GenerateSeoMetaSuggestion::class, fn ($job) => $job->suggestionId === $record->id);
+        $this->mock(\App\Services\SeoMetaGeneration\SeoMetaGenerator::class, function ($mock): void {
+            $mock->shouldReceive('generate')->once()->andReturn(['locales' => ['ru' => ['meta_title' => 'Generated', 'meta_description' => 'Description']], 'model' => 'fake']);
+        });
+        (new \App\Jobs\GenerateSeoMetaSuggestion($record->id))->handle(app(\App\Services\SeoMetaGeneration\SeoMetaModerationService::class));
+        $this->assertSame('pending', $record->fresh()->status);
+        $this->assertSame('Generated', $record->fresh()->suggested_meta_title);
+        $this->assertSame('Original', DB::table('pages')->where('id', $id)->value('meta_title'));
+    }
+
+    public function test_seo_read_only_user_cannot_scan_generate_or_apply(): void
+    {
+        $this->seoFixture(false);
+        \Illuminate\Support\Facades\Queue::fake();
+        $record = \App\Models\SeoMetaSuggestion::create(['status' => 'approved', 'approved_meta_title' => 'Protected']);
+        $this->get('/filament/seo-meta-suggestions')->assertOk();
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->assertActionHidden('scan')
+            ->assertActionHidden(\Filament\Actions\Testing\TestAction::make('generate')->table($record))
+            ->assertActionHidden(\Filament\Actions\Testing\TestAction::make('apply')->table($record));
+        try {
+            \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::perform($record, 'apply');
+            $this->fail('Missing permission must reject direct calls');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
+        \Illuminate\Support\Facades\Queue::assertNothingPushed();
+        $this->assertSame('approved', $record->fresh()->status);
+    }
+
+    public function test_seo_legacy_url_redirects_and_invalid_scan_is_rejected(): void
+    {
+        $this->seoFixture();
+        $this->get('/filament/bread/seo-meta-suggestions')->assertRedirect(
+            \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::getUrl());
+        Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
+            ->callAction('scan', data: ['model' => 'InvalidModel', 'locale' => 'xx', 'limit' => 0])
+            ->assertHasErrors();
+        $this->assertDatabaseCount('seo_meta_suggestions', 0);
+    }
+
+    public function test_seo_generation_failure_preserves_existing_meta(): void
+    {
+        $this->seoFixture();
+        $id = DB::table('pages')->insertGetId(['title' => 'Source', 'meta_title' => 'Unchanged']);
+        $record = \App\Models\SeoMetaSuggestion::create(['metaable_type' => \App\Models\Page::class,
+            'metaable_id' => $id, 'locale' => 'ru', 'status' => 'new']);
+        $this->mock(\App\Services\SeoMetaGeneration\SeoMetaGenerator::class, function ($mock): void {
+            $mock->shouldReceive('generate')->once()->andThrow(new \RuntimeException('Provider unavailable'));
+        });
+        (new \App\Jobs\GenerateSeoMetaSuggestion($record->id))->handle(app(\App\Services\SeoMetaGeneration\SeoMetaModerationService::class));
+        $this->assertSame('failed', $record->fresh()->status);
+        $this->assertSame('Provider unavailable', $record->fresh()->error);
+        $this->assertSame('Unchanged', DB::table('pages')->where('id', $id)->value('meta_title'));
+        $this->assertDatabaseCount('translations', 0);
+    }
+
+    private function seoFixture(bool $edit = true): void
+    {
+        $this->admin(array_merge(['browse_admin', 'browse_seo_meta_suggestions'], $edit ? ['edit_seo_meta_suggestions'] : []));
+        require_once database_path('migrations/2026_07_08_120000_create_seo_meta_suggestions_table.php');
+        (new \CreateSeoMetaSuggestionsTable)->up();
+        DB::table('data_types')->insert(['name' => 'seo_meta_suggestions', 'slug' => 'seo-meta-suggestions',
+            'model_name' => \App\Models\SeoMetaSuggestion::class, 'display_name_plural' => 'SEO Meta']);
+        Schema::table('pages', fn (Blueprint $table) => $table->string('meta_title')->nullable());
+        config(['seo_meta_generation.targets' => [\App\Models\Page::class => ['label' => 'Page', 'voyager_slug' => 'pages',
+            'title_field' => 'meta_title', 'description_field' => 'meta_description', 'context_fields' => ['title' => ['title']]]]]);
+    }
+
+    private function roleMetadata(): void
+    {
+        $typeId = DB::table('data_types')->insertGetId([
+            'name' => 'roles', 'slug' => 'roles', 'model_name' => Role::class, 'display_name_plural' => 'Роли',
+        ]);
+        foreach (['name', 'display_name'] as $field) {
+            DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => $field,
+                'type' => 'text', 'display_name' => $field, 'required' => true]);
+        }
+    }
+
     private function admin(array $permissions): void
     {
         $role = Role::create(['name' => 'admin']);

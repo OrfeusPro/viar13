@@ -39,6 +39,7 @@ class VoyagerBread extends Page
     use WithPagination;
     use WithFileUploads;
     use \App\Filament\Bread\BreadAltPanel;
+    use \App\Filament\Bread\BreadRolePermissions;
 
     protected static ?string $slug = 'bread/{type}';
 
@@ -151,6 +152,11 @@ class VoyagerBread extends Page
     {
         $this->type = $type;
         $bread = $this->bread();
+        if ($bread?->name === 'seo_meta_suggestions') {
+            abort_unless($this->registry()->permitted($bread, 'browse'), 403);
+            $this->redirect(\App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::getUrl());
+            return;
+        }
         abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->registry()->permitted($bread, 'browse'), 403);
         $this->locale = (string) config('voyager.multilingual.default', 'en');
         $filter = request()->query('type');
@@ -290,9 +296,14 @@ class VoyagerBread extends Page
             $tabs[] = Tab::make($title)->components($fields);
         }
 
-        return $schema->statePath('data')->components(count($tabs) > 1
+        $fields = count($tabs) > 1
             ? [Tabs::make('BREAD')->tabs($tabs)->extraAttributes(['class' => 'viar-bread-tabs'])->persistTabInQueryString()->columnSpanFull()]
-            : array_values($components));
+            : array_values($components);
+        if ($bread->name === 'roles') {
+            $fields[] = View::make('filament.components.role-permissions')->columnSpanFull();
+        }
+
+        return $schema->statePath('data')->components($fields);
     }
 
     public function editUrl(int $id): string
@@ -393,6 +404,7 @@ class VoyagerBread extends Page
 
     public function openCreate(): void
     {
+        $this->rolePermissionIds = [];
         $this->localeDrafts = [];
         $this->altPanelOpen = false;
         $bread = $this->requireBread('add');
@@ -419,6 +431,9 @@ class VoyagerBread extends Page
         abort_unless($model, 409);
         abort_unless($this->registry()->hasFormFields($bread, 'edit'), 409);
         $record = $model->newQuery()->findOrFail($id);
+        $this->rolePermissionIds = $bread->name === 'roles'
+            ? DB::table('permission_role')->where('role_id', $id)->pluck('permission_id')->map(fn ($id): string => (string) $id)->all()
+            : [];
         $this->mediaUpload = null;
         $this->mediaUploads = [];
         $this->mediaReplacements = [];
@@ -476,6 +491,7 @@ class VoyagerBread extends Page
         $allowed = collect($this->registry()->editableRows($bread, $this->recordId ? 'edit' : 'add'));
         $translated = method_exists($model, 'getTranslatableAttributes') ? $model->getTranslatableAttributes() : [];
         $values = $this->form->getState();
+        $rolePermissions = $this->validatedRolePermissions();
         $original = $this->recordId ? $model->newQuery()->findOrFail($this->recordId) : null;
         foreach ($allowed->where('type', 'media_picker') as $row) {
             $details = json_decode($row->details ?: '{}', true) ?: [];
@@ -509,7 +525,7 @@ class VoyagerBread extends Page
                 }
         }
 
-        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns): void {
+        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns, $rolePermissions): void {
             $record = $this->recordId ? $model->newQuery()->lockForUpdate()->findOrFail($this->recordId) : $model->newInstance();
             if ($this->locale === $default) {
                 foreach ($values as $field => $value) {
@@ -571,6 +587,12 @@ class VoyagerBread extends Page
                         $attributes['updated_at'] = now();
                     }
                     DB::table($pivot)->insert($attributes);
+                }
+            }
+            if ($rolePermissions !== null) {
+                DB::table('permission_role')->where('role_id', $record->getKey())->delete();
+                foreach ($rolePermissions as $permissionId) {
+                    DB::table('permission_role')->insert(['role_id' => $record->getKey(), 'permission_id' => $permissionId]);
                 }
             }
         });
