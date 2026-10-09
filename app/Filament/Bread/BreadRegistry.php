@@ -19,7 +19,7 @@ class BreadRegistry
             return [];
         }
 
-        return DB::table('data_types')->orderBy('display_name_plural')->get()->all();
+        return $this->translateMetadata(DB::table('data_types')->orderBy('display_name_plural')->get()->all(), 'data_types', ['display_name_singular', 'display_name_plural']);
     }
 
     public function type(string $slug): ?stdClass
@@ -28,12 +28,25 @@ class BreadRegistry
             return null;
         }
 
-        return DB::table('data_types')->where('slug', $slug)->first();
+        $type = DB::table('data_types')->where('slug', $slug)->first();
+        return $type ? $this->translateMetadata([$type], 'data_types', ['display_name_singular', 'display_name_plural'])[0] : null;
     }
 
     public function rows(stdClass $type): array
     {
-        return DB::table('data_rows')->where('data_type_id', $type->id)->orderBy('order')->get()->all();
+        return $this->translateMetadata(DB::table('data_rows')->where('data_type_id', $type->id)->orderBy('order')->get()->all(), 'data_rows', ['display_name']);
+    }
+
+    private function translateMetadata(array $rows, string $table, array $columns): array
+    {
+        $locale = app()->getLocale();
+        if ($rows === [] || $locale === config('voyager.multilingual.default', 'en') || ! Schema::hasTable('translations')) { return $rows; }
+        $lookup = collect($rows)->keyBy('id');
+        foreach (DB::table('translations')->where('table_name', $table)->where('locale', $locale)
+            ->whereIn('column_name', $columns)->whereIn('foreign_key', $lookup->keys()->all())->get() as $translation) {
+            if ($translation->value !== '') { $lookup[$translation->foreign_key]->{$translation->column_name} = $translation->value; }
+        }
+        return $rows;
     }
 
     public function model(stdClass $type): ?Model
@@ -93,8 +106,9 @@ class BreadRegistry
         return array_values(array_filter($this->rows($type), static fn (stdClass $row): bool =>
             (bool) $row->{$operation}
             && in_array($row->field, $columns, true)
-            && ! in_array($row->field, ['id', 'created_at', 'updated_at'], true)
-            && in_array($row->type, ['text', 'text_area', 'rich_text_box', 'code_editor', 'number', 'checkbox', 'multiple_checkbox', 'select_dropdown', 'date', 'timestamp', 'color', 'image', 'file', 'multiple_images', 'media_picker', 'password'], true)
+            && ! in_array($row->field, ['id', 'created_at', 'updated_at', 'remember_token'], true)
+            && ! ($row->type === 'hidden' && $row->field === 'password')
+            && in_array($row->type, ['text', 'text_area', 'rich_text_box', 'code_editor', 'number', 'coordinates', 'checkbox', 'multiple_checkbox', 'select_dropdown', 'select_multiple', 'radio_btn', 'time', 'markdown_editor', 'adv_json', 'adv_page_layout', 'adv_fields_group', 'adv_select_dropdown_tree', 'hidden', 'date', 'timestamp', 'color', 'image', 'file', 'multiple_images', 'media_picker', 'password'], true)
             && ($row->type !== 'password' || $type->name === 'users')
         ));
     }
@@ -102,8 +116,10 @@ class BreadRegistry
     public function hasFormFields(stdClass $type, string $operation): bool
     {
         return $this->editableRows($type, $operation) !== []
+            || $this->childrenRows($type, $operation) !== []
             || $this->belongsToRows($type, $operation) !== []
-            || ($operation === 'edit' && $this->manyToManyRows($type, $operation) !== [])
+            || $this->manyToManyRows($type, $operation) !== []
+            || ($this->model($type) instanceof HasMedia && collect($this->rows($type))->contains(static fn ($row) => $row->type === 'adv_image' && (bool) $row->{$operation}))
             || ($operation === 'edit' && $this->model($type) instanceof HasMedia
                 && collect($this->rows($type))->contains(static fn (stdClass $row): bool => $row->type === 'adv_media_files' && (bool) $row->edit));
     }
@@ -163,5 +179,29 @@ class BreadRegistry
             ($a === $default ? -1 : ($order[$a] ?? 99)) <=> ($b === $default ? -1 : ($order[$b] ?? 99)));
 
         return $locales;
+    }
+
+    public function childrenRows(stdClass $type, string $operation): array
+    {
+        $relations = [];
+        foreach ($this->rows($type) as $row) {
+            if ($row->type !== 'relationship' || ! ($row->{$operation} ?? false)) { continue; }
+            $details = json_decode($row->details ?: '{}', true) ?: [];
+            if (! in_array($details['type'] ?? null, ['hasOne', 'hasMany'], true)) { continue; }
+            try { app(\App\Services\Admin\BreadMetadataService::class)->validateRelationship($type, $details); }
+            catch (\Illuminate\Validation\ValidationException) { continue; }
+            $model = $this->model((object) ['name' => $details['table'], 'model_name' => $details['model']]);
+            if ($model) { $relations[] = compact('row', 'details', 'model'); }
+        }
+        return $relations;
+    }
+
+    public function childLabels(array $relation, mixed $source): array
+    {
+        if ($source === null || $source === '') { return []; }
+        $details = $relation['details'];
+        $query = $relation['model']->newQuery()->where($details['column'], $source)->orderBy($relation['model']->getKeyName());
+        if ($details['type'] === 'hasOne') { $query->limit(1); }
+        return $query->pluck($details['label'])->all();
     }
 }

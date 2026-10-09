@@ -127,6 +127,7 @@ class BreadMenuTree
             $row->url === '/admin/user_filter' || $row->route === 'user_filter' => '/filament/clients',
             $row->url === '/admin/email-sender' || $row->route === 'mail.send' => '/filament/email-sender',
             $row->route === 'voyager.dashboard' => '/filament',
+            $row->route === 'voyager.bread.index' || $row->url === '/admin/bread' => '/filament/bread-tables',
             $row->route === 'voyager.orders.index' => '/filament/orders',
             $row->url === '/admin/sa-conversations' || $row->route === 'admin.sa.conversations.index' => '/filament/sa-conversations',
             $row->route === 'voyager.canvas-slider.index' => '/filament/canvas-sliders',

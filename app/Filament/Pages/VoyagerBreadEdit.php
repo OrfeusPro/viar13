@@ -24,7 +24,7 @@ class VoyagerBreadEdit extends VoyagerBread
 
     public function getTitle(): string | Htmlable
     {
-        return 'Редактирование: ' . ($this->bread()?->display_name_plural ?: $this->type) . ' #' . $this->recordId;
+        return 'Редактирование: ' . (($this->bread()?->display_name_singular ?? null) ?: ($this->bread()?->display_name_plural ?: $this->type)) . ' #' . $this->recordId;
     }
 
     public function save(): void

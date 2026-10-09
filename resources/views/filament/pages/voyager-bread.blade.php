@@ -81,6 +81,12 @@
             </div>
             @endif
             <form wire:submit="save" class="space-y-5">
+                @if ($bread->name === 'users' && $recordId !== null)
+                    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+                        {{ $this->requestClientReviewAction }}
+                        @if ($this->painterAssignmentsVisible()) {{ $this->painterAssignmentsAction }} @endif
+                    </div>
+                @endif
                 @if ($recordId !== null && $this->seoMetaTarget())
                     <div style="margin-bottom:24px;">
                         <x-filament::button type="button" color="gray" wire:click="generateSeoMeta" wire:loading.attr="disabled" wire:target="generateSeoMeta" wire:confirm="Сгенерировать и сохранить SEO-метаданные для всех языков?">Сгенерировать Meta Title / Description</x-filament::button>
@@ -130,7 +136,7 @@
                                             @if (count($images) > 3)<span>+{{ count($images) - 3 }}</span>@endif
                                         </div>
                                     @elseif ($column['type'] === 'checkbox')
-                                        {{ $value ? 'Да' : 'Нет' }}
+                                        {{ app(\App\Filament\Bread\BreadCheckbox::class)->caption($value, $column['details'] ?? []) }}
                                     @else
                                         {{ is_scalar($value) ? \Illuminate\Support\Str::limit(strip_tags((string) $value), 80) : '' }}
                                     @endif

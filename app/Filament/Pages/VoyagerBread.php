@@ -10,11 +10,24 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Bread\BreadFileUpload as FileUpload;
-use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use App\Filament\Bread\BreadJsonRows;
+use App\Filament\Bread\BreadPageLayout;
+use App\Filament\Bread\BreadCoordinates;
+use App\Filament\Bread\BreadCodeEditor;
+use App\Filament\Bread\BreadSelectRelation;
+use App\Filament\Bread\BreadFieldOptions;
+use App\Filament\Bread\BreadFormLayout;
+use App\Filament\Bread\BreadFieldsGroup;
+use Filament\Schemas\Components\Fieldset;
+use App\Filament\Bread\BreadTreeOptions;
 use Filament\Notifications\Notification;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages\Page;
@@ -40,6 +53,8 @@ class VoyagerBread extends Page
     use WithFileUploads;
     use \App\Filament\Bread\BreadAltPanel;
     use \App\Filament\Bread\BreadRolePermissions;
+    use \App\Filament\Bread\BreadUserActions;
+    use \App\Filament\Bread\BreadSingleImage;
 
     protected static ?string $slug = 'bread/{type}';
 
@@ -58,6 +73,8 @@ class VoyagerBread extends Page
     public ?int $viewId = null;
 
     public array $data = [];
+
+    public array $slugTracking = [];
 
     public array $localeDrafts = [];
 
@@ -139,7 +156,7 @@ class VoyagerBread extends Page
             }
             $navigation[] = NavigationItem::make(trim((string) $item->title) ?: $type->display_name_plural)
                 ->key('bread-' . $item->id)
-                ->icon(\App\Filament\Bread\BreadNavigationIcon::resolve($item->icon_class ?? null, $type->slug))
+                ->icon(\App\Filament\Bread\BreadNavigationIcon::resolve($item->icon_class ?: ($type->icon ?? null), $type->slug))
                 ->group($group)
                 ->sort((int) $item->order)
                 ->url($url);
@@ -172,6 +189,11 @@ class VoyagerBread extends Page
     public function getTitle(): string | Htmlable
     {
         return (string) ($this->bread()?->display_name_plural ?: $this->type);
+    }
+
+    public function getSubheading(): ?string
+    {
+        return filled($this->bread()?->description ?? null) ? (string) $this->bread()->description : null;
     }
 
     public function bread(): ?stdClass
@@ -208,18 +230,28 @@ class VoyagerBread extends Page
             }
             $component = match ($row->type) {
                 'text_area' => Textarea::make($row->field),
-                'code_editor' => Textarea::make($row->field)->rows(16),
-                'rich_text_box' => RichEditor::make($row->field),
+                'code_editor' => app(BreadCodeEditor::class)->component($row->field, $details, $model),
+                'rich_text_box' => app(\App\Filament\Bread\BreadRichEditor::class)->component($row->field, $details),
                 'number' => TextInput::make($row->field)->numeric(),
-                'checkbox' => Toggle::make($row->field),
-                'multiple_checkbox' => CheckboxList::make($row->field)->options($details['options'] ?? []),
-                'select_dropdown' => Select::make($row->field)->options($details['options'] ?? []),
+                'coordinates' => $this->coordinatesComponent($row, $details),
+                'checkbox' => app(\App\Filament\Bread\BreadCheckbox::class)->component($row->field, $details),
+                'multiple_checkbox' => $this->multiCheckboxComponent($row, $details),
+                'select_dropdown' => $this->dropdownComponent($row, $details),
+                'select_multiple' => isset($details['relationship']) ? $this->selectRelationComponent($row, $details) : Select::make($row->field)->options($details['options'] ?? [])->multiple()->searchable(),
+                'radio_btn' => Radio::make($row->field)->options($details['options'] ?? []),
+                'time' => TimePicker::make($row->field)->format('H:i:s')->rules(['nullable', 'date_format:H:i:s']),
+                'markdown_editor' => MarkdownEditor::make($row->field),
+                'hidden' => Hidden::make($row->field),
+                'adv_json' => $this->jsonRowsComponent($row, $details),
+                'adv_page_layout' => $this->layoutComponent($row, $details),
+                'adv_fields_group' => $this->fieldsGroupComponent($row, $details),
+                'adv_select_dropdown_tree' => $this->treeComponent($row, $details),
                 'date' => DatePicker::make($row->field),
                 'timestamp' => DateTimePicker::make($row->field),
                 'color' => ColorPicker::make($row->field),
-                'image' => FileUpload::make($row->field)->image()->compactImagePreviews()->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(10240),
+                'image' => $this->imageUploadComponent($row, $details),
                 'file' => FileUpload::make($row->field)->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(102400),
-                'multiple_images' => FileUpload::make($row->field)->image()->multiple()->compactImagePreviews(true)->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(10240),
+                'multiple_images' => $this->imageUploadComponent($row, $details),
                 'media_picker' => FileUpload::make($row->field)->image()->multiple()->compactImagePreviews(true)->reorderable()->disk('public')
                     ->directory($this->libraryRoot($details) . '/' . date('FY'))->maxSize(10240)
                     ->disabled(! (bool) ($details['allow_upload'] ?? true))->dehydrated()
@@ -230,15 +262,50 @@ class VoyagerBread extends Page
                 default => TextInput::make($row->field),
             };
             if ($component) {
+                if ($bread->name === 'users') {
+                    $label = match ($row->field) {
+                        'first_name' => 'Имя', 'last_name' => 'Фамилия', 'phone' => 'Телефон',
+                        'address' => 'Адрес', 'screenshot' => 'PrintScreen', 'bonuses' => 'К-во бонусов',
+                        'invited' => 'Кто пригласил', 'inv_sale_code' => 'Код для приглашения',
+                        'active_coupon' => 'Подарочная карта (купон)', 'is_facebook_sale' => 'Скидка за Facebook активна?',
+                        default => $label,
+                    };
+                    if ($row->field === 'client_status') {
+                        $component = Select::make('client_status')->options(fn (): array => DB::table('user_types')->orderBy('id')->pluck('name', 'id')->all())
+                            ->rules(['nullable', 'integer', 'exists:user_types,id']);
+                    } elseif ($row->field === 'is_facebook_sale') {
+                        $component = Select::make($row->field)->options([1 => 'Да', 0 => 'Нет'])->rules(['nullable', 'in:0,1']);
+                    } elseif ($row->field === 'email') {
+                        $component = TextInput::make('email')->email()->rules([
+                            \Illuminate\Validation\Rule::unique('users', 'email')->ignore($this->recordId),
+                        ]);
+                    }
+                    if ($row->field === 'role_id' && $this->recordId === (int) auth('filament')->id()) {
+                        $component->disabled()->dehydrated(false);
+                    }
+                }
                 $component->label($label . (in_array($row->field, $translated, true) ? ' (' . strtoupper($this->locale) . ')' : ''));
-                if (array_key_exists('default', $details)) {
+                if (array_key_exists('default', $details) && ! in_array($row->type, ['checkbox', 'multiple_checkbox', 'adv_json', 'adv_fields_group', 'adv_page_layout', 'coordinates'], true)) {
                     $component->default($details['default']);
                 }
                 if (($this->locale === config('voyager.multilingual.default', 'en') || ! in_array($row->field, $translated, true)) && $row->required && ($row->type !== 'password' || $this->recordId === null)) {
                     $component->required();
                 }
+                if ($component instanceof \Filament\Forms\Components\Field) {
+                    app(BreadFieldOptions::class)->apply($component, $row->type, $details, $operation, $this->locale !== config('voyager.multilingual.default', 'en') && in_array($row->field, $translated, true), $model, $this->recordId, $this->locale);
+                }
                 $components[$row->field] = $component;
             }
+        }
+        foreach ($this->registry()->editableRows($bread, $operation) as $row) {
+            $details = json_decode($row->details ?: '{}', true) ?: [];
+            if (! array_key_exists('slugify', $details)) { continue; }
+            try { $slug = app(\App\Filament\Bread\BreadSlug::class)->configuration($row->field, $row->type, $details, $this->registry()->editableRows($bread, $operation)); }
+            catch (ValidationException) {
+                if (isset($components[$row->field])) { $components[$row->field]->helperText('Настройка slugify несовместима. Автогенерация отключена; доступен ручной ввод.'); }
+                continue;
+            }
+            if (isset($components[$slug['origin']])) { $components[$slug['origin']]->live(debounce: 350); }
         }
         foreach ($relationships as $column => [$row, $details]) {
                 $table = $details['table'];
@@ -251,8 +318,10 @@ class VoyagerBread extends Page
                     ->getSearchResultsUsing(fn (string $search): array => DB::table($table)
                         ->where($name, 'like', '%' . $search . '%')->orderBy($key)->limit(50)->pluck($name, $key)->all())
                     ->getOptionLabelUsing(fn ($value): ?string => $value === null ? null : DB::table($table)->where($key, $value)->value($name));
+                if ($bread->name === 'users' && $column === 'role_id' && $this->recordId === (int) auth('filament')->id()) {
+                    $components[$row->field]->disabled()->dehydrated(false)->helperText('Собственную роль изменить нельзя.');
+                }
         }
-        if ($this->recordId !== null) {
                 foreach ($this->registry()->manyToManyRows($bread, $operation) as $relation) {
                     $row = $relation['row'];
                     $details = $relation['details'];
@@ -265,14 +334,47 @@ class VoyagerBread extends Page
                         ->getSearchResultsUsing(fn (string $search): array => DB::table($table)
                             ->where($name, 'like', '%' . $search . '%')->orderBy('id')->limit(50)->pluck($name, 'id')->all())
                         ->getOptionLabelsUsing(fn (array $values): array => DB::table($table)->whereIn('id', $values)->pluck($name, 'id')->all());
+                    $tagService = app(\App\Services\Admin\BreadTagCreationService::class);
+                    if ($tagService->target($details, $this->registry())) {
+                        $rowId = (int) $row->id;
+                        $components[$row->field]
+                            ->helperText('Кнопка «+» создаёт запись сразу. Её привязка сохраняется вместе с формой.')
+                            ->createOptionForm([TextInput::make('label')->label($row->display_name ?: $name)->required()->maxLength(255)])
+                            ->createOptionModalHeading('Создать связанную запись')
+                            ->createOptionUsing(function (array $data, ?Schema $schema = null) use ($tagService, $rowId): int {
+                                try { return $tagService->create($this->type, $rowId, $this->recordId, $data); }
+                                catch (ValidationException $exception) {
+                                    $path = $schema?->getStatePath();
+                                    throw ValidationException::withMessages([($path ? $path.'.' : '').'label' => $exception->errors()['label'] ?? ['Проверьте настройку связи.']]);
+                                }
+                            });
+                    } elseif ($tagService->enabled($details)) {
+                        $components[$row->field]->helperText('Создание здесь недоступно: нужны права добавления, текстовая подпись и общий BREAD связанного раздела.');
+                    }
                 }
-        }
 
+        $childRelations = $this->registry()->childrenRows($bread, $operation);
+        $parentRecord = $childRelations !== [] && $this->recordId !== null ? $model->newQuery()->findOrFail($this->recordId) : null;
+        foreach ($childRelations as $relation) {
+            $row = $relation['row'];
+            $components[$row->field] = View::make('filament.components.bread-child-relation')->viewData([
+                'label' => $row->display_name ?: $row->field,
+                'labels' => $this->registry()->childLabels($relation, $parentRecord?->getAttribute($relation['details']['key'])),
+                'creating' => $parentRecord === null,
+            ]);
+        }
         if ($this->recordId !== null && $model instanceof HasMedia) {
             foreach ($this->registry()->rows($bread) as $row) {
                 if ($row->type === 'adv_media_files' && $row->edit) {
                     $components[$row->field] = View::make('filament.components.bread-media-section')
                         ->viewData(['field' => $row->field]);
+                }
+            }
+        }
+        if ($model instanceof HasMedia) {
+            foreach ($this->registry()->rows($bread) as $row) {
+                if ($row->type === 'adv_image' && $row->{$operation}) {
+                    $components[$row->field] = View::make('filament.components.bread-single-image')->viewData(['field' => $row->field]);
                 }
             }
         }
@@ -288,12 +390,13 @@ class VoyagerBread extends Page
                 $tabTitle = $details['tab_title'];
             }
             if (isset($components[$row->field])) {
+                $components[$row->field]->columnSpan(app(BreadFormLayout::class)->span($details));
                 $groups[$tabTitle][] = $components[$row->field];
             }
         }
         $tabs = [];
         foreach ($groups as $title => $fields) {
-            $tabs[] = Tab::make($title)->components($fields);
+            $tabs[] = Tab::make($title)->columns(BreadFormLayout::COLUMNS)->components($fields);
         }
 
         $fields = count($tabs) > 1
@@ -303,13 +406,18 @@ class VoyagerBread extends Page
             $fields[] = View::make('filament.components.role-permissions')->columnSpanFull();
         }
         if ($bread->name === 'users') {
-            $fields[] = Select::make('__user_locale')->label('Язык пользователя')
+            $fields[] = Select::make('__user_locale')->columnSpanFull()->label('Язык пользователя')
                 ->options(array_combine($this->registry()->locales(), $this->registry()->locales()))
                 ->default(config('app.locale', 'en'))->required()
                 ->rules([\Illuminate\Validation\Rule::in($this->registry()->locales())]);
+            if ($this->recordId !== null) {
+                $fields[] = View::make('filament.components.client-account-summary')->viewData([
+                    'client' => $model->newQuery()->findOrFail($this->recordId),
+                ])->columnSpanFull();
+            }
         }
 
-        return $schema->statePath('data')->components($fields);
+        return $schema->statePath('data')->columns(BreadFormLayout::COLUMNS)->components($fields);
     }
 
     public function editUrl(int $id): string
@@ -410,6 +518,9 @@ class VoyagerBread extends Page
 
     public function openCreate(): void
     {
+        $this->slugTracking = [];
+        $this->singleImageUploads = [];
+        $this->singleImageProperties = [];
         $this->rolePermissionIds = [];
         $this->localeDrafts = [];
         $this->altPanelOpen = false;
@@ -426,10 +537,12 @@ class VoyagerBread extends Page
         $this->libraryField = null;
         $this->editing = true;
         $this->form->fill();
+        $this->initializeSlugTracking();
     }
 
     public function openEdit(int $id): void
     {
+        $this->slugTracking = [];
         $this->localeDrafts = [];
         $this->altPanelOpen = false;
         $bread = $this->requireBread('edit');
@@ -450,6 +563,7 @@ class VoyagerBread extends Page
         $this->editing = true;
         $this->fillRecord($record);
         $this->fillMediaProperties($record);
+        $this->fillSingleImages($record);
     }
 
     public function changeLocale(string $locale): void
@@ -484,7 +598,69 @@ class VoyagerBread extends Page
         }
     }
 
+    public function updatedData(mixed $value, string $field): void
+    {
+        if (! $this->editing || ! is_string($value)) { return; }
+        $bread = $this->bread();
+        $rows = $this->registry()->editableRows($bread, $this->recordId ? 'edit' : 'add');
+        $model = $this->registry()->model($bread);
+        $translated = method_exists($model, 'getTranslatableAttributes') ? $model->getTranslatableAttributes() : [];
+        foreach ($rows as $row) {
+            try { $config = app(\App\Filament\Bread\BreadSlug::class)->configuration($row->field, $row->type, json_decode($row->details ?: '{}', true) ?: [], $rows); }
+            catch (ValidationException) { continue; }
+            if ($config === null || $config['origin'] !== $field) { continue; }
+            // A translated source must not overwrite a shared URL in another locale.
+            if ($this->locale !== config('voyager.multilingual.default', 'en') && in_array($field, $translated, true) && ! in_array($row->field, $translated, true)) { continue; }
+            $key = $this->locale.':'.$row->field;
+            if (($this->data[$row->field] ?? '') === '' || ($this->data[$row->field] ?? null) === null || $config['force'] || ($this->slugTracking[$key] ?? false)) {
+                $this->data[$row->field] = app(\App\Filament\Bread\BreadSlug::class)->generate($value);
+                $this->slugTracking[$key] = true;
+            }
+        }
+    }
+
+    private function initializeSlugTracking(): void
+    {
+        foreach ($this->registry()->editableRows($this->bread(), $this->recordId ? 'edit' : 'add') as $row) {
+            $details = json_decode($row->details ?: '{}', true) ?: [];
+            if (! isset($details['slugify'])) { continue; }
+            $key = $this->locale.':'.$row->field;
+            $this->slugTracking[$key] ??= ($this->data[$row->field] ?? '') === '' || ($this->data[$row->field] ?? null) === null;
+        }
+    }
+
+    // Server-only journal: submitted strings can never authorize file deletion.
+    private array $createdImageFiles = [];
+
     public function save(): void
+    {
+        $this->createdImageFiles = [];
+        $recordId = $this->recordId;
+        $draft = $this->data;
+        try {
+            $this->saveBreadRecord();
+        } catch (\Throwable $error) {
+            $this->recordId = $recordId;
+            foreach ($this->createdImageFiles as $field => $batches) {
+                foreach ($batches as [$disk, $paths]) {
+                    try {
+                        if (! Storage::disk($disk)->delete($paths)) {
+                            report(new \RuntimeException('Failed to clean up BREAD image upload.'));
+                        }
+                    } catch (\Throwable $cleanupError) { report($cleanupError); }
+                }
+                // Filament deletes temporary uploads after storing them. Keep
+                // existing selections; the new upload must be selected again.
+                $this->data[$field] = array_filter((array) ($draft[$field] ?? []), 'is_string');
+            }
+            throw $error;
+        } finally {
+            $this->createdImageFiles = [];
+        }
+        Notification::make()->title('Сохранено')->success()->send();
+    }
+
+    private function saveBreadRecord(): void
     {
         $bread = $this->requireBread($this->recordId ? 'edit' : 'add');
         abort_unless($this->editing && $this->registry()->model($bread), 409);
@@ -500,6 +676,17 @@ class VoyagerBread extends Page
         $userLocale = $bread->name === 'users' ? ($values['__user_locale'] ?? null) : null;
         $rolePermissions = $this->validatedRolePermissions();
         $original = $this->recordId ? $model->newQuery()->findOrFail($this->recordId) : null;
+        $singleImages = $this->validatedSingleImages($bread, $model);
+        foreach ($allowed->where('type', 'select_dropdown') as $row) {
+            if (! array_key_exists($row->field, $values) || blank($values[$row->field])) { continue; }
+            $options = $this->dropdownOptions($row, json_decode($row->details ?: '{}', true) ?: []);
+            validator(['data.'.$row->field => $values[$row->field]], ['data.'.$row->field => [\Illuminate\Validation\Rule::in(array_keys($options))]])->validate();
+        }
+        foreach ($allowed->where('type', 'adv_select_dropdown_tree') as $row) {
+            if (! array_key_exists($row->field, $values) || blank($values[$row->field])) { continue; }
+            $options = $this->treeOptions($row, json_decode($row->details ?: '{}', true) ?: []);
+            validator([$row->field => $values[$row->field]], [$row->field => [\Illuminate\Validation\Rule::in(array_keys($options))]])->validate();
+        }
         foreach ($allowed->where('type', 'media_picker') as $row) {
             $details = json_decode($row->details ?: '{}', true) ?: [];
             $existing = json_decode((string) $original?->getAttribute($row->field), true) ?: [];
@@ -513,12 +700,10 @@ class VoyagerBread extends Page
             }
         }
         $pivots = [];
-        if ($this->recordId !== null) {
-            foreach ($this->registry()->manyToManyRows($bread, 'edit') as $relation) {
+            foreach ($this->registry()->manyToManyRows($bread, $this->recordId === null ? 'add' : 'edit') as $relation) {
                 $key = '__pivot_' . $relation['row']->id;
                 $pivots[] = [$relation, array_values(array_unique(array_map('intval', (array) ($values[$key] ?? []))))];
             }
-        }
         $relationshipColumns = collect($this->registry()->belongsToRows($bread, $this->recordId ? 'edit' : 'add'))
             ->map(fn (stdClass $row): ?string => (json_decode($row->details ?: '{}', true) ?: [])['column'] ?? null)
             ->filter()->all();
@@ -532,8 +717,13 @@ class VoyagerBread extends Page
                 }
         }
 
-        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns, $rolePermissions, $userLocale): void {
+        DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns, $rolePermissions, $userLocale, $singleImages): void {
             $record = $this->recordId ? $model->newQuery()->lockForUpdate()->findOrFail($this->recordId) : $model->newInstance();
+            if ($bread->name === 'users' && $this->recordId === (int) auth('filament')->id()) {
+                // Match VoyagerUserController: self-edit must preserve all role assignments.
+                unset($values['role_id']);
+                $pivots = array_filter($pivots, static fn (array $pivot): bool => $pivot[0]['details']['table'] !== 'roles');
+            }
             if ($bread->name === 'users') {
                 $settings = $record->settings ?? [];
                 $settings['locale'] = $userLocale;
@@ -545,12 +735,20 @@ class VoyagerBread extends Page
                     if ($row?->type === 'password') {
                         $value = Hash::make($value);
                     }
-                    if (in_array($row?->type, ['multiple_images', 'media_picker'], true)) {
+                    if ($this->isSelectRelation($row)) {
+                        $value = app(BreadSelectRelation::class)->encode($record, $field, json_decode($row->details ?: '{}', true) ?: [], $value, 'data.'.$field, (bool) $row->required);
+                    } elseif (in_array($row?->type, ['multiple_images', 'media_picker', 'select_multiple'], true)) {
                         $value = json_encode(array_values($value ?? []), JSON_UNESCAPED_SLASHES);
                     } elseif ($row?->type === 'multiple_checkbox') {
-                        $value = json_encode(array_combine((array) $value, (array) $value), JSON_UNESCAPED_SLASHES);
+                        $value = app(\App\Filament\Bread\BreadMultiCheckbox::class)->encode($value, json_decode($row->details ?: '{}', true) ?: [], 'data.'.$field, $record->getRawOriginal($field));
+                    } elseif ($row?->type === 'coordinates') {
+                        $value = $this->coordinatesValue($record, $row, $value);
+                    } elseif (in_array($row?->type, ['adv_json', 'adv_fields_group', 'adv_page_layout'], true)) {
+                        $jsonDetails = json_decode($row->details ?: '{}', true) ?: [];
+                        $value = app(match ($row->type) { 'adv_json' => BreadJsonRows::class, 'adv_page_layout' => BreadPageLayout::class, default => BreadFieldsGroup::class })->encode($jsonDetails, $record->getAttribute($field) ?? ($jsonDetails['default'] ?? null), $value, 'data.'.$field);
                     }
-                    $record->setAttribute($field, $value);
+                    if (in_array($row?->type, ['code_editor', 'multiple_checkbox'], true) || $this->isSelectRelation($row)) { app(BreadCodeEditor::class)->assign($record, $field, $value, 'data.'.$field); }
+                    else { $record->setAttribute($field, $value); }
                 }
                 $record->save();
                 $this->recordId = (int) $record->getKey();
@@ -563,15 +761,30 @@ class VoyagerBread extends Page
                         }
                         if ($row?->type === 'password') {
                             $value = Hash::make($value);
-                        } elseif (in_array($row?->type, ['multiple_images', 'media_picker'], true)) {
+                        } elseif ($this->isSelectRelation($row)) {
+                            $value = app(BreadSelectRelation::class)->encode($record, $field, json_decode($row->details ?: '{}', true) ?: [], $value, 'data.'.$field, (bool) $row->required);
+                        } elseif (in_array($row?->type, ['multiple_images', 'media_picker', 'select_multiple'], true)) {
                             $value = json_encode(array_values($value ?? []), JSON_UNESCAPED_SLASHES);
                         } elseif ($row?->type === 'multiple_checkbox') {
-                            $value = json_encode(array_combine((array) $value, (array) $value), JSON_UNESCAPED_SLASHES);
+                            $value = app(\App\Filament\Bread\BreadMultiCheckbox::class)->encode($value, json_decode($row->details ?: '{}', true) ?: [], 'data.'.$field, $record->getRawOriginal($field));
+                        } elseif ($row?->type === 'coordinates') {
+                            $value = $this->coordinatesValue($record, $row, $value);
+                        } elseif (in_array($row?->type, ['adv_json', 'adv_fields_group', 'adv_page_layout'], true)) {
+                            $jsonDetails = json_decode($row->details ?: '{}', true) ?: [];
+                            $value = app(match ($row->type) { 'adv_json' => BreadJsonRows::class, 'adv_page_layout' => BreadPageLayout::class, default => BreadFieldsGroup::class })->encode($jsonDetails, $record->getAttribute($field) ?? ($jsonDetails['default'] ?? null), $value, 'data.'.$field);
                         }
-                        $record->setAttribute($field, $value);
+                        if (in_array($row?->type, ['code_editor', 'multiple_checkbox'], true) || $this->isSelectRelation($row)) { app(BreadCodeEditor::class)->assign($record, $field, $value, 'data.'.$field); }
+                        else { $record->setAttribute($field, $value); }
                         continue;
                     }
                     $key = ['table_name' => $bread->name, 'column_name' => $field, 'foreign_key' => $record->getKey(), 'locale' => $this->locale];
+                    $row = $allowed->firstWhere('field', $field);
+                    if ($row?->type === 'select_multiple') { $value = json_encode(array_values($value ?? []), JSON_UNESCAPED_UNICODE); }
+                    if ($row?->type === 'multiple_checkbox') { $value = app(\App\Filament\Bread\BreadMultiCheckbox::class)->encode($value, json_decode($row->details ?: '{}', true) ?: [], 'data.'.$field, DB::table('translations')->where($key)->value('value')); }
+                    if (in_array($row?->type, ['adv_json', 'adv_fields_group', 'adv_page_layout'], true)) {
+                        $originalJson = DB::table('translations')->where($key)->lockForUpdate()->value('value');
+                        $value = app(match ($row->type) { 'adv_json' => BreadJsonRows::class, 'adv_page_layout' => BreadPageLayout::class, default => BreadFieldsGroup::class })->encode(json_decode($row->details ?: '{}', true) ?: [], $originalJson, $value, 'data.'.$field);
+                    }
                     if (blank($value)) {
                         DB::table('translations')->where($key)->delete();
                     } else {
@@ -607,13 +820,15 @@ class VoyagerBread extends Page
                     DB::table('permission_role')->insert(['role_id' => $record->getKey(), 'permission_id' => $permissionId]);
                 }
             }
+            if ($singleImages !== []) { $this->persistSingleImages($record, $singleImages); }
         });
-        Notification::make()->title('Сохранено')->success()->send();
         $this->editing = false;
     }
 
     public function cancel(): void
     {
+        $this->singleImageUploads = [];
+        $this->singleImageProperties = [];
         $this->editing = false;
         $this->recordId = null;
         $this->viewId = null;
@@ -664,20 +879,18 @@ class VoyagerBread extends Page
             $this->mediaUpload = null;
             throw $exception;
         }
-        $added = [];
-        try {
+        $record->getConnection()->transaction(function () use ($record, $field, $files): void {
+            $record->newQuery()->whereKey($record->getKey())->lockForUpdate()->firstOrFail();
+            $journal = new \App\Filament\Bread\BreadMediaJournal($record->getConnection());
             foreach ($files as $file) {
-                $added[] = $record->addMedia($file->getRealPath())->usingFileName($file->getClientOriginalName())
-                    ->toMediaCollection($field, 'public');
+                $journal->add($record, $file, $field);
             }
-        } catch (\Throwable $exception) {
-            foreach ($added as $media) {
-                $media->delete();
-            }
-            throw $exception;
-        }
-        $this->mediaUpload = null;
-        unset($this->mediaUploads[$field]);
+            $journal->enforceCollectionLimit($record, $field);
+            $record->getConnection()->afterCommit(function () use ($field): void {
+                $this->mediaUpload = null;
+                unset($this->mediaUploads[$field]);
+            });
+        });
         Notification::make()->title('Файлы добавлены')->success()->send();
     }
 
@@ -709,14 +922,21 @@ class VoyagerBread extends Page
         abort_unless($old, 404);
         $this->validate(['mediaReplacements.' . $mediaId => 'required|file|mimes:jpg,jpeg,png,webp,gif|max:10240']);
         $file = $this->mediaReplacements[$mediaId];
-        $new = $record->addMedia($file->getRealPath())->usingFileName($file->getClientOriginalName())
-            ->withCustomProperties($old->custom_properties)->toMediaCollection($field, 'public');
-        $new->order_column = $old->order_column;
-        $new->save();
-        $old->delete();
-        $this->mediaProperties[$new->id] = $this->mediaProperties[$old->id] ?? $old->custom_properties;
-        $this->selectedMedia[$field] = array_map(fn ($id) => (int) $id === $mediaId ? (string) $new->id : (string) $id, $this->selectedMedia[$field] ?? []);
-        unset($this->mediaProperties[$old->id], $this->mediaReplacements[$old->id]);
+        $record->getConnection()->transaction(function () use ($record, $field, $mediaId, $file): void {
+            $record->newQuery()->whereKey($record->getKey())->lockForUpdate()->firstOrFail();
+            $old = $record->media()->where('collection_name', $field)->whereKey($mediaId)->lockForUpdate()->firstOrFail();
+            $journal = new \App\Filament\Bread\BreadMediaJournal($record->getConnection());
+            $new = $journal->add($record, $file, $field, $old->custom_properties);
+            $new->order_column = $old->order_column;
+            $new->save();
+            $journal->retire($old);
+            $journal->enforceCollectionLimit($record, $field);
+            $record->getConnection()->afterCommit(function () use ($field, $mediaId, $old, $new): void {
+                $this->mediaProperties[$new->id] = $this->mediaProperties[$old->id] ?? $old->custom_properties;
+                $this->selectedMedia[$field] = array_map(fn ($id) => (int) $id === $mediaId ? (string) $new->id : (string) $id, $this->selectedMedia[$field] ?? []);
+                unset($this->mediaProperties[$old->id], $this->mediaReplacements[$old->id]);
+            });
+        });
         Notification::make()->title('Файл заменён')->success()->send();
     }
 
@@ -755,9 +975,10 @@ class VoyagerBread extends Page
         $record = $this->mediaRecord($field);
         $media = $record->getMedia($field)->firstWhere('id', $mediaId);
         abort_unless($media, 404);
-        $media->delete();
-        unset($this->mediaProperties[$mediaId]);
-        $this->selectedMedia[$field] = array_values(array_diff($this->selectedMedia[$field] ?? [], [(string) $mediaId]));
+        $this->retireMediaRecords($record, $field, [$mediaId], function () use ($field, $mediaId): void {
+            unset($this->mediaProperties[$mediaId], $this->mediaReplacements[$mediaId]);
+            $this->selectedMedia[$field] = array_values(array_diff((array) ($this->selectedMedia[$field] ?? []), [(string) $mediaId]));
+        });
         Notification::make()->title('Файл удалён')->success()->send();
     }
 
@@ -778,14 +999,24 @@ class VoyagerBread extends Page
         $record = $this->mediaRecord($field);
         $ids = array_values(array_unique(array_map('intval', (array) ($this->selectedMedia[$field] ?? []))));
         abort_unless($ids !== [], 422);
-        $files = $record->getMedia($field)->whereIn('id', $ids);
-        abort_unless($files->count() === count($ids), 404);
-        foreach ($files as $media) {
-            $media->delete();
-            unset($this->mediaProperties[$media->id], $this->mediaReplacements[$media->id]);
-        }
-        $this->selectedMedia[$field] = [];
+        $this->retireMediaRecords($record, $field, $ids, function () use ($field, $ids): void {
+            foreach ($ids as $id) { unset($this->mediaProperties[$id], $this->mediaReplacements[$id]); }
+            $this->selectedMedia[$field] = [];
+        });
         Notification::make()->title('Выбранные файлы удалены')->success()->send();
+    }
+
+    private function retireMediaRecords($record, string $field, array $ids, \Closure $onCommit): void
+    {
+        $record->getConnection()->transaction(function () use ($record, $field, $ids, $onCommit): void {
+            $record->newQuery()->whereKey($record->getKey())->lockForUpdate()->firstOrFail();
+            $files = $record->media()->where('collection_name', $field)->whereKey($ids)->orderBy('id')->lockForUpdate()->get();
+            // Check the whole selection before retiring even its first item.
+            abort_unless($files->count() === count($ids), 404);
+            $journal = new \App\Filament\Bread\BreadMediaJournal($record->getConnection());
+            foreach ($files as $media) { $journal->retire($media); }
+            $record->getConnection()->afterCommit($onCommit);
+        });
     }
 
     private function libraryDetails(string $field): array
@@ -1177,6 +1408,7 @@ class VoyagerBread extends Page
         $translated = method_exists($record, 'getTranslatableAttributes') ? $record->getTranslatableAttributes() : [];
         $belongs = collect($this->registry()->belongsToRows($bread, 'read'))->keyBy('field');
         $many = collect($this->registry()->manyToManyRows($bread, 'read'))->keyBy(fn (array $relation): string => $relation['row']->field);
+        $children = collect($this->registry()->childrenRows($bread, 'read'))->keyBy(fn (array $relation): string => $relation['row']->field);
         $fields = [];
         foreach ($this->registry()->rows($bread) as $row) {
             if (! $row->read || $row->type === 'password') {
@@ -1190,6 +1422,12 @@ class VoyagerBread extends Page
 
                 continue;
             }
+            if ($row->type === 'relationship' && $children->has($row->field)) {
+                $relation = $children->get($row->field);
+                $fields[] = ['label' => $row->display_name ?: $row->field,
+                    'value' => implode(', ', $this->registry()->childLabels($relation, $record->getAttribute($relation['details']['key'])))];
+                continue;
+            }
             if ($row->type === 'relationship' && $many->has($row->field)) {
                 $relation = $many->get($row->field);
                 $details = $relation['details'];
@@ -1201,9 +1439,9 @@ class VoyagerBread extends Page
 
                 continue;
             }
-            if ($row->type === 'adv_media_files' && $record instanceof HasMedia) {
+            if (in_array($row->type, ['adv_media_files', 'adv_image'], true) && $record instanceof HasMedia) {
                 $fields[] = ['label' => $row->display_name ?: $row->field,
-                    'type' => 'adv_media_files', 'value' => $record->getMedia($row->field)->map->getUrl()->all()];
+                    'type' => 'adv_media_files', 'value' => ($row->type === 'adv_image' ? $record->getMedia($row->field)->take(1) : $record->getMedia($row->field))->map->getUrl()->all()];
 
                 continue;
             }
@@ -1217,6 +1455,25 @@ class VoyagerBread extends Page
                     'foreign_key' => $record->getKey(), 'locale' => $this->locale,
                 ])->value('value');
             $fields[] = ['label' => $row->display_name ?: $row->field, 'type' => $row->type, 'value' => $value];
+            if ($row->type === 'multiple_checkbox') { $fields[array_key_last($fields)]['value'] = app(\App\Filament\Bread\BreadMultiCheckbox::class)->summary($value, json_decode($row->details ?: '{}', true) ?: []); }
+            if ($row->type === 'checkbox') {
+                $fields[array_key_last($fields)]['value'] = app(\App\Filament\Bread\BreadCheckbox::class)->caption($value, json_decode($row->details ?: '{}', true) ?: []);
+            }
+            if (in_array($row->type, ['select_dropdown', 'select_multiple', 'radio_btn'], true)) {
+                $fields[array_key_last($fields)]['value'] = $this->optionFieldLabel($row, $value, $record);
+            }
+            if ($row->type === 'coordinates') {
+                $fields[array_key_last($fields)]['value'] = app(BreadCoordinates::class)->supported($record, $row->field)
+                    ? app(BreadCoordinates::class)->summary(app(BreadCoordinates::class)->read($record, $row->field)) : 'Неподдерживаемая пространственная колонка';
+            }
+            if ($row->type === 'adv_json') { $fields[array_key_last($fields)]['value'] = app(BreadJsonRows::class)->summary($value); }
+            if ($row->type === 'adv_page_layout') { $fields[array_key_last($fields)]['value'] = app(BreadPageLayout::class)->summary($value); }
+            if ($row->type === 'adv_fields_group') { $fields[array_key_last($fields)]['value'] = app(BreadFieldsGroup::class)->summary($value); }
+            if ($row->type === 'adv_select_dropdown_tree') {
+                try { $options = app(BreadTreeOptions::class)->options($record, $row->field, json_decode($row->details ?: '{}', true) ?: []); }
+                catch (ValidationException) { $options = []; }
+                $fields[array_key_last($fields)]['value'] = $options[$value] ?? $value;
+            }
         }
 
         return $fields;
@@ -1241,14 +1498,17 @@ class VoyagerBread extends Page
         $physical = $this->registry()->columns($bread);
         $relations = collect($this->registry()->belongsToRows($bread, 'browse'))->keyBy('field');
         $many = collect($this->registry()->manyToManyRows($bread, 'browse'))->keyBy(fn (array $relation): string => $relation['row']->field);
+        $children = collect($this->registry()->childrenRows($bread, 'browse'))->keyBy(fn (array $relation): string => $relation['row']->field);
         $columns = [];
         $select = ['id'];
         foreach ($this->registry()->rows($bread) as $row) {
             if (! $row->browse || $row->type === 'password') {
                 continue;
             }
-            if (in_array($row->field, $physical, true)) {
-                $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => $row->type];
+            if (in_array($row->type, ['adv_image'], true) && $model instanceof HasMedia) {
+                $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => 'adv_media_files'];
+            } elseif (in_array($row->field, $physical, true)) {
+                $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => $row->type, 'details' => json_decode($row->details ?: '{}', true) ?: []];
                 $select[] = $row->field;
             } elseif ($row->type === 'relationship' && $relations->has($row->field)) {
                 $details = json_decode($row->details ?: '{}', true) ?: [];
@@ -1256,7 +1516,10 @@ class VoyagerBread extends Page
                 $select[] = $details['column'];
             } elseif ($row->type === 'relationship' && $many->has($row->field)) {
                 $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => 'relationship'];
-            } elseif ($row->type === 'adv_media_files' && $model instanceof HasMedia) {
+            } elseif ($row->type === 'relationship' && $children->has($row->field)) {
+                $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => 'relationship'];
+                $select[] = $children[$row->field]['details']['key'];
+            } elseif (in_array($row->type, ['adv_media_files', 'adv_image'], true) && $model instanceof HasMedia) {
                 $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => 'adv_media_files'];
             }
         }
@@ -1264,25 +1527,60 @@ class VoyagerBread extends Page
             array_unshift($columns, ['field' => 'id', 'label' => 'ID', 'type' => 'text']);
         }
 
-        $query = DB::table($bread->name)->select(array_values(array_unique($select)));
+        $settings = json_decode($bread->details ?? '{}', true);
+        $settings = is_array($settings) ? $settings : [];
+        $scope = $settings['scope'] ?? null;
+        $scopes = app(\App\Services\Admin\BreadTypeSettingsService::class)->scopes($bread);
+        if (is_string($scope) && isset($scopes[$scope])) {
+            $builder = $model->newModelQuery();
+            $builder->{$scope}();
+            $query = $builder->toBase();
+        } else {
+            $query = DB::table($bread->name);
+        }
+        $query->select(array_map(fn ($field) => $bread->name.'.'.$field, array_values(array_unique($select))));
         if ($this->filterType !== null && in_array('id_type', $physical, true)) {
-            $query->where('id_type', $this->filterType);
+            $query->where($bread->name.'.id_type', $this->filterType);
         }
         $searchable = collect($this->registry()->rows($bread))
             ->filter(fn (stdClass $row): bool => $row->browse && in_array($row->field, $physical, true) && in_array($row->type, ['text', 'text_area'], true))
             ->take(4)->pluck('field')->all();
+        $defaultSearch = $settings['default_search_key'] ?? null;
+        if (is_string($defaultSearch) && in_array($defaultSearch, $physical, true)
+            && ! in_array($defaultSearch, ['password', 'remember_token'], true)) {
+            $searchable = [$defaultSearch];
+        }
         if ($this->search !== '' && $searchable !== []) {
             $search = $this->search;
-            $query->where(function ($builder) use ($searchable, $search): void {
+            $query->where(function ($builder) use ($searchable, $search, $bread): void {
                 foreach ($searchable as $field) {
-                    $builder->orWhere($field, 'like', '%' . $search . '%');
+                    $builder->orWhere($bread->name.'.'.$field, 'like', '%' . $search . '%');
                 }
             });
         }
 
-        $records = $query->orderByDesc('id')->paginate(25);
+        $order = $settings['order_column'] ?? null;
+        $direction = $settings['order_direction'] ?? 'desc';
+        if (! is_string($order) || ! in_array($order, $physical, true) || in_array($order, ['password', 'remember_token'], true)) {
+            $order = 'id';
+            $direction = 'desc';
+        }
+        $query->reorder($bread->name.'.'.$order, $direction === 'asc' ? 'asc' : 'desc');
+        if ($order !== 'id') { $query->orderByDesc($bread->name.'.id'); }
+        $records = $query->paginate(25);
         $ids = $records->getCollection()->pluck('id')->all();
         if ($ids !== []) {
+            foreach ($children as $field => $relation) {
+                $details = $relation['details'];
+                $keys = $records->getCollection()->pluck($details['key'])->filter(fn ($value) => $value !== null && $value !== '')->unique()->all();
+                $labels = $relation['model']->newQuery()->whereIn($details['column'], $keys)->orderBy($relation['model']->getKeyName())
+                    ->get([$details['column'], $details['label']])->groupBy($details['column']);
+                foreach ($records as $record) {
+                    $values = $labels->get($record->{$details['key']})?->pluck($details['label']) ?? collect();
+                    if ($details['type'] === 'hasOne') { $values = $values->take(1); }
+                    $record->{$field} = $values->implode(', ');
+                }
+            }
             $translated = method_exists($model, 'getTranslatableAttributes') ? $model->getTranslatableAttributes() : [];
             $visibleTranslated = collect($columns)->pluck('field')->intersect($translated)->all();
             if ($this->locale !== config('voyager.multilingual.default', 'en') && $visibleTranslated !== []) {
@@ -1329,14 +1627,294 @@ class VoyagerBread extends Page
                     $mediaRecords = $model->newQuery()->with('media')->whereKey($ids)->get()->keyBy($model->getKeyName());
                     foreach ($records as $record) {
                         foreach ($mediaColumns as $field) {
-                            $record->{$field} = $mediaRecords->get($record->id)?->getMedia($field)->map->getUrl()->all() ?: [];
+                            $collection = $mediaRecords->get($record->id)?->getMedia($field);
+                            $single = collect($this->registry()->rows($bread))->contains(fn ($row) => $row->field === $field && $row->type === 'adv_image');
+                            $record->{$field} = ($single ? $collection?->take(1) : $collection)?->map->getUrl()->all() ?: [];
                         }
                     }
                 }
             }
         }
 
+        $selectSources = collect();
+        if (collect($this->registry()->rows($bread))->contains(fn ($row) => $row->browse && ($this->isSelectRelation($row) || $row->type === 'select_dropdown'))) {
+            $selectSources = $model->newQuery()->whereKey($records->pluck('id'))->get()->keyBy('id');
+        }
+        foreach ($this->registry()->rows($bread) as $row) {
+            if (! $row->browse || ! in_array($row->type, ['multiple_checkbox', 'select_dropdown', 'select_multiple', 'radio_btn', 'adv_json', 'adv_fields_group', 'adv_page_layout'], true) || ! in_array($row->field, $select, true)) { continue; }
+            foreach ($records as $record) { $record->{$row->field} = in_array($row->type, ['adv_json', 'adv_fields_group', 'adv_page_layout'], true) ? app(match ($row->type) { 'adv_json' => BreadJsonRows::class, 'adv_page_layout' => BreadPageLayout::class, default => BreadFieldsGroup::class })->summary($record->{$row->field}) : $this->optionFieldLabel($row, $record->{$row->field}, $selectSources->get($record->id)); }
+        }
+        foreach ($this->registry()->rows($bread) as $row) {
+            if (! $row->browse || $row->type !== 'coordinates' || ! in_array($row->field, $select, true)) { continue; }
+            $codec = app(BreadCoordinates::class);
+            $points = collect();
+            if ($codec->supported($model, $row->field)) {
+                $column = $model->getConnection()->getQueryGrammar()->wrap($row->field);
+                $points = $model->newQuery()->whereKey($records->pluck('id'))->select('id')
+                    ->selectRaw('ST_AsText('.$column.') AS coordinate_wkt')->get()->keyBy('id');
+            }
+            foreach ($records as $record) {
+                $record->{$row->field} = $codec->supported($model, $row->field)
+                    ? $codec->summary($points->get($record->id)?->coordinate_wkt) : 'Неподдерживаемая пространственная колонка';
+            }
+        }
+        $treeRows = collect($this->registry()->rows($bread))->filter(fn ($row) => $row->browse && $row->type === 'adv_select_dropdown_tree' && in_array($row->field, $select, true));
+        if ($treeRows->isNotEmpty()) {
+            $sources = $model->newQuery()->whereKey($records->pluck('id'))->get()->keyBy('id');
+            foreach ($treeRows as $row) {
+                foreach ($records as $record) {
+                    try { $options = app(BreadTreeOptions::class)->options($sources[$record->id], $row->field, json_decode($row->details ?: '{}', true) ?: []); }
+                    catch (ValidationException) { $options = []; }
+                    $record->{$row->field} = $options[$record->{$row->field}] ?? $record->{$row->field};
+                }
+            }
+        }
         return ['columns' => $columns, 'rows' => $records];
+    }
+
+    private function treeComponent(stdClass $row, array $details): Select|Textarea
+    {
+        try { $this->treeOptions($row, $details); }
+        catch (ValidationException) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)->helperText('Источник дерева несовместим. Значение сохраняется без изменений.');
+        }
+        return Select::make($row->field)->searchable()->options(fn () => $this->treeOptions($row, $details));
+    }
+
+    private function dropdownComponent(stdClass $row, array $details): Select|Textarea
+    {
+        try { $this->dropdownOptions($row, $details); }
+        catch (ValidationException) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)->helperText('Источник списка несовместим. Значение сохраняется без изменений.');
+        }
+        return Select::make($row->field)->searchable()->options(fn () => $this->dropdownOptions($row, $details));
+    }
+
+    private function multiCheckboxComponent(stdClass $row, array $details): CheckboxList|Textarea
+    {
+        $codec = app(\App\Filament\Bread\BreadMultiCheckbox::class);
+        $model = $this->registry()->model($this->bread());
+        $value = null;
+        if ($this->recordId !== null) {
+            $record = $model->newQuery()->findOrFail($this->recordId);
+            $translated = method_exists($record, 'getTranslatableAttributes') ? $record->getTranslatableAttributes() : [];
+            $value = $this->locale !== config('voyager.multilingual.default', 'en') && in_array($row->field, $translated, true)
+                ? DB::table('translations')->where(['table_name' => $record->getTable(), 'column_name' => $row->field, 'foreign_key' => $record->getKey(), 'locale' => $this->locale])->value('value')
+                : $record->getAttribute($row->field);
+        }
+        try {
+            $codec->validate($details);
+            $cast = $model->getCasts()[$row->field] ?? null;
+            if (($cast !== null && ! in_array($cast, ['string', 'array', 'json'], true)) || $codec->state($value, $details) === null) { throw ValidationException::withMessages(['details' => 'Некорректные данные группы.']); }
+        } catch (ValidationException) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)->helperText('Настройки или сохранённые варианты несовместимы. Значение сохраняется без изменений.');
+        }
+        return CheckboxList::make($row->field)->options($details['options'])->default($codec->state(null, $details));
+    }
+
+    private function imageUploadComponent(stdClass $row, array $details): FileUpload
+    {
+        $multiple = $row->type === 'multiple_images';
+        $upload = FileUpload::make($row->field)->image()->multiple($multiple)->compactImagePreviews($multiple)
+            ->disk('public')->directory($this->bread()->name.'/'.date('FY'))->maxSize(10240);
+        try { app(\App\Filament\Bread\BreadImageUpload::class)->validate($details); }
+        catch (ValidationException) { return $upload->disabled()->dehydrated(false)->helperText('Настройки обработки изображения несовместимы. Сохранённые файлы не изменяются.'); }
+        return $upload->saveUploadedFileUsing(fn (FileUpload $component, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file) => app(\App\Filament\Bread\BreadImageUpload::class)->store($file, $component->getDiskName(), $component->getDirectory() ?? '', $details, 'data.'.$row->field,
+            function (string $disk, array $paths) use ($row): void { $this->createdImageFiles[$row->field][] = [$disk, $paths]; }));
+    }
+
+    private function dropdownOptions(stdClass $row, array $details): array
+    {
+        $model = $this->registry()->model($this->bread());
+        if ($this->recordId !== null) { $model = $model->newQuery()->findOrFail($this->recordId); }
+        return app(\App\Filament\Bread\BreadDropdownOptions::class)->options($model, $row->field, $details);
+    }
+
+    private function treeOptions(stdClass $row, array $details): array
+    {
+        $model = $this->registry()->model($this->bread());
+        if ($this->recordId !== null) { $model = $model->newQuery()->findOrFail($this->recordId); }
+        return app(BreadTreeOptions::class)->options($model, $row->field, $details);
+    }
+
+    private function isSelectRelation(?stdClass $row): bool
+    {
+        return $row?->type === 'select_multiple' && isset((json_decode($row->details ?: '{}', true) ?: [])['relationship']);
+    }
+
+    private function selectRelationState($record, stdClass $row, array $details): mixed
+    {
+        try { return app(BreadSelectRelation::class)->state($record, $row->field, $details) ?? $record->getRawOriginal($row->field); }
+        catch (ValidationException) { return 'Несовместимая конфигурация связи'; }
+    }
+
+    private function selectRelationComponent(stdClass $row, array $details): Fieldset|Textarea
+    {
+        $model = $this->registry()->model($this->bread());
+        $record = $this->recordId === null ? $model : $model->newQuery()->findOrFail($this->recordId);
+        $codec = app(BreadSelectRelation::class);
+        try {
+            $source = $codec->configuration($record, $row->field, $details);
+            $options = $codec->options($record, $row->field, $details);
+            $state = $codec->state($record, $row->field, $details);
+        } catch (ValidationException) { $state = null; }
+        if ($state === null) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)->helperText('Несовместимый формат или источник связи. Значение сохранено без изменений.');
+        }
+        if ($source['pivot'] === []) {
+            $inputs = [Select::make('ids')->label('Варианты')->multiple()->searchable()->options($options)->default($state['ids'])];
+        } else {
+            $fields = [Select::make('key')->label('Вариант')->options($options)->searchable()->required()];
+            foreach ($source['pivot'] as $column) { $fields[] = TextInput::make('attributes.'.$column)->label($column)->maxLength(50000); }
+            $inputs = [Repeater::make('rows')->schema($fields)->defaultItems(0)->default($state['rows'])->maxItems(500)->addActionLabel('Добавить вариант')];
+        }
+        return Fieldset::make($row->display_name ?: $row->field)->statePath($row->field)->schema($inputs)->columns(1);
+    }
+
+    private function coordinatesState($record, stdClass $row): mixed
+    {
+        $codec = app(BreadCoordinates::class);
+        if (! $codec->supported($record, $row->field)) { return 'Неподдерживаемая пространственная колонка'; }
+        $wkt = $codec->read($record, $row->field);
+        return $codec->state($wkt) ?? $wkt;
+    }
+
+    private function coordinatesValue($record, stdClass $row, mixed $value): mixed
+    {
+        $codec = app(BreadCoordinates::class);
+        try { $codec->validateConfiguration($record, $row->field, json_decode($row->details ?: '{}', true) ?: []); }
+        catch (ValidationException) {
+            throw ValidationException::withMessages(['data.'.$row->field => 'Конфигурация координат несовместима. Сохранение отменено.']);
+        }
+        return $codec->encode($record, $row->field, $value, 'data.'.$row->field, (bool) $row->required);
+    }
+
+    private function coordinatesComponent(stdClass $row, array $details): Fieldset|Textarea
+    {
+        $model = $this->registry()->model($this->bread());
+        $record = $this->recordId === null ? $model : $model->newQuery()->findOrFail($this->recordId);
+        $codec = app(BreadCoordinates::class);
+        try { $codec->validateConfiguration($model, $row->field, $details); }
+        catch (ValidationException) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)
+                ->helperText('Несовместимая конфигурация координат. Значение сохранено без изменений.');
+        }
+        if ($codec->state($codec->read($record, $row->field)) === null) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)
+                ->helperText('Геометрия отличается от POINT. Значение сохранено без изменений.');
+        }
+        return Fieldset::make($row->display_name ?: $row->field)->statePath($row->field)->columns(2)->schema([
+            TextInput::make('lat')->label('Широта')->numeric()->minValue(-90)->maxValue(90),
+            TextInput::make('lng')->label('Долгота')->numeric()->minValue(-180)->maxValue(180),
+            View::make('filament.components.bread-coordinates-note')->columnSpanFull(),
+        ]);
+    }
+
+    private function groupState(mixed $value, array $details): mixed
+    {
+        $codec = app(BreadFieldsGroup::class);
+        $document = $codec->document($value === null || $value === '' ? $details : $value);
+        return $document ? $codec->values($document) : $value;
+    }
+
+    private function fieldsGroupComponent(stdClass $row, array $details): Fieldset|Textarea
+    {
+        $original = null;
+        if ($this->recordId !== null) {
+            $record = $this->registry()->model($this->bread())->newQuery()->findOrFail($this->recordId);
+            $translated = method_exists($record, 'getTranslatableAttributes') && in_array($row->field, $record->getTranslatableAttributes(), true);
+            $original = $translated && $this->locale !== config('voyager.multilingual.default', 'en')
+                ? DB::table('translations')->where(['table_name' => $this->bread()->name, 'column_name' => $row->field, 'foreign_key' => $this->recordId, 'locale' => $this->locale])->value('value')
+                : $record->getAttribute($row->field);
+        }
+        $document = app(BreadFieldsGroup::class)->document($original === null || $original === '' ? $details : $original);
+        if (! $document) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)
+                ->helperText('Несовместимый формат группы. Значение сохранено без изменений.');
+        }
+        $inputs = [];
+        foreach ($document['fields'] as $key => $field) {
+            $input = $field['type'] === 'textarea' ? Textarea::make($key) : TextInput::make($key);
+            $input->label($field['label'])->default($field['value'] ?? null);
+            if ($field['type'] === 'number') { $input->numeric(); } else { $input->maxLength(50000); }
+            $inputs[] = $input;
+        }
+        return Fieldset::make($row->display_name ?: $row->field)->statePath($row->field.'.values')->schema($inputs)->columns(2);
+    }
+
+    private function layoutComponent(stdClass $row, array $details): Repeater|Textarea
+    {
+        $original = $details['default'] ?? null;
+        if ($this->recordId !== null) {
+            $record = $this->registry()->model($this->bread())->newQuery()->findOrFail($this->recordId);
+            $translated = method_exists($record, 'getTranslatableAttributes') && in_array($row->field, $record->getTranslatableAttributes(), true);
+            $original = $translated && $this->locale !== config('voyager.multilingual.default', 'en')
+                ? DB::table('translations')->where(['table_name' => $this->bread()->name, 'column_name' => $row->field, 'foreign_key' => $this->recordId, 'locale' => $this->locale])->value('value')
+                : ($record->getAttribute($row->field) ?? ($details['default'] ?? null));
+        }
+        $codec = app(BreadPageLayout::class);
+        $document = $codec->document($original);
+        try { $options = $document === null ? null : $codec->options($details, $document); }
+        catch (ValidationException) { $options = null; }
+        if ($options === null) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)
+                ->helperText('Несовместимый формат или источник секций. Значение сохранено без изменений.');
+        }
+        return Repeater::make($row->field.'.rows')->schema([
+            Select::make('choice')->label('Секция')->options($options)->searchable()->required(),
+        ])->defaultItems(0)->default($codec->state($original)['rows'])->maxItems(500)
+            ->addActionLabel('Добавить секцию')->reorderableWithButtons()->reorderableWithDragAndDrop();
+    }
+
+    private function jsonRowsComponent(stdClass $row, array $details): Repeater|Textarea
+    {
+        $original = $details['default'] ?? null;
+        if ($this->recordId !== null) {
+            $record = $this->registry()->model($this->bread())->newQuery()->findOrFail($this->recordId);
+            $translated = method_exists($record, 'getTranslatableAttributes') && in_array($row->field, $record->getTranslatableAttributes(), true);
+            $original = $translated && $this->locale !== config('voyager.multilingual.default', 'en')
+                ? DB::table('translations')->where(['table_name' => $this->bread()->name, 'column_name' => $row->field, 'foreign_key' => $this->recordId, 'locale' => $this->locale])->value('value')
+                : ($record->getAttribute($row->field) ?? ($details['default'] ?? null));
+        }
+        $json = app(BreadJsonRows::class);
+        $document = $json->document($original);
+        if ($document === null) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)
+                ->helperText('Сохранённый JSON имеет другой формат. Значение сохранено без изменений; редактор строк недоступен.');
+        }
+        $inputs = [];
+        try { $fields = $json->fields($details, $document); }
+        catch (ValidationException) {
+            return Textarea::make($row->field)->disabled()->dehydrated(false)
+                ->helperText('Настройка json_fields несовместима с редактором строк. Сохранённое значение не изменяется.');
+        }
+        foreach ($fields as $key => $label) {
+            $inputs[] = TextInput::make($key)->label($label)->maxLength(50000);
+        }
+        return Repeater::make($row->field.'.rows')->schema($inputs)->columns(2)
+            ->defaultItems(0)->default(array_values($document['rows']))->maxItems(500)
+            ->addActionLabel('Добавить строку')->reorderableWithButtons()->reorderableWithDragAndDrop();
+    }
+
+    private function optionFieldLabel(stdClass $row, mixed $value, ?\Illuminate\Database\Eloquent\Model $sourceRecord = null): string
+    {
+        $details = json_decode($row->details ?: '{}', true) ?: [];
+        $options = $details['options'] ?? [];
+        if ($row->type === 'multiple_checkbox') { return app(\App\Filament\Bread\BreadMultiCheckbox::class)->summary($value, $details); }
+        if ($row->type === 'select_dropdown') {
+            try { $options = app(\App\Filament\Bread\BreadDropdownOptions::class)->options($sourceRecord ?? $this->registry()->model($this->bread()), $row->field, $details); }
+            catch (ValidationException) { $options = []; }
+        }
+        if ($this->isSelectRelation($row)) {
+            try { $options = app(BreadSelectRelation::class)->options($sourceRecord ?? $this->registry()->model($this->bread()), $row->field, $details); }
+            catch (ValidationException) { $options = []; }
+            $values = is_array($value) ? $value : (json_decode((string) $value, true) ?: []);
+            $values = empty($details['relationship']['editablePivotFields']) ? $values : array_keys($values);
+            return implode(', ', array_map(fn ($key) => is_scalar($key) ? (string) ($options[$key] ?? $key) : '', $values));
+        }
+
+        $values = $row->type === 'select_multiple' ? (is_array($value) ? $value : (json_decode((string) $value, true) ?: [])) : [$value];
+        return implode(', ', array_map(static fn ($key): string => is_scalar($key) ? (string) ($options[$key] ?? $key) : '', $values));
     }
 
     private function fillRecord($record): void
@@ -1346,11 +1924,17 @@ class VoyagerBread extends Page
         foreach ($this->registry()->editableRows($bread, 'edit') as $row) {
             if ($this->locale === config('voyager.multilingual.default', 'en') || ! (method_exists($record, 'getTranslatableAttributes') && in_array($row->field, $record->getTranslatableAttributes(), true))) {
                 $details = json_decode($row->details ?: '{}', true) ?: [];
-                $value = $record->getAttribute($row->field) ?? ($details['default'] ?? null);
+                $value = $record->getAttribute($row->field) ?? ($row->type === 'checkbox' ? app(\App\Filament\Bread\BreadCheckbox::class)->initial($details) : ($details['default'] ?? null));
                 $values[$row->field] = match ($row->type) {
                     'password' => null,
-                    'multiple_images', 'media_picker' => json_decode((string) $value, true) ?: [],
-                    'multiple_checkbox' => array_keys(json_decode((string) $value, true) ?: []),
+                    'code_editor' => app(BreadCodeEditor::class)->state($record, $row->field, $details),
+                    'coordinates' => $this->coordinatesState($record, $row),
+                    'adv_json' => app(BreadJsonRows::class)->document($value) ?? $value,
+                    'adv_page_layout' => app(BreadPageLayout::class)->state($value),
+                    'adv_fields_group' => $this->groupState($value, $details),
+                    'select_multiple' => $this->isSelectRelation($row) ? $this->selectRelationState($record, $row, $details) : (is_array($value) ? array_values($value) : (json_decode((string) $value, true) ?: [])),
+                    'multiple_images', 'media_picker' => is_array($value) ? array_values($value) : (json_decode((string) $value, true) ?: []),
+                    'multiple_checkbox' => app(\App\Filament\Bread\BreadMultiCheckbox::class)->state($record->getAttribute($row->field), $details) ?? $record->getAttribute($row->field),
                     default => $value,
                 };
             } elseif (method_exists($record, 'getTranslatableAttributes') && in_array($row->field, $record->getTranslatableAttributes(), true)) {
@@ -1358,6 +1942,11 @@ class VoyagerBread extends Page
                     'table_name' => $bread->name, 'column_name' => $row->field,
                     'foreign_key' => $record->getKey(), 'locale' => $this->locale,
                 ])->value('value');
+                if ($row->type === 'select_multiple') { $values[$row->field] = json_decode($values[$row->field] ?? '[]', true) ?: []; }
+                if ($row->type === 'multiple_checkbox') { $values[$row->field] = app(\App\Filament\Bread\BreadMultiCheckbox::class)->state($values[$row->field], json_decode($row->details ?: '{}', true) ?: []) ?? $values[$row->field]; }
+                if ($row->type === 'adv_json') { $values[$row->field] = app(BreadJsonRows::class)->document($values[$row->field]) ?? $values[$row->field]; }
+                if ($row->type === 'adv_page_layout') { $values[$row->field] = app(BreadPageLayout::class)->state($values[$row->field]); }
+                if ($row->type === 'adv_fields_group') { $values[$row->field] = $this->groupState($values[$row->field], json_decode($row->details ?: '{}', true) ?: []); }
             }
         }
         foreach ($this->registry()->belongsToRows($bread, 'edit') as $row) {
@@ -1374,6 +1963,7 @@ class VoyagerBread extends Page
             $values['__user_locale'] = $record->locale ?? config('app.locale', 'en');
         }
         $this->form->fill($values);
+        $this->initializeSlugTracking();
     }
 
     private function fillMediaProperties($record): void

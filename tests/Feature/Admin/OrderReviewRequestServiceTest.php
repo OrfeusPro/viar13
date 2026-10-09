@@ -20,7 +20,7 @@ class OrderReviewRequestServiceTest extends TestCase
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
             $table->string('email');
-            $table->string('locale')->nullable();
+            $table->json('settings')->nullable();
             $table->string('country')->nullable();
             $table->string('last_ip')->nullable();
             $table->text('user_agent')->nullable();
@@ -57,7 +57,7 @@ class OrderReviewRequestServiceTest extends TestCase
     {
         $userId = DB::table('users')->insertGetId([
             'email' => 'review-request@example.invalid',
-            'locale' => 'ru',
+            'settings' => json_encode(['locale' => 'ru']),
             'country' => 'LV',
             'created_at' => now(),
             'updated_at' => now(),
@@ -69,5 +69,36 @@ class OrderReviewRequestServiceTest extends TestCase
         ]);
 
         return Orders::query()->findOrFail($orderId);
+    }
+
+    public function test_review_can_be_sent_to_user_without_orders_using_fake_mail(): void
+    {
+        Mail::fake();
+        config(['admin_migration.review_request_enabled' => true]);
+        Schema::create('user_messages', function (Blueprint $table): void { $table->id(); $table->string('rev_subject'); $table->timestamps(); });
+        Schema::create('translations', function (Blueprint $table): void {
+            $table->id(); $table->string('table_name'); $table->string('column_name');
+            $table->integer('foreign_key'); $table->string('locale'); $table->text('value');
+        });
+        DB::table('user_messages')->insert(['rev_subject' => 'Review']);
+        $userId = DB::table('users')->insertGetId(['email' => 'no-orders@example.invalid', 'settings' => json_encode(['locale' => 'en']), 'country' => 'LV']);
+        $user = \App\Models\User::findOrFail($userId);
+        $result = app(OrderReviewRequestService::class)->sendToUser($user);
+        $this->assertTrue($result['sent']);
+        $this->assertFalse($result['suppressed']);
+        Mail::assertSent(\App\Mail\SendUserReview::class, fn ($mail): bool => $mail->hasTo($user->email));
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_user_without_orders_is_suppressed_and_invalid_email_is_rejected(): void
+    {
+        Mail::fake();
+        config(['admin_migration.review_request_enabled' => false]);
+        $user = new \App\Models\User(['email' => 'no-orders@example.invalid']);
+        $this->assertTrue(app(OrderReviewRequestService::class)->sendToUser($user)['suppressed']);
+        Mail::assertNothingSent();
+        $user->email = 'invalid';
+        $this->expectException(ValidationException::class);
+        app(OrderReviewRequestService::class)->sendToUser($user);
     }
 }

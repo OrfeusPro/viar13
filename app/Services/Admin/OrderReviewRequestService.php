@@ -5,6 +5,7 @@ namespace App\Services\Admin;
 use App\Mail\SendUserReview;
 use App\Models\Orders;
 use App\Models\UserMessage;
+use App\Models\User;
 use App\Services\BestEffortMailService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -17,13 +18,22 @@ class OrderReviewRequestService
     public function send(Orders $order): array
     {
         $user = $order->user;
+        if (! $user) {
+            throw ValidationException::withMessages(['user' => 'У заказа нет пользователя с корректным email.']);
+        }
+
+        return $this->sendToUser($user, $order->id);
+    }
+
+    public function sendToUser(User $user, ?int $orderId = null): array
+    {
         if (! $user || ! filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
             throw ValidationException::withMessages(['user' => 'У заказа нет пользователя с корректным email.']);
         }
 
         if (! config('admin_migration.review_request_enabled', false)) {
             Log::info('Admin review request suppressed during Filament UAT.', [
-                'order_id' => $order->id,
+                'order_id' => $orderId,
                 'user_id' => $user->id,
             ]);
 
@@ -37,7 +47,7 @@ class OrderReviewRequestService
             $data = $messages[0] ?? null;
         } catch (Throwable $exception) {
             Log::warning('Review request texts could not be loaded.', [
-                'order_id' => $order->id,
+                'order_id' => $orderId,
                 'user_id' => $user->id,
                 'exception' => $exception,
             ]);
@@ -54,11 +64,11 @@ class OrderReviewRequestService
             $user->email,
             new SendUserReview($data, strtolower((string) ($user->country ?: $locale))),
             'admin_order_review_request',
-            ['order_id' => $order->id, 'user_id' => $user->id],
+            ['order_id' => $orderId, 'user_id' => $user->id],
         );
 
         Log::info('Admin review request processed.', [
-            'order_id' => $order->id,
+            'order_id' => $orderId,
             'user_id' => $user->id,
             'sent' => $sent,
         ]);
