@@ -38,16 +38,32 @@ class BreadTypeSettingsService
                 throw ValidationException::withMessages(['slug' => 'Раздел изменён в другой вкладке. Откройте настройки заново.']);
             }
             $columns = array_values(array_diff(app(BreadRegistry::class)->columns($type), ['password', 'remember_token']));
+            $controllers = app(\App\Filament\Bread\BreadControllerOptions::class);
+            $policies = app(\App\Filament\Bread\BreadPolicyOptions::class);
             $values = validator($input, [
                 'display_name_singular' => 'required|string|max:191', 'display_name_plural' => 'required|string|max:191',
                 'slug' => ['required', 'string', 'max:191', 'regex:/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/', Rule::unique('data_types', 'slug')->ignore($id)],
                 'icon' => 'nullable|string|max:191', 'description' => 'nullable|string|max:5000',
                 'generate_permissions' => 'sometimes|boolean',
+                'controller' => 'sometimes|nullable|string|max:191',
+                'policy_name' => 'sometimes|nullable|string|max:191',
                 'model_name' => ['sometimes', 'required', \Illuminate\Validation\Rule::in(array_unique([$type->model_name, ...array_keys(app(BreadCreationService::class)->models($type->name))]))],
                 'order_column' => ['nullable', Rule::in($columns)], 'order_direction' => ['required', Rule::in(['asc', 'desc'])],
                 'order_display_column' => ['nullable', Rule::in($columns)],
                 'default_search_key' => ['nullable', Rule::in($columns)], 'scope' => ['nullable', Rule::in(array_keys($this->scopes($type)))],
             ])->validate();
+            if (array_key_exists('controller', $values)) {
+                if (! $controllers->supports($type, $type->controller ?? null) || ! $controllers->supports($type, $values['controller'])) {
+                    throw ValidationException::withMessages(['controller' => 'Поведение этого контроллера ещё не перенесено для данной таблицы.']);
+                }
+                $values['controller'] = $controllers->normalize($values['controller']);
+            }
+            if (array_key_exists('policy_name', $values)) {
+                if (! $policies->supports($type, $type->policy_name ?? null) || ! $policies->supports($type, $values['policy_name'])) {
+                    throw ValidationException::withMessages(['policy_name' => 'Поведение этой политики ещё не перенесено для данной таблицы.']);
+                }
+                $values['policy_name'] = $policies->normalize($values['policy_name']);
+            }
             try { $details = json_decode($type->details ?: '{}', true, 512, JSON_THROW_ON_ERROR); }
             catch (\JsonException) { throw ValidationException::withMessages(['slug' => 'Существующие параметры раздела содержат некорректный JSON.']); }
             if (! is_array($details) || ! str_starts_with(ltrim($type->details ?: '{}'), '{')) {

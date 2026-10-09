@@ -120,6 +120,9 @@ class BreadMetadata extends Page
     {
         if ($this->creatingSection) {
             $service = app(BreadCreationService::class);
+            $type = (object) ['name' => $this->creationTable];
+            $controllers = app(\App\Filament\Bread\BreadControllerOptions::class);
+            $policies = app(\App\Filament\Bread\BreadPolicyOptions::class);
             return $schema->statePath('data')->columns(2)->components([
                 TextInput::make('name')->label('Таблица')->disabled()->dehydrated(),
                 Select::make('model_name')->label('Модель')->options($service->models($this->creationTable))->required()
@@ -128,6 +131,14 @@ class BreadMetadata extends Page
                 TextInput::make('display_name_plural')->label('Название раздела')->required(fn () => ! $this->fullEditor || $this->metadataLocale === config('voyager.multilingual.default', 'en'))->maxLength(191),
                 TextInput::make('slug')->label('URL раздела')->required()->maxLength(191),
                 TextInput::make('icon')->label('Иконка')->maxLength(191),
+                Select::make('controller')->label('Контроллер')->options($controllers->options($type))
+                    ->placeholder('Стандартный BREAD')->searchable()
+                    ->disabled(! $controllers->supports($type, null))->dehydrated($controllers->supports($type, null))
+                    ->helperText('Доступны перенесённые обработчики выбранной таблицы.'),
+                Select::make('policy_name')->label('Политика')->options($policies->options($type))
+                    ->placeholder('Стандартные права BREAD')->searchable()
+                    ->disabled(! $policies->supports($type, null))->dehydrated($policies->supports($type, null))
+                    ->helperText('Права ролей назначаются отдельно. Для пользователей доступна политика собственного профиля.'),
                 Textarea::make('description')->label('Описание')->rows(3)->columnSpanFull(),
                 Toggle::make('generate_permissions')->label('Создать разрешения BREAD')
                     ->helperText('Создаются определения browse/read/edit/add/delete. Ролям они автоматически не назначаются.'),
@@ -153,15 +164,29 @@ class BreadMetadata extends Page
             return $schema->statePath('data')->columns(2)->components([
                 TextInput::make('name')->label('Таблица')->disabled()->dehydrated(false),
                 Select::make('model_name')->label('Модель')->options($type ? [$type->model_name => $type->model_name, ...app(BreadCreationService::class)->models($type->name)] : [])->required()
-                    ->helperText('Существующие модели этой таблицы. Генерация новых классов пока не перенесена.'),
+                    ->helperText('Существующие модели этой таблицы. Как в оригинальном редакторе BREAD, классы подготавливаются отдельно.'),
                 TextInput::make('display_name_singular')->label('Название одной записи')->required(fn () => ! $this->fullEditor || $this->metadataLocale === config('voyager.multilingual.default', 'en'))->maxLength(191),
                 TextInput::make('display_name_plural')->label('Название раздела')->required(fn () => ! $this->fullEditor || $this->metadataLocale === config('voyager.multilingual.default', 'en'))->maxLength(191),
                 TextInput::make('slug')->label('URL раздела')->required()->maxLength(191)
                     ->helperText('После изменения старые прямые ссылки перестанут работать. Связанные ссылки меню обновятся.'),
                 TextInput::make('icon')->label('Иконка')->maxLength(191)->helperText('Например: voyager-images или heroicon-o-photo.'),
                 Textarea::make('description')->label('Описание')->rows(3)->maxLength(5000)->columnSpanFull(),
-                TextInput::make('controller')->label('Контроллер')->disabled()->dehydrated(false),
-                TextInput::make('policy_name')->label('Политика')->disabled()->dehydrated(false),
+                Select::make('controller')->label('Контроллер')
+                    ->options($type ? app(\App\Filament\Bread\BreadControllerOptions::class)->options($type) : [])
+                    ->placeholder('Стандартный BREAD')->searchable()
+                    ->disabled(! $type || ! app(\App\Filament\Bread\BreadControllerOptions::class)->supports($type, $type->controller ?? null))
+                    ->dehydrated($type && app(\App\Filament\Bread\BreadControllerOptions::class)->supports($type, $type->controller ?? null))
+                    ->helperText($type && app(\App\Filament\Bread\BreadControllerOptions::class)->supports($type, $type->controller ?? null)
+                        ? 'Выбор обработчика раздела. Доступны перенесённые варианты для этой таблицы.'
+                        : 'Текущее значение сохранено. Выбор станет доступен после переноса этого обработчика.'),
+                Select::make('policy_name')->label('Политика')
+                    ->options($type ? app(\App\Filament\Bread\BreadPolicyOptions::class)->options($type) : [])
+                    ->placeholder('Стандартные права BREAD')->searchable()
+                    ->disabled(! $type || ! app(\App\Filament\Bread\BreadPolicyOptions::class)->supports($type, $type->policy_name ?? null))
+                    ->dehydrated($type && app(\App\Filament\Bread\BreadPolicyOptions::class)->supports($type, $type->policy_name ?? null))
+                    ->helperText($type && app(\App\Filament\Bread\BreadPolicyOptions::class)->supports($type, $type->policy_name ?? null)
+                        ? 'Определяет доступ к действиям раздела. Права ролей меняются отдельно.'
+                        : 'Текущее значение сохранено. Выбор станет доступен после переноса этой политики.'),
                 Toggle::make('generate_permissions')->label('Генерировать разрешения')->disabled(! \Illuminate\Support\Facades\Schema::hasColumn('data_types', 'generate_permissions'))->dehydrated(\Illuminate\Support\Facades\Schema::hasColumn('data_types', 'generate_permissions'))->helperText('Создаёт определения прав BREAD. Ролям права автоматически не назначаются. Выключение не удаляет существующие права.'),
                 Toggle::make('server_side')->label('Серверная пагинация')->disabled()->dehydrated(false)->helperText('Текущее значение Voyager; новый список пока всегда использует серверную пагинацию.'),
                 Select::make('order_column')->label('Колонка сортировки')->options($columns)->placeholder('ID по убыванию'),

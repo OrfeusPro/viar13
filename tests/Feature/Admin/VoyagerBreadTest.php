@@ -2954,6 +2954,200 @@ class VoyagerBreadTest extends TestCase
         $this->assertSame('client@example.invalid', $client->fresh()->email);
     }
 
+    public function test_bread_policy_choices_affect_self_profile_access_without_granting_foreign_access(): void
+    {
+        $this->clientEditorMetadata();
+        $user = auth('filament')->user();
+        $typeId = DB::table('data_types')->where('slug', 'users')->value('id');
+        DB::table('data_types')->where('id', $typeId)->update(['display_name_singular' => 'User', 'display_name_plural' => 'Users']);
+        $permission = \App\Models\Permission::firstOrCreate(['key' => 'browse_bread'], ['table_name' => null]);
+        DB::table('permission_role')->insert(['role_id' => $user->role_id, 'permission_id' => $permission->id]);
+        DB::table('permission_role')->whereIn('permission_id', DB::table('permissions')->where('key', 'edit_users')->pluck('id'))->delete();
+        $this->app->forgetInstance(BreadRegistry::class);
+        $other = User::forceCreate(['email' => 'policy-foreign@example.invalid', 'password' => 'unused', 'role_id' => $user->role_id]);
+        $metadata = Livewire::test(\App\Filament\Pages\BreadMetadata::class)->call('selectType', $typeId)->call('openSettings');
+        $policy = \App\Filament\Bread\BreadPolicyOptions::USER;
+        $base = \App\Filament\Bread\BreadPolicyOptions::BASE;
+        $metadata->set('data.policy_name', $policy)->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $typeId, 'policy_name' => $policy]);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $user->id])->call('save')->assertHasNoErrors();
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $other->id])->assertForbidden();
+        $metadata->call('openSettings')->set('data.policy_name', $base)->call('save')->assertHasNoErrors();
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $user->id])->assertForbidden();
+        $metadata->call('openSettings')->set('data.policy_name', null)->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $typeId, 'policy_name' => null]);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $user->id])->assertForbidden();
+        DB::table('data_types')->where('id', $typeId)->update(['policy_name' => '\\'.$policy]);
+        $metadata->call('openSettings')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $typeId, 'policy_name' => $policy]);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $user->id])->call('save')->assertHasNoErrors();
+        $this->assertFalse(app(BreadRegistry::class)->permitted(app(BreadRegistry::class)->type('users'), 'delete', $user->id));
+    }
+
+    public function test_bread_policy_choices_reject_incompatible_classes_and_preserve_unknown_policy(): void
+    {
+        $this->admin(['browse_admin', 'browse_bread']);
+        $id = DB::table('data_types')->where('slug', 'pages')->value('id');
+        DB::table('data_types')->where('id', $id)->update(['display_name_singular' => 'Page']);
+        $type = DB::table('data_types')->find($id);
+        $service = app(\App\Services\Admin\BreadTypeSettingsService::class);
+        foreach ([\App\Filament\Bread\BreadPolicyOptions::USER, 'App\\Policies\\UnknownPolicy', ['not-a-class']] as $invalid) {
+            try {
+                $service->save(auth('filament')->user(), $id, array_merge((array) $type, ['order_direction' => 'desc', 'policy_name' => $invalid]), app(\App\Services\Admin\BreadMetadataService::class)->fingerprint($type));
+                $this->fail('Unsupported policy accepted');
+            } catch (\Illuminate\Validation\ValidationException $error) { $this->assertArrayHasKey('policy_name', $error->errors()); }
+        }
+        $this->assertDatabaseHas('data_types', ['id' => $id, 'policy_name' => null]);
+        DB::table('data_types')->where('id', $id)->update(['policy_name' => 'App\\Policies\\UnknownPolicy']);
+        $metadata = Livewire::test(\App\Filament\Pages\BreadMetadata::class)->call('selectType', $id)->call('openSettings');
+        $field = collect($metadata->instance()->form->getFlatComponents())->first(fn ($field) => method_exists($field, 'getName') && $field->getName() === 'policy_name');
+        $this->assertTrue($field->isDisabled());
+        $metadata->set('data.display_name_plural', 'Keep policy')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $id, 'policy_name' => 'App\\Policies\\UnknownPolicy', 'display_name_plural' => 'Keep policy']);
+        $type = DB::table('data_types')->find($id);
+        foreach ([null, \App\Filament\Bread\BreadPolicyOptions::BASE] as $invalid) {
+            try {
+                $service->save(auth('filament')->user(), $id, array_merge((array) $type, ['order_direction' => 'desc', 'policy_name' => $invalid]), app(\App\Services\Admin\BreadMetadataService::class)->fingerprint($type));
+                $this->fail('Unknown policy overwritten');
+            } catch (\Illuminate\Validation\ValidationException $error) { $this->assertArrayHasKey('policy_name', $error->errors()); }
+        }
+        $options = app(\App\Filament\Bread\BreadPolicyOptions::class);
+        $this->assertFalse($options->supports((object) ['name' => 'orders'], \App\Filament\Bread\BreadPolicyOptions::BASE));
+        $this->assertTrue($options->supports((object) ['name' => 'pages'], '\\'.\App\Filament\Bread\BreadPolicyOptions::BASE));
+    }
+
+    public function test_bread_controller_choices_save_compatible_classes_and_preserve_unsupported_settings(): void
+    {
+        $this->admin(['browse_admin', 'browse_bread']);
+        $typeId = DB::table('data_types')->where('slug', 'pages')->value('id');
+        $base = 'TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController';
+        DB::table('data_types')->where('id', $typeId)->update(['display_name_singular' => 'Page']);
+        $page = Livewire::test(\App\Filament\Pages\BreadMetadata::class)->call('selectType', $typeId)->call('openSettings');
+        $page->set('data.controller', $base)->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $typeId, 'controller' => $base]);
+        $page->call('openSettings')->set('data.controller', null)->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $typeId, 'controller' => null]);
+        $options = app(\App\Filament\Bread\BreadControllerOptions::class);
+        $type = app(BreadRegistry::class)->type('pages');
+        $this->assertFalse($options->supports($type, 'TCG\\Voyager\\Http\\Controllers\\VoyagerUserController'));
+        $this->assertFalse($options->supports($type, 'App\\Http\\Controllers\\UnknownController'));
+        $service = app(\App\Services\Admin\BreadTypeSettingsService::class);
+        $invalid = array_merge((array) $type, ['order_direction' => 'desc']);
+        $invalid['controller'] = 'TCG\\Voyager\\Http\\Controllers\\VoyagerUserController';
+        try { $service->save(auth('filament')->user(), $typeId, $invalid, app(\App\Services\Admin\BreadMetadataService::class)->fingerprint($type)); $this->fail('Cross-table controller accepted'); }
+        catch (\Illuminate\Validation\ValidationException $error) { $this->assertArrayHasKey('controller', $error->errors()); }
+        DB::table('data_types')->where('id', $typeId)->update(['controller' => 'App\\Http\\Controllers\\UnknownController']);
+        $unknown = Livewire::test(\App\Filament\Pages\BreadMetadata::class)->call('selectType', $typeId)->call('openSettings');
+        $field = collect($unknown->instance()->form->getFlatComponents())->first(fn ($field) => method_exists($field, 'getName') && $field->getName() === 'controller');
+        $this->assertTrue($field->isDisabled());
+        $unknown->set('data.display_name_plural', 'Changed label')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $typeId, 'controller' => 'App\\Http\\Controllers\\UnknownController', 'display_name_plural' => 'Changed label']);
+        $unknownType = DB::table('data_types')->find($typeId);
+        $invalid = array_merge((array) $unknownType, ['order_direction' => 'desc']);
+        $invalid['controller'] = null;
+        try { $service->save(auth('filament')->user(), $typeId, $invalid, app(\App\Services\Admin\BreadMetadataService::class)->fingerprint($unknownType)); $this->fail('Unsupported controller cleared'); }
+        catch (\Illuminate\Validation\ValidationException $error) { $this->assertArrayHasKey('controller', $error->errors()); }
+        $locale = (object) ['name' => 'locales', 'controller' => '\\App\\Http\\Controllers\\Admin\\AdminLocaleController'];
+        $this->assertTrue($options->supports($locale, $locale->controller));
+        $this->assertArrayHasKey($locale->controller, $options->options($locale));
+        $this->assertFalse($options->supports((object) ['name' => 'orders'], $base));
+        $this->assertFalse($options->supports((object) ['name' => 'pages'], '\\App\\Http\\Controllers\\Admin\\AdminLocaleController'));
+    }
+
+    public function test_locale_controller_creates_language_folder_without_overwriting_files_and_preserves_updates(): void
+    {
+        Storage::fake('public');
+        $root = Storage::disk('public')->path('fixture-languages');
+        mkdir($root);
+        $this->app->useLangPath($root);
+        Schema::create('locales', function (Blueprint $table): void { $table->id(); $table->string('prefix'); $table->string('name'); $table->timestamps(); });
+        $this->admin(['browse_admin', 'browse_locales', 'read_locales', 'add_locales', 'edit_locales']);
+        $typeId = DB::table('data_types')->insertGetId(['name' => 'locales', 'slug' => 'locales', 'model_name' => \App\Models\Locale::class,
+            'controller' => '\\App\\Http\\Controllers\\Admin\\AdminLocaleController']);
+        foreach (['prefix', 'name'] as $field) { DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => $field, 'type' => 'text', 'required' => true, 'details' => '{}']); }
+        $this->admin(['browse_admin', 'browse_bread', 'browse_locales', 'read_locales', 'add_locales', 'edit_locales']);
+        Livewire::test(\App\Filament\Pages\BreadMetadata::class)->call('selectType', $typeId)->call('openSettings')
+            ->set('data.display_name_singular', 'Language')->set('data.display_name_plural', 'Languages')
+            ->set('data.controller', '\\App\\Http\\Controllers\\Admin\\AdminLocaleController')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['id' => $typeId, 'controller' => 'App\\Http\\Controllers\\Admin\\AdminLocaleController']);
+        $creator = Livewire::test(VoyagerBread::class, ['type' => 'locales'])->call('openCreate')
+            ->set('data.prefix', 'pt-BR')->set('data.name', 'Portuguese')->call('save')->assertHasNoErrors();
+        $this->assertDirectoryExists($root.'/pt-BR');
+        $id = DB::table('locales')->where('prefix', 'pt-BR')->value('id');
+        file_put_contents($root.'/pt-BR/messages.php', '<?php return ["key" => "Keep"];');
+        Livewire::test(VoyagerBread::class, ['type' => 'locales'])->call('openCreate')
+            ->set('data.prefix', 'pt-BR')->set('data.name', 'Existing folder')->call('save')->assertHasNoErrors();
+        $this->assertSame('<?php return ["key" => "Keep"];', file_get_contents($root.'/pt-BR/messages.php'));
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'locales', 'record' => $id])
+            ->set('data.prefix', 'pt')->call('save')->assertHasNoErrors();
+        $this->assertDirectoryDoesNotExist($root.'/pt');
+        $this->assertFileExists($root.'/pt-BR/messages.php');
+        Livewire::test(VoyagerBread::class, ['type' => 'locales'])->call('openCreate')
+            ->set('data.prefix', '../unsafe')->set('data.name', 'Unsafe')->call('save')->assertHasErrors(['data.prefix']);
+        $this->assertDatabaseMissing('locales', ['prefix' => '../unsafe']);
+        $this->assertDirectoryDoesNotExist(dirname($root).'/unsafe');
+        file_put_contents($root.'/blocked', 'Existing file');
+        Livewire::test(VoyagerBread::class, ['type' => 'locales'])->call('openCreate')
+            ->set('data.prefix', 'blocked')->set('data.name', 'Blocked')->call('save')->assertHasErrors(['data.prefix']);
+        $this->assertDatabaseMissing('locales', ['prefix' => 'blocked']);
+        $this->assertSame('Existing file', file_get_contents($root.'/blocked'));
+        $nested = Livewire::test(VoyagerBread::class, ['type' => 'locales'])->call('openCreate')->set('data.prefix', 'zz')->set('data.name', 'Rollback');
+        DB::beginTransaction();
+        try {
+            $nested->instance()->save();
+            $this->assertDirectoryExists($root.'/zz');
+        } finally { DB::rollBack(); }
+        $this->assertDirectoryDoesNotExist($root.'/zz');
+        $this->assertDatabaseMissing('locales', ['prefix' => 'zz']);
+        $populated = Livewire::test(VoyagerBread::class, ['type' => 'locales'])->call('openCreate')->set('data.prefix', 'keep')->set('data.name', 'Rollback populated');
+        DB::beginTransaction();
+        try {
+            $populated->instance()->save();
+            file_put_contents($root.'/keep/new.php', 'Keep concurrent file');
+        } finally { DB::rollBack(); }
+        $this->assertSame('Keep concurrent file', file_get_contents($root.'/keep/new.php'));
+        $this->assertDatabaseMissing('locales', ['prefix' => 'keep']);
+        // A generic section without this controller gets no extra filesystem behavior.
+        DB::table('data_types')->where('id', $typeId)->update(['controller' => null]);
+        Livewire::test(VoyagerBread::class, ['type' => 'locales'])->call('openCreate')
+            ->set('data.prefix', 'generic')->set('data.name', 'Generic')->call('save')->assertHasNoErrors();
+        $this->assertDirectoryDoesNotExist($root.'/generic');
+    }
+
+    public function test_configured_voyager_user_policy_allows_self_profile_but_denies_foreign_and_tampered_save(): void
+    {
+        $this->clientEditorMetadata();
+        DB::table('data_types')->where('slug', 'users')->update(['policy_name' => '\\TCG\\Voyager\\Policies\\UserPolicy']);
+        DB::table('permission_role')->whereIn('permission_id', DB::table('permissions')->where('key', 'edit_users')->pluck('id'))->delete();
+        $user = auth('filament')->user();
+        $other = User::forceCreate(['email' => 'foreign@example.invalid', 'password' => 'unused', 'role_id' => $user->role_id]);
+        $type = app(BreadRegistry::class)->type('users');
+        $registry = app(BreadRegistry::class);
+        $this->assertTrue($registry->permitted($type, 'read', $user->id));
+        $this->assertTrue($registry->permitted($type, 'edit', $user->id));
+        $this->assertFalse($registry->permitted($type, 'edit', $other->id));
+        $this->assertFalse($registry->permitted($type, 'edit'));
+        $this->assertFalse($registry->permitted($type, 'add', $user->id));
+        $this->assertFalse($registry->permitted($type, 'delete', $user->id));
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $user->id]);
+        $editor->set('data.first_name', 'Own profile')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'first_name' => 'Own profile']);
+        $editor->set('recordId', $other->id)->set('data.first_name', 'Forbidden')->call('save')->assertForbidden();
+        $this->assertDatabaseHas('users', ['id' => $other->id, 'first_name' => null]);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $other->id])->assertForbidden();
+        $viewer = Livewire::test(VoyagerBread::class, ['type' => 'users'])->call('openView', $user->id)->assertHasNoErrors();
+        $viewer->call('changeLocale', 'ru')->assertHasNoErrors();
+        Livewire::test(VoyagerBread::class, ['type' => 'users'])->call('openView', $other->id)->assertForbidden();
+        DB::table('permission_role')->whereIn('permission_id', DB::table('permissions')->where('key', 'browse_users')->pluck('id'))->delete();
+        $this->app->forgetInstance(BreadRegistry::class);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $user->id])
+            ->set('data.first_name', 'Direct own profile')->call('save')->assertHasNoErrors();
+        Livewire::test(VoyagerBread::class, ['type' => 'users'])->assertForbidden();
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'users', 'record' => $other->id])->assertForbidden();
+        DB::table('data_types')->where('slug', 'users')->update(['policy_name' => null]);
+        $this->assertFalse(app(BreadRegistry::class)->permitted(app(BreadRegistry::class)->type('users'), 'edit', $user->id));
+    }
+
     public function test_self_edit_preserves_role_even_with_tampered_form_state(): void
     {
         $this->clientEditorMetadata();
@@ -3194,8 +3388,13 @@ class VoyagerBreadTest extends TestCase
                 $page->set('data.rows.'.$key.'.display_name', 'Заголовок акции')->set('data.rows.'.$key.'.type', 'text_area');
             }
         }
-        $page->set('data.display_name_plural', 'Акции')->call('save')->assertHasNoErrors();
+        $page->set('data.display_name_plural', 'Акции')
+            ->set('data.controller', 'TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController')
+            ->set('data.policy_name', \App\Filament\Bread\BreadPolicyOptions::BASE)
+            ->call('save')->assertHasNoErrors();
         $type = app(BreadRegistry::class)->type('stocks');
+        $this->assertSame('TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController', $type->controller);
+        $this->assertSame(\App\Filament\Bread\BreadPolicyOptions::BASE, $type->policy_name);
         $this->assertSame(\App\Models\Stock::class, $type->model_name);
         $this->assertDatabaseCount('stocks', 1);
         $this->assertDatabaseHas('stocks', ['id' => $id, 'title' => 'Unchanged']);
@@ -3248,6 +3447,64 @@ class VoyagerBreadTest extends TestCase
         auth('filament')->user()->role->permissions()->detach();
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
         $service->create(auth('filament')->user(), $values, $service->snapshot('stocks'));
+    }
+
+    public function test_bread_creation_rejects_incompatible_classes_and_rolls_back_valid_choices_with_bad_fields(): void
+    {
+        $this->admin(['browse_admin', 'browse_bread']);
+        $this->creationTables();
+        $service = app(\App\Services\Admin\BreadCreationService::class);
+        $values = ['name' => 'stocks', 'model_name' => \App\Models\Stock::class, 'slug' => 'stocks',
+            'display_name_singular' => 'Stock', 'display_name_plural' => 'Stocks',
+            'generate_permissions' => true, 'add_menu' => true, 'rows' => $service->defaults('stocks')];
+        $snapshot = $service->snapshot('stocks');
+        $grants = DB::table('permission_role')->count();
+        foreach (['controller' => ['TCG\\Voyager\\Http\\Controllers\\VoyagerUserController', 'App\\UnknownController', ['invalid']],
+            'policy_name' => [\App\Filament\Bread\BreadPolicyOptions::USER, 'App\\UnknownPolicy', ['invalid']]] as $field => $invalids) {
+            foreach ($invalids as $invalid) {
+                try { $service->create(auth('filament')->user(), [...$values, $field => $invalid], $snapshot); $this->fail('Incompatible class accepted'); }
+                catch (\Illuminate\Validation\ValidationException $error) {
+                    $this->assertArrayHasKey($field, $error->errors());
+                    $this->assertDatabaseMissing('data_types', ['name' => 'stocks']);
+                }
+            }
+        }
+        $values['controller'] = '\\TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController';
+        $values['policy_name'] = '\\'.\App\Filament\Bread\BreadPolicyOptions::BASE;
+        $badRows = $values['rows'];
+        $badRows[1]['details'] = '{broken';
+        try { $service->create(auth('filament')->user(), [...$values, 'rows' => $badRows], $snapshot); $this->fail('Invalid fields accepted'); }
+        catch (\Illuminate\Validation\ValidationException $error) {
+            $this->assertArrayHasKey('rows', $error->errors());
+            $this->assertDatabaseMissing('data_types', ['name' => 'stocks']);
+            $this->assertDatabaseCount('data_rows', 2);
+            $this->assertDatabaseMissing('permissions', ['key' => 'browse_stocks']);
+            $this->assertDatabaseCount('menu_items', 1);
+        }
+        $id = $service->create(auth('filament')->user(), $values, $snapshot);
+        $this->assertDatabaseHas('data_types', ['id' => $id, 'controller' => ltrim($values['controller'], '\\'),
+            'policy_name' => \App\Filament\Bread\BreadPolicyOptions::BASE]);
+        $this->assertSame($grants, DB::table('permission_role')->count());
+    }
+
+    public function test_bread_creation_offers_user_controller_and_policy_in_wizard(): void
+    {
+        $this->admin(['browse_admin', 'browse_bread']);
+        $grants = DB::table('permission_role')->count();
+        $page = Livewire::test(\App\Filament\Pages\BreadMetadata::class)->call('openSectionCreation', 'users');
+        $fields = collect($page->instance()->form->getFlatComponents())
+            ->filter(fn ($field) => $field instanceof \Filament\Forms\Components\Select)->keyBy(fn ($field) => $field->getName());
+        $controller = $fields['controller'];
+        $policy = $fields['policy_name'];
+        $this->assertArrayHasKey('TCG\\Voyager\\Http\\Controllers\\VoyagerUserController', $controller->getOptions());
+        $this->assertArrayHasKey(\App\Filament\Bread\BreadPolicyOptions::USER, $policy->getOptions());
+        $page->set('data.controller', 'TCG\\Voyager\\Http\\Controllers\\VoyagerUserController')
+            ->set('data.policy_name', \App\Filament\Bread\BreadPolicyOptions::USER)
+            ->set('data.add_menu', false)->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('data_types', ['name' => 'users',
+            'controller' => 'TCG\\Voyager\\Http\\Controllers\\VoyagerUserController',
+            'policy_name' => \App\Filament\Bread\BreadPolicyOptions::USER]);
+        $this->assertSame($grants, DB::table('permission_role')->count());
     }
 
     public function test_bread_creation_requires_primary_id_and_available_admin_menu(): void

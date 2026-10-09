@@ -174,7 +174,7 @@ class VoyagerBread extends Page
             $this->redirect(\App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::getUrl());
             return;
         }
-        abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->registry()->permitted($bread, 'browse'), 403);
+        abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->canAccessBreadPage($bread), 403);
         $this->locale = (string) config('voyager.multilingual.default', 'en');
         $filter = request()->query('type');
         $this->filterType = is_scalar($filter) && ctype_digit((string) $filter) ? (int) $filter : null;
@@ -183,7 +183,15 @@ class VoyagerBread extends Page
     public function hydrate(): void
     {
         $bread = $this->bread();
-        abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->registry()->permitted($bread, 'browse'), 403);
+        abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->canAccessBreadPage($bread), 403);
+    }
+
+    private function canAccessBreadPage(stdClass $bread): bool
+    {
+        return $this->registry()->permitted($bread, 'browse')
+            || ($this instanceof VoyagerBreadEdit && $bread->name === 'users'
+                && $this->recordId === (int) auth('filament')->id()
+                && $this->registry()->permitted($bread, 'edit', $this->recordId));
     }
 
     public function getTitle(): string | Htmlable
@@ -545,7 +553,7 @@ class VoyagerBread extends Page
         $this->slugTracking = [];
         $this->localeDrafts = [];
         $this->altPanelOpen = false;
-        $bread = $this->requireBread('edit');
+        $bread = $this->requireBread('edit', $id);
         $model = $this->registry()->model($bread);
         abort_unless($model, 409);
         abort_unless($this->registry()->hasFormFields($bread, 'edit'), 409);
@@ -718,6 +726,7 @@ class VoyagerBread extends Page
         }
 
         DB::transaction(function () use ($bread, $model, $values, $default, $allowed, $pivots, $translated, $relationshipColumns, $rolePermissions, $userLocale, $singleImages): void {
+            $creating = $this->recordId === null;
             $record = $this->recordId ? $model->newQuery()->lockForUpdate()->findOrFail($this->recordId) : $model->newInstance();
             if ($bread->name === 'users' && $this->recordId === (int) auth('filament')->id()) {
                 // Match VoyagerUserController: self-edit must preserve all role assignments.
@@ -793,6 +802,7 @@ class VoyagerBread extends Page
                 }
                 $record->save();
             }
+            if ($creating) { app(\App\Filament\Bread\BreadLocaleController::class)->created($bread, $record); }
             foreach ($pivots as [$relation, $ids]) {
                 $details = $relation['details'];
                 $target = $details['table'];
@@ -1389,7 +1399,7 @@ class VoyagerBread extends Page
 
     public function openView(int $id): void
     {
-        $bread = $this->requireBread('read');
+        $bread = $this->requireBread('read', $id);
         abort_unless($this->registry()->model($bread)?->newQuery()->find($id), 404);
         $this->viewId = $id;
         $this->editing = false;
@@ -1998,10 +2008,11 @@ class VoyagerBread extends Page
         return $record;
     }
 
-    private function requireBread(string $action): stdClass
+    private function requireBread(string $action, ?int $recordId = null): stdClass
     {
         $bread = $this->bread();
-        abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->registry()->permitted($bread, $action), 403);
+        $recordId ??= match ($action) { 'read' => $this->viewId, 'edit' => $this->recordId, default => null };
+        abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->registry()->permitted($bread, $action, $recordId), 403);
 
         return $bread;
     }

@@ -2,6 +2,8 @@
 
 namespace App\Services\Admin;
 
+use App\Filament\Bread\BreadControllerOptions;
+use App\Filament\Bread\BreadPolicyOptions;
 use App\Models\User;
 use App\Models\Permission;
 use Illuminate\Database\Eloquent\Model;
@@ -72,12 +74,22 @@ class BreadCreationService
             'model_name' => 'required|string', 'display_name_singular' => 'required|string|max:191',
             'display_name_plural' => 'required|string|max:191', 'slug' => ['required', 'max:191', 'regex:/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/', Rule::unique('data_types', 'slug')],
             'icon' => 'nullable|string|max:191', 'description' => 'nullable|string|max:5000',
+            'controller' => 'nullable|string|max:191', 'policy_name' => 'nullable|string|max:191',
             'generate_permissions' => 'required|boolean', 'add_menu' => 'required|boolean',
             'rows' => 'required|array',
             'rows.*' => 'required|array', 'rows.*.field' => 'required|string',
         ])->validate();
         // The field service validates and filters each complete row below.
         $values['rows'] = $input['rows'];
+        $type = (object) ['name' => $values['name']];
+        foreach (['controller' => BreadControllerOptions::class, 'policy_name' => BreadPolicyOptions::class] as $field => $class) {
+            if (! array_key_exists($field, $values)) { continue; }
+            $options = app($class);
+            if (! $options->supports($type, $values[$field])) {
+                throw ValidationException::withMessages([$field => 'Выберите поддерживаемый вариант для этой таблицы.']);
+            }
+            $values[$field] = $options->normalize($values[$field]);
+        }
         if (! isset($this->models($values['name'])[$values['model_name']])) {
             throw ValidationException::withMessages(['model_name' => 'Выберите существующую модель этой таблицы с ключом id.']);
         }

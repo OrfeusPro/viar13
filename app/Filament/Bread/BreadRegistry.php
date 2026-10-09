@@ -70,7 +70,7 @@ class BreadRegistry
         return Schema::hasTable($type->name) ? Schema::getColumnListing($type->name) : [];
     }
 
-    public function permitted(stdClass $type, string $action): bool
+    public function permitted(stdClass $type, string $action, ?int $recordId = null): bool
     {
         if (! in_array($action, ['browse', 'read', 'add', 'edit', 'delete'], true)) {
             return false;
@@ -79,6 +79,13 @@ class BreadRegistry
         $user = auth('filament')->user();
         if (! $user || ! method_exists($user, 'hasPermission')) {
             return false;
+        }
+        // Voyager UserPolicy grants read/edit of one's own profile only.
+        if ($type->name === 'users'
+            && app(BreadPolicyOptions::class)->normalize($type->policy_name ?? null) === BreadPolicyOptions::USER
+            && in_array($action, ['read', 'edit'], true)
+            && $recordId !== null && $recordId === (int) $user->getKey()) {
+            return true;
         }
         if ($this->permissionKeys === null) {
             $roleIds = $user->roles()->pluck('roles.id')->all();

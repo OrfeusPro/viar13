@@ -17,8 +17,9 @@ class VoyagerBreadEdit extends VoyagerBread
 
     public function mount(string $type, int|string|null $record = null): void
     {
-        parent::mount($type);
         abort_unless($record !== null && ctype_digit((string) $record), 404);
+        $this->recordId = (int) $record;
+        parent::mount($type);
         $this->openEdit((int) $record);
     }
 
