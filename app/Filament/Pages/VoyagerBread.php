@@ -7,14 +7,11 @@ use App\Services\SeoMetaGeneration\SeoMetaContextResolver;
 use App\Services\SeoMetaGeneration\SeoMetaGenerator;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use App\Filament\Bread\BreadFileUpload as FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Radio;
-use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -73,6 +70,7 @@ class VoyagerBread extends Page
     public ?int $viewId = null;
 
     public array $data = [];
+    public array $richSourceFields = [];
 
     public array $slugTracking = [];
 
@@ -239,7 +237,7 @@ class VoyagerBread extends Page
             $component = match ($row->type) {
                 'text_area' => Textarea::make($row->field),
                 'code_editor' => app(BreadCodeEditor::class)->component($row->field, $details, $model),
-                'rich_text_box' => app(\App\Filament\Bread\BreadRichEditor::class)->component($row->field, $details),
+                'rich_text_box' => app(\App\Filament\Bread\BreadRichEditor::class)->component($row->field, $details, $bread->name, (bool) (($this->richSourceFields['*'][$row->field] ?? false) || ($this->richSourceFields[$this->locale][$row->field] ?? false))),
                 'number' => TextInput::make($row->field)->numeric(),
                 'coordinates' => $this->coordinatesComponent($row, $details),
                 'checkbox' => app(\App\Filament\Bread\BreadCheckbox::class)->component($row->field, $details),
@@ -247,15 +245,14 @@ class VoyagerBread extends Page
                 'select_dropdown' => $this->dropdownComponent($row, $details),
                 'select_multiple' => isset($details['relationship']) ? $this->selectRelationComponent($row, $details) : Select::make($row->field)->options($details['options'] ?? [])->multiple()->searchable(),
                 'radio_btn' => Radio::make($row->field)->options($details['options'] ?? []),
-                'time' => TimePicker::make($row->field)->format('H:i:s')->rules(['nullable', 'date_format:H:i:s']),
+                'time' => app(\App\Filament\Bread\BreadTemporal::class)->component($row->field, $row->type, $details, $label),
                 'markdown_editor' => MarkdownEditor::make($row->field),
                 'hidden' => Hidden::make($row->field),
                 'adv_json' => $this->jsonRowsComponent($row, $details),
                 'adv_page_layout' => $this->layoutComponent($row, $details),
                 'adv_fields_group' => $this->fieldsGroupComponent($row, $details),
                 'adv_select_dropdown_tree' => $this->treeComponent($row, $details),
-                'date' => DatePicker::make($row->field),
-                'timestamp' => DateTimePicker::make($row->field),
+                'date', 'timestamp' => app(\App\Filament\Bread\BreadTemporal::class)->component($row->field, $row->type, $details, $label),
                 'color' => ColorPicker::make($row->field),
                 'image' => $this->imageUploadComponent($row, $details),
                 'file' => FileUpload::make($row->field)->disk('public')->directory($bread->name . '/' . date('FY'))->maxSize(102400),
@@ -526,6 +523,7 @@ class VoyagerBread extends Page
 
     public function openCreate(): void
     {
+        $this->richSourceFields = [];
         $this->slugTracking = [];
         $this->singleImageUploads = [];
         $this->singleImageProperties = [];
@@ -550,6 +548,7 @@ class VoyagerBread extends Page
 
     public function openEdit(int $id): void
     {
+        $this->richSourceFields = [];
         $this->slugTracking = [];
         $this->localeDrafts = [];
         $this->altPanelOpen = false;
@@ -572,6 +571,14 @@ class VoyagerBread extends Page
         $this->fillRecord($record);
         $this->fillMediaProperties($record);
         $this->fillSingleImages($record);
+    }
+
+    public function enableRichSource(string $field): void
+    {
+        $model = $this->registry()->model($this->bread());
+        $translated = method_exists($model, 'getTranslatableAttributes') ? $model->getTranslatableAttributes() : [];
+        $locale = in_array($field, $translated, true) ? $this->locale : '*';
+        $this->richSourceFields[$locale][$field] = true;
     }
 
     public function changeLocale(string $locale): void
@@ -1957,6 +1964,10 @@ class VoyagerBread extends Page
                 if ($row->type === 'adv_json') { $values[$row->field] = app(BreadJsonRows::class)->document($values[$row->field]) ?? $values[$row->field]; }
                 if ($row->type === 'adv_page_layout') { $values[$row->field] = app(BreadPageLayout::class)->state($values[$row->field]); }
                 if ($row->type === 'adv_fields_group') { $values[$row->field] = $this->groupState($values[$row->field], json_decode($row->details ?: '{}', true) ?: []); }
+            }
+            if ($row->type === 'rich_text_box' && is_string($values[$row->field] ?? null)
+                && app(\App\Filament\Bread\BreadRichEditor::class)->requiresSource($values[$row->field])) {
+                $this->enableRichSource($row->field);
             }
         }
         foreach ($this->registry()->belongsToRows($bread, 'edit') as $row) {

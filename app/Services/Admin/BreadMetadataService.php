@@ -69,6 +69,7 @@ class BreadMetadataService
                 throw ValidationException::withMessages(['field' => 'Сначала добавьте физическую колонку миграцией.']);
             }
             app(\App\Filament\Bread\BreadFormLayout::class)->validate($details);
+            if (in_array($values['type'], ['time', 'date', 'timestamp'], true)) { app(\App\Filament\Bread\BreadTemporal::class)->validate($values['type'], $details); }
             if ($values['type'] === 'checkbox') { app(\App\Filament\Bread\BreadCheckbox::class)->validate($details); }
             if ($values['type'] === 'multiple_checkbox') { app(\App\Filament\Bread\BreadMultiCheckbox::class)->validate($details); }
             if (in_array($values['type'], ['image', 'multiple_images'], true)) { app(\App\Filament\Bread\BreadImageUpload::class)->validate($details); }

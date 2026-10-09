@@ -3,6 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Filament\Bread\BreadRegistry;
+use App\Filament\Bread\BreadControllerOptions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use stdClass;
@@ -18,7 +19,9 @@ class BreadTagCreationService
     {
         if (! $this->enabled($details)) { return null; }
         $target = collect($registry->types())->firstWhere('name', $details['table']);
-        if (! $target || $registry->isDedicated($target) || filled($target->controller ?? null)
+        $controller = $target ? app(BreadControllerOptions::class)->normalize($target->controller ?? null) : null;
+        if (! $target || $registry->isDedicated($target)
+            || ($controller !== null && $controller !== 'TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController')
             || ! $registry->permitted($target, 'add') || ! $registry->model($target)) { return null; }
         $label = collect($registry->editableRows($target, 'add'))->firstWhere('field', $details['label']);
         return $label && in_array($label->type, ['text', 'text_area'], true) ? $target : null;

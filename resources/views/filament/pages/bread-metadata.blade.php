@@ -39,7 +39,7 @@
             @if($editingSettings)
                 @php($settingsContext = $this->getSettingsContext())
                 <h2 style="font-size:18px;font-weight:600;margin-bottom:16px">Настройки BREAD — {{ $settingsContext?->name }}</h2>
-                <p class="viar-management-muted" style="margin-bottom:24px">Таблица: {{ $settingsContext?->name }}<br>Контроллер: {{ $settingsContext?->controller ?: 'Общий BREAD' }} · Политика: {{ $settingsContext?->policy_name ?: 'Права BREAD' }} — пока только просмотр. Права ролей здесь не меняются.</p>
+                <p class="viar-management-muted" style="margin-bottom:24px">Таблица: {{ $settingsContext?->name }}<br>Контроллер: {{ $settingsContext?->controller ?: 'Общий BREAD' }} · Политика: {{ $settingsContext?->policy_name ?: 'Права BREAD' }}. Совместимые варианты доступны в настройках ниже. Права ролей здесь не меняются.</p>
             @endif
             <form wire:submit="save" class="viar-management-form">
                 {{ $this->form }}

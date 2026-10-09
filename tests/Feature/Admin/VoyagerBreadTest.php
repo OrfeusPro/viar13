@@ -136,6 +136,96 @@ class VoyagerBreadTest extends TestCase
         $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => '<p>Original <strong>HTML</strong></p>']);
     }
 
+    public function test_rich_editor_html_source_is_a_draft_and_saves_current_translation(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $rowId = DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'meta_description')->value('id');
+        DB::table('data_rows')->where('id', $rowId)->update(['type' => 'rich_text_box', 'details' => '{}']);
+        $id = DB::table('pages')->insertGetId(['title' => 'HTML editor', 'meta_description' => '<p>Original</p>']);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $field = collect($editor->instance()->form->getFlatComponents())->first(fn ($field) => $field instanceof \Filament\Forms\Components\RichEditor);
+        $this->assertContains('breadSource', array_merge(...$field->getToolbarButtons()));
+        $this->assertSame('public', $field->getFileAttachmentsDiskName());
+        $this->assertSame('pages/'.date('FY'), $field->getFileAttachmentsDirectory());
+        $this->assertSame('public', $field->getFileAttachmentsVisibility());
+        $this->assertSame(10240, $field->getFileAttachmentsMaxSize());
+        $this->assertNotContains('application/pdf', $field->getFileAttachmentsAcceptedFileTypes());
+        $action = \Filament\Actions\Testing\TestAction::make('breadSource')->schemaComponent('meta_description', 'form');
+        $html = '<p>Changed <strong>HTML</strong></p>';
+        $editor->callAction($action, ['html' => $html])->assertHasNoActionErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => '<p>Original</p>']);
+        $editor->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $html]);
+        $editor->call('changeLocale', 'ru')->callAction($action, ['html' => '<p>Перевод HTML</p>'])->assertHasNoActionErrors()
+            ->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'column_name' => 'meta_description', 'locale' => 'ru', 'value' => '<p>Перевод HTML</p>']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $html]);
+        $editor->set('data.meta_description', ['invalid'])->call('save')->assertHasErrors();
+        DB::table('data_rows')->where('id', $rowId)->update(['details' => '{"tinymceOptions":{"toolbar":"code image forecolor table"}}']);
+        $custom = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $field = collect($custom->instance()->form->getFlatComponents())->first(fn ($field) => $field instanceof \Filament\Forms\Components\RichEditor);
+        $this->assertSame([['breadSource', 'attachFiles', 'textColor', 'table']], $field->getToolbarButtons());
+    }
+
+    public function test_rich_legacy_html_and_source_changes_preserve_embedded_elements_and_attributes(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'meta_description')->update(['type' => 'rich_text_box', 'details' => '{}']);
+        $html = '<div class="legacy"><p style="background-color: #ff0000; margin-left: 40px">Old</p><form><input name="legacy" value="x"></form><iframe src="https://example.com/embed"></iframe></div>';
+        $id = DB::table('pages')->insertGetId(['title' => 'Legacy HTML', 'meta_description' => $html]);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $field = collect($editor->instance()->form->getFlatComponents())->first(fn ($field) => method_exists($field, 'getName') && $field->getName() === 'meta_description');
+        $this->assertInstanceOf(\Filament\Forms\Components\CodeEditor::class, $field);
+        $editor->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $html]);
+        $editor->call('changeLocale', 'ru')->set('data.meta_description', '<p>Перевод</p>')->call('save')->assertHasNoErrors();
+        $editor->call('changeLocale', 'en')->assertSet('data.meta_description', $html);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $html]);
+        $fresh = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])->call('changeLocale', 'ru');
+        $action = \Filament\Actions\Testing\TestAction::make('breadSource')->schemaComponent('meta_description', 'form');
+        $fresh->callAction($action, ['html' => $html])->assertHasNoActionErrors()->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'column_name' => 'meta_description', 'locale' => 'ru', 'value' => $html]);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $html]);
+        $fresh->call('changeLocale', 'en')->set('data.meta_description', ['invalid'])->call('save')->assertHasErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $html]);
+
+        // Shared HTML drafts keep their editor mode across language switches.
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['type' => 'rich_text_box', 'details' => '{}']);
+        $shared = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $sharedSource = \Filament\Actions\Testing\TestAction::make('breadSource')->schemaComponent('title', 'form');
+        $shared->callAction($sharedSource, ['html' => $html])->assertHasNoActionErrors()
+            ->call('changeLocale', 'ru')->assertSet('data.title', $html)
+            ->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'title' => $html]);
+        $this->assertSame(0, DB::table('translations')->where('column_name', 'title')->count());
+    }
+
+    public function test_rich_source_mode_does_not_bypass_pending_image_attachment_save(): void
+    {
+        Storage::fake('public');
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'meta_description')->update(['type' => 'rich_text_box', 'details' => '{}']);
+        $id = DB::table('pages')->insertGetId(['title' => 'Pending HTML image', 'meta_description' => '<p>Original</p>']);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $attach = \Filament\Actions\Testing\TestAction::make('attachFiles')->schemaComponent('meta_description', 'form')
+            ->arguments(['editorSelection' => ['anchor' => 1, 'head' => 1, 'type' => 'text']]);
+        $editor->callAction($attach, ['file' => UploadedFile::fake()->image('inline.png'), 'alt' => 'Inline'])->assertHasNoActionErrors();
+        $uploads = $editor->get('componentFileAttachments.data.meta_description');
+        $uuid = array_key_first($uploads);
+        $this->assertNotNull($uuid);
+        $editor->set('data.meta_description', ['type' => 'doc', 'content' => [
+            ['type' => 'image', 'attrs' => ['id' => $uuid, 'src' => $uploads[$uuid]->temporaryUrl()]],
+        ]]);
+        $source = \Filament\Actions\Testing\TestAction::make('breadSource')->schemaComponent('meta_description', 'form');
+        $editor->callAction($source, ['html' => '<p>Source</p>'])->assertHasActionErrors(['html']);
+        $this->assertFalse((bool) ($editor->get('richSourceFields')['en']['meta_description'] ?? false));
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => '<p>Original</p>']);
+        $this->assertSame([], Storage::disk('public')->allFiles());
+    }
+
     public function test_image_upload_cleanup_on_validation_and_sql_failure_and_retry(): void
     {
         Storage::fake('public');
@@ -1267,6 +1357,44 @@ class VoyagerBreadTest extends TestCase
         $this->assertCount(2, $registry->editableRows($type, 'edit'));
     }
 
+    public function test_temporal_fields_match_legacy_display_defaults_and_keep_shared_state(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'add_pages', 'edit_pages']);
+        Schema::table('pages', function (Blueprint $table): void {
+            $table->string('slot')->nullable(); $table->date('event_date')->nullable(); $table->dateTime('event_at')->nullable();
+        });
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        foreach (['slot' => 'time', 'event_date' => 'date', 'event_at' => 'timestamp'] as $field => $type) {
+            DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => $field, 'type' => $type, 'display_name' => $field,
+                'details' => json_encode($type === 'time' ? ['placeholder' => 'Время встречи', 'default' => '09:15'] : []), 'order' => 10]);
+        }
+        $creator = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('openCreate');
+        $fields = collect($creator->instance()->form->getFlatComponents())
+            ->filter(fn ($field) => $field instanceof \Filament\Forms\Components\Field)->keyBy(fn ($field) => $field->getName());
+        $this->assertSame('Время встречи', $fields['slot']->getPlaceholder());
+        $this->assertSame('event_date', $fields['event_date']->getPlaceholder());
+        $this->assertSame('Y-m-d', $fields['event_date']->getFormat());
+        $this->assertSame('m/d/Y g:i A', $fields['event_at']->getDisplayFormat());
+        $this->assertFalse($fields['event_at']->isNative());
+        $this->assertSame(config('app.timezone'), $fields['event_at']->getTimezone());
+        $creator->set('data.title', 'Temporal record')->set('data.event_date', '2026-10-09')
+            ->set('data.event_at', '2026-10-09 15:45:00')->call('save')->assertHasNoErrors();
+        $id = DB::table('pages')->where('title', 'Temporal record')->value('id');
+        $this->assertDatabaseHas('pages', ['id' => $id, 'slot' => '09:15:00', 'event_date' => '2026-10-09', 'event_at' => '2026-10-09 15:45:00']);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id]);
+        $editor->set('data.slot', 'bad time')->call('save')->assertHasErrors();
+        $editor->set('data.slot', '10:20:30')->set('data.event_date', 'not a date')->call('save')->assertHasErrors();
+        $editor->set('data.event_date', '2026-11-10')->set('data.event_at', 'bad timestamp')->call('save')->assertHasErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'slot' => '09:15:00', 'event_date' => '2026-10-09', 'event_at' => '2026-10-09 15:45:00']);
+        $editor->set('data.event_at', '2026-11-10 16:30:00')->call('changeLocale', 'ru')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'slot' => '10:20:30', 'event_date' => '2026-11-10', 'event_at' => '2026-11-10 16:30:00']);
+        $this->assertSame(0, DB::table('translations')->whereIn('column_name', ['slot', 'event_date', 'event_at'])->count());
+        foreach ([['placeholder' => ['bad']], ['default' => '25:00'], ['default' => false]] as $details) {
+            try { app(\App\Filament\Bread\BreadTemporal::class)->validate('time', $details); $this->fail('Invalid time metadata accepted'); }
+            catch (\Illuminate\Validation\ValidationException $error) { $this->assertArrayHasKey('details', $error->errors()); }
+        }
+    }
+
     public function test_empty_form_cannot_create_or_edit_a_record(): void
     {
         $this->admin(['browse_admin', 'browse_pages', 'add_pages', 'edit_pages']);
@@ -1684,6 +1812,19 @@ class VoyagerBreadTest extends TestCase
         $newId = $field->evaluate($field->getCreateOptionUsing(), ['data' => ['label' => ' New tag ', 'id' => 999]]);
         $this->assertDatabaseHas('categories', ['id' => $newId, 'name' => 'New tag']);
         $this->assertDatabaseMissing('category_page', ['category_id' => $newId]);
+        foreach (['TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController', '\\TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController'] as $index => $controller) {
+            DB::table('data_types')->where('id', $categoryType)->update(['controller' => $controller]);
+            $baseId = app(\App\Services\Admin\BreadTagCreationService::class)->create('pages', $rowId, $id, ['label' => 'Base controller '.$index]);
+            $this->assertDatabaseHas('categories', ['id' => $baseId, 'name' => 'Base controller '.$index]);
+            $this->assertDatabaseMissing('category_page', ['category_id' => $baseId]);
+        }
+        DB::table('data_types')->where('id', $categoryType)->update(['controller' => 'App\\Http\\Controllers\\CustomTagController']);
+        try {
+            $field->evaluate($field->getCreateOptionUsing(), ['data' => ['label' => 'Unsupported controller']]);
+            $this->fail('Custom tag handler was bypassed');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) { $this->assertSame(403, $exception->getStatusCode()); }
+        $this->assertDatabaseMissing('categories', ['name' => 'Unsupported controller']);
+        DB::table('data_types')->where('id', $categoryType)->update(['controller' => 'TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController']);
         foreach (['', 'ab'] as $invalidLabel) {
             try {
                 app(\App\Services\Admin\BreadTagCreationService::class)->create('pages', $rowId, $id, ['label' => $invalidLabel]);
