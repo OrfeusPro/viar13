@@ -32,17 +32,7 @@ class BreadTables extends Page
             $type = $types->get($name);
             if ($this->search !== '' && ! str_contains(mb_strtolower($name.' '.($type->display_name_plural ?? '')), mb_strtolower($this->search))) { continue; }
             $available = $type && $registry->model($type);
-            $url = null;
-            if ($available && $registry->permitted($type, 'browse')) {
-                $url = match ($type->name) {
-                    'orders' => \App\Filament\Resources\Orders\OrdersResource::getUrl(),
-                    'canvas_slider' => \App\Filament\Resources\CanvasSliders\CanvasSliderResource::getUrl(),
-                    'image_alt_suggestions' => \App\Filament\Resources\ImageAltSuggestions\ImageAltSuggestionResource::getUrl(),
-                    'seo_meta_suggestions' => \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::getUrl(),
-                    'menus' => VoyagerMenuItems::getUrl(),
-                    default => VoyagerBread::getUrl(['type' => $type->slug]),
-                };
-            }
+            $url = $available ? $registry->browseUrl($type) : null;
             $rows[] = ['name' => $name, 'configured' => (bool) $type, 'title' => $type->display_name_plural ?? null,
                 'slug' => $type->slug ?? null, 'available' => (bool) $available, 'browse_url' => $url,
                 'edit_url' => $type ? BreadMetadata::getUrl().'?section='.$type->id : null,

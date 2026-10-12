@@ -613,9 +613,9 @@ class VoyagerBread extends Page
         }
     }
 
-    public function updatedData(mixed $value, string $field): void
+    public function updatedData(mixed $value, ?string $field = null): void
     {
-        if (! $this->editing || ! is_string($value)) { return; }
+        if (! $this->editing || $field === null || ! is_string($value)) { return; }
         $bread = $this->bread();
         $rows = $this->registry()->editableRows($bread, $this->recordId ? 'edit' : 'add');
         $model = $this->registry()->model($bread);
@@ -1471,6 +1471,9 @@ class VoyagerBread extends Page
                     'table_name' => $bread->name, 'column_name' => $row->field,
                     'foreign_key' => $record->getKey(), 'locale' => $this->locale,
                 ])->value('value');
+            if ($value instanceof \DateTimeInterface) {
+                $value = $value->format(match ($row->type) { 'date' => 'Y-m-d', 'time' => 'H:i:s', default => 'Y-m-d H:i:s' });
+            }
             $fields[] = ['label' => $row->display_name ?: $row->field, 'type' => $row->type, 'value' => $value];
             if ($row->type === 'multiple_checkbox') { $fields[array_key_last($fields)]['value'] = app(\App\Filament\Bread\BreadMultiCheckbox::class)->summary($value, json_decode($row->details ?: '{}', true) ?: []); }
             if ($row->type === 'checkbox') {

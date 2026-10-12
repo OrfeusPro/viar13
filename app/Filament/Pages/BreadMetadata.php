@@ -141,7 +141,7 @@ class BreadMetadata extends Page
                     ->helperText('Права ролей назначаются отдельно. Для пользователей доступна политика собственного профиля.'),
                 Textarea::make('description')->label('Описание')->rows(3)->columnSpanFull(),
                 Toggle::make('generate_permissions')->label('Создать разрешения BREAD')
-                    ->helperText('Создаются определения browse/read/edit/add/delete. Ролям они автоматически не назначаются.'),
+                      ->helperText('Создаются browse/read/edit/add/delete. Роль admin создателя получает права сразу; остальные роли назначаются отдельно.'),
                 Toggle::make('add_menu')->label('Добавить пункт в меню admin'),
                 Repeater::make('rows')->label('Поля таблицы')->addable(false)->deletable(false)->reorderable(false)->columns(3)->columnSpanFull()
                     ->schema([
@@ -278,6 +278,10 @@ class BreadMetadata extends Page
             $values['name'] = $this->creationTable;
             $values['rows'] = array_values($values['rows']);
             $this->typeId = app(BreadCreationService::class)->create(auth('filament')->user(), $values, $this->creationSnapshot);
+            $this->cancel();
+            Notification::make()->success()->title('Настройки BREAD сохранены')->send();
+            $this->redirect(static::getUrl().'?section='.$this->typeId);
+            return;
         } elseif ($this->editingSettings) {
             app(BreadTypeSettingsService::class)->save(auth('filament')->user(), $this->typeId, $this->form->getState(), $this->fingerprint);
         } else {

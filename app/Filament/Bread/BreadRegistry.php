@@ -13,6 +13,19 @@ class BreadRegistry
 {
     private ?array $permissionKeys = null;
 
+    public function browseUrl(stdClass $type): ?string
+    {
+        if (! $this->model($type) || ! $this->permitted($type, 'browse')) { return null; }
+        return match ($type->name) {
+            'orders' => \App\Filament\Resources\Orders\OrdersResource::getUrl(),
+            'canvas_slider' => \App\Filament\Resources\CanvasSliders\CanvasSliderResource::getUrl(),
+            'image_alt_suggestions' => \App\Filament\Resources\ImageAltSuggestions\ImageAltSuggestionResource::getUrl(),
+            'seo_meta_suggestions' => \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::getUrl(),
+            'menus' => \App\Filament\Pages\VoyagerMenuItems::getUrl(),
+            default => \App\Filament\Pages\VoyagerBread::getUrl(['type' => $type->slug]),
+        };
+    }
+
     public function types(): array
     {
         if (! Schema::hasTable('data_types')) {

@@ -129,8 +129,17 @@ class BreadCreationService
                 }
             }
             if ($values['generate_permissions']) {
+                // New sections are immediately usable by the administrator who
+                // created them. Other roles still require explicit assignment.
+                $adminRoleIds = $actor->roles()->where('roles.name', 'admin')->pluck('roles.id')->all();
+                if ($actor->role()->where('name', 'admin')->exists()) {
+                    $adminRoleIds[] = $actor->role_id;
+                }
                 foreach (['browse', 'read', 'edit', 'add', 'delete'] as $action) {
-                    Permission::firstOrCreate(['key' => $action.'_'.$values['name']], ['table_name' => $values['name']]);
+                    $permission = Permission::firstOrCreate(['key' => $action.'_'.$values['name']], ['table_name' => $values['name']]);
+                    foreach (array_unique($adminRoleIds) as $roleId) {
+                        DB::table('permission_role')->updateOrInsert(['role_id' => $roleId, 'permission_id' => $permission->id], []);
+                    }
                 }
             }
             if ($menu) {

@@ -22,6 +22,836 @@ use Tests\TestCase;
 
 class VoyagerBreadTest extends TestCase
 {
+    public function test_database_drop_requires_bread_removal_and_rechecks_it_after_preview(): void
+    {
+        Schema::create('drop_bread_fixture', function (Blueprint $table): void { $table->id(); });
+        DB::table('drop_bread_fixture')->insert(['id' => 1]);
+        $service = app(\App\Services\Admin\DatabaseTableEditingService::class);
+        $hash = $service->fingerprint($service->snapshot('drop_bread_fixture'));
+        $this->assertNotEmpty($service->dropPreview('drop_bread_fixture', $hash));
+        DB::table('data_types')->insert(['name' => 'drop_bread_fixture', 'slug' => 'drop-bread-fixture', 'model_name' => '', 'display_name_singular' => 'Fixture', 'display_name_plural' => 'Fixtures']);
+        foreach (['dropPreview', 'drop'] as $method) {
+            try { $service->{$method}('drop_bread_fixture', $hash); $this->fail('Table with BREAD was dropped'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertStringContainsString('Сначала удалите BREAD', $exception->getMessage()); }
+        }
+        $this->assertDatabaseHas('drop_bread_fixture', ['id' => 1]);
+        DB::table('data_types')->where('name', 'drop_bread_fixture')->delete();
+        $service->drop('drop_bread_fixture', $hash);
+        $this->assertFalse(Schema::hasTable('drop_bread_fixture'));
+    }
+
+    public function test_database_edit_keeps_existing_disabled_text_default_and_index_on_noop(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        Schema::create('text_options_fixture', function (Blueprint $table): void {
+            $table->id(); $table->text('note')->default('kept'); $table->index('note', 'note_index');
+        });
+        DB::table('text_options_fixture')->insert(['id' => 1]);
+        $page = Livewire::withQueryParams(['table' => 'text_options_fixture'])->test(\App\Filament\Pages\DatabaseEdit::class)
+            ->call('preview')->assertHasNoErrors()->assertSet('sql', []);
+        $page->set('data.name', 'text_options_renamed')->call('prepareSaveStructure')->assertHasNoErrors()
+            ->call('saveStructure')->assertHasNoErrors();
+        $this->assertDatabaseHas('text_options_renamed', ['id' => 1, 'note' => 'kept']);
+        $this->assertTrue(collect(Schema::getIndexes('text_options_renamed'))->contains(fn ($index) => $index['name'] === 'note_index'));
+        DB::table('text_options_renamed')->insert(['id' => 2]);
+        $this->assertDatabaseHas('text_options_renamed', ['id' => 2, 'note' => 'kept']);
+    }
+
+    public function test_database_mysql_extra_lookup_uses_schema_and_prefixed_table_bindings(): void
+    {
+        $connection = \Mockery::mock(\Illuminate\Database\MySqlConnection::class);
+        $connection->shouldReceive('getDatabaseName')->once()->andReturn('fixture');
+        $connection->shouldReceive('getTablePrefix')->once()->andReturn('tenant_');
+        $connection->shouldReceive('select')->once()->with(
+            'select COLUMN_NAME as name, EXTRA as extra from information_schema.COLUMNS where TABLE_SCHEMA = ? and TABLE_NAME = ?',
+            ['fixture', 'tenant_records']
+        )->andReturn([(object) ['name' => 'stamp', 'extra' => 'DEFAULT_GENERATED on update CURRENT_TIMESTAMP(6)']]);
+        $manager = DB::getFacadeRoot(); DB::shouldReceive('connection')->once()->andReturn($connection);
+        $service = new class extends \App\Services\Admin\DatabaseInspectionService {
+            public function extras(string $table): array { return $this->columnExtras($table); }
+        };
+        try { $this->assertSame(['stamp' => 'DEFAULT_GENERATED on update CURRENT_TIMESTAMP(6)'], $service->extras('records')); }
+        finally { DB::swap($manager); }
+    }
+
+    public function test_database_inspection_keeps_extra_and_detects_auto_increment_with_other_flags(): void
+    {
+        Schema::create('extra_inspection_fixture', function (Blueprint $table): void { $table->id(); });
+        $service = new class extends \App\Services\Admin\DatabaseInspectionService {
+            public function tables(string $search = ''): array { return [['name' => 'extra_inspection_fixture']]; }
+            protected function columnExtras(string $table): array { return ['id' => 'auto_increment INVISIBLE']; }
+        };
+        $manager = DB::getFacadeRoot(); $connection = DB::connection();
+        DB::shouldReceive('getDriverName')->once()->andReturn('mysql');
+        DB::shouldReceive('connection')->andReturn($connection);
+        try {
+            $snapshot = $service->describe('extra_inspection_fixture');
+            $this->assertSame('auto_increment INVISIBLE', $snapshot['columns'][0]['extra']);
+            $this->assertTrue($snapshot['columns'][0]['auto_increment']);
+        } finally { DB::swap($manager); }
+    }
+
+    public function test_database_edit_mysql_preserves_extra_expressions_and_zerofill_or_rejects_incompatible_changes(): void
+    {
+        Schema::create('extras_fixture', function (Blueprint $table): void {
+            $table->id(); $table->timestamp('stamp')->nullable(); $table->integer('code')->default(0);
+            $table->string('token', 40); $table->string('literal', 40);
+        });
+        $fixture = app(\App\Services\Admin\DatabaseTableEditingService::class)->snapshot('extras_fixture');
+        $fixture['structure']['columns'][1]['type_name'] = 'timestamp';
+        $fixture['structure']['columns'][1]['type'] = 'timestamp(6)';
+        $fixture['structure']['columns'][1]['default'] = 'current_timestamp(6)';
+        $fixture['structure']['columns'][1]['extra'] = 'DEFAULT_GENERATED on update CURRENT_TIMESTAMP(6)';
+        $fixture['structure']['columns'][2]['type_name'] = 'int';
+        $fixture['structure']['columns'][2]['type'] = 'int(6) unsigned zerofill';
+        foreach ([3, 4] as $position) {
+            $fixture['structure']['columns'][$position]['type_name'] = 'varchar';
+            $fixture['structure']['columns'][$position]['type'] = 'varchar(40)';
+        }
+        $fixture['structure']['columns'][3]['default'] = 'uuid()';
+        $fixture['structure']['columns'][3]['extra'] = 'DEFAULT_GENERATED';
+        $fixture['structure']['columns'][4]['default'] = "'uuid()'";
+        config(['database.connections.mysql_extra_compile' => ['driver' => 'mysql', 'database' => 'fixture', 'prefix' => '']]);
+        $default = DB::getDefaultConnection(); DB::setDefaultConnection('mysql_extra_compile');
+        Schema::clearResolvedInstance('db.schema'); Schema::shouldReceive('hasTable')->andReturn(false);
+        $connection = DB::connection(); $pdo = \Mockery::mock(\PDO::class);
+        $pdo->shouldReceive('getAttribute')->with(\PDO::ATTR_SERVER_VERSION)->andReturn('8.0.36'); $connection->setPdo($pdo);
+        $grammar = $connection->getSchemaGrammar();
+        $service = new class($fixture) extends \App\Services\Admin\DatabaseTableEditingService {
+            public function __construct(public array $fixture) {}
+            public function snapshot(string $table): array { return $this->fixture; }
+        };
+        try {
+            $input = $service->definition('extras_fixture', $fixture);
+            $input['columns'][1]['nullable'] = false;
+            $input['columns'][2]['nullable'] = true;
+            $input['columns'][3]['length'] = '60'; $input['columns'][4]['length'] = '60';
+            $sql = implode("\n", $service->preview('extras_fixture', $input, $service->fingerprint($fixture))['sql']);
+            $this->assertStringContainsString('timestamp(6) not null default current_timestamp(6) on update CURRENT_TIMESTAMP(6)', $sql);
+            $this->assertStringContainsString('modify `code` int(6) unsigned zerofill null default', $sql);
+            $this->assertStringContainsString('modify `token` varchar(60) not null default (uuid())', $sql);
+            $this->assertStringContainsString("modify `literal` varchar(60) not null default 'uuid()'", $sql);
+            $this->assertSame($grammar, $connection->getSchemaGrammar());
+            $service->fixture['structure']['columns'][3]['extra'] = '';
+            $service->fixture['structure']['columns'][3]['mariadb_quoted_defaults'] = true;
+            $mariaSql = implode("\n", $service->preview('extras_fixture', $input, $service->fingerprint($service->fixture))['sql']);
+            $this->assertStringContainsString('default (uuid())', $mariaSql);
+            $service->fixture = $fixture;
+            $invalid = $input; $invalid['columns'][2]['unsigned'] = false;
+            try { $service->preview('extras_fixture', $invalid, $service->fingerprint($fixture)); $this->fail('Zerofill unsigned change accepted'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertStringContainsString('ZEROFILL', $exception->getMessage()); }
+            $invalid = $input; $invalid['columns'][1]['type'] = 'varchar'; $invalid['columns'][1]['default'] = null;
+            try { $service->preview('extras_fixture', $invalid, $service->fingerprint($fixture)); $this->fail('Invalid ON UPDATE type accepted'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertStringContainsString('ON UPDATE', $exception->getMessage()); }
+            $invalid = $input; $invalid['columns'][3]['type'] = 'text';
+            try { $service->preview('extras_fixture', $invalid, $service->fingerprint($fixture)); $this->fail('Expression type change accepted'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertStringContainsString('выражением default', $exception->getMessage()); }
+            $invalid = $input; $invalid['columns'][3]['default'] = 'uuid(); drop table anything';
+            $sql = implode("\n", $service->preview('extras_fixture', $invalid, $service->fingerprint($fixture))['sql']);
+            $this->assertStringContainsString("default 'uuid(); drop table anything'", $sql);
+            $service->fixture['structure']['columns'][2]['extra'] = 'INVISIBLE';
+            try { $service->preview('extras_fixture', $input, $service->fingerprint($service->fixture)); $this->fail('Unknown EXTRA lost'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertStringContainsString('дополнительные свойства', $exception->getMessage()); }
+        } finally { DB::setDefaultConnection($default); $this->app->forgetInstance('db.schema'); Schema::clearResolvedInstance('db.schema'); DB::purge('mysql_extra_compile'); }
+        $this->assertTrue(Schema::hasColumn('extras_fixture', 'stamp'));
+    }
+
+    public function test_database_edit_renames_expression_default_without_rewriting_it(): void
+    {
+        Schema::create('expression_fixture', function (Blueprint $table): void { $table->id(); $table->timestamp('published_at')->useCurrent(); });
+        DB::table('expression_fixture')->insert(['id' => 1]);
+        $before = DB::table('expression_fixture')->value('published_at');
+        $service = app(\App\Services\Admin\DatabaseTableEditingService::class);
+        $snapshot = $service->snapshot('expression_fixture');
+        $input = $service->definition('expression_fixture', $snapshot);
+        $input['columns'][1]['name'] = 'released_at';
+        $plan = $service->preview('expression_fixture', $input, $service->fingerprint($snapshot));
+        $this->assertSame([], $plan['changed']);
+        $service->apply('expression_fixture', $input, $service->fingerprint($snapshot));
+        $this->assertSame($before, DB::table('expression_fixture')->value('released_at'));
+        DB::table('expression_fixture')->insert(['id' => 2]);
+        $this->assertNotNull(DB::table('expression_fixture')->where('id', 2)->value('released_at'));
+        $this->assertSame('CURRENT_TIMESTAMP', collect(Schema::getColumns('expression_fixture'))->firstWhere('name', 'released_at')['default']);
+        $snapshot = $service->snapshot('expression_fixture');
+        $input = $service->definition('expression_fixture', $snapshot);
+        $input['columns'][1]['nullable'] = true;
+        $service->apply('expression_fixture', $input, $service->fingerprint($snapshot));
+        DB::table('expression_fixture')->insert(['id' => 3]);
+        $this->assertNotNull(DB::table('expression_fixture')->where('id', 3)->value('released_at'));
+        $this->assertSame($before, DB::table('expression_fixture')->where('id', 1)->value('released_at'));
+    }
+
+    public function test_database_edit_mysql_primary_auto_transition_is_one_alter_and_guards_dependencies(): void
+    {
+        Schema::create('primary_fixture', function (Blueprint $table): void { $table->id(); $table->integer('code'); $table->timestamp('clock')->nullable(); $table->index('code', 'code_index'); });
+        $fixture = app(\App\Services\Admin\DatabaseTableEditingService::class)->snapshot('primary_fixture');
+        $fixture['structure']['columns'][2]['type'] = 'timestamp(6)';
+        $fixture['structure']['columns'][2]['type_name'] = 'timestamp';
+        config(['database.connections.mysql_primary_compile' => ['driver' => 'mysql', 'database' => 'fixture', 'prefix' => '']]);
+        $default = DB::getDefaultConnection(); DB::setDefaultConnection('mysql_primary_compile');
+        Schema::clearResolvedInstance('db.schema'); Schema::shouldReceive('hasTable')->andReturn(false);
+        $connection = DB::connection(); $pdo = \Mockery::mock(\PDO::class);
+        $pdo->shouldReceive('getAttribute')->with(\PDO::ATTR_SERVER_VERSION)->andReturn('8.0.36'); $connection->setPdo($pdo);
+        $grammar = $connection->getSchemaGrammar();
+        $service = new class($fixture) extends \App\Services\Admin\DatabaseTableEditingService {
+            public function __construct(public array $fixture) {}
+            public function snapshot(string $table): array { return $this->fixture; }
+        };
+        try {
+            $input = $service->definition('primary_fixture', $fixture);
+            $input['columns'][0]['auto_increment'] = false; $input['columns'][0]['index'] = '';
+            $input['columns'][1]['auto_increment'] = true; $input['columns'][1]['index'] = 'PRIMARY';
+            $input['columns'][2]['nullable'] = false;
+            $plan = $service->preview('primary_fixture', $input, $service->fingerprint($fixture));
+            $this->assertCount(1, $plan['sql']);
+            $sql = $plan['sql'][0];
+            $this->assertStringContainsString('drop primary key', $sql);
+            $this->assertStringContainsString('modify `id`', $sql);
+            $this->assertStringContainsString('modify `code` int not null auto_increment', $sql);
+            $this->assertStringContainsString('add primary key (`code`)', $sql);
+            $this->assertStringContainsString('modify `clock` timestamp(6) not null', $sql);
+            $this->assertStringNotContainsString('auto_increment primary key', $sql);
+            $this->assertSame($grammar, $connection->getSchemaGrammar());
+            // Keeping AUTO_INCREMENT while removing its key is rejected before SQL.
+            $invalid = $service->definition('primary_fixture', $fixture); $invalid['columns'][0]['index'] = '';
+            try { $service->preview('primary_fixture', $invalid, $service->fingerprint($fixture)); $this->fail('Unkeyed auto increment accepted'); }
+            catch (\Illuminate\Validation\ValidationException) { $this->assertTrue(true); }
+            $service->fixture['incoming'] = [['table' => 'referencing', 'key' => ['foreign_columns' => ['code']]]];
+            $invalid = $service->definition('primary_fixture', $service->fixture); $invalid['columns'][1]['index'] = '';
+            try { $service->preview('primary_fixture', $invalid, $service->fingerprint($service->fixture)); $this->fail('Referenced index drop accepted'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertStringContainsString('входящей связью', $exception->getMessage()); }
+            $service->fixture = $fixture;
+            $service->fixture['structure']['indexes'][0]['columns'] = ['id', 'code'];
+            $service->fixture['structure']['indexes'][0]['primary'] = true;
+            $invalid = $service->definition('primary_fixture', $service->fixture);
+            $invalid['columns'][] = ['name' => 'new_key', 'type' => 'integer', 'length' => '', 'nullable' => false, 'unsigned' => false, 'auto_increment' => false, 'index' => 'PRIMARY', 'default' => null, 'old_name' => null];
+            try { $service->preview('primary_fixture', $invalid, $service->fingerprint($service->fixture)); $this->fail('Second primary accepted'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertStringContainsString('Составной PRIMARY', $exception->getMessage()); }
+        } finally { DB::setDefaultConnection($default); $this->app->forgetInstance('db.schema'); Schema::clearResolvedInstance('db.schema'); DB::purge('mysql_primary_compile'); }
+        $this->assertTrue(Schema::hasColumn('primary_fixture', 'id'));
+    }
+
+    public function test_database_optional_model_generation_matches_original_and_does_not_overwrite(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $originalPath = app_path();
+        $temporaryPath = sys_get_temp_dir().'/viar-model-test-'.bin2hex(random_bytes(8));
+        mkdir($temporaryPath);
+        $this->app->useAppPath($temporaryPath);
+        config(['voyager.models.namespace' => 'App\\Models\\']);
+        try {
+            $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)
+                ->assertSee('Создать модель для таблицы')
+                ->set('data.name', 'audit_model_widgets')->set('data.create_model', true)
+                ->call('preview')->assertHasNoErrors()->assertSee('App\\Models\\AuditModelWidget');
+            $file = $temporaryPath.'/Models/AuditModelWidget.php';
+            $this->assertFileDoesNotExist($file);
+            $this->assertFalse(Schema::hasTable('audit_model_widgets'));
+            $page->call('createTable')->assertHasNoErrors();
+            $this->assertTrue(Schema::hasTable('audit_model_widgets'));
+            $source = file_get_contents($file);
+            token_get_all($source, TOKEN_PARSE);
+            $this->assertStringContainsString('class AuditModelWidget extends Model', $source);
+            $this->assertStringNotContainsString('SoftDeletes', $source);
+            $this->assertStringNotContainsString('protected $table', $source);
+            $this->assertDatabaseCount('data_types', 1);
+            // Another plural maps to the same class: collision must reject before table DDL.
+            Livewire::test(\App\Filament\Pages\DatabaseCreate::class)
+                ->set('data.name', 'audit_model_widget')->set('data.create_model', true)
+                ->call('preview')->assertHasErrors(['data.create_model']);
+            $this->assertFalse(Schema::hasTable('audit_model_widget'));
+            $this->assertSame($source, file_get_contents($file));
+        } finally {
+            $this->app->useAppPath($originalPath);
+            \Illuminate\Support\Facades\File::deleteDirectory($temporaryPath);
+        }
+    }
+
+    public function test_database_model_preview_rechecks_options_and_file_collision_before_ddl(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $originalPath = app_path();
+        $temporaryPath = sys_get_temp_dir().'/viar-model-test-'.bin2hex(random_bytes(8));
+        mkdir($temporaryPath);
+        $this->app->useAppPath($temporaryPath);
+        config(['voyager.models.namespace' => 'App\\Models\\']);
+        try {
+            $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)
+                ->set('data.name', 'audit_model_samples')->call('preview')->assertHasNoErrors()
+                ->set('data.create_model', true)->call('createTable')->assertHasErrors(['data.name']);
+            $this->assertFalse(Schema::hasTable('audit_model_samples'));
+            $page->call('preview')->assertHasNoErrors();
+            mkdir($temporaryPath.'/Models');
+            file_put_contents($temporaryPath.'/Models/AuditModelSample.php', 'existing file');
+            $page->call('createTable')->assertHasErrors(['data.create_model']);
+            $this->assertFalse(Schema::hasTable('audit_model_samples'));
+            $this->assertSame('existing file', file_get_contents($temporaryPath.'/Models/AuditModelSample.php'));
+            $service = app(\App\Services\Admin\DatabaseModelGenerationService::class);
+            foreach (['../escape', 'class'] as $invalid) {
+                try { $service->preview($invalid); $this->fail('Invalid class accepted'); }
+                catch (\Illuminate\Validation\ValidationException $exception) { $this->assertArrayHasKey('data.create_model', $exception->errors()); }
+            }
+            config(['voyager.models.namespace' => 'Outside\\Models']);
+            try { $service->preview('valid_names'); $this->fail('External namespace accepted'); }
+            catch (\Illuminate\Validation\ValidationException $exception) { $this->assertArrayHasKey('data.create_model', $exception->errors()); }
+        } finally {
+            $this->app->useAppPath($originalPath);
+            \Illuminate\Support\Facades\File::deleteDirectory($temporaryPath);
+        }
+    }
+
+    public function test_database_model_failure_after_ddl_reports_created_table_and_invalidates_preview(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $service = \Mockery::mock(\App\Services\Admin\DatabaseModelGenerationService::class);
+        $plan = ['class' => 'App\\Models\\AuditFailure', 'path' => '/not-written', 'source' => 'preview'];
+        $service->shouldReceive('preview')->with('audit_failures')->twice()->andReturn($plan);
+        $service->shouldReceive('generate')->once()->andThrow(\Illuminate\Validation\ValidationException::withMessages(['data.create_model' => 'Каталог недоступен.']));
+        $this->app->instance(\App\Services\Admin\DatabaseModelGenerationService::class, $service);
+        $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)
+            ->set('data.name', 'audit_failures')->set('data.create_model', true)->call('preview')->assertHasNoErrors()
+            ->call('createTable')->assertHasErrors(['data.create_model'])->assertSet('previewHash', null);
+        $this->assertTrue(Schema::hasTable('audit_failures'));
+        $page->call('createTable')->assertHasErrors(['data.name']);
+    }
+
+    public function test_database_edit_primary_save_button_prepares_sql_and_keeps_nullable_semantics(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        Schema::create('editor_ui_fixture', function (Blueprint $table): void { $table->id(); $table->string('required'); $table->string('optional')->nullable(); });
+        DB::table('editor_ui_fixture')->insert(['required' => 'Keep']);
+        $page = Livewire::withQueryParams(['table' => 'editor_ui_fixture'])->test(\App\Filament\Pages\DatabaseEdit::class)
+            ->assertSee('Not Null')->assertSee('Сохранить таблицу');
+        $before = array_values($page->get('data.columns'));
+        $this->assertFalse($before[1]['nullable']); $this->assertTrue($before[2]['nullable']);
+        $page->set('data.name', 'editor_ui_renamed')->call('prepareSaveStructure')->assertHasNoErrors()
+            ->assertDispatched('open-modal', id: 'database-save-structure');
+        $this->assertTrue(Schema::hasTable('editor_ui_fixture')); $this->assertFalse(Schema::hasTable('editor_ui_renamed'));
+        $page->call('saveStructure')->assertHasNoErrors();
+        $this->assertDatabaseHas('editor_ui_renamed', ['required' => 'Keep', 'optional' => null]);
+        $columns = array_column(Schema::getColumns('editor_ui_renamed'), null, 'name');
+        $this->assertFalse($columns['required']['nullable']); $this->assertTrue($columns['optional']['nullable']);
+        $creation = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)->call('addColumn');
+        $columns = array_values($creation->get('data.columns'));
+        $this->assertCount(2, $columns); $this->assertSame('integer', $columns[1]['type']); $this->assertTrue($columns[1]['nullable']);
+    }
+
+    public function test_database_catalog_bread_deletion_requires_confirmation_and_preserves_physical_records(): void
+    {
+        $this->admin(['browse_admin', 'browse_database', 'browse_bread', 'browse_pages']);
+        $type = DB::table('data_types')->where('name', 'pages')->first();
+        $row = DB::table('data_rows')->insertGetId(['data_type_id' => $type->id, 'field' => 'title', 'type' => 'text', 'display_name' => 'Title']);
+        $record = DB::table('pages')->insertGetId(['title' => 'Keep record']);
+        if (! Schema::hasTable('translations')) {
+            Schema::create('translations', function (Blueprint $table): void {
+                $table->id(); $table->string('table_name'); $table->string('column_name'); $table->unsignedBigInteger('foreign_key'); $table->string('locale'); $table->text('value');
+            });
+        }
+        DB::table('translations')->insert([
+            ['table_name' => 'data_types', 'column_name' => 'display_name_plural', 'foreign_key' => $type->id, 'locale' => 'ru', 'value' => 'Pages'],
+            ['table_name' => 'data_rows', 'column_name' => 'display_name', 'foreign_key' => $row, 'locale' => 'ru', 'value' => 'Title'],
+            ['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => $record, 'locale' => 'ru', 'value' => 'Keep translation'],
+        ]);
+        DB::table('permissions')->where('key', 'browse_pages')->update(['table_name' => 'pages']);
+        $permission = DB::table('permissions')->where('key', 'browse_pages')->value('id');
+        $page = Livewire::test(\App\Filament\Pages\DatabaseTables::class)->set('search', 'pages')
+            ->assertSee('Открыть BREAD')->call('deleteBread')->assertHasErrors('breadConfirmation');
+        $page->call('prepareBreadDeletion', 'pages')->assertSet('breadDeletionTable', 'pages')
+            ->set('breadConfirmation', 'wrong')->call('deleteBread')->assertHasErrors('breadConfirmation');
+        $this->assertDatabaseHas('data_types', ['id' => $type->id]);
+        DB::table('data_rows')->where('id', $row)->update(['display_name' => 'Changed']);
+        $page->set('breadConfirmation', 'pages')->call('deleteBread')->assertHasErrors('breadConfirmation');
+        DB::unprepared("CREATE TRIGGER reject_bread_delete BEFORE DELETE ON permissions BEGIN SELECT RAISE(ABORT, 'fixture failure'); END");
+        $page->call('prepareBreadDeletion', 'pages')->set('breadConfirmation', 'pages')->call('deleteBread')->assertHasErrors('breadConfirmation');
+        $this->assertDatabaseHas('data_types', ['id' => $type->id]);
+        $this->assertDatabaseHas('data_rows', ['id' => $row]);
+        $this->assertDatabaseHas('translations', ['table_name' => 'data_rows', 'foreign_key' => $row]);
+        $this->assertDatabaseHas('permission_role', ['permission_id' => $permission]);
+        DB::unprepared('DROP TRIGGER reject_bread_delete');
+        $page->call('prepareBreadDeletion', 'pages')->set('breadConfirmation', 'pages')->call('deleteBread')->assertHasNoErrors();
+        $this->assertDatabaseMissing('data_types', ['id' => $type->id]);
+        $this->assertDatabaseMissing('data_rows', ['data_type_id' => $type->id]);
+        $this->assertDatabaseMissing('permissions', ['id' => $permission]);
+        $this->assertDatabaseMissing('permission_role', ['permission_id' => $permission]);
+        $this->assertDatabaseMissing('translations', ['table_name' => 'data_rows', 'foreign_key' => $row]);
+        $this->assertDatabaseMissing('translations', ['table_name' => 'data_types', 'foreign_key' => $type->id]);
+        $this->assertDatabaseHas('pages', ['id' => $record, 'title' => 'Keep record']);
+        $this->assertDatabaseHas('translations', ['table_name' => 'pages', 'value' => 'Keep translation']);
+        $this->assertTrue(Schema::hasTable('pages'));
+    }
+
+    public function test_database_catalog_bread_deletion_rechecks_permission(): void
+    {
+        $this->admin(['browse_admin', 'browse_database', 'browse_bread']);
+        $page = Livewire::test(\App\Filament\Pages\DatabaseTables::class)->call('prepareBreadDeletion', 'pages')->set('breadConfirmation', 'pages');
+        $role = auth('filament')->user()->role;
+        $role->permissions()->detach(DB::table('permissions')->where('key', 'browse_bread')->value('id'));
+        auth('filament')->user()->unsetRelation('role');
+        $page->call('deleteBread')->assertStatus(403);
+        $this->assertDatabaseHas('data_types', ['name' => 'pages']);
+    }
+
+    public function test_database_edit_distinguishes_sql_null_default_from_literal_null_text(): void
+    {
+        $service = app(\App\Services\Admin\DatabaseTableEditingService::class);
+        $snapshot = ['structure' => ['columns' => [], 'indexes' => []]];
+        foreach (['NULL', "'NULL'", '0'] as $index => $default) {
+            $snapshot['structure']['columns'][] = ['name' => 'field_'.$index, 'type_name' => 'varchar',
+                'type' => 'varchar(255)', 'nullable' => true, 'auto_increment' => false, 'default' => $default];
+        }
+        $columns = $service->definition('fixture', $snapshot)['columns'];
+        $this->assertSame([null, 'NULL', '0'], array_column($columns, 'default'));
+    }
+
+    public function test_database_edit_mysql_dependency_lookup_is_targeted_and_keeps_hidden_tables(): void
+    {
+        $connection = \Mockery::mock(\Illuminate\Database\MySqlConnection::class);
+        $connection->shouldReceive('getDriverName')->once()->andReturn('mysql');
+        $connection->shouldReceive('getDatabaseName')->twice()->andReturn('fixture');
+        $connection->shouldReceive('getTablePrefix')->once()->andReturn('tenant_');
+        $connection->shouldReceive('select')->once()->with(
+            'select distinct TABLE_NAME as table_name from information_schema.KEY_COLUMN_USAGE '
+            .'where TABLE_SCHEMA = ? and REFERENCED_TABLE_SCHEMA = ? and REFERENCED_TABLE_NAME = ? order by TABLE_NAME',
+            ['fixture', 'fixture', 'tenant_parent']
+        )->andReturn([(object) ['table_name' => 'tenant_hidden_child']]);
+        $manager = DB::getFacadeRoot();
+        DB::shouldReceive('connection')->once()->andReturn($connection);
+        $service = new class extends \App\Services\Admin\DatabaseTableEditingService {
+            public function references(string $table): array { return $this->referencingTables($table); }
+        };
+        try { $this->assertSame(['tenant_hidden_child'], $service->references('parent')); }
+        finally { DB::swap($manager); }
+    }
+
+    public function test_database_edit_preserves_generated_and_multiple_indexes_and_rolls_back_failed_sqlite_ddl(): void
+    {
+        Schema::create('generated_edit_fixture', function (Blueprint $table): void {
+            $table->id(); $table->string('label')->default('old'); $table->integer('doubled')->virtualAs('id * 2');
+            $table->index('label', 'label_index_a'); $table->index('label', 'label_index_b');
+        });
+        DB::table('generated_edit_fixture')->insert(['label' => 'same']);
+        DB::table('generated_edit_fixture')->insert(['label' => 'same']);
+        $service = app(\App\Services\Admin\DatabaseTableEditingService::class);
+        $snapshot = $service->snapshot('generated_edit_fixture'); $hash = $service->fingerprint($snapshot);
+        $input = $service->definition('generated_edit_fixture', $snapshot);
+        $this->assertSame([], $service->preview('generated_edit_fixture', $input, $hash)['sql']);
+        $bad = $input; $bad['columns'][2]['name'] = 'other_generated';
+        try { $service->apply('generated_edit_fixture', $bad, $hash); $this->fail('Generated column altered'); }
+        catch (\Illuminate\Validation\ValidationException) { $this->assertTrue(Schema::hasColumn('generated_edit_fixture', 'doubled')); }
+        $bad = $input; $bad['columns'][1]['index'] = 'UNIQUE';
+        $foreignKeys = DB::connection()->scalar('pragma foreign_keys');
+        try { $service->apply('generated_edit_fixture', $bad, $hash); $this->fail('Duplicate unique index accepted'); }
+        catch (\Illuminate\Database\QueryException) {
+            $this->assertSame($snapshot, $service->snapshot('generated_edit_fixture'));
+            $this->assertSame($foreignKeys, DB::connection()->scalar('pragma foreign_keys'));
+            $this->assertDatabaseCount('generated_edit_fixture', 2);
+        }
+        $input['columns'][1]['length'] = '100';
+        $service->apply('generated_edit_fixture', $input, $hash);
+        $this->assertDatabaseHas('generated_edit_fixture', ['id' => 1, 'label' => 'same', 'doubled' => 2]);
+        $this->assertDatabaseHas('generated_edit_fixture', ['id' => 2, 'doubled' => 4]);
+        $this->assertEqualsCanonicalizing(['label_index_b', 'label_index_a', 'primary'], array_column(Schema::getIndexes('generated_edit_fixture'), 'name'));
+    }
+
+    public function test_database_edit_mysql_preview_compiles_changes_without_server_connection(): void
+    {
+        Schema::create('mysql_edit_fixture', function (Blueprint $table): void { $table->id(); $table->string('title', 50); $table->index('title', 'old_title_index'); });
+        $fixture = app(\App\Services\Admin\DatabaseTableEditingService::class)->snapshot('mysql_edit_fixture');
+        $fixture['structure']['columns'][1]['type'] = 'varchar(50)';
+        $fixture['structure']['columns'][1]['collation'] = 'utf8mb4_unicode_ci';
+        $fixture['structure']['columns'][1]['comment'] = 'Retained comment';
+        config(['database.connections.mysql_edit_compile' => ['driver' => 'mysql', 'database' => 'fixture', 'prefix' => '']]);
+        $default = DB::getDefaultConnection(); DB::setDefaultConnection('mysql_edit_compile');
+        Schema::clearResolvedInstance('db.schema'); Schema::shouldReceive('hasTable')->andReturn(false);
+        $connection = DB::connection(); $pdo = \Mockery::mock(\PDO::class);
+        $pdo->shouldReceive('getAttribute')->with(\PDO::ATTR_SERVER_VERSION)->andReturn('8.0.36'); $connection->setPdo($pdo);
+        $grammar = $connection->getSchemaGrammar();
+        $service = new class($fixture) extends \App\Services\Admin\DatabaseTableEditingService {
+            public function __construct(private array $fixture) {}
+            public function snapshot(string $table): array { return $this->fixture; }
+        };
+        try {
+            $input = $service->definition('mysql_edit_fixture', $fixture);
+            $input['name'] = 'mysql_renamed_fixture';
+            $input['columns'][1]['name'] = 'caption'; $input['columns'][1]['length'] = '120';
+            $input['columns'][1]['nullable'] = true; $input['columns'][1]['index'] = 'UNIQUE';
+            $result = $service->preview('mysql_edit_fixture', $input, $service->fingerprint($fixture));
+            $sql = implode("\n", $result['sql']);
+            $this->assertStringContainsString('drop index `old_title_index`', $sql);
+            $this->assertStringContainsString('rename column `title` to `caption`', $sql);
+            $this->assertStringContainsString('modify `caption` varchar(120)', $sql);
+            $this->assertStringContainsString("collate 'utf8mb4_unicode_ci'", $sql);
+            $this->assertStringContainsString("comment 'Retained comment'", $sql);
+            $this->assertStringContainsString('add unique', $sql);
+            $this->assertStringContainsString('rename table `mysql_edit_fixture` to `mysql_renamed_fixture`', $sql);
+            $this->assertSame($grammar, $connection->getSchemaGrammar());
+            $input['columns'][1]['type'] = 'timestamp';
+            $input['columns'][1]['length'] = '';
+            $input['columns'][1]['index'] = null;
+            $sql = implode("\n", $service->preview('mysql_edit_fixture', $input, $service->fingerprint($fixture))['sql']);
+            $this->assertStringContainsString('modify `caption` timestamp', $sql);
+            $this->assertStringNotContainsString('collate', $sql);
+        } finally { DB::setDefaultConnection($default); $this->app->forgetInstance('db.schema'); Schema::clearResolvedInstance('db.schema'); DB::purge('mysql_edit_compile'); }
+        $this->assertTrue(Schema::hasColumn('mysql_edit_fixture', 'title'));
+        $this->assertFalse(Schema::hasTable('mysql_renamed_fixture'));
+    }
+
+    public function test_database_edit_diff_preserves_records_renames_changes_adds_drops_and_indexes(): void
+    {
+        Schema::create('edit_fixture', function (Blueprint $table): void {
+            $table->id(); $table->string('title', 50)->default('old'); $table->string('obsolete')->nullable();
+            $table->index('title', 'fixture_title_index');
+        });
+        DB::table('edit_fixture')->insert(['title' => 'Retained', 'obsolete' => 'discard']);
+        $service = app(\App\Services\Admin\DatabaseTableEditingService::class);
+        $snapshot = $service->snapshot('edit_fixture'); $hash = $service->fingerprint($snapshot);
+        $input = $service->definition('edit_fixture', $snapshot);
+        $this->assertSame([], $service->preview('edit_fixture', $input, $hash)['sql']);
+        $input['name'] = 'edited_fixture';
+        $input['columns'][1]['name'] = 'caption'; $input['columns'][1]['length'] = '100';
+        $input['columns'][1]['index'] = 'UNIQUE'; $input['columns'][1]['default'] = 'new';
+        array_pop($input['columns']);
+        $input['columns'][] = ['name' => 'score', 'type' => 'integer', 'length' => '', 'nullable' => false,
+            'unsigned' => false, 'auto_increment' => false, 'index' => 'INDEX', 'default' => '0', 'old_name' => null];
+        $preview = $service->preview('edit_fixture', $input, $hash);
+        $this->assertNotEmpty($preview['sql']);
+        $this->assertTrue(Schema::hasColumn('edit_fixture', 'title'));
+        $this->assertDatabaseHas('edit_fixture', ['title' => 'Retained', 'obsolete' => 'discard']);
+        $service->apply('edit_fixture', $input, $hash);
+        $this->assertFalse(Schema::hasTable('edit_fixture'));
+        $this->assertSame(['id', 'caption', 'score'], Schema::getColumnListing('edited_fixture'));
+        $this->assertDatabaseHas('edited_fixture', ['id' => 1, 'caption' => 'Retained', 'score' => 0]);
+        DB::table('edited_fixture')->insert(['score' => 2]);
+        $this->assertDatabaseHas('edited_fixture', ['id' => 2, 'caption' => 'new', 'score' => 2]);
+        $this->assertTrue(collect(Schema::getIndexes('edited_fixture'))->contains(fn ($index) => $index['unique'] && $index['columns'] === ['caption']));
+        $this->assertDatabaseCount('data_types', 1);
+    }
+
+    public function test_database_edit_page_requires_current_preview_and_rechecks_schema_permissions_and_drop_name(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        Schema::create('page_edit_fixture', fn (Blueprint $table) => $table->id());
+        $this->get('/filament/database-tables/edit?table=page_edit_fixture')->assertOk()->assertSee('Редактирование таблицы');
+        $page = Livewire::withQueryParams(['table' => 'page_edit_fixture'])->test(\App\Filament\Pages\DatabaseEdit::class);
+        $page->set('data.name', 'renamed_page_fixture')->call('saveStructure')->assertHasErrors(['data.name']);
+        $page->call('preview')->assertHasNoErrors()->set('data.name', 'another_name')->call('saveStructure')->assertHasErrors(['data.name']);
+        $page->set('data.name', 'renamed_page_fixture')->call('preview')->assertHasNoErrors();
+        Schema::table('page_edit_fixture', fn (Blueprint $table) => $table->string('external')->nullable());
+        $page->call('saveStructure')->assertHasErrors(['data.name']);
+        $this->assertTrue(Schema::hasTable('page_edit_fixture'));
+        $page = Livewire::withQueryParams(['table' => 'page_edit_fixture'])->test(\App\Filament\Pages\DatabaseEdit::class);
+        $page->set('data.name', 'renamed_page_fixture')->call('preview')->assertHasNoErrors();
+        $this->assertCount(1, $page->get('sql'), print_r($page->get('sql'), true));
+        $page->call('saveStructure')->assertHasNoErrors()
+            ->assertRedirect(\App\Filament\Pages\DatabaseTables::getUrl().'?table=renamed_page_fixture');
+        $page = Livewire::withQueryParams(['table' => 'renamed_page_fixture'])->test(\App\Filament\Pages\DatabaseEdit::class);
+        $page->set('dropConfirmation', 'renamed_page_fixture')->call('dropTable')->assertHasErrors(['dropConfirmation']);
+        $page->call('previewDrop')->assertHasNoErrors()->set('dropConfirmation', 'wrong')->call('dropTable')->assertHasErrors(['dropConfirmation']);
+        $this->assertTrue(Schema::hasTable('renamed_page_fixture'));
+        $page->set('dropConfirmation', 'renamed_page_fixture')->call('dropTable')->assertHasNoErrors()->assertRedirect(\App\Filament\Pages\DatabaseTables::getUrl());
+        $this->assertFalse(Schema::hasTable('renamed_page_fixture'));
+        $this->assertDatabaseCount('data_types', 1);
+        $page = Livewire::withQueryParams(['table' => 'pages'])->test(\App\Filament\Pages\DatabaseEdit::class);
+        $page->call('previewDrop')->assertHasErrors(['data.name'])->set('dropConfirmation', 'pages');
+        auth('filament')->user()->role->permissions()->detach(Permission::where('key', 'browse_database')->value('id'));
+        auth('filament')->user()->unsetRelation('role');
+        $page->call('dropTable')->assertStatus(403);
+        $this->assertTrue(Schema::hasTable('pages'));
+    }
+
+    public function test_database_edit_guards_foreign_keys_composites_generated_columns_and_forged_origins(): void
+    {
+        Schema::create('guard_fixture', function (Blueprint $table): void { $table->id(); $table->string('label'); $table->string('code'); $table->unique(['label', 'code']); });
+        Schema::create('guard_child', function (Blueprint $table): void { $table->id(); $table->foreignId('parent_id')->constrained('guard_fixture'); });
+        DB::table('guard_fixture')->insert(['id' => 1, 'label' => 'Stay', 'code' => 'X']);
+        DB::table('guard_child')->insert(['parent_id' => 1]);
+        $service = app(\App\Services\Admin\DatabaseTableEditingService::class);
+        $snapshot = $service->snapshot('guard_fixture'); $hash = $service->fingerprint($snapshot); $input = $service->definition('guard_fixture', $snapshot);
+        foreach (['origin', 'renameComposite', 'referenced', 'tableRename', 'collision'] as $case) {
+            $bad = $input;
+            if ($case === 'origin') { $bad['columns'][1]['old_name'] = 'unknown'; }
+            if ($case === 'renameComposite') { $bad['columns'][1]['name'] = 'new_label'; }
+            if ($case === 'referenced') { array_shift($bad['columns']); }
+            if ($case === 'tableRename') { $bad['name'] = 'guard_new'; }
+            if ($case === 'collision') { $bad['name'] = 'pages'; }
+            try { $service->apply('guard_fixture', $bad, $hash); $this->fail('Unsafe alteration accepted'); }
+            catch (\Illuminate\Validation\ValidationException) { $this->assertDatabaseHas('guard_fixture', ['label' => 'Stay']); }
+        }
+        try { $service->drop('guard_fixture', $hash); $this->fail('Referenced table dropped'); }
+        catch (\Illuminate\Validation\ValidationException) { $this->assertDatabaseHas('guard_child', ['parent_id' => 1]); }
+        $this->get('/filament/database-tables/edit?table=missing')->assertRedirect();
+        $this->admin(['browse_admin', 'browse_database']);
+        $this->withoutExceptionHandling();
+        try { $this->get('/filament/database-tables/edit?table=missing'); $this->fail('Missing table accepted'); }
+        catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) { $this->assertSame(404, $exception->getStatusCode()); }
+        config(['voyager.database.tables.hidden' => ['guard_fixture']]);
+        try { $this->get('/filament/database-tables/edit?table=guard_fixture'); $this->fail('Hidden table accepted'); }
+        catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) { $this->assertSame(404, $exception->getStatusCode()); }
+    }
+
+    public function test_database_creation_timestamp_helpers_match_original_and_do_not_duplicate_columns(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)->set('data.name', 'helpers_fixture')
+            ->call('preview')->assertHasNoErrors()->call('addTimestamps')->assertSet('previewHash', null)->assertSet('sql', [])
+            ->call('addTimestamps')->call('addSoftDeletes')->call('addSoftDeletes')->assertHasNoErrors();
+        $columns = array_values($page->get('data.columns'));
+        $this->assertSame(['id', 'created_at', 'updated_at', 'deleted_at'], array_column($columns, 'name'));
+        foreach (array_slice($columns, 1) as $column) {
+            $this->assertSame('timestamp', $column['type']);
+            $this->assertTrue($column['nullable']);
+            $this->assertFalse($column['unsigned']);
+            $this->assertFalse($column['auto_increment']);
+            $this->assertNull($column['default']);
+            $this->assertNull($column['index']);
+        }
+        $this->assertFalse(Schema::hasTable('helpers_fixture'));
+        $page->call('preview')->assertHasNoErrors()->call('createTable')->assertHasNoErrors();
+        DB::table('helpers_fixture')->insert(['id' => 1]);
+        $this->assertDatabaseHas('helpers_fixture', ['id' => 1, 'created_at' => null, 'updated_at' => null, 'deleted_at' => null]);
+        $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class);
+        $column = $columns[0];
+        $many = [];
+        for ($i = 0; $i < 99; $i++) { $many['c'.$i] = array_replace($column, ['name' => 'c'.$i]); }
+        $page->set('data.columns', $many)->call('addTimestamps')->assertHasErrors(['data.columns']);
+        $this->assertCount(99, $page->get('data.columns'));
+        auth('filament')->user()->role->permissions()->detach(Permission::where('key', 'browse_database')->value('id'));
+        auth('filament')->user()->unsetRelation('role');
+        $page->call('addSoftDeletes')->assertStatus(403);
+    }
+
+    public function test_database_creation_compiles_original_mysql_types_without_connecting_or_executing_ddl(): void
+    {
+        config(['database.connections.compile_fixture' => ['driver' => 'mysql', 'database' => 'fixture', 'host' => '127.0.0.1', 'port' => 1, 'username' => 'fixture', 'password' => '', 'prefix' => '', 'version' => '8.0.36']]);
+        $default = DB::getDefaultConnection();
+        DB::setDefaultConnection('compile_fixture');
+        Schema::clearResolvedInstance('db.schema');
+        // Only the existence check is stubbed. Schema creation uses the real MySQL
+        // compiler under pretend. A mock PDO supplies version metadata only;
+        // any attempted statement or query fails the test.
+        $connection = DB::connection();
+        Schema::shouldReceive('hasTable')->andReturn(false);
+        $pdo = \Mockery::mock(\PDO::class);
+        $pdo->shouldReceive('getAttribute')->with(\PDO::ATTR_SERVER_VERSION)->andReturn('8.0.36');
+        $connection->setPdo($pdo);
+        $originalGrammar = $connection->getSchemaGrammar();
+        try {
+            $base = ['name' => 'value', 'type' => 'varchar', 'length' => '', 'nullable' => true, 'unsigned' => false, 'auto_increment' => false, 'index' => '', 'default' => null];
+            $expected = ['integer' => 'int', 'bigint' => 'bigint', 'smallint' => 'smallint', 'tinyint' => 'tinyint',
+                'string' => 'varchar(255)', 'char' => 'char(255)', 'text' => 'text', 'mediumtext' => 'mediumtext', 'longtext' => 'longtext',
+                'boolean' => 'tinyint(1)', 'date' => 'date', 'datetime' => 'datetime', 'timestamp' => 'timestamp', 'time' => 'time', 'json' => 'json',
+                'mediumint' => 'mediumint', 'varchar' => 'varchar(255)', 'tinytext' => 'tinytext', 'year' => 'year',
+                'binary' => 'binary(255)', 'varbinary' => 'varbinary(255)', 'bit' => 'bit(1)', 'tinyblob' => 'tinyblob', 'blob' => 'blob',
+                'mediumblob' => 'mediumblob', 'longblob' => 'longblob', 'float' => 'float', 'double' => 'double', 'decimal' => 'decimal(10, 0)',
+                'geometry' => 'geometry', 'point' => 'point', 'linestring' => 'linestring', 'polygon' => 'polygon',
+                'multipoint' => 'multipoint', 'multilinestring' => 'multilinestring', 'multipolygon' => 'multipolygon', 'geometrycollection' => 'geometrycollection'];
+            $service = app(\App\Services\Admin\DatabaseTableCreationService::class);
+            $this->assertEqualsCanonicalizing(\App\Services\Admin\DatabaseTableCreationService::TYPES, array_keys($expected));
+            foreach ($expected as $type => $declaration) {
+                $result = $service->preview(['name' => 'types_fixture', 'columns' => [array_replace($base, ['type' => $type])]]);
+                $this->assertStringContainsString('`value` '.$declaration.' null', implode("\n", $result['sql']), $type);
+                $this->assertSame($originalGrammar, $connection->getSchemaGrammar());
+            }
+            foreach (['integer', 'float', 'double'] as $type) {
+                $result = $service->preview(['name' => 'types_fixture', 'columns' => [array_replace($base, ['type' => $type, 'length' => '12,3'])]]);
+                $this->assertSame('', $result['definition']['columns'][0]['length']);
+                $this->assertStringNotContainsString('(12', implode("\n", $result['sql']));
+            }
+            foreach (['decimal', 'double'] as $type) {
+                $result = $service->preview(['name' => 'types_fixture', 'columns' => [array_replace($base, ['type' => $type, 'unsigned' => true, 'default' => ' 1.5 '])]]);
+                $this->assertStringContainsString('unsigned', implode("\n", $result['sql']));
+                $this->assertSame('1.5', $result['definition']['columns'][0]['default']);
+            }
+            $result = $service->preview(['name' => 'types_fixture', 'columns' => [array_replace($base, ['type' => 'binary', 'length' => '16', 'index' => 'UNIQUE', 'default' => "a'b"])]]);
+            $this->assertStringContainsString('binary(16)', implode("\n", $result['sql']));
+            $this->assertStringContainsString("default 'a''b'", implode("\n", $result['sql']));
+            foreach ([['type' => 'enum'], ['type' => 'set'], ['type' => 'bit', 'length' => '65'], ['type' => 'binary', 'length' => '256'], ['type' => 'tinyblob', 'default' => 'x'], ['type' => 'year', 'default' => '1900']] as $bad) {
+                try { $service->preview(['name' => 'types_fixture', 'columns' => [array_replace($base, $bad)]]); $this->fail('Invalid original type options accepted'); }
+                catch (\Illuminate\Validation\ValidationException) { $this->assertSame($originalGrammar, $connection->getSchemaGrammar()); }
+            }
+            $connection->beforeExecuting(fn () => throw new \RuntimeException('Fixture compilation failure'));
+            try { $service->preview(['name' => 'types_fixture', 'columns' => [$base]]); $this->fail('Fixture failure was ignored'); }
+            catch (\RuntimeException $exception) {
+                $this->assertSame('Fixture compilation failure', $exception->getMessage());
+                $this->assertSame($originalGrammar, $connection->getSchemaGrammar());
+            }
+        } finally {
+            DB::setDefaultConnection($default);
+            $this->app->forgetInstance('db.schema');
+            Schema::clearResolvedInstance('db.schema');
+            DB::purge('compile_fixture');
+        }
+        $this->assertFalse(Schema::hasTable('types_fixture'));
+    }
+
+    public function test_database_creation_extended_native_types_defaults_and_type_switch(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $base = ['name' => 'value', 'type' => 'varchar', 'length' => '', 'nullable' => false, 'unsigned' => false, 'auto_increment' => false, 'index' => '', 'default' => null];
+        $columns = [array_replace($base, ['name' => 'count', 'type' => 'mediumint', 'default' => '0']),
+            array_replace($base, ['name' => 'year', 'type' => 'year', 'default' => '2026']),
+            array_replace($base, ['name' => 'label', 'default' => '  label  ']),
+            array_replace($base, ['name' => 'bytes', 'type' => 'varbinary', 'length' => '16', 'default' => 'bytes']),
+            array_replace($base, ['name' => 'amount', 'type' => 'decimal', 'unsigned' => true, 'default' => '0'])];
+        $service = app(\App\Services\Admin\DatabaseTableCreationService::class);
+        $service->create(['name' => 'native_types_fixture', 'columns' => $columns]);
+        DB::table('native_types_fixture')->insert(['year' => 2026]);
+        $this->assertDatabaseHas('native_types_fixture', ['count' => 0, 'year' => 2026, 'label' => 'label', 'bytes' => 'bytes', 'amount' => 0]);
+        foreach (['point', 'tinyblob'] as $type) {
+            try { $service->create(['name' => 'unsupported_fixture', 'columns' => [array_replace($base, ['type' => $type])]]); $this->fail('MySQL-only type accepted on SQLite'); }
+            catch (\Illuminate\Validation\ValidationException) { $this->assertFalse(Schema::hasTable('unsupported_fixture')); }
+        }
+        $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)->set('data.name', 'switch_fixture');
+        $key = array_key_first($page->get('data.columns'));
+        $page->set('data.columns.'.$key.'.default', 'old')->set('data.columns.'.$key.'.type', 'text');
+        $this->assertNull($page->get('data.columns.'.$key.'.default'));
+        $this->assertNull($page->get('data.columns.'.$key.'.index'));
+        $page->call('preview')->assertHasNoErrors();
+        $this->assertFalse(Schema::hasTable('switch_fixture'));
+    }
+
+    public function test_database_creation_previews_then_creates_columns_indexes_and_defaults_only_after_submit(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $columns = [
+            ['name' => 'id', 'type' => 'integer', 'length' => '', 'nullable' => false, 'unsigned' => true, 'auto_increment' => true, 'index' => 'PRIMARY', 'default' => null],
+            ['name' => 'code', 'type' => 'string', 'length' => '80', 'nullable' => false, 'unsigned' => false, 'auto_increment' => false, 'index' => 'UNIQUE', 'default' => 'initial'],
+            ['name' => 'amount', 'type' => 'decimal', 'length' => '10,2', 'nullable' => false, 'unsigned' => false, 'auto_increment' => false, 'index' => '', 'default' => '1.25'],
+            ['name' => 'note', 'type' => 'text', 'length' => '', 'nullable' => true, 'unsigned' => false, 'auto_increment' => false, 'index' => '', 'default' => null],
+        ];
+        $this->get('/filament/database-tables/create')->assertOk()->assertSee('Создание таблицы');
+        $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)
+            ->set('data.name', 'creation_fixture')->set('data.columns', $columns)
+            ->call('createTable')->assertHasErrors(['data.name']);
+        $this->assertFalse(Schema::hasTable('creation_fixture'));
+        $page->call('preview')->assertHasNoErrors()->assertSee('create table');
+        $this->assertFalse(Schema::hasTable('creation_fixture'));
+        $page->set('data.name', 'changed_fixture')->call('createTable')->assertHasErrors(['data.name']);
+        $this->assertFalse(Schema::hasTable('changed_fixture'));
+        $page->set('data.name', 'creation_fixture')->call('preview')->assertHasNoErrors()
+            ->call('createTable')->assertHasNoErrors()->assertRedirect(\App\Filament\Pages\DatabaseTables::getUrl().'?table=creation_fixture');
+        $this->assertSame(['id', 'code', 'amount', 'note'], Schema::getColumnListing('creation_fixture'));
+        DB::table('creation_fixture')->insert(['note' => null]);
+        $this->assertDatabaseHas('creation_fixture', ['id' => 1, 'code' => 'initial', 'amount' => '1.25', 'note' => null]);
+        $this->assertTrue(collect(Schema::getIndexes('creation_fixture'))->contains(fn ($index) => $index['unique'] && $index['columns'] === ['code']));
+        $this->assertDatabaseCount('data_types', 1);
+        $this->assertDatabaseCount('pages', 0);
+        $page->call('preview')->assertHasErrors(['data.name']);
+    }
+
+    public function test_database_creation_rejects_invalid_schema_and_rechecks_permission(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $column = ['name' => 'value', 'type' => 'string', 'length' => '80', 'nullable' => false, 'unsigned' => false, 'auto_increment' => false, 'index' => '', 'default' => null];
+        $service = app(\App\Services\Admin\DatabaseTableCreationService::class);
+        foreach ([['name' => 'bad; DROP TABLE pages', 'columns' => [$column]],
+            ['name' => 'pages', 'columns' => [$column]],
+            ['name' => 'invalid_fixture', 'columns' => [$column, $column]],
+            ...array_map(fn ($changes) => ['name' => 'invalid_fixture', 'columns' => [array_replace($column, $changes)]], [
+                ['type' => 'unknown'], ['auto_increment' => true], ['unsigned' => true], ['length' => '0'],
+                ['type' => 'decimal', 'length' => '2,4'], ['type' => 'text', 'length' => '', 'index' => 'UNIQUE'],
+                ['index' => 'PRIMARY', 'nullable' => true], ['type' => 'boolean', 'length' => '', 'default' => '2'],
+                ['type' => 'integer', 'length' => '', 'default' => 'SQL()'], ['raw_sql' => 'drop table pages'],
+                ['type' => 'date', 'length' => '', 'default' => 'CURRENT_TIMESTAMP'], ['length' => '2', 'default' => 'long'],
+            ])] as $invalid) {
+            try { $service->create($invalid); $this->fail('Invalid schema accepted'); }
+            catch (\Illuminate\Validation\ValidationException) { $this->assertFalse(Schema::hasTable('invalid_fixture')); }
+        }
+        $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)->set('data.name', 'revoked_fixture')->set('data.columns', [$column])->call('preview')->assertHasNoErrors();
+        auth('filament')->user()->role->permissions()->detach(Permission::where('key', 'browse_database')->value('id'));
+        auth('filament')->user()->unsetRelation('role');
+        $page->call('createTable')->assertStatus(403);
+        $this->get('/filament/database-tables/create')->assertForbidden();
+        $this->assertFalse(Schema::hasTable('revoked_fixture'));
+        $this->assertTrue(Schema::hasTable('pages'));
+    }
+
+    public function test_database_creation_failure_clears_preview_and_keeps_partial_schema_for_review(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)->set('data.name', 'partial_fixture')
+            ->call('preview')->assertHasNoErrors();
+        $this->app->instance(\App\Services\Admin\DatabaseTableCreationService::class, new class extends \App\Services\Admin\DatabaseTableCreationService {
+            public function create(array $input): void
+            {
+                Schema::create($input['name'], fn (Blueprint $table) => $table->id());
+                throw new \Illuminate\Database\QueryException('sqlite', 'Fixture index failure', [], new \PDOException('Fixture failure'));
+            }
+        });
+        $page->call('createTable')->assertHasErrors(['data.name'])->assertSet('previewHash', null)->assertSet('sql', []);
+        $this->assertTrue(Schema::hasTable('partial_fixture'));
+        $this->assertDatabaseCount('data_types', 1);
+        $page->call('preview')->assertHasErrors(['data.name']);
+        $this->assertTrue(Schema::hasTable('pages'));
+    }
+
+    public function test_database_catalog_inspects_schema_without_modifying_records_or_bread(): void
+    {
+        $this->admin(['browse_admin', 'browse_database']);
+        Schema::create('database_fixture', function (Blueprint $table): void {
+            $table->id();
+            $table->string('code')->default('initial')->unique();
+            $table->foreignId('page_id')->nullable()->constrained('pages')->nullOnDelete();
+        });
+        $pageId = DB::table('pages')->insertGetId(['title' => 'Keep']);
+        DB::table('database_fixture')->insert(['page_id' => $pageId]);
+        $before = Schema::getColumns('database_fixture');
+        $this->get('/filament/database-tables')->assertOk()->assertSee('База данных');
+        $page = Livewire::test(\App\Filament\Pages\DatabaseTables::class)
+            ->assertDontSee('Редактировать BREAD')->call('inspect', 'database_fixture')
+            ->assertSee('Структура:')->assertSee('PRIMARY')->assertSee('UNIQUE')->assertSee('set null');
+        $this->assertStringContainsString('?table=database_fixture', $page->html());
+        $this->get('/filament/database-tables?table=database_fixture')->assertOk()->assertSee('Структура: database_fixture');
+        $structure = $page->instance()->structure();
+        $this->assertSame(['id', 'code', 'page_id'], array_column($structure['columns'], 'name'));
+        $this->assertSame('pages', $structure['foreign_keys'][0]['foreign_table']);
+        $page->call('closeStructure')->assertSet('selectedTable', null)->set('search', 'database_fixture');
+        $this->assertSame(['database_fixture'], array_column($page->instance()->tables(), 'name'));
+        $this->assertSame($before, Schema::getColumns('database_fixture'));
+        $this->assertDatabaseHas('database_fixture', ['code' => 'initial', 'page_id' => $pageId]);
+        $this->assertDatabaseCount('data_types', 1);
+        config(['voyager.database.tables.hidden' => ['database_fixture']]);
+        $this->assertSame([], app(\App\Services\Admin\DatabaseInspectionService::class)->tables('database_fixture'));
+        $this->withoutExceptionHandling();
+        foreach (['database_fixture', 'pages; DROP TABLE pages', 'missing_table'] as $invalidTable) {
+            try {
+                Livewire::test(\App\Filament\Pages\DatabaseTables::class)->call('inspect', $invalidTable);
+                $this->fail('Unavailable table inspected');
+            } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $exception) {
+                $this->assertSame(404, $exception->getStatusCode());
+            }
+        }
+        $this->assertTrue(Schema::hasTable('pages'));
+    }
+
+    public function test_database_catalog_requires_its_own_permission_on_page_and_livewire_requests(): void
+    {
+        $this->admin(['browse_admin', 'browse_bread']);
+        $this->get('/filament/database-tables')->assertForbidden();
+        $role = auth('filament')->user()->role;
+        $permission = Permission::create(['key' => 'browse_database']);
+        $role->permissions()->attach($permission);
+        auth('filament')->user()->unsetRelation('role');
+        $page = Livewire::test(\App\Filament\Pages\DatabaseTables::class)->assertSee('Редактировать BREAD');
+        $role->permissions()->detach($permission);
+        auth('filament')->user()->unsetRelation('role');
+        $page->call('inspect', 'pages')->assertStatus(403);
+    }
+
+    public function test_database_catalog_handles_connection_prefix_without_double_prefixing(): void
+    {
+        $connection = DB::connection();
+        $connection->setTablePrefix('fixture_');
+        try {
+            Schema::create('sample', function (Blueprint $table): void { $table->id(); });
+            $service = app(\App\Services\Admin\DatabaseInspectionService::class);
+            $this->assertSame(['sample'], array_column($service->tables(), 'name'));
+            $this->assertSame(['id'], array_column($service->describe('sample')['columns'], 'name'));
+        } finally {
+            $connection->setTablePrefix('');
+        }
+    }
+
     public function test_jpeg_exif_orientations_visible_corners_thumbnails_and_webp(): void
     {
         Storage::fake('public');
@@ -508,6 +1338,11 @@ class VoyagerBreadTest extends TestCase
         $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'column_name' => 'slug', 'locale' => 'ru', 'value' => 'moj-perevod']);
         $creator = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('openCreate')->set('data.slug', 'Early manual')->set('data.title', 'New source');
         $creator->assertSet('data.slug', 'new-source');
+        // Browser forms can submit the root array as one Livewire update.
+        $bulk = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('openCreate')
+            ->set('data', ['title' => 'Bulk browser form', 'slug' => 'bulk-browser-form'])
+            ->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('pages', ['title' => 'Bulk browser form', 'slug' => 'bulk-browser-form']);
         $slugger = app(\App\Filament\Bread\BreadSlug::class);
         $this->assertSame('shuka-yozh', $slugger->generate('Щука Ёж'));
         $this->assertSame('love-and-euro', $slugger->generate('♥ & €'));
@@ -1458,6 +2293,17 @@ class VoyagerBreadTest extends TestCase
         $this->assertStringContainsString('pages: OK', $output);
         $this->assertStringContainsString('Checked 1 types; 0 with issues', $output);
         $this->assertDatabaseCount('pages', 1);
+    }
+
+    public function test_read_renders_cast_timestamp_without_changing_stored_value(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'read_pages']);
+        $typeId = DB::table('data_types')->where('slug', 'pages')->value('id');
+        DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => 'created_at', 'type' => 'timestamp',
+            'display_name' => 'Created At', 'read' => true, 'details' => '{}']);
+        $id = DB::table('pages')->insertGetId(['title' => 'Timestamp record', 'created_at' => '2026-10-12 12:58:25']);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('openView', $id)->assertSee('2026-10-12 12:58:25');
+        $this->assertDatabaseHas('pages', ['id' => $id, 'created_at' => '2026-10-12 12:58:25']);
     }
 
     public function test_audit_reports_invalid_relationship_metadata(): void
@@ -3516,7 +4362,7 @@ class VoyagerBreadTest extends TestCase
         $page->call('save')->assertForbidden();
     }
 
-    public function test_bread_creation_prepares_schema_fields_menu_and_permissions_without_granting_access(): void
+    public function test_bread_creation_prepares_schema_fields_menu_and_grants_creator_admin_access(): void
     {
         $this->admin(['browse_admin', 'browse_bread', 'browse_stocks', 'edit_stocks']);
         $this->creationTables();
@@ -3534,14 +4380,17 @@ class VoyagerBreadTest extends TestCase
             ->set('data.policy_name', \App\Filament\Bread\BreadPolicyOptions::BASE)
             ->call('save')->assertHasNoErrors();
         $type = app(BreadRegistry::class)->type('stocks');
+        $page->assertRedirect(\App\Filament\Pages\BreadMetadata::getUrl().'?section='.$type->id);
         $this->assertSame('TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController', $type->controller);
         $this->assertSame(\App\Filament\Bread\BreadPolicyOptions::BASE, $type->policy_name);
         $this->assertSame(\App\Models\Stock::class, $type->model_name);
         $this->assertDatabaseCount('stocks', 1);
         $this->assertDatabaseHas('stocks', ['id' => $id, 'title' => 'Unchanged']);
-        $this->assertSame($grants, DB::table('permission_role')->count());
+        $this->assertSame($grants + 3, DB::table('permission_role')->count());
         foreach (['browse', 'read', 'add', 'edit', 'delete'] as $action) {
             $this->assertSame(1, DB::table('permissions')->where('key', $action.'_stocks')->count());
+            $this->assertDatabaseHas('permission_role', ['role_id' => auth('filament')->user()->role_id,
+                'permission_id' => DB::table('permissions')->where('key', $action.'_stocks')->value('id')]);
         }
         $this->assertDatabaseHas('menu_items', ['title' => 'Акции', 'route' => 'voyager.stocks.index', 'order' => 5]);
         $this->assertDatabaseHas('data_rows', ['data_type_id' => $type->id, 'field' => 'title', 'type' => 'text_area', 'display_name' => 'Заголовок акции']);
@@ -3551,6 +4400,25 @@ class VoyagerBreadTest extends TestCase
         Livewire::test(VoyagerBread::class, ['type' => 'stocks'])->assertSee('Unchanged');
         Livewire::test(VoyagerBreadEdit::class, ['type' => 'stocks', 'record' => $id])->assertSee('Заголовок акции');
         $this->assertContains('Акции', array_map(fn ($item) => $item->getLabel(), VoyagerBread::getNavigationItems()));
+    }
+
+    public function test_bread_creation_does_not_grant_other_roles_or_non_admin_creator(): void
+    {
+        $this->admin(['browse_admin', 'browse_bread']);
+        $actor = auth('filament')->user();
+        $other = Role::create(['name' => 'editor']);
+        $actor->roles()->attach($other);
+        $actor->role()->update(['name' => 'metadata_manager']);
+        $this->creationTables();
+        $service = app(\App\Services\Admin\BreadCreationService::class);
+        $values = ['name' => 'stocks', 'model_name' => \App\Models\Stock::class, 'slug' => 'stocks',
+            'display_name_singular' => 'Stock', 'display_name_plural' => 'Stocks',
+            'generate_permissions' => true, 'add_menu' => false, 'rows' => $service->defaults('stocks')];
+        $before = DB::table('permission_role')->count();
+        $service->create($actor, $values, $service->snapshot('stocks'));
+        $this->assertSame($before, DB::table('permission_role')->count());
+        $this->assertDatabaseHas('permissions', ['key' => 'add_stocks']);
+        $this->assertDatabaseMissing('permission_role', ['role_id' => $other->id]);
     }
 
     public function test_bread_creation_rejects_invalid_model_stale_schema_and_rolls_back_field_errors(): void
@@ -3625,7 +4493,7 @@ class VoyagerBreadTest extends TestCase
         $id = $service->create(auth('filament')->user(), $values, $snapshot);
         $this->assertDatabaseHas('data_types', ['id' => $id, 'controller' => ltrim($values['controller'], '\\'),
             'policy_name' => \App\Filament\Bread\BreadPolicyOptions::BASE]);
-        $this->assertSame($grants, DB::table('permission_role')->count());
+        $this->assertSame($grants + 5, DB::table('permission_role')->count());
     }
 
     public function test_bread_creation_offers_user_controller_and_policy_in_wizard(): void
@@ -3645,7 +4513,7 @@ class VoyagerBreadTest extends TestCase
         $this->assertDatabaseHas('data_types', ['name' => 'users',
             'controller' => 'TCG\\Voyager\\Http\\Controllers\\VoyagerUserController',
             'policy_name' => \App\Filament\Bread\BreadPolicyOptions::USER]);
-        $this->assertSame($grants, DB::table('permission_role')->count());
+        $this->assertSame($grants + 5, DB::table('permission_role')->count());
     }
 
     public function test_bread_creation_requires_primary_id_and_available_admin_menu(): void
