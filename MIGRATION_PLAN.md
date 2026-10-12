@@ -2127,3 +2127,27 @@ Checks: targeted4tests85assertionsPASS (3.997s98MB) covering timestamp render/st
 
 ## ADM-AUD-11-DB — контроль перед коммитом, 2026-10-12
 Текущие доработки готовы к коммиту: объединённые проверки PASS (40 tests / 638 assertions). Общий этап PARTIAL; TODO: браузерный taggable, hasOne/hasMany и advanced schema cases. Локальные модели браузерного набора не входят в коммит.
+
+## ADM-AUD-11-DB — IN PROGRESS: taggable, 2026-10-12
+Проверить на локальном браузерном наборе создание категории из поля belongsToMany с taggable, сохранение и повторную загрузку, совпадение с исходным Voyager. Рабочие таблицы и изображения не изменять.
+
+## ADM-AUD-11-DB — taggable DONE, 2026-10-12
+Chrome: taggable включён через constructor BREAD205; новая категория3 создана из поля; до Save основной записи категория существует, связь отсутствует; после выбора/Save/reload связь присутствует. Пустое название блокируется required, лишних записей нет. Browse/read выводят новую категорию. Проверки 4 tests / 95 assertions PASS. Общий этап PARTIAL; далее hasOne/hasMany live, advanced schema cases. Повторно выявлена intermittent MissingAppKeyException на Livewire; после reload повтор успешен, root cause остаётся TODO.
+
+## ADM-AUD-11-DB — IN PROGRESS: hasOne/hasMany live, 2026-10-12
+Сверить read-only child relations с original Voyager, настроить две связи на локальном браузерном наборе и проверить browse/read/edit, сохранение без изменения дочерних ключей.
+
+## ADM-AUD-11-DB — hasOne/hasMany live DONE, 2026-10-12
+BREAD206 тестовых категорий: hasOne/hasMany на adm_browser_cycle_items по category_id=id. Создана вторая дочерняя запись2 в категории2. Chrome PASS: browse/read/edit, первая против всех записей, EN/RU, пустая категория1, новая форма без ID, сохранение родителя и сохранность ключей дочерних записей. Tests2/26PASS. Общий этап PARTIAL; следующий точный шаг — проверить поддержку нестандартных ключей pivot по оригиналу, затем оставшиеся ограничения структуры; intermittent APP_KEY остаётся TODO.
+
+## ADM-AUD-11-DB — IN PROGRESS: custom pivot keys, 2026-10-12
+Найдено отличие от оригинального belongsToMany: игнорируются foreign_pivot_key/related_pivot_key/parent_key/key; значения принудительно int. Исправить единое определение ключей, validation/select/load/save/browse/read/taggable; проверить стандартный и строковый mapping isolated tests. Рабочую БД не менять.
+
+## ADM-AUD-11-DB — custom pivot keys DONE, 2026-10-12
+Добавлен BreadPivotKeys: validation и единое разрешение foreign_pivot_key/related_pivot_key/parent_key/key. Runtime select/load/save/browse/read/taggable использует явные ключи и сохраняет строковые значения. Constructor получил три необязательных select, очистка возвращает defaults. Tests6/136PASS, lintPASS. Chrome BREAD205 explicit standard keys сохранены, categories1/2/3 остались выбраны. Нестандартный string mapping проверен isolated SQLite, отдельный live DDL не выполнялся. Общий этап PARTIAL; далее обзор advanced schema ограничений по Voyager и закрытие доказанных расхождений. ENV APP_KEY остаётся TODO.
+
+## ADM-AUD-11-DB — IN PROGRESS: composite column rename, 2026-10-12
+Source original DatabaseUpdater переименовывает columns отдельным diff, Vue предупреждает о composites без полноценного index editor. Добавить pure rename composite column для native RENAME COLUMN MySQL8.0.3+/MariaDB10.5.2+, сохраняя index. Drop/index/type/FK/generated restrictions не расширять без отдельной проверки. SQL compiler fixtures без live DDL.
+
+## ADM-AUD-11-DB — composite rename DONE (compiler), 2026-10-12
+Разрешён pure rename колонки составного индекса в MySQL8.0.3+/MariaDB10.5.2+ через native RENAME COLUMN. Индекс не удаляется/не перестраивается; совместная смена свойств/index/drop и старые серверы блокируются. Tests30/460PASS, lintPASS. Live MySQL DDL этого сценария не выполнялся. Общий этап PARTIAL: FK/generated/composite editor и произвольные expressions остаются за пределами текущего адаптера. Следующее — проверить и при необходимости обозначить эти ограничения в форме до отправки, сверив исходные предупреждения Voyager. ENV APP_KEY отдельный TODO.

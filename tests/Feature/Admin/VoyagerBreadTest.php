@@ -453,6 +453,62 @@ class VoyagerBreadTest extends TestCase
         $this->assertEqualsCanonicalizing(['label_index_b', 'label_index_a', 'primary'], array_column(Schema::getIndexes('generated_edit_fixture'), 'name'));
     }
 
+    public function test_database_composite_column_rename_preserves_indexes_on_modern_mysql_and_mariadb(): void
+    {
+        Schema::create('composite_rename_fixture', function (Blueprint $table): void {
+            $table->id(); $table->string('title', 50); $table->string('code', 50);
+            $table->unique(['title', 'code'], 'composite_title_code');
+        });
+        DB::table('composite_rename_fixture')->insert(['title' => 'Keep', 'code' => '001']);
+        $fixture = app(\App\Services\Admin\DatabaseTableEditingService::class)->snapshot('composite_rename_fixture');
+        foreach ($fixture['structure']['columns'] as &$column) {
+            if (in_array($column['name'], ['title', 'code'])) { $column['type'] = 'varchar(50)'; }
+        }
+        unset($column);
+        $default = DB::getDefaultConnection();
+        config(['database.connections.composite_compile' => ['driver' => 'mysql', 'database' => 'fixture', 'prefix' => '']]);
+        Schema::clearResolvedInstance('db.schema'); Schema::shouldReceive('hasTable')->andReturn(false);
+        try {
+            foreach (['8.0.36', '10.6.18-MariaDB', '8.0.2', '10.5.1-MariaDB'] as $version) {
+                DB::setDefaultConnection('composite_compile');
+                $connection = DB::connection(); $pdo = \Mockery::mock(\PDO::class);
+                $pdo->shouldReceive('getAttribute')->with(\PDO::ATTR_SERVER_VERSION)->andReturn($version);
+                $connection->setPdo($pdo); $connection->useDefaultSchemaGrammar(); $grammar = $connection->getSchemaGrammar();
+                $service = new class($fixture) extends \App\Services\Admin\DatabaseTableEditingService {
+                    public function __construct(private array $fixture) {}
+                    public function snapshot(string $table): array { return $this->fixture; }
+                };
+                $input = $service->definition('composite_rename_fixture', $fixture);
+                $input['columns'][1]['name'] = 'caption';
+                $hash = $service->fingerprint($fixture);
+                if (in_array($version, ['8.0.2', '10.5.1-MariaDB'])) {
+                    try { $service->preview('composite_rename_fixture', $input, $hash); $this->fail('Legacy composite rename accepted'); }
+                    catch (\Illuminate\Validation\ValidationException) { $this->assertTrue(true); }
+                } else {
+                    $plan = $service->preview('composite_rename_fixture', $input, $hash);
+                    $this->assertSame(['alter table `composite_rename_fixture` rename column `title` to `caption`'], $plan['sql']);
+                    $this->assertSame([], $plan['dropIndexes']); $this->assertSame([], $plan['addIndexes']);
+                    foreach (['length', 'index', 'drop'] as $kind) {
+                        $bad = $input;
+                        if ($kind === 'length') { $bad['columns'][1]['length'] = '120'; }
+                        if ($kind === 'index') { $bad['columns'][1]['index'] = 'INDEX'; }
+                        if ($kind === 'drop') { array_splice($bad['columns'], 1, 1); }
+                        try { $service->preview('composite_rename_fixture', $bad, $hash); $this->fail('Unsupported composite edit accepted'); }
+                        catch (\Illuminate\Validation\ValidationException) { $this->assertTrue(true); }
+                    }
+                }
+                $this->assertSame($grammar, $connection->getSchemaGrammar());
+                DB::purge('composite_compile');
+            }
+        } finally {
+            DB::setDefaultConnection($default); DB::purge('composite_compile');
+            $this->app->forgetInstance('db.schema'); Schema::clearResolvedInstance('db.schema');
+        }
+        $this->assertDatabaseHas('composite_rename_fixture', ['title' => 'Keep', 'code' => '001']);
+        $this->assertTrue(Schema::hasColumn('composite_rename_fixture', 'title'));
+        $this->assertTrue(collect(Schema::getIndexes('composite_rename_fixture'))->contains(fn ($index) => $index['name'] === 'composite_title_code'));
+    }
+
     public function test_database_edit_mysql_preview_compiles_changes_without_server_connection(): void
     {
         Schema::create('mysql_edit_fixture', function (Blueprint $table): void { $table->id(); $table->string('title', 50); $table->index('title', 'old_title_index'); });
@@ -4696,6 +4752,81 @@ class VoyagerBreadTest extends TestCase
         $this->assertDatabaseHas('data_types', ['id' => $typeId, 'generate_permissions' => false]);
         $this->assertSame(5, DB::table('permissions')->where('table_name', 'pages')->count());
         $page->set('data.model_name', User::class)->call('save')->assertHasErrors(['data.model_name']);
+    }
+
+    public function test_custom_pivot_keys_preserve_string_values_across_forms_sync_and_display(): void
+    {
+        Schema::create('categories', function (Blueprint $table): void {
+            $table->id(); $table->string('code')->unique(); $table->string('name');
+        });
+        Schema::create('custom_links', function (Blueprint $table): void {
+            $table->string('owner_ref'); $table->string('tag_ref');
+        });
+        $this->admin(['browse_admin', 'browse_pages', 'read_pages', 'edit_pages', 'add_pages', 'add_categories', 'browse_bread']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $id = DB::table('pages')->insertGetId(['title' => 'owner-A']);
+        DB::table('pages')->insert(['title' => 'owner-B']);
+        DB::table('categories')->insert([
+            ['code' => '001', 'name' => 'First custom category'],
+            ['code' => 'blue', 'name' => 'Second custom category'],
+        ]);
+        DB::table('custom_links')->insert([
+            ['owner_ref' => 'owner-A', 'tag_ref' => '001'],
+            ['owner_ref' => 'owner-B', 'tag_ref' => 'blue'],
+        ]);
+        $details = ['type' => 'belongsToMany', 'table' => 'categories', 'model' => BreadTagFixture::class,
+            'label' => 'name', 'key' => 'code', 'parent_key' => 'title', 'pivot_table' => 'custom_links',
+            'foreign_pivot_key' => 'owner_ref', 'related_pivot_key' => 'tag_ref', 'taggable' => 'on'];
+        $rowId = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'custom_categories',
+            'display_name' => 'Custom categories', 'type' => 'relationship', 'details' => json_encode($details),
+            'browse' => true, 'read' => true, 'add' => true, 'edit' => true]);
+        // Parent key must be selected even if its physical column is hidden in browse.
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['browse' => false]);
+        $registry = app(BreadRegistry::class);
+        app(\App\Services\Admin\BreadMetadataService::class)->validateRelationship($registry->type('pages'), $details);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])
+            ->assertSet('data.__pivot_'.$rowId, ['001']);
+        $field = collect($editor->instance()->form->getFlatComponents())->first(fn ($field) => $field->getName() === '__pivot_'.$rowId);
+        $this->assertSame('First custom category', $field->getOptions()['001']);
+        $this->assertSame('Second custom category', $field->getOptions()['blue']);
+        $editor->set('data.__pivot_'.$rowId, ['001', 'blue'])->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('custom_links', ['owner_ref' => 'owner-A', 'tag_ref' => '001']);
+        $this->assertDatabaseHas('custom_links', ['owner_ref' => 'owner-A', 'tag_ref' => 'blue']);
+        $this->assertDatabaseHas('custom_links', ['owner_ref' => 'owner-B', 'tag_ref' => 'blue']);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages']);
+        $record = $page->instance()->records()['rows']->firstWhere('id', $id);
+        $this->assertSame('First custom category, Second custom category', $record->custom_categories);
+        $page->call('openView', $id)->assertSee('First custom category')->assertSee('Second custom category');
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])
+            ->set('data.__pivot_'.$rowId, ['missing'])->call('save')->assertHasErrors();
+        $this->assertDatabaseHas('custom_links', ['owner_ref' => 'owner-A', 'tag_ref' => '001']);
+        $categoryType = DB::table('data_types')->insertGetId(['name' => 'categories', 'slug' => 'categories', 'model_name' => BreadTagFixture::class]);
+        DB::table('data_rows')->insert([
+            ['data_type_id' => $categoryType, 'field' => 'name', 'type' => 'text', 'required' => true, 'details' => '{}'],
+            ['data_type_id' => $categoryType, 'field' => 'code', 'type' => 'text', 'required' => true, 'details' => '{"default":"03"}'],
+        ]);
+        $createdKey = app(\App\Services\Admin\BreadTagCreationService::class)->create('pages', $rowId, $id, ['label' => 'Tagged custom category']);
+        $this->assertSame('03', $createdKey);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])
+            ->set('data.__pivot_'.$rowId, [$createdKey])->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('custom_links', ['owner_ref' => 'owner-A', 'tag_ref' => '03']);
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])
+            ->set('data.__pivot_'.$rowId, [])->call('save')->assertHasNoErrors();
+        $this->assertDatabaseMissing('custom_links', ['owner_ref' => 'owner-A']);
+        $this->assertDatabaseHas('custom_links', ['owner_ref' => 'owner-B', 'tag_ref' => 'blue']);
+        foreach (['parent_key', 'key', 'foreign_pivot_key', 'related_pivot_key'] as $key) {
+            try {
+                app(\App\Services\Admin\BreadMetadataService::class)->validateRelationship($registry->type('pages'), array_replace($details, [$key => 'missing_column']));
+                $this->fail('Missing custom column accepted');
+            } catch (\Illuminate\Validation\ValidationException) { $this->assertTrue(true); }
+        }
+        Livewire::withQueryParams(['section' => $typeId])->test(\App\Filament\Pages\BreadMetadata::class)
+            ->set('data.display_name_singular', 'Page')->call('openRelationship', (string) $rowId)
+            ->assertSet('relationship.parent_key', 'title')->assertSet('relationship.related_pivot_key', 'tag_ref')
+            ->set('relationship.table', 'users')->set('relationship.model', User::class)
+            ->set('relationship.key', 'id')->set('relationship.label', 'email')
+            ->call('stageRelationship')->assertHasNoErrors()->call('save')->assertHasNoErrors();
+        $this->assertSame('owner_ref', json_decode(DB::table('data_rows')->where('id', $rowId)->value('details'), true)['foreign_pivot_key']);
     }
 
     public function test_child_relationships_match_voyager_readonly_forms_and_model_scopes(): void

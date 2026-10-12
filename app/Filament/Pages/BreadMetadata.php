@@ -399,7 +399,8 @@ class BreadMetadata extends Page
         $rules = ['type' => 'required|in:belongsTo,belongsToMany,hasOne,hasMany',
             'table' => ['required', \Illuminate\Validation\Rule::in($this->relationshipTables())],
             'model' => 'nullable|string', 'column' => 'nullable|string', 'key' => 'required|string', 'label' => 'required|string',
-            'pivot_table' => 'nullable|string', 'taggable' => 'boolean'];
+            'pivot_table' => 'nullable|string', 'taggable' => 'boolean',
+            'foreign_pivot_key' => 'nullable|string', 'related_pivot_key' => 'nullable|string', 'parent_key' => 'nullable|string'];
         $values = validator(['relationship' => $this->relationship], collect($rules)->mapWithKeys(fn ($rule, $key) => ['relationship.'.$key => $rule])->all())->validate()['relationship'];
         $models = app(BreadCreationService::class)->models($values['table']);
         if (! isset($models[$values['model'] ?? ''])) {
@@ -407,6 +408,9 @@ class BreadMetadata extends Page
         }
         $values['pivot'] = $values['type'] === 'belongsToMany' ? '1' : '0';
         $values['taggable'] = $values['type'] === 'belongsToMany' && ($values['taggable'] ?? false) ? 'on' : '0';
+        foreach (['foreign_pivot_key', 'related_pivot_key', 'parent_key'] as $customKey) {
+            if (empty($values[$customKey]) || $values['type'] !== 'belongsToMany') { unset($values[$customKey]); }
+        }
         app(BreadMetadataService::class)->validateRelationship($this->getSettingsContext(), $values);
         $key = $this->relationshipRow;
         if ($key === null) {
@@ -422,6 +426,7 @@ class BreadMetadata extends Page
             $this->metadataTranslations[$base]['rows'][$key] = Str::headline($values['table']);
         }
         $details = json_decode($this->fieldRows[$key]['details'], true) ?: [];
+        foreach (['foreign_pivot_key', 'related_pivot_key', 'parent_key'] as $customKey) { unset($details[$customKey]); }
         $this->fieldRows[$key]['details'] = json_encode(array_merge($details, $values), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $this->relationshipEditor = false;
         $this->resetErrorBag();

@@ -180,7 +180,17 @@ class DatabaseTableEditingService
         $dropIndexes = []; $addIndexes = [];
         foreach ($snapshot['structure']['indexes'] as $index) {
             if (count($index['columns']) !== 1) {
-                if (array_intersect([...$dropped, ...array_keys($renames)], $index['columns']) !== []) { $this->fail('Составной индекс сохраняется: изменение его колонок требует отдельного редактора.'); }
+                if (array_intersect($dropped, $index['columns']) !== []) { $this->fail('Составной индекс сохраняется: удаление его колонок требует отдельного редактора.'); }
+                if (array_intersect(array_keys($renames), $index['columns']) !== []) {
+                    $connection = DB::connection();
+                    $mysql = in_array($connection->getDriverName(), ['mysql', 'mariadb'], true);
+                    $nativeRename = $mysql && version_compare($connection->getServerVersion(), $connection->isMaria() ? '10.5.2' : '8.0.3', '>=');
+                    $indexChanged = collect($data['columns'])->contains(fn ($column) => in_array($column['old_name'], $index['columns'], true)
+                        && $column['index'] !== $originals[$column['old_name']]['index']);
+                    if (! $nativeRename || $indexChanged || array_intersect(array_column($changed, 'old_name'), $index['columns']) !== []) {
+                        $this->fail('Колонку составного индекса можно только переименовать без изменения свойств в MySQL 8.0.3+ или MariaDB 10.5.2+.');
+                    }
+                }
                 continue;
             }
             $old = $index['columns'][0];

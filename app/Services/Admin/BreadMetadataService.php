@@ -158,10 +158,7 @@ class BreadMetadataService
             $related = (object) ['name' => $details['table'], 'model_name' => $details['model'] ?? null];
             if (! app(BreadRegistry::class)->model($related)) { $fail(); }
         } else {
-            $pivot = $details['pivot_table'] ?? null;
-            if (! is_string($pivot) || ! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $pivot) || ! Schema::hasTable($pivot)
-                || ! Schema::hasColumn($details['table'], 'id')
-                || ! Schema::hasColumns($pivot, [Str::singular($type->name).'_id', Str::singular($details['table']).'_id'])) { $fail(); }
+            app(\App\Filament\Bread\BreadPivotKeys::class)->resolve($type, $details);
         }
     }
 }

@@ -50,3 +50,15 @@
 5. Отдельный ADM-AUD-03 follow-up: плавающая SA кнопка перекрывает breadcrumb при390px. Форму БД этот audit исправил; глобальный SA layout не менялся.
 
 Следующий шаг: исправить мобильное размещение SA кнопки в рамках ADM-AUD-03; runtime POST проверять отдельно с учётом запрета реальных writes. Общий ADM-AUD-11-DB не отмечать полностью DONE.
+
+### Taggable: PASS в Chrome
+BREAD205 belongsToMany taggable=on. Создана категория3 из поля, подтверждена запись до Save родителя, отсутствие pivot после reload без Save, наличие связи после Save/reload, отображение browse/read. Пустое название блокируется required, лишних категорий нет. Screenshot: storage/app/audit/adm-browser-taggable-read.jpg. 4 targeted tests / 95 assertions PASS. Первый запрос встретил intermittent MissingAppKeyException; после reload повтор успешен, ENV issue остаётся открытым. Live hasOne/hasMany ещё TODO.
+
+### HasOne/hasMany: PASS в Chrome
+BREAD206 category→items category_id=id. Две дочерние записи: hasOne первая, hasMany обе. Browse/read/edit, EN/RU, сохранение родителя, отсутствие изменения дочерних ключей, пустая категория и create без ID проверены. Tests2/26PASS. Скриншот storage/app/audit/adm-browser-child-relations.jpg. Read-only поведение соответствует original relationship.blade.php; точный визуальный дубль таблицы не заявляется. Следующее: custom pivot keys и advanced schema cases.
+
+### Custom pivot key mapping: implementation + isolated PASS
+foreign_pivot_key/related_pivot_key/parent_key/key поддерживаются в validation, constructor, select/load/sync/browse/read/taggable. String keys001/blue/03 не преобразуются в int. Parent скрытый browse column подбирается для join; NULL parent не связывается с unassigned pivot. 6 targeted tests136assertionsPASS, lintPASS. Chrome явные стандартные ключи BREAD205 сохранены, chips1/2/3 сохранены (adm-browser-explicit-pivot-keys.jpg). Нестандартные колонки/string keys проверены SQLite isolated, live DDL не выполнялся. Defaults conventional table singular_id/id сохранены; schema migrations не добавлены.
+
+### Composite column pure rename: compiler PASS
+Современные MySQL8.0.3+/MariaDB10.5.2+: native rename сохраняет составной индекс без drop/add index. Изменение свойств/index/drop одновременно с rename отклоняется, legacy версии также. Source DatabaseUpdater original rename diff сверён. Новый test21assertions, все database tests30/460PASS. Только SQL compilation + SQLite unchanged fixture, live MySQL DDL не выполнялся. FK/generated/полноценный composite editor остаются ограничениями; общий этап PARTIAL.

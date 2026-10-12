@@ -32,6 +32,12 @@
                     </x-filament::input.select></x-filament::input.wrapper></label>
                 @endforeach
                 @if(($relationship['type'] ?? '') === 'belongsToMany')
+                    @foreach(['foreign_pivot_key'=>'Ключ основной записи в промежуточной таблице', 'related_pivot_key'=>'Ключ связанной записи в промежуточной таблице', 'parent_key'=>'Ключ основной таблицы'] as $key=>$label)
+                        @php($keyColumns = $key === 'parent_key' ? $this->columns() : $this->relationshipColumns($relationship['pivot_table'] ?? ''))
+                        <label style="display:grid;gap:8px">{{ $label }}<x-filament::input.wrapper><x-filament::input.select wire:model="relationship.{{ $key }}" aria-label="{{ $label }}">
+                            <option value="">По умолчанию</option>@foreach($keyColumns as $column)<option value="{{ $column }}">{{ $column }}</option>@endforeach
+                        </x-filament::input.select></x-filament::input.wrapper></label>
+                    @endforeach
                     <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" wire:model="relationship.taggable" aria-label="Создание связанных записей">Создание связанных записей (taggable)</label>
                 @endif
             </div>

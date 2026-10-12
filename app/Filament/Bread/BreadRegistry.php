@@ -164,7 +164,6 @@ class BreadRegistry
 
     public function manyToManyRows(stdClass $type, string $operation): array
     {
-        $sourceKey = Str::singular($type->name) . '_id';
         $relations = [];
         foreach ($this->rows($type) as $row) {
             if ($row->type !== 'relationship' || ! $row->{$operation}) {
@@ -174,13 +173,9 @@ class BreadRegistry
             if (($details['type'] ?? null) !== 'belongsToMany' || empty($details['table']) || empty($details['pivot_table']) || empty($details['label'])) {
                 continue;
             }
-            $targetKey = Str::singular($details['table']) . '_id';
-            if (! Schema::hasTable($details['table']) || ! Schema::hasTable($details['pivot_table'])
-                || ! Schema::hasColumns($details['table'], ['id', $details['label']])
-                || ! Schema::hasColumns($details['pivot_table'], [$sourceKey, $targetKey])) {
-                continue;
-            }
-            $relations[] = compact('row', 'details', 'sourceKey', 'targetKey');
+            try { $keys = app(BreadPivotKeys::class)->resolve($type, $details); }
+            catch (\Illuminate\Validation\ValidationException) { continue; }
+            $relations[] = array_merge(compact('row', 'details'), $keys);
         }
 
         return $relations;

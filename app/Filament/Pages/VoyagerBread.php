@@ -332,13 +332,14 @@ class VoyagerBread extends Page
                     $details = $relation['details'];
                     $table = $details['table'];
                     $name = $details['label'];
+                    $relatedKey = $relation['relatedKey'];
                     $components[$row->field] = Select::make('__pivot_' . $row->id)
                         ->label($row->display_name ?: $table)
-                        ->options(fn (): array => DB::table($table)->orderBy('id')->limit(50)->pluck($name, 'id')->all())
+                        ->options(fn (): array => DB::table($table)->orderBy($relatedKey)->limit(50)->pluck($name, $relatedKey)->all())
                         ->multiple()->searchable()
                         ->getSearchResultsUsing(fn (string $search): array => DB::table($table)
-                            ->where($name, 'like', '%' . $search . '%')->orderBy('id')->limit(50)->pluck($name, 'id')->all())
-                        ->getOptionLabelsUsing(fn (array $values): array => DB::table($table)->whereIn('id', $values)->pluck($name, 'id')->all());
+                            ->where($name, 'like', '%' . $search . '%')->orderBy($relatedKey)->limit(50)->pluck($name, $relatedKey)->all())
+                        ->getOptionLabelsUsing(fn (array $values): array => DB::table($table)->whereIn($relatedKey, $values)->pluck($name, $relatedKey)->all());
                     $tagService = app(\App\Services\Admin\BreadTagCreationService::class);
                     if ($tagService->target($details, $this->registry())) {
                         $rowId = (int) $row->id;
@@ -346,7 +347,7 @@ class VoyagerBread extends Page
                             ->helperText('Кнопка «+» создаёт запись сразу. Её привязка сохраняется вместе с формой.')
                             ->createOptionForm([TextInput::make('label')->label($row->display_name ?: $name)->required()->maxLength(255)])
                             ->createOptionModalHeading('Создать связанную запись')
-                            ->createOptionUsing(function (array $data, ?Schema $schema = null) use ($tagService, $rowId): int {
+                            ->createOptionUsing(function (array $data, ?Schema $schema = null) use ($tagService, $rowId): int|string {
                                 try { return $tagService->create($this->type, $rowId, $this->recordId, $data); }
                                 catch (ValidationException $exception) {
                                     $path = $schema?->getStatePath();
@@ -717,7 +718,13 @@ class VoyagerBread extends Page
         $pivots = [];
             foreach ($this->registry()->manyToManyRows($bread, $this->recordId === null ? 'add' : 'edit') as $relation) {
                 $key = '__pivot_' . $relation['row']->id;
-                $pivots[] = [$relation, array_values(array_unique(array_map('intval', (array) ($values[$key] ?? []))))];
+                $selected = (array) ($values[$key] ?? []);
+                foreach ($selected as $value) {
+                    if (! is_int($value) && ! is_string($value)) {
+                        throw ValidationException::withMessages(['data.'.$key => 'Проверьте значения ключей связи.']);
+                    }
+                }
+                $pivots[] = [$relation, array_values(array_unique($selected))];
             }
         $relationshipColumns = collect($this->registry()->belongsToRows($bread, $this->recordId ? 'edit' : 'add'))
             ->map(fn (stdClass $row): ?string => (json_decode($row->details ?: '{}', true) ?: [])['column'] ?? null)
@@ -813,15 +820,20 @@ class VoyagerBread extends Page
             foreach ($pivots as [$relation, $ids]) {
                 $details = $relation['details'];
                 $target = $details['table'];
-                if ($ids !== [] && DB::table($target)->whereIn('id', $ids)->count() !== count($ids)) {
+                if ($ids !== [] && DB::table($target)->whereIn($relation['relatedKey'], $ids)->count() !== count($ids)) {
                     throw ValidationException::withMessages(['data.__pivot_' . $relation['row']->id => 'Связанные записи не найдены.']);
                 }
                 $pivot = $details['pivot_table'];
                 $sourceKey = $relation['sourceKey'];
                 $targetKey = $relation['targetKey'];
-                DB::table($pivot)->where($sourceKey, $record->getKey())->delete();
+                $parentValue = $record->getAttribute($relation['parentKey']);
+                if ($parentValue === null && $ids !== []) {
+                    throw ValidationException::withMessages(['data.__pivot_'.$relation['row']->id => 'Ключ основной записи не задан.']);
+                }
+                if ($parentValue === null) { continue; }
+                DB::table($pivot)->where($sourceKey, $parentValue)->delete();
                 foreach ($ids as $id) {
-                    $attributes = [$sourceKey => $record->getKey(), $targetKey => $id];
+                    $attributes = [$sourceKey => $parentValue, $targetKey => $id];
                     if (DatabaseSchema::hasColumn($pivot, 'created_at')) {
                         $attributes['created_at'] = now();
                     }
@@ -1448,9 +1460,9 @@ class VoyagerBread extends Page
             if ($row->type === 'relationship' && $many->has($row->field)) {
                 $relation = $many->get($row->field);
                 $details = $relation['details'];
-                $value = DB::table($details['pivot_table'] . ' as pivot')
-                    ->join($details['table'] . ' as related', 'related.id', '=', 'pivot.' . $relation['targetKey'])
-                    ->where('pivot.' . $relation['sourceKey'], $record->getKey())
+                $value = $record->getAttribute($relation['parentKey']) === null ? '' : DB::table($details['pivot_table'] . ' as pivot')
+                    ->join($details['table'] . ' as related', 'related.'.$relation['relatedKey'], '=', 'pivot.' . $relation['targetKey'])
+                    ->where('pivot.' . $relation['sourceKey'], $record->getAttribute($relation['parentKey']))
                     ->pluck('related.' . $details['label'])->implode(', ');
                 $fields[] = ['label' => $row->display_name ?: $row->field, 'value' => $value];
 
@@ -1536,6 +1548,7 @@ class VoyagerBread extends Page
                 $select[] = $details['column'];
             } elseif ($row->type === 'relationship' && $many->has($row->field)) {
                 $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => 'relationship'];
+                $select[] = $many[$row->field]['parentKey'];
             } elseif ($row->type === 'relationship' && $children->has($row->field)) {
                 $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => 'relationship'];
                 $select[] = $children[$row->field]['details']['key'];
@@ -1633,12 +1646,12 @@ class VoyagerBread extends Page
                 }
                 $details = $relation['details'];
                 $labels = DB::table($details['pivot_table'] . ' as pivot')
-                    ->join($details['table'] . ' as related', 'related.id', '=', 'pivot.' . $relation['targetKey'])
-                    ->whereIn('pivot.' . $relation['sourceKey'], $ids)
+                    ->join($details['table'] . ' as related', 'related.'.$relation['relatedKey'], '=', 'pivot.' . $relation['targetKey'])
+                    ->whereIn('pivot.' . $relation['sourceKey'], $records->pluck($relation['parentKey'])->filter(fn ($value) => $value !== null)->all())
                     ->get(['pivot.' . $relation['sourceKey'] . ' as source_id', 'related.' . $details['label'] . ' as label'])
                     ->groupBy('source_id');
                 foreach ($records as $record) {
-                    $record->{$field} = $labels->get($record->id)?->pluck('label')->implode(', ') ?: null;
+                    $record->{$field} = $labels->get($record->{$relation['parentKey']})?->pluck('label')->implode(', ') ?: null;
                 }
             }
             if ($model instanceof HasMedia && DatabaseSchema::hasTable('media')) {
@@ -1979,8 +1992,8 @@ class VoyagerBread extends Page
         }
         foreach ($this->registry()->manyToManyRows($bread, 'edit') as $relation) {
                 $details = $relation['details'];
-                $values['__pivot_' . $relation['row']->id] = DB::table($details['pivot_table'])
-                    ->where($relation['sourceKey'], $record->getKey())
+                $values['__pivot_' . $relation['row']->id] = $record->getAttribute($relation['parentKey']) === null ? [] : DB::table($details['pivot_table'])
+                    ->where($relation['sourceKey'], $record->getAttribute($relation['parentKey']))
                     ->pluck($relation['targetKey'])->all();
         }
         if ($bread->name === 'users') {

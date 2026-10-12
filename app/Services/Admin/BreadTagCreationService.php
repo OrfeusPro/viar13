@@ -27,7 +27,7 @@ class BreadTagCreationService
         return $label && in_array($label->type, ['text', 'text_area'], true) ? $target : null;
     }
 
-    public function create(string $sourceSlug, int $rowId, ?int $recordId, array $data): int
+    public function create(string $sourceSlug, int $rowId, ?int $recordId, array $data): int|string
     {
         // Fresh metadata and permissions: a mounted modal is not authorization.
         $registry = new BreadRegistry;
@@ -77,13 +77,17 @@ class BreadTagCreationService
             throw ValidationException::withMessages(['label' => 'Проверьте название и обязательные поля связанного раздела: '.implode(' ', $exception->validator->errors()->all())]);
         }
         // Voyager creates the target immediately; pivot changes wait for parent Save.
-        try { return DB::transaction(function () use ($model, $values): int {
+        try { return DB::transaction(function () use ($model, $values, $relation): int|string {
             $record = $model->newInstance();
             foreach ($values as $field => $value) {
                 if ($value !== null) { $record->setAttribute($field, $value); }
             }
             $record->save();
-            return (int) $record->getKey();
+            $key = $record->getAttribute($relation['relatedKey']);
+            if (! is_int($key) && ! is_string($key)) {
+                throw ValidationException::withMessages(['label' => 'Ключ созданной связанной записи не задан.']);
+            }
+            return $key;
         }); } catch (\Illuminate\Database\QueryException $exception) {
             report($exception);
             throw ValidationException::withMessages(['label' => 'Не удалось создать запись. Проверьте обязательные поля в связанном разделе.']);
