@@ -110,10 +110,201 @@ class VoyagerBread extends Page
 
     public string $search = '';
 
+    public string $searchKey = '';
+
+    public string $searchFilter = 'contains';
+
+    public string $sortField = '';
+
+    public string $sortDirection = 'asc';
+
+    public int $perPage = 25;
+
+    public array $selectedRecords = [];
+
     public ?int $filterType = null;
+
+    #[\Livewire\Attributes\Locked]
+    public array $browseReturnState = [];
+
+    public ?string $listLocale = null;
+
+    public function orderUrl(): ?string
+    {
+        $bread = $this->bread();
+        if (! $bread || ! $this->registry()->permitted($bread, 'edit') || ! app(\App\Services\Admin\BreadOrderingService::class)->configuration($bread)) { return null; }
+        $query = http_build_query($this->browseUrlState(), '', '&', PHP_QUERY_RFC3986);
+        return VoyagerBreadOrder::getUrl(['type' => $this->type]).($query !== '' ? '?'.$query : '');
+    }
+
+    protected function queryString(): array
+    {
+        return [
+            'paginators.page' => ['as' => 'page', 'except' => 1, 'history' => true],
+            'search' => ['as' => 's', 'except' => '', 'history' => false],
+            'searchKey' => ['as' => 'key', 'except' => '', 'history' => false],
+            'searchFilter' => ['as' => 'filter', 'except' => 'contains', 'history' => false],
+            'sortField' => ['as' => 'order_by', 'except' => '', 'history' => false],
+            'sortDirection' => ['as' => 'sort_order', 'except' => 'asc', 'history' => false],
+            'perPage' => ['as' => 'per_page', 'except' => 25, 'history' => false],
+            'locale' => ['as' => 'lang', 'except' => config('voyager.multilingual.default', 'en'), 'history' => false],
+            'filterType' => ['as' => 'type', 'except' => null, 'history' => false],
+            'listLocale' => ['as' => 'list_lang', 'except' => null, 'history' => false],
+        ];
+    }
+
+    private function browseUrlState(): array
+    {
+        $state = [
+            's' => $this->search, 'key' => $this->searchKey, 'filter' => $this->searchFilter,
+            'order_by' => $this->sortField, 'sort_order' => $this->sortDirection,
+            'per_page' => $this->perPage, 'lang' => $this->locale, 'type' => $this->filterType,
+            'page' => max(1, (int) $this->getPage()),
+        ];
+        $defaults = ['s' => '', 'key' => '', 'filter' => 'contains', 'order_by' => '', 'sort_order' => 'asc',
+            'per_page' => 25, 'lang' => config('voyager.multilingual.default', 'en'), 'type' => null, 'page' => 1];
+
+        $state = array_filter($state, fn ($value, $key): bool => $value !== $defaults[$key], ARRAY_FILTER_USE_BOTH);
+        ksort($state);
+
+        return $state;
+    }
 
     public function updatingSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedSearchKey(): void { $this->resetPage(); }
+
+    public function updatedSearchFilter(): void { $this->resetPage(); }
+
+    public function updatedPerPage(): void { $this->resetPage(); }
+
+    public function updatedFilterType(): void { $this->resetPage(); }
+
+    public function updatingPaginators($page, $pageName): void { $this->selectedRecords = []; }
+
+    public function clearRecordSelection(): void { $this->selectedRecords = []; }
+
+    public function togglePageSelection(): void
+    {
+        $this->requireBread('browse');
+        $this->requireBread('delete');
+        abort_unless(! $this->editing && $this->viewId === null, 409);
+        $ids = $this->records()['rows']->pluck('id')->map(fn ($id): string => (string) $id)->all();
+        $this->selectedRecords = $ids !== [] && count(array_intersect($ids, $this->selectedRecords)) === count($ids) ? [] : $ids;
+    }
+
+    public function deleteSelectedRecords(): void
+    {
+        $bread = $this->requireBread('browse');
+        $this->requireBread('delete');
+        abort_unless(! $this->editing && $this->viewId === null, 409);
+        $this->validate(['selectedRecords' => 'required|array|min:1|max:100', 'selectedRecords.*' => 'required|integer|min:1|distinct']);
+        $ids = array_map('intval', $this->selectedRecords);
+        sort($ids);
+        $model = $this->registry()->model($bread);
+        abort_unless($model, 409);
+        $model->getConnection()->transaction(function () use ($bread, $model, $ids): void {
+            $visible = $this->records()['rows']->pluck('id')->map(fn ($id): int => (int) $id)->all();
+            if (array_diff($ids, $visible) !== []) {
+                throw ValidationException::withMessages(['selectedRecords' => 'Выбор изменился. Выберите записи текущей страницы заново.']);
+            }
+            $query = $model->newQuery()->whereKey($ids)->orderBy($model->getKeyName());
+            $settings = json_decode($bread->details ?? '{}', true);
+            $scope = is_array($settings) ? ($settings['scope'] ?? null) : null;
+            if (is_string($scope) && isset(app(\App\Services\Admin\BreadTypeSettingsService::class)->scopes($bread)[$scope])) {
+                $query->{$scope}();
+            }
+            if ($this->filterType !== null && in_array('id_type', $this->registry()->columns($bread), true)) {
+                $query->where($bread->name.'.id_type', $this->filterType);
+            }
+            $records = $query->lockForUpdate()->get();
+            if ($records->count() !== count($ids)) {
+                throw ValidationException::withMessages(['selectedRecords' => 'Некоторые записи изменены или уже удалены. Обновите выбор.']);
+            }
+            foreach ($records as $record) { $this->requireBread('delete', (int) $record->getKey()); }
+            $journal = new \App\Filament\Bread\BreadMediaJournal($model->getConnection());
+            foreach ($records as $record) {
+                if ($record instanceof HasMedia && ! in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($record), true)) {
+                    foreach ($record->media()->lockForUpdate()->get() as $media) { $journal->retire($media); }
+                    $record->unsetRelation('media');
+                }
+                if (! $record->delete()) {
+                    throw ValidationException::withMessages(['selectedRecords' => 'Удаление отклонено моделью. Записи не удалены.']);
+                }
+            }
+        });
+        $this->selectedRecords = [];
+        $this->resetPage();
+        Notification::make()->title('Удалено записей: '.count($ids))->success()->send();
+    }
+
+    /** Only displayed physical fields and validated belongsTo relations are list controls. */
+    public function browseFields(): array
+    {
+        $bread = $this->requireBread('browse');
+        $physical = $this->registry()->columns($bread);
+        $fields = ['id' => 'ID'];
+        foreach ($this->registry()->rows($bread) as $row) {
+            if ($row->browse && $row->type !== 'password'
+                && ! in_array($row->field, ['password', 'remember_token'], true)
+                && in_array($row->field, $physical, true)) {
+                $fields[$row->field] = $row->display_name ?: $row->field;
+            }
+        }
+        foreach ($this->browseRelations($bread) as $field => $relation) {
+            $fields[$field] = $relation['row']->display_name ?: $field;
+        }
+
+        return $fields;
+    }
+
+    private function browseRelations(stdClass $bread): array
+    {
+        $relations = [];
+        foreach ($this->registry()->belongsToRows($bread, 'browse') as $row) {
+            $details = json_decode($row->details ?: '{}', true) ?: [];
+            try {
+                app(\App\Services\Admin\BreadMetadataService::class)->validateRelationship($bread, $details);
+            } catch (\Illuminate\Validation\ValidationException) {
+                continue;
+            }
+            $relations[$row->field] = compact('row', 'details');
+        }
+
+        return $relations;
+    }
+
+    public function searchFields(): array
+    {
+        $bread = $this->requireBread('browse');
+        $fields = $this->browseFields();
+        $model = $this->registry()->model($bread);
+        $hidden = array_unique(['password', 'remember_token', ...($model?->getHidden() ?? [])]);
+        $controller = app(\App\Filament\Bread\BreadControllerOptions::class)->normalize($bread->controller ?? null);
+        if (($bread->server_side ?? true) && $bread->name !== 'users' && $controller !== 'TCG\\Voyager\\Http\\Controllers\\VoyagerBaseController') {
+            $physical = $this->registry()->columns($bread);
+            foreach ($this->registry()->rows($bread) as $row) {
+                if (in_array($row->field, $physical, true) && ! in_array($row->type, ['password', 'hidden'], true)
+                    && ((bool) $row->browse || (bool) $row->read || (bool) $row->edit || (bool) $row->add
+                        || in_array($row->field, ['created_at', 'updated_at'], true))) {
+                    $fields[$row->field] = $row->display_name ?: $row->field;
+                }
+            }
+        }
+        foreach ($this->registry()->rows($bread) as $row) {
+            if (in_array($row->type, ['password', 'hidden'], true)) { $hidden[] = $row->field; }
+        }
+        return array_diff_key($fields, array_flip($hidden));
+    }
+
+    public function sortBy(string $field): void
+    {
+        abort_unless(array_key_exists($field, $this->browseFields()), 422);
+        $this->sortDirection = $this->sortField === $field && $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        $this->sortField = $field;
         $this->resetPage();
     }
 
@@ -173,9 +364,41 @@ class VoyagerBread extends Page
             return;
         }
         abort_unless($bread && ! $this->registry()->isDedicated($bread) && $this->canAccessBreadPage($bread), 403);
-        $this->locale = (string) config('voyager.multilingual.default', 'en');
+        $defaultLocale = (string) config('voyager.multilingual.default', 'en');
+        $language = request()->query('lang', $defaultLocale);
+        $this->locale = is_string($language) && in_array($language, $this->registry()->locales(), true) ? $language : $defaultLocale;
         $filter = request()->query('type');
         $this->filterType = is_scalar($filter) && ctype_digit((string) $filter) ? (int) $filter : null;
+        if ($this->registry()->permitted($bread, 'browse')) {
+            $settings = json_decode($bread->details ?? '{}', true);
+            $defaultSearch = is_array($settings) ? ($settings['default_search_key'] ?? '') : '';
+            $fields = $this->browseFields();
+            $key = request()->query('key', $defaultSearch);
+            $this->searchKey = is_string($key) && array_key_exists($key, $this->searchFields()) ? $key : '';
+            $order = request()->query('order_by', '');
+            $this->sortField = is_string($order) && array_key_exists($order, $fields) ? $order : '';
+        }
+        $search = request()->query('s', '');
+        $this->search = is_scalar($search) ? (string) $search : '';
+        $this->searchFilter = request()->query('filter') === 'equals' ? 'equals' : 'contains';
+        $this->sortDirection = request()->query('sort_order') === 'desc' ? 'desc' : 'asc';
+        $size = request()->query('per_page', 25);
+        $this->perPage = is_scalar($size) && ctype_digit((string) $size) && in_array((int) $size, [10, 25, 50, 100], true) ? (int) $size : 25;
+        $page = request()->query('page', 1);
+        $this->paginators['page'] = is_scalar($page) && filter_var($page, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) !== false ? (int) $page : 1;
+        if ($this->recordId !== null) {
+            $listLanguage = request()->query('list_lang', $this->locale);
+            $this->listLocale = is_string($listLanguage) && in_array($listLanguage, $this->registry()->locales(), true) ? $listLanguage : $defaultLocale;
+            $this->browseReturnState = $this->browseUrlState();
+            if ($this->listLocale === $defaultLocale) {
+                unset($this->browseReturnState['lang']);
+            } else {
+                $this->browseReturnState['lang'] = $this->listLocale;
+            }
+            ksort($this->browseReturnState);
+        } else {
+            $this->listLocale = null;
+        }
     }
 
     public function hydrate(): void
@@ -428,14 +651,17 @@ class VoyagerBread extends Page
 
     public function editUrl(int $id): string
     {
+        $state = $this->browseUrlState();
+        $state['list_lang'] = $this->locale;
         return VoyagerBreadEdit::getUrl(['type' => $this->type, 'record' => $id])
-            . ($this->filterType !== null ? '?type=' . $this->filterType : '');
+            . '?'.http_build_query($state, '', '&', PHP_QUERY_RFC3986);
     }
 
     public function listUrl(): string
     {
         return VoyagerBread::getUrl(['type' => $this->type])
-            . ($this->filterType !== null ? '?type=' . $this->filterType : '');
+            . (($state = $this instanceof VoyagerBreadEdit ? $this->browseReturnState : $this->browseUrlState()) !== []
+                ? '?'.http_build_query($state, '', '&', PHP_QUERY_RFC3986) : '');
     }
 
     public function cloneRecord(int $id): void
@@ -585,6 +811,7 @@ class VoyagerBread extends Page
     public function changeLocale(string $locale): void
     {
         abort_unless(in_array($locale, $this->registry()->locales(), true), 422);
+        $this->selectedRecords = [];
         $this->libraryField = null;
         if ($this->viewId !== null) {
             $this->requireBread('read');
@@ -1528,13 +1755,13 @@ class VoyagerBread extends Page
             return [];
         }
         $physical = $this->registry()->columns($bread);
-        $relations = collect($this->registry()->belongsToRows($bread, 'browse'))->keyBy('field');
+        $relations = collect($this->browseRelations($bread))->map(fn (array $relation): stdClass => $relation['row']);
         $many = collect($this->registry()->manyToManyRows($bread, 'browse'))->keyBy(fn (array $relation): string => $relation['row']->field);
         $children = collect($this->registry()->childrenRows($bread, 'browse'))->keyBy(fn (array $relation): string => $relation['row']->field);
         $columns = [];
         $select = ['id'];
         foreach ($this->registry()->rows($bread) as $row) {
-            if (! $row->browse || $row->type === 'password') {
+            if (! $row->browse || $row->type === 'password' || in_array($row->field, ['password', 'remember_token'], true)) {
                 continue;
             }
             if (in_array($row->type, ['adv_image'], true) && $model instanceof HasMedia) {
@@ -1565,29 +1792,66 @@ class VoyagerBread extends Page
         $scope = $settings['scope'] ?? null;
         $scopes = app(\App\Services\Admin\BreadTypeSettingsService::class)->scopes($bread);
         if (is_string($scope) && isset($scopes[$scope])) {
-            $builder = $model->newModelQuery();
+            $builder = $model->newQuery();
             $builder->{$scope}();
             $query = $builder->toBase();
         } else {
-            $query = DB::table($bread->name);
+            $query = $model->newQuery()->toBase();
         }
         $query->select(array_map(fn ($field) => $bread->name.'.'.$field, array_values(array_unique($select))));
         if ($this->filterType !== null && in_array('id_type', $physical, true)) {
             $query->where($bread->name.'.id_type', $this->filterType);
         }
-        $searchable = collect($this->registry()->rows($bread))
-            ->filter(fn (stdClass $row): bool => $row->browse && in_array($row->field, $physical, true) && in_array($row->type, ['text', 'text_area'], true))
-            ->take(4)->pluck('field')->all();
-        $defaultSearch = $settings['default_search_key'] ?? null;
-        if (is_string($defaultSearch) && in_array($defaultSearch, $physical, true)
-            && ! in_array($defaultSearch, ['password', 'remember_token'], true)) {
-            $searchable = [$defaultSearch];
+        $allowedFields = $this->browseFields();
+        $searchFields = $this->searchFields();
+        $browseRelations = $this->browseRelations($bread);
+        $searchRelations = $browseRelations;
+        $fieldRows = collect($this->registry()->rows($bread))->keyBy('field');
+        $searchable = $fieldRows
+            ->filter(fn (stdClass $row): bool => $row->browse && in_array($row->field, $physical, true) && in_array($row->type,
+                ($bread->server_side ?? true) ? ['text', 'text_area'] : ['text', 'text_area', 'rich_text_box', 'number', 'date', 'timestamp', 'time', 'color', 'checkbox', 'select_dropdown', 'radio_btn'], true))
+            ->pluck('field')->intersect(array_keys($searchFields))->all();
+        if (! ($bread->server_side ?? true)) { $searchable = array_values(array_intersect(array_unique(['id', ...$searchable, ...array_keys($searchRelations)]), array_keys($searchFields))); }
+        if ($this->searchKey !== '' && array_key_exists($this->searchKey, $searchFields)) {
+            $searchable = [$this->searchKey];
         }
         if ($this->search !== '' && $searchable !== []) {
             $search = $this->search;
-            $query->where(function ($builder) use ($searchable, $search, $bread): void {
+            $operator = $this->searchFilter === 'equals' ? '=' : 'like';
+            $searchValue = $operator === '=' ? $search : '%'.$search.'%';
+            $query->where(function ($builder) use ($searchable, $searchValue, $operator, $bread, $searchRelations, $model, $fieldRows, $search): void {
                 foreach ($searchable as $field) {
-                    $builder->orWhere($bread->name.'.'.$field, 'like', '%' . $search . '%');
+                    if (isset($searchRelations[$field])) {
+                        $details = $searchRelations[$field]['details'];
+                        $builder->orWhereIn($bread->name.'.'.$details['column'], DB::table($details['table'])
+                            ->select($details['key'])->where($details['label'], $operator, $searchValue));
+                    } else {
+                        if (! ($bread->server_side ?? true) && $this->locale !== config('voyager.multilingual.default', 'en')
+                            && method_exists($model, 'getTranslatableAttributes') && in_array($field, $model->getTranslatableAttributes(), true)
+                            && DatabaseSchema::hasTable('translations')) {
+                            $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
+                                ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
+                            $grammar = $model->getConnection()->getQueryGrammar();
+                            $builder->orWhereRaw('COALESCE(('.$translation->toSql().'), '.$grammar->wrap($bread->name.'.'.$field).') '.$operator.' ?', [...$translation->getBindings(), $searchValue]);
+                        } else {
+                            $builder->orWhere($bread->name.'.'.$field, $operator, $searchValue);
+                        }
+                        if (! ($bread->server_side ?? true) && $this->searchKey === '' && ($row = $fieldRows->get($field))) {
+                            $details = json_decode($row->details ?: '{}', true) ?: [];
+                            $options = in_array($row->type, ['select_dropdown', 'radio_btn'], true) && is_array($details['options'] ?? null) ? $details['options'] : [];
+                            if ($row->type === 'checkbox') {
+                                $codec = app(\App\Filament\Bread\BreadCheckbox::class);
+                                $options = [0 => $codec->caption(false, $details), 1 => $codec->caption(true, $details)];
+                            }
+                            $needle = mb_strtolower($search);
+                            $keys = array_keys(array_filter($options, function ($label) use ($needle, $operator): bool {
+                                if (! is_scalar($label)) { return false; }
+                                $label = mb_strtolower(strip_tags((string) $label));
+                                return $operator === '=' ? $label === $needle : str_contains($label, $needle);
+                            }));
+                            if ($keys !== []) { $builder->orWhereIn($bread->name.'.'.$field, $keys); }
+                        }
+                    }
                 }
             });
         }
@@ -1598,9 +1862,21 @@ class VoyagerBread extends Page
             $order = 'id';
             $direction = 'desc';
         }
-        $query->reorder($bread->name.'.'.$order, $direction === 'asc' ? 'asc' : 'desc');
+        if ($this->sortField !== '' && array_key_exists($this->sortField, $allowedFields)) {
+            $order = $this->sortField;
+            $direction = $this->sortDirection;
+        }
+        if (isset($browseRelations[$order])) {
+            $details = $browseRelations[$order]['details'];
+            $labelQuery = DB::table($details['table'].' as viar_bread_related')
+                ->select('viar_bread_related.'.$details['label'])
+                ->whereColumn('viar_bread_related.'.$details['key'], $bread->name.'.'.$details['column'])->limit(1);
+            $query->reorder()->orderBy($labelQuery, $direction === 'asc' ? 'asc' : 'desc');
+        } else {
+            $query->reorder($bread->name.'.'.$order, $direction === 'asc' ? 'asc' : 'desc');
+        }
         if ($order !== 'id') { $query->orderByDesc($bread->name.'.id'); }
-        $records = $query->paginate(25);
+        $records = $query->paginate(in_array($this->perPage, [10, 25, 50, 100], true) ? $this->perPage : 25);
         $ids = $records->getCollection()->pluck('id')->all();
         if ($ids !== []) {
             foreach ($children as $field => $relation) {

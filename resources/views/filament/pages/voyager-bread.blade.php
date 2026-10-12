@@ -6,12 +6,18 @@
         .viar-bread-media-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
         .viar-bread-media-actions { display: flex; gap: 8px; margin-top: 12px; }
         .viar-bread-page .fi-page-main, .viar-bread-page .fi-section { min-width: 0; }
-        .viar-bread-search { max-width: 28rem; margin-bottom: 24px; }
+        .viar-bread-search { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(140px, .7fr) minmax(200px, 2fr) minmax(130px, .7fr); align-items: end; gap: 12px; margin-bottom: 24px; }
+        .viar-bread-search label { display: grid; gap: 6px; font-size: 14px; }
+        .viar-bread-sort { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+        .viar-bread-sort:focus-visible { outline: 2px solid #2563eb; outline-offset: 4px; border-radius: 3px; }
+        @media (max-width: 900px) { .viar-bread-search { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (max-width: 480px) { .viar-bread-search { grid-template-columns: minmax(0, 1fr); } }
         .viar-bread-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; position: relative; border: 1px solid #dbe3ee; border-radius: 10px; }
         .viar-bread-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
         .viar-bread-table th, .viar-bread-table td { min-width: 150px; max-width: 240px; padding: 9px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
         .viar-bread-table thead th { padding: 13px 12px; text-align: left; vertical-align: middle; white-space: nowrap; font-weight: 600; color: #334155; background: #eef2f8; border-bottom: 1px solid #dbe3ee; }
         .viar-bread-table th:first-child, .viar-bread-table td:first-child { min-width: 75px; }
+        .viar-bread-table .viar-bread-selection { min-width: 44px; width: 44px; max-width: 44px; text-align: center; }
         .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 6px -4px #9ca3af; }
         .dark .viar-bread-table th:last-child, .dark .viar-bread-table td:last-child { background: #18181b; }
         .viar-bread-table thead th:last-child { background: #eef2f8; }
@@ -41,6 +47,7 @@
     @php($breadRegistry = app(\App\Filament\Bread\BreadRegistry::class))
     @php($canAddRecord = $breadRegistry->permitted($bread, 'add') && $breadRegistry->hasFormFields($bread, 'add'))
     @php($canEditRecord = $breadRegistry->permitted($bread, 'edit') && $breadRegistry->hasFormFields($bread, 'edit'))
+    @php($canDeleteRecord = $breadRegistry->permitted($bread, 'delete'))
     @php($records = ! $editing && $viewId === null ? $this->records() : [])
     @if (! app(\App\Filament\Bread\BreadRegistry::class)->model($bread))
         <x-filament::section>
@@ -103,9 +110,10 @@
             </form>
         </x-filament::section>
     @else
-        @if ($canAddRecord)
-            <div><x-filament::button wire:click="openCreate">Создать запись</x-filament::button></div>
-        @endif
+        <div class="flex flex-wrap gap-2">
+            @if ($canAddRecord)<x-filament::button wire:click="openCreate">Создать запись</x-filament::button>@endif
+            @if ($orderUrl = $this->orderUrl())<x-filament::button tag="a" :href="$orderUrl" color="gray" icon="heroicon-o-bars-3">Порядок записей</x-filament::button>@endif
+        </div>
         <x-filament::section>
             @if ($bread->name !== 'users')
             <div class="mb-4 flex flex-wrap gap-2" style="margin-bottom: 24px;" role="group" aria-label="Язык записей">
@@ -114,16 +122,54 @@
                 @endforeach
             </div>
             @endif
-            <div class="viar-bread-search"><x-filament::input.wrapper><x-filament::input type="search" wire:model.live.debounce.350ms="search" aria-label="Поиск по текстовым полям" placeholder="Поиск по текстовым полям" /></x-filament::input.wrapper></div>
+            @php($browseFields = $this->browseFields())
+            <div class="viar-bread-search">
+                <label>Поле поиска<x-filament::input.wrapper><x-filament::input.select wire:model.live="searchKey" aria-label="Поле поиска">
+                    <option value="">{{ ($bread->server_side ?? true) ? 'Все текстовые поля' : 'Все поля списка' }}</option>
+                    @foreach ($this->searchFields() as $field => $label)<option value="{{ $field }}">{{ $label }}</option>@endforeach
+                </x-filament::input.select></x-filament::input.wrapper></label>
+                <label>Условие<x-filament::input.wrapper><x-filament::input.select wire:model.live="searchFilter" aria-label="Условие поиска">
+                    <option value="contains">Содержит</option><option value="equals">Равно</option>
+                </x-filament::input.select></x-filament::input.wrapper></label>
+                <label>Поиск<x-filament::input.wrapper><x-filament::input type="search" wire:model.live.debounce.350ms="search" aria-label="Поиск записей" placeholder="Поиск записей" /></x-filament::input.wrapper></label>
+                <label>На странице<x-filament::input.wrapper><x-filament::input.select wire:model.live="perPage" aria-label="Записей на странице">
+                    @foreach ([10, 25, 50, 100] as $size)<option value="{{ $size }}">{{ $size }}</option>@endforeach
+                </x-filament::input.select></x-filament::input.wrapper></label>
+            </div>
+            @if ($canDeleteRecord)
+                @if ($selectedRecords !== [])
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+                    <span role="status">Выбрано: {{ count($selectedRecords) }}</span>
+                    <x-filament::button size="sm" color="danger" wire:click="deleteSelectedRecords" :disabled="count($selectedRecords) === 0" wire:confirm="Удалить выбранные записи ({{ count($selectedRecords) }})?">Удалить выбранные</x-filament::button>
+                    <x-filament::button size="sm" color="gray" wire:click="clearRecordSelection">Снять выбор</x-filament::button>
+                    <span style="font-size:13px;color:#71717a;">Выбор действует на текущей странице</span>
+                </div>
+                @endif
+                @error('selectedRecords')<p role="alert" style="color:#dc2626;margin-bottom:16px;">{{ $message }}</p>@enderror
+                @error('selectedRecords.*')<p role="alert" style="color:#dc2626;margin-bottom:16px;">{{ $message }}</p>@enderror
+            @endif
             <div class="viar-bread-table-scroll" tabindex="0" role="region" aria-label="Таблица записей с горизонтальной прокруткой">
                 <table class="viar-bread-table text-sm">
                     <thead><tr class="border-b text-left">
-                        @foreach ($records['columns'] ?? [] as $column)<th class="p-2">{{ $column['label'] }}</th>@endforeach
+                        @if ($canDeleteRecord)
+                            @php($pageIds = $records['rows']->pluck('id')->map(fn ($id) => (string) $id)->all())
+                            <th class="viar-bread-selection"><input type="checkbox" aria-label="Выбрать все записи текущей страницы" wire:click="togglePageSelection" @checked($pageIds !== [] && count(array_intersect($pageIds, $selectedRecords)) === count($pageIds)) @disabled($pageIds === []) /></th>
+                        @endif
+                        @foreach ($records['columns'] ?? [] as $column)
+                            <th class="p-2" @if (isset($browseFields[$column['field']])) aria-sort="{{ $sortField === $column['field'] ? ($sortDirection === 'asc' ? 'ascending' : 'descending') : 'none' }}" @endif>
+                                @if (isset($browseFields[$column['field']]))
+                                    <button type="button" class="viar-bread-sort" wire:click="sortBy(@js($column['field']))" aria-label="Сортировать: {{ $column['label'] }}">
+                                        {{ $column['label'] }}<span aria-hidden="true">{{ $sortField === $column['field'] ? ($sortDirection === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                                    </button>
+                                @else {{ $column['label'] }} @endif
+                            </th>
+                        @endforeach
                         <th class="p-2">Действия</th>
                     </tr></thead>
                     <tbody>
-                    @foreach ($records['rows'] ?? [] as $record)
+                    @forelse ($records['rows'] ?? [] as $record)
                         <tr class="border-b">
+                            @if ($canDeleteRecord)<td class="viar-bread-selection"><input type="checkbox" value="{{ $record->id }}" wire:model.live="selectedRecords" aria-label="Выбрать запись {{ $record->id }}" /></td>@endif
                             @foreach ($records['columns'] as $column)
                                 @php($value = $record->{$column['field']} ?? null)
                                 <td class="max-w-64 truncate p-2" title="{{ is_scalar($value) ? \Illuminate\Support\Str::limit(strip_tags((string) $value), 300) : '' }}">
@@ -157,7 +203,9 @@
                                 @endif
                             </div></td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="{{ count($records['columns'] ?? []) + 1 + ($canDeleteRecord ? 1 : 0) }}" style="padding:24px;text-align:center;">Записи не найдены</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>

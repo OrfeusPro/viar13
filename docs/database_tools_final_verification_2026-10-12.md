@@ -62,3 +62,13 @@ foreign_pivot_key/related_pivot_key/parent_key/key поддерживаются 
 
 ### Composite column pure rename: compiler PASS
 Современные MySQL8.0.3+/MariaDB10.5.2+: native rename сохраняет составной индекс без drop/add index. Изменение свойств/index/drop одновременно с rename отклоняется, legacy версии также. Source DatabaseUpdater original rename diff сверён. Новый test21assertions, все database tests30/460PASS. Только SQL compilation + SQLite unchanged fixture, live MySQL DDL не выполнялся. FK/generated/полноценный composite editor остаются ограничениями; общий этап PARTIAL.
+
+### Предупреждения структуры: PASS
+Контекстный блок перед edit form для composites/FK/incoming/generated, обычные таблицы без предупреждений. 3tests40assertionsPASS, schema/rows неизменны. Chrome read-only translations composite notice и plain test table проверены; screenshot adm-db-structure-notices.jpg. Backend/DDL/migrations не менялись, runtime writes не выполнялись.
+
+### Актуальный итог и APP_KEY diagnostics
+Ранние пункты «browser POST/DDL не проверены» и «hasOne/hasMany TODO» superseded последующими разделами и MIGRATION_PROGRESS: локальный отдельный adm_browser_cycle_* цикл create/edit/schema/BREAD/record/relations пройден. Произвольные live MySQL advanced cases этим не подтверждены. Общий раздел PARTIAL.
+Для intermittent MissingAppKeyException добавлен presence-only exception context (3tests17assertionsPASS): key state config/ENV/SERVER/process, config cache, SAPI/ZTS, доступность/read/parse/key presence выбранного env-файла. Значения секретов и parser errors не сохраняются; ключ/окружение/БД не меняются. OSPanel Apache+PHP ZTS/PutenvAdapter — возможный фактор, не доказанная причина. Следующая ошибка должна дать диагностические данные; runtime исправление пока не заявляется.
+
+## ADM-AUD-11-DB — APP_KEY diagnostics CANCELLED, 2026-10-12
+По уточнению пользователя периодический сбой связан с OpenServer; отдельная диагностика приложения отменена. Удалены EnvironmentKeyDiagnostics и его unit tests, Handler возвращён к прежнему exception context. Предыдущие записи об установленной диагностике superseded этой записью. APP_KEY/.env/рабочая БД/images не менялись. Причина OpenServer принята как объяснение пользователя, отдельно не подтверждалась; ENV не блокирует дальнейшие задачи админки. Сохранены contextual structure notices и их tests. Следующее — ADM-AUD-03 mobile SA positioning.

@@ -17,6 +17,7 @@ class DatabaseEdit extends DatabaseCreate
     #[Locked] public array $dropSql = [];
     public string $dropConfirmation = '';
     #[Locked] public bool $showDeletion = false;
+    #[Locked] public array $structureNotices = [];
 
     public function getTitle(): string { return 'Редактирование таблицы: '.$this->originalTable; }
 
@@ -27,6 +28,18 @@ class DatabaseEdit extends DatabaseCreate
         abort_unless(is_string($table) && $table !== '', 422);
         $service = app(DatabaseTableEditingService::class);
         $snapshot = $service->snapshot($table);
+        $composites = array_filter($snapshot['structure']['indexes'], fn ($index) => count($index['columns']) > 1);
+        if ($composites !== []) {
+            $names = implode(', ', array_map(fn ($index) => $index['name'].' ('.implode(', ', $index['columns']).')', $composites));
+            $this->structureNotices[] = 'Составные индексы: '.$names.'. Они сохраняются. Переименование их колонок без изменения свойств доступно в MySQL 8.0.3+ и MariaDB 10.5.2+. Удаление таких колонок ограничено.';
+        }
+        if ($snapshot['structure']['foreign_keys'] !== [] || $snapshot['incoming'] !== []) {
+            $this->structureNotices[] = 'У таблицы есть внешние связи. Изменение связанных колонок и используемых ими индексов заблокировано. В SQLite изменение такой таблицы недоступно.';
+        }
+        $generated = array_column(array_filter($snapshot['structure']['columns'], fn ($column) => ! empty($column['generation'])), 'name');
+        if ($generated !== []) {
+            $this->structureNotices[] = 'Вычисляемые колонки: '.implode(', ', $generated).'. Их свойства нельзя изменить в этом редакторе.';
+        }
         $this->originalTable = $table;
         $this->showDeletion = request()->query('action') === 'delete';
         $this->schemaFingerprint = $service->fingerprint($snapshot);

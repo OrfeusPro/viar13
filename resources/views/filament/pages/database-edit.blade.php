@@ -2,6 +2,14 @@
     @include('filament.components.management-styles')
     @include('filament.components.database-column-styles')
     <x-filament::section>
+        @if($this->structureNotices !== [])
+            <aside aria-label="Ограничения структуры таблицы" style="margin-bottom:24px;padding:16px 20px;border:1px solid #fcd34d;border-radius:12px;background:#fffbeb;color:#78350f">
+                <h2 style="font-size:15px;font-weight:600;margin-bottom:8px">Особенности этой таблицы</h2>
+                <ul style="margin:0;padding-left:20px;display:grid;gap:8px">
+                    @foreach($this->structureNotices as $notice)<li>{{ $notice }}</li>@endforeach
+                </ul>
+            </aside>
+        @endif
         {{ $this->form }}
         <div class="viar-management-actions" style="margin-top:24px;justify-content:center;flex-wrap:wrap">
             <x-filament::button color="success" wire:click="addColumn" icon="heroicon-o-plus">Добавить колонку</x-filament::button>
