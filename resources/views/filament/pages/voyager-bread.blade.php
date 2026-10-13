@@ -172,8 +172,10 @@
                             @if ($canDeleteRecord)<td class="viar-bread-selection"><input type="checkbox" value="{{ $record->id }}" wire:model.live="selectedRecords" aria-label="Выбрать запись {{ $record->id }}" /></td>@endif
                             @foreach ($records['columns'] as $column)
                                 @php($value = $record->{$column['field']} ?? null)
-                                <td class="max-w-64 truncate p-2" title="{{ is_scalar($value) ? \Illuminate\Support\Str::limit(strip_tags((string) $value), 300) : '' }}">
-                                    @if (in_array($column['type'], ['image', 'multiple_images', 'media_picker', 'adv_media_files'], true) || ($column['type'] === 'file' && \App\Filament\Bread\BreadImage::urls($value) !== []))
+                                <td class="max-w-64 truncate p-2" title="{{ $column['type'] === 'adv_fields_group' || isset($column['details']['view']) ? '' : (is_scalar($value) ? \Illuminate\Support\Str::limit(in_array($column['type'], ['adv_json', 'adv_page_layout'], true) ? (string) $value : strip_tags((string) $value), 300) : '') }}">
+                                    @if (isset($records['customCells'][$record->id][$column['field']]))
+                                        {{ $records['customCells'][$record->id][$column['field']] }}
+                                    @elseif (in_array($column['type'], ['image', 'multiple_images', 'media_picker', 'adv_media_files'], true) || ($column['type'] === 'file' && \App\Filament\Bread\BreadImage::urls($value) !== []))
                                         @php($images = $column['type'] === 'adv_media_files' ? (is_array($value) ? $value : []) : \App\Filament\Bread\BreadImage::urls($value))
                                         <div style="display:flex;align-items:center;gap:6px;max-width:220px;overflow:hidden;">
                                             @foreach (array_slice($images, 0, 3) as $url)
@@ -182,7 +184,47 @@
                                             @if (count($images) > 3)<span>+{{ count($images) - 3 }}</span>@endif
                                         </div>
                                     @elseif ($column['type'] === 'checkbox')
-                                        {{ app(\App\Filament\Bread\BreadCheckbox::class)->caption($value, $column['details'] ?? []) }}
+                                        @if (array_key_exists($column['field'], $records['inlineValues'][$record->id] ?? []))
+                                            @php($inlineValue = $records['inlineValues'][$record->id][$column['field']])
+                                            <button type="button" role="switch" aria-checked="{{ $inlineValue ? 'true' : 'false' }}" aria-label="{{ $column['label'] }}: {{ app(\App\Filament\Bread\BreadCheckbox::class)->caption($inlineValue, $column['details'] ?? []) }}"
+                                                wire:click="saveInlineField({{ (int) $record->id }}, @js($column['field']), {{ $inlineValue ? 0 : 1 }})" wire:loading.attr="disabled" wire:target="saveInlineField"
+                                                style="display:inline-flex;align-items:center;width:38px;height:22px;padding:3px;border-radius:999px;background:{{ $inlineValue ? '#2563eb' : '#94a3b8' }};cursor:pointer;">
+                                                <span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:white;transform:translateX({{ $inlineValue ? 16 : 0 }}px);"></span>
+                                            </button>
+                                            @error('inline.'.$record->id.'.'.$column['field'])<span role="alert" style="display:block;color:#dc2626;white-space:normal;">{{ $message }}</span>@enderror
+                                        @else
+                                            {{ app(\App\Filament\Bread\BreadCheckbox::class)->caption($value, $column['details'] ?? []) }}
+                                        @endif
+                                    @elseif (in_array($column['type'], ['text', 'number'], true) && array_key_exists($column['field'], $records['inlineValues'][$record->id] ?? []))
+                                        @php($inlineValue = $records['inlineValues'][$record->id][$column['field']])
+                                        <div wire:key="inline-{{ $record->id }}-{{ $column['field'] }}-{{ $locale }}-{{ md5(json_encode($inlineValue)) }}"
+                                            x-data="{ editing: false, busy: false, value: @js($inlineValue), async save() { if (this.busy) return; this.busy = true; try { if (await $wire.saveInlineField({{ (int) $record->id }}, @js($column['field']), this.value)) this.editing = false; } finally { this.busy = false; } } }">
+                                            <div x-show="!editing" style="display:flex;align-items:center;gap:8px;">
+                                                <span>{{ is_scalar($value) ? \Illuminate\Support\Str::limit(strip_tags((string) $value), 80) : '' }}</span>
+                                                <x-filament::icon-button icon="heroicon-o-pencil-square" label="Редактировать поле" x-on:click="editing = true; $nextTick(() => { $refs.inlineInput.focus(); $refs.inlineInput.select(); })" />
+                                            </div>
+                                            <div x-show="editing" x-cloak style="display:flex;align-items:center;gap:6px;">
+                                                <input x-ref="inlineInput" x-model="value" type="{{ $column['type'] === 'number' ? 'number' : 'text' }}" step="any" aria-label="{{ $column['label'] }}" :disabled="busy"
+                                                    x-on:keydown.enter.prevent="save()" x-on:keydown.escape.prevent="value = @js($inlineValue); editing = false" style="width:160px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;" />
+                                                <x-filament::icon-button icon="heroicon-o-check" label="Сохранить поле" x-on:click="save()" x-bind:disabled="busy" />
+                                                <x-filament::icon-button icon="heroicon-o-x-mark" label="Отменить изменение поля" x-on:click="value = @js($inlineValue); editing = false" x-bind:disabled="busy" />
+                                            </div>
+                                            @error('inline.'.$record->id.'.'.$column['field'])<span role="alert" style="display:block;color:#dc2626;white-space:normal;">{{ $message }}</span>@enderror
+                                        </div>
+                                    @elseif ($column['type'] === 'adv_fields_group')
+                                        <div class="viar-bread-group-indicators" style="display:flex;align-items:center;gap:8px;">
+                                            @foreach (app(\App\Filament\Bread\BreadFieldsGroup::class)->browseIndicators($value, $column['details'] ?? []) as $filled)
+                                                <span data-filled="{{ $filled ? '1' : '0' }}" role="img" aria-label="Поле {{ $loop->iteration }}: {{ $filled ? 'заполнено' : 'пусто' }}" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;">
+                                                    @if ($filled)<x-filament::icon :icon="\Filament\Support\Icons\Heroicon::OutlinedCheck" style="width:16px;height:16px;" />
+                                                    @else<span aria-hidden="true" style="width:4px;height:4px;background:currentColor;border-radius:50%;"></span>@endif
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                        @if (($column['editable'] ?? false) && array_key_exists('browse_inline_editor', $column['details'] ?? []) && ! isset($column['details']['view']) && app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'edit', (int) $record->id))
+                                            <x-filament::icon-button icon="heroicon-o-pencil-square" label="Редактировать группу" wire:click="mountAction('editInlineGroup', { id: {{ (int) $record->id }}, field: @js($column['field']) })" />
+                                        @endif
+                                    @elseif (in_array($column['type'], ['adv_json', 'adv_page_layout'], true))
+                                        {{ is_scalar($value) ? \Illuminate\Support\Str::limit((string) $value, 80) : '' }}
                                     @else
                                         {{ is_scalar($value) ? \Illuminate\Support\Str::limit(strip_tags((string) $value), 80) : '' }}
                                     @endif

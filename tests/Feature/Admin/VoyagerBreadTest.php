@@ -1997,6 +1997,212 @@ class VoyagerBreadTest extends TestCase
         $metadata->set('data.details', json_encode($details))->call('save')->assertHasNoErrors();
     }
 
+    public function test_custom_browse_view_receives_original_context_models_raw_content_and_page_only(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        app('view')->addNamespace('bread-audit', base_path('tests/Fixtures/views'));
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadListTranslatedFixture::class]);
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update([
+            'type' => 'select_dropdown', 'details' => json_encode(['view' => 'bread-audit::bread-custom-browse', 'nested' => ['label' => 'Context'], 'options' => ['key' => 'Standard caption']]),
+        ]);
+        for ($id = 1; $id <= 12; $id++) { DB::table('pages')->insert(['id' => $id, 'title' => 'key']); }
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => 2, 'locale' => 'ru', 'value' => 'Translated raw']);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('gotoPage', 2)
+            ->assertSee('browse|browse|pages|bread-audit::bread-custom-browse|Context|2|2|2', false)->assertDontSee('Standard caption');
+        $this->assertSame([2, 1], array_keys($page->instance()->records()['customCells']));
+        $this->assertStringContainsString('>key</strong>', (string) $page->instance()->records()['customCells'][2]['title']);
+        $page->call('changeLocale', 'ru')->assertSee('Translated raw');
+        $page->assertSee('Custom component');
+        $this->assertDatabaseHas('pages', ['id' => 2, 'title' => 'key']);
+        $this->assertDatabaseCount('pages', 12);
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadCustomBrowseAccessorFixture::class]);
+        $accessor = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('gotoPage', 2)->assertSee('Accessor: key');
+        $this->assertStringContainsString('Accessor: key', (string) $accessor->instance()->records()['customCells'][2]['title']);
+        $this->assertStringContainsString('data-custom-current>Accessor: key</small>', (string) $accessor->instance()->records()['customCells'][2]['title']);
+        $page->set('search', 'no match');
+        $this->assertSame([], $page->instance()->records()['customCells']);
+    }
+
+    public function test_custom_browse_view_unavailable_names_errors_and_hidden_rows_do_not_leak_content(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        app('view')->addNamespace('bread-audit', base_path('tests/Fixtures/views'));
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $id = DB::table('pages')->insertGetId(['title' => 'Secret raw value']);
+        foreach (['missing.view', '../outside', '/absolute/path', ['not-a-name'], 'bread-audit::bread-custom-broken', 'voyager::unregistered'] as $name) {
+            DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['details' => json_encode(['view' => $name])]);
+            Livewire::test(VoyagerBread::class, ['type' => 'pages'])->assertSee('Шаблон колонки недоступен.')->assertDontSee('Secret raw value')->assertDontSee('Template failure');
+        }
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['browse' => false, 'details' => json_encode(['view' => 'bread-audit::bread-custom-browse'])]);
+        $this->assertSame([], Livewire::test(VoyagerBread::class, ['type' => 'pages'])->instance()->records()['customCells']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'title' => 'Secret raw value']);
+    }
+
+    public function test_inline_text_number_checkbox_save_base_values_and_validate_without_full_form_writes(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadListTranslatedFixture::class]);
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['details' => json_encode(['browse_inline_editor' => false, 'validation' => ['edit' => ['rule' => 'max:20']]])]);
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'meta_description')->update(['type' => 'number', 'details' => json_encode(['browse_inline_editor' => true, 'min' => 0, 'max' => 10, 'step' => 0.5])]);
+        DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => 'flags', 'type' => 'checkbox', 'browse' => true, 'details' => json_encode(['on' => 'On', 'off' => 'Off', 'browse_inline_checkbox' => false])]);
+        $id = DB::table('pages')->insertGetId(['title' => 'Base', 'meta_description' => '1', 'flags' => '0', 'image' => 'keep.jpg']);
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => $id, 'locale' => 'ru', 'value' => 'Перевод']);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('changeLocale', 'ru');
+        $this->assertSame('Перевод', $page->instance()->records()['rows']->first()->title);
+        $this->assertSame('Base', $page->instance()->records()['inlineValues'][$id]['title']);
+        $page->assertSee('Редактировать поле')->assertSee('x-on:keydown.enter.prevent', false)->assertSee('Отменить изменение поля');
+        $page->call('saveInlineField', $id, 'title', 'Updated')->assertHasNoErrors();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'title' => 'Updated', 'image' => 'keep.jpg', 'meta_description' => '1', 'flags' => '0']);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'value' => 'Перевод']);
+        $page->call('saveInlineField', $id, 'title', str_repeat('x', 21))->assertHasErrors(['inline.'.$id.'.title']);
+        foreach (['not a number', '-1', '11', '1.25', ['invalid']] as $invalid) {
+            $page->call('saveInlineField', $id, 'meta_description', $invalid)->assertHasErrors(['inline.'.$id.'.meta_description']);
+        }
+        $page->call('saveInlineField', $id, 'meta_description', '2.5')->assertHasNoErrors(['inline.'.$id.'.meta_description']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => '2.5']);
+        $page->call('saveInlineField', $id, 'flags', 1)->assertHasNoErrors(['inline.'.$id.'.flags']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'flags' => '1']);
+        $page->call('saveInlineField', $id, 'flags', 'yes')->assertHasErrors(['inline.'.$id.'.flags']);
+        $page->call('saveInlineField', $id, 'flags', 0)->assertHasNoErrors(['inline.'.$id.'.flags']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'flags' => '0', 'title' => 'Updated', 'image' => 'keep.jpg']);
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['details' => json_encode(['browse_inline_editor' => true, 'validation' => ['edit' => ['rule' => 'different:meta_description']]])]);
+        $page->call('saveInlineField', $id, 'title', '2.5')->assertHasErrors(['inline.'.$id.'.title']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'title' => 'Updated']);
+        $this->assertFalse($page->instance()->editing);
+    }
+
+    public function test_inline_field_is_hidden_and_direct_save_forbidden_without_edit_permission(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['details' => '{"browse_inline_editor":true}']);
+        $id = DB::table('pages')->insertGetId(['title' => 'Keep']);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->assertDontSee('Редактировать поле');
+        $this->assertSame([], $page->instance()->records()['inlineValues']);
+        $page->call('saveInlineField', $id, 'title', 'Forged')->assertForbidden();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'title' => 'Keep']);
+    }
+
+    public function test_inline_field_rejects_disabled_metadata_wrong_types_and_model_veto(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['details' => '{"browse_inline_editor":true}']);
+        DB::table('pages')->insert(['id' => 1, 'title' => 'Keep']);
+        foreach ([['details' => '{}'], ['edit' => false], ['browse' => false], ['type' => 'password'], ['details' => '{"browse_inline_editor":true,"view":"custom"}']] as $disabled) {
+            DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(array_merge(['details' => '{"browse_inline_editor":true}', 'edit' => true, 'browse' => true, 'type' => 'text'], $disabled));
+            Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('saveInlineField', 1, 'title', 'Forged')->assertForbidden();
+        }
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['type' => 'text', 'details' => '{"browse_inline_editor":true}']);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('saveInlineField', 1, 'title', ['invalid'])->assertHasErrors(['inline.1.title']);
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['details' => '{"browse_inline_editor":true,"validation":{"rule":"unsupported_rule"}}']);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('saveInlineField', 1, 'title', 'Rejected')->assertHasErrors(['inline.1.title']);
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['details' => '{"browse_inline_editor":true}']);
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadOrderVetoFixture::class]);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('saveInlineField', 1, 'title', 'Rejected')->assertHasErrors(['inline.1.title']);
+        $this->assertDatabaseHas('pages', ['id' => 1, 'title' => 'Keep']);
+    }
+
+    public function test_inline_group_dialog_matches_original_text_only_base_save_and_cancel(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $details = ['browse_inline_editor' => false, 'fields' => [
+            'caption' => ['type' => 'text', 'label' => 'Подпись', 'value' => 'Base', 'custom' => 'keep'],
+            'count' => ['type' => 'number', 'label' => 'Число', 'value' => 3],
+            'body' => ['type' => 'textarea', 'label' => 'Описание', 'value' => 'Unchanged'],
+        ], 'version' => 7];
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'meta_description')->update([
+            'type' => 'adv_fields_group', 'browse' => true, 'details' => json_encode($details),
+        ]);
+        $original = json_encode($details);
+        $id = DB::table('pages')->insertGetId(['title' => 'Keep title', 'meta_description' => $original, 'image' => 'keep.jpg']);
+        $translated = json_encode(array_replace($details, ['version' => 99]));
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'meta_description', 'foreign_key' => $id, 'locale' => 'ru', 'value' => $translated]);
+        $action = \Filament\Actions\Testing\TestAction::make('editInlineGroup')->arguments(['id' => $id, 'field' => 'meta_description']);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->assertSee('Редактировать группу')
+            ->call('changeLocale', 'ru')->mountAction($action)->assertActionMounted('editInlineGroup');
+        $schema = $page->instance()->getSchema($page->instance()->getMountedActionSchemaName());
+        $this->assertSame(['values.caption'], collect($schema->getFlatComponents())->filter(fn ($field) => $field instanceof \Filament\Forms\Components\TextInput)->map(fn ($field) => $field->getName())->values()->all());
+        $page->call('unmountAction');
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $original]);
+        $page->callAction($action, ['values' => ['caption' => 'Updated']])->assertHasNoActionErrors();
+        $saved = json_decode(DB::table('pages')->where('id', $id)->value('meta_description'), true);
+        $this->assertSame('Updated', $saved['fields']['caption']['value']);
+        $this->assertSame('keep', $saved['fields']['caption']['custom']);
+        $this->assertSame(3, $saved['fields']['count']['value']);
+        $this->assertSame('Unchanged', $saved['fields']['body']['value']);
+        $this->assertSame(7, $saved['version']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'title' => 'Keep title', 'image' => 'keep.jpg']);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'value' => $translated]);
+        $before = DB::table('pages')->where('id', $id)->value('meta_description');
+        $page->callAction($action, ['values' => ['caption' => str_repeat('x', 50001)]])->assertHasActionErrors(['values.caption']);
+        $this->assertDatabaseHas('pages', ['id' => $id, 'meta_description' => $before]);
+        $page->call('unmountAction');
+        DB::table('pages')->where('id', $id)->update(['meta_description' => null]);
+        $page->callAction($action, ['values' => ['caption' => 'From defaults']])->assertHasNoActionErrors();
+        $this->assertSame('From defaults', json_decode(DB::table('pages')->where('id', $id)->value('meta_description'), true)['fields']['caption']['value']);
+    }
+
+    public function test_inline_group_dialog_requires_edit_and_enabled_metadata(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $details = ['browse_inline_editor' => true, 'fields' => ['caption' => ['type' => 'text', 'label' => 'Caption', 'value' => 'Keep']]];
+        $rowId = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'flags', 'type' => 'adv_fields_group', 'browse' => true, 'details' => json_encode($details)]);
+        $id = DB::table('pages')->insertGetId(['title' => 'Restricted', 'flags' => json_encode($details)]);
+        $arguments = ['id' => $id, 'field' => 'flags'];
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->assertDontSee('Редактировать группу')
+            ->call('mountAction', 'editInlineGroup', $arguments)->assertForbidden();
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        DB::table('data_rows')->where('id', $rowId)->update(['details' => json_encode(['fields' => $details['fields']])]);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('mountAction', 'editInlineGroup', $arguments)->assertForbidden();
+        DB::table('data_rows')->where('id', $rowId)->update(['details' => json_encode($details), 'edit' => false]);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->assertDontSee('Редактировать группу')->call('mountAction', 'editInlineGroup', $arguments)->assertForbidden();
+        $this->assertDatabaseHas('pages', ['id' => $id, 'flags' => json_encode($details)]);
+    }
+
+    public function test_inline_group_rechecks_metadata_scope_type_and_model_veto(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        Schema::table('pages', fn (Blueprint $table) => $table->integer('id_type')->nullable());
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $details = ['browse_inline_editor' => true, 'fields' => ['caption' => ['type' => 'text', 'label' => 'Caption', 'value' => 'Keep']]];
+        $original = json_encode($details);
+        $rowId = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'flags', 'type' => 'adv_fields_group', 'browse' => true, 'details' => $original]);
+        DB::table('pages')->insert([
+            ['id' => 1, 'title' => 'Visible', 'flags' => $original, 'meta_description' => 'Visible', 'id_type' => 2],
+            ['id' => 2, 'title' => 'Hidden', 'flags' => $original, 'meta_description' => 'Hidden', 'id_type' => 2],
+        ]);
+        $args = ['id' => 1, 'field' => 'flags'];
+        $action = \Filament\Actions\Testing\TestAction::make('editInlineGroup')->arguments($args);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->mountAction($action)->assertActionMounted('editInlineGroup');
+        DB::table('data_rows')->where('id', $rowId)->update(['edit' => false]);
+        $page->callMountedAction(['values' => ['caption' => 'Forged']])->assertForbidden();
+        DB::table('data_rows')->where('id', $rowId)->update(['edit' => true]);
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadScopedPageFixture::class, 'details' => json_encode(['scope' => 'visibleForBread'])]);
+        $assertMissing = function (array $arguments, ?int $type = null): void {
+            try {
+                $page = Livewire::test(VoyagerBread::class, ['type' => 'pages']);
+                if ($type !== null) { $page->set('filterType', $type); }
+                $page->call('mountAction', 'editInlineGroup', $arguments);
+                $this->fail('Excluded record opened in the inline editor');
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+                $this->assertNotEmpty($exception->getIds());
+            }
+        };
+        $assertMissing(['id' => 2, 'field' => 'flags']);
+        $assertMissing($args, 3);
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadGlobalScopeFixture::class, 'details' => '{}']);
+        $assertMissing(['id' => 2, 'field' => 'flags']);
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadOrderVetoFixture::class]);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->callAction($action, ['values' => ['caption' => 'Rejected']])->assertHasActionErrors(['values']);
+        $this->assertDatabaseHas('pages', ['id' => 1, 'flags' => $original]);
+        $this->assertDatabaseHas('pages', ['id' => 2, 'flags' => $original]);
+    }
+
     public function test_adv_fields_group_roundtrip_defaults_validation_and_translations(): void
     {
         $this->admin(['browse_admin', 'browse_pages', 'read_pages', 'edit_pages', 'add_pages', 'browse_bread']);
@@ -4855,6 +5061,69 @@ class VoyagerBreadTest extends TestCase
         $this->assertSame('owner_ref', json_decode(DB::table('data_rows')->where('id', $rowId)->value('details'), true)['foreign_pivot_key']);
     }
 
+    public function test_generic_client_search_finds_visible_related_labels_without_duplicate_parents(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        Schema::create('categories', function (Blueprint $table): void { $table->id(); $table->string('name'); });
+        Schema::create('category_page', function (Blueprint $table): void { $table->id(); $table->unsignedBigInteger('page_id'); $table->unsignedBigInteger('category_id'); });
+        Schema::create('page_notes', function (Blueprint $table): void { $table->id(); $table->string('page_code')->nullable(); $table->string('label'); $table->softDeletes(); });
+        DB::table('pages')->insert([['id' => 1, 'title' => 'alpha'], ['id' => 2, 'title' => 'beta']]);
+        DB::table('categories')->insert([['id' => 11, 'name' => 'Ocean art'], ['id' => 12, 'name' => 'Ocean blue'], ['id' => 13, 'name' => 'Unlinked tag']]);
+        DB::table('category_page')->insert([['page_id' => 1, 'category_id' => 11], ['page_id' => 1, 'category_id' => 12]]);
+        DB::table('page_notes')->insert([
+            ['page_code' => 'alpha', 'label' => 'First note', 'deleted_at' => null],
+            ['page_code' => 'alpha', 'label' => 'Second note', 'deleted_at' => null],
+            ['page_code' => 'beta', 'label' => 'Beta note', 'deleted_at' => null],
+            ['page_code' => 'alpha', 'label' => 'Deleted note', 'deleted_at' => now()],
+            ['page_code' => null, 'label' => 'Unassigned note', 'deleted_at' => null],
+        ]);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $tagRow = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'tags', 'type' => 'relationship', 'browse' => true,
+            'details' => json_encode(['type' => 'belongsToMany', 'table' => 'categories', 'pivot_table' => 'category_page', 'label' => 'name'])]);
+        $childRow = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'notes', 'type' => 'relationship', 'browse' => true,
+            'details' => json_encode(['type' => 'hasMany', 'table' => 'page_notes', 'model' => BreadChildFixture::class, 'column' => 'page_code', 'key' => 'title', 'label' => 'label'])]);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages']);
+        foreach (['Ocean', 'Second note'] as $needle) {
+            $page->set('search', $needle);
+            $rows = $page->instance()->records()['rows'];
+            $this->assertSame([1], $rows->pluck('id')->all());
+            $this->assertSame(1, $rows->total());
+        }
+        foreach (['Unlinked tag', 'Deleted note', 'Unassigned note'] as $needle) {
+            $page->set('search', $needle);
+            $this->assertSame(0, $page->instance()->records()['rows']->total());
+        }
+        $page->set('search', 'Beta note');
+        $this->assertSame([2], $page->instance()->records()['rows']->pluck('id')->all());
+        $details = json_decode(DB::table('data_rows')->where('id', $childRow)->value('details'), true);
+        $details['type'] = 'hasOne';
+        DB::table('data_rows')->where('id', $childRow)->update(['details' => json_encode($details)]);
+        $page->set('search', 'Second note');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        $page->set('search', 'First note');
+        $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        DB::table('data_rows')->where('id', $tagRow)->update(['browse' => false]);
+        $page->set('search', 'Ocean');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        DB::table('data_rows')->where('id', $tagRow)->update(['browse' => true]);
+        DB::table('data_types')->where('id', $typeId)->update(['server_side' => true]);
+        $page->set('search', 'Ocean blue');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        DB::table('data_types')->where('id', $typeId)->update(['server_side' => false]);
+        Schema::table('pages', fn (Blueprint $table) => $table->unsignedBigInteger('parent_id')->nullable());
+        DB::table('pages')->where('id', 1)->update(['parent_id' => 2]);
+        DB::table('data_rows')->where('data_type_id', $typeId)->update(['browse' => false]);
+        $selfRow = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'self_children', 'type' => 'relationship', 'browse' => true,
+            'details' => json_encode(['type' => 'hasMany', 'table' => 'pages', 'model' => \App\Models\Page::class, 'column' => 'parent_id', 'key' => 'id', 'label' => 'title'])]);
+        $page->set('search', 'alpha');
+        $this->assertSame([2], $page->instance()->records()['rows']->pluck('id')->all());
+        $selfDetails = json_decode(DB::table('data_rows')->where('id', $selfRow)->value('details'), true);
+        $selfDetails['type'] = 'hasOne';
+        DB::table('data_rows')->where('id', $selfRow)->update(['details' => json_encode($selfDetails)]);
+        $this->assertSame([2], $page->instance()->records()['rows']->pluck('id')->all());
+    }
+
     public function test_child_relationships_match_voyager_readonly_forms_and_model_scopes(): void
     {
         $this->admin(['browse_admin', 'browse_pages', 'read_pages', 'edit_pages', 'add_pages']);
@@ -5333,6 +5602,371 @@ class VoyagerBreadTest extends TestCase
         $this->assertArrayNotHasKey('meta_description', $standard->instance()->searchFields());
     }
 
+    public function test_generic_roles_browse_only_hides_actions_and_blocks_direct_mutation_calls(): void
+    {
+        $this->admin(['browse_admin', 'browse_roles']);
+        $this->roleMetadata();
+        $target = Role::create(['name' => 'restricted_target', 'display_name' => 'Restricted target']);
+        Livewire::test(VoyagerBread::class, ['type' => 'roles'])->assertSee('Restricted target')
+            ->assertDontSee('Создать запись')->assertDontSee('aria-label="Просмотр"', false)
+            ->assertDontSee('aria-label="Изменить"', false)->assertDontSee('aria-label="Удалить"', false)
+            ->assertDontSee('Выбрать все записи текущей страницы');
+        foreach (['openCreate' => [], 'openEdit' => [$target->id], 'openView' => [$target->id], 'deleteRecord' => [$target->id],
+            'togglePageSelection' => [], 'deleteSelectedRecords' => []] as $action => $arguments) {
+            Livewire::test(VoyagerBread::class, ['type' => 'roles'])->call($action, ...$arguments)->assertForbidden();
+        }
+        Livewire::test(VoyagerBread::class, ['type' => 'roles'])->set('editing', true)->set('recordId', $target->id)
+            ->set('data.name', 'forged')->call('save')->assertForbidden();
+        $this->assertDatabaseHas('roles', ['id' => $target->id, 'name' => 'restricted_target']);
+        $this->assertSame(0, $target->permissions()->count());
+    }
+
+    public function test_generic_roles_read_permission_only_shows_view_action(): void
+    {
+        $this->admin(['browse_admin', 'browse_roles', 'read_roles']);
+        $this->roleMetadata();
+        $target = Role::create(['name' => 'reader_target', 'display_name' => 'Reader target']);
+        Livewire::test(VoyagerBread::class, ['type' => 'roles'])->assertSee('aria-label="Просмотр"', false)
+            ->assertDontSee('Создать запись')->assertDontSee('aria-label="Изменить"', false)->assertDontSee('aria-label="Удалить"', false)
+            ->call('openView', $target->id)->assertSee('Reader target');
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'roles', 'record' => $target->id])->assertForbidden();
+    }
+
+    public function test_generic_edge_pages_recover_after_filters_single_bulk_delete_and_stale_urls(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'delete_pages']);
+        for ($id = 1; $id <= 11; $id++) { DB::table('pages')->insert(['id' => $id, 'title' => 'Item '.$id]); }
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('sortBy', 'id')->call('gotoPage', 2);
+        $this->assertSame([11], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('selectedRecords', ['11'])->call('deleteRecord', 11)->assertHasNoErrors()->assertSet('selectedRecords', []);
+        $rows = $page->instance()->records()['rows'];
+        $this->assertSame(1, $rows->currentPage());
+        $this->assertSame(10, $rows->total());
+        $this->assertDatabaseMissing('pages', ['id' => 11]);
+        $page->call('gotoPage', 999);
+        $this->assertSame(1, $page->instance()->records()['rows']->currentPage());
+        DB::table('pages')->insert(['id' => 12, 'title' => 'New item']);
+        $page->call('gotoPage', 2)->set('searchKey', 'title')->set('searchFilter', 'equals')->set('search', 'Item 1');
+        $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('search', 'No match')->assertSee('Записи не найдены');
+        $this->assertSame(1, $page->instance()->records()['rows']->currentPage());
+        $page->set('search', '')->call('gotoPage', 2)->call('togglePageSelection')->call('deleteSelectedRecords')->assertHasNoErrors();
+        $this->assertDatabaseMissing('pages', ['id' => 12]);
+        $this->assertSame(1, $page->instance()->records()['rows']->currentPage());
+        $page->call('togglePageSelection')->call('deleteSelectedRecords')->assertHasNoErrors()->assertSee('Записи не найдены');
+        $this->assertDatabaseCount('pages', 0);
+        $this->assertSame(1, $page->instance()->records()['rows']->currentPage());
+    }
+
+    public function test_generic_single_delete_veto_keeps_record_selection_and_page(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'delete_pages']);
+        DB::table('data_types')->where('name', 'pages')->update(['model_name' => BreadDeleteVetoFixture::class]);
+        for ($id = 1; $id <= 11; $id++) { DB::table('pages')->insert(['id' => $id, 'title' => $id === 1 ? 'Veto' : 'Item '.$id]); }
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('gotoPage', 2)
+            ->set('selectedRecords', ['1'])->call('deleteRecord', 1)->assertHasNoErrors()->assertSet('selectedRecords', ['1']);
+        $this->assertSame(2, $page->instance()->records()['rows']->currentPage());
+        $this->assertDatabaseCount('pages', 11);
+        $page->assertNotified(\Filament\Notifications\Notification::make()->title('Удаление отклонено моделью')->danger());
+    }
+
+    public function test_generic_static_option_search_uses_visible_captions_and_active_translation(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $options = ['raw-ocean' => '<b>Ocean caption</b>', 'raw-mountain' => 'Mountain caption'];
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadListTranslatedFixture::class]);
+        DB::table('pages')->insert([
+            ['id' => 1, 'title' => 'raw-ocean'], ['id' => 2, 'title' => 'raw-mountain'], ['id' => 3, 'title' => 'unknown-key'],
+        ]);
+        foreach (['select_dropdown', 'radio_btn'] as $type) {
+            DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update(['type' => $type, 'details' => json_encode(['options' => $options])]);
+            $page = Livewire::test(VoyagerBread::class, ['type' => 'pages']);
+            $page->set('search', 'ocean caption');
+            $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+            foreach (['raw-ocean', 'unknown-key', '<b>'] as $search) {
+                $page->set('search', $search);
+                $this->assertSame(0, $page->instance()->records()['rows']->total());
+            }
+            $page->set('searchFilter', 'equals')->set('search', 'Ocean caption');
+            $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+            $page->set('search', 'Ocean');
+            $this->assertSame(0, $page->instance()->records()['rows']->total());
+            $page->set('searchKey', 'title')->set('search', 'raw-ocean');
+            $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        }
+        DB::table('translations')->insert([
+            ['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => 1, 'locale' => 'ru', 'value' => 'raw-ocean'],
+            ['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => 1, 'locale' => 'ru', 'value' => 'raw-mountain'],
+            ['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => 3, 'locale' => 'ru', 'value' => 'raw-ocean'],
+        ]);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('changeLocale', 'ru')->set('search', 'Mountain caption');
+        $this->assertSame([2, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('search', 'Ocean caption');
+        $this->assertSame([3], $page->instance()->records()['rows']->pluck('id')->all());
+        DB::table('translations')->where('foreign_key', 3)->update(['value' => null]);
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        DB::table('data_types')->where('id', $typeId)->update(['server_side' => true]);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('searchKey', 'title')->set('search', 'unknown-key');
+        $this->assertSame([3], $page->instance()->records()['rows']->pluck('id')->all());
+        $this->assertDatabaseHas('pages', ['id' => 1, 'title' => 'raw-ocean']);
+    }
+
+    public function test_generic_static_option_sort_uses_captions_across_pages_but_server_side_uses_values(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update([
+            'type' => 'select_dropdown', 'details' => json_encode(['options' => ['a' => 'Zulu', 'z' => 'alpha', 'q' => 'ALPHA']]),
+        ]);
+        for ($id = 1; $id <= 12; $id++) { DB::table('pages')->insert(['id' => $id, 'title' => $id <= 6 ? 'a' : 'z']); }
+        DB::table('pages')->insert(['id' => 13, 'title' => 'q']);
+        DB::table('pages')->insert(['id' => 14, 'title' => 'unknown']);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('sortBy', 'title');
+        $this->assertSame([14, 13, 12, 11, 10, 9, 8, 7, 6, 5], $page->instance()->records()['rows']->pluck('id')->all());
+        $this->assertSame('', $page->instance()->records()['rows']->first()->title);
+        $page->call('gotoPage', 2);
+        $this->assertSame([4, 3, 2, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('sortBy', 'title');
+        $this->assertSame([6, 5, 4, 3, 2, 1, 13, 12, 11, 10], $page->instance()->records()['rows']->pluck('id')->all());
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadListTranslatedFixture::class]);
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => 4, 'locale' => 'ru', 'value' => 'z']);
+        $translated = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('sortBy', 'title')->call('gotoPage', 2);
+        $translated->call('changeLocale', 'ru');
+        $this->assertSame([4, 3, 2, 1], $translated->instance()->records()['rows']->pluck('id')->all());
+        $this->assertSame('alpha', $translated->instance()->records()['rows']->first()->title);
+        DB::table('data_types')->where('id', $typeId)->update(['server_side' => true]);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('sortBy', 'title');
+        $this->assertSame([6, 5, 4, 3, 2, 1, 13, 14, 12, 11], $page->instance()->records()['rows']->pluck('id')->all());
+    }
+
+    public function test_generic_numeric_radio_and_checkbox_caption_sort_preserves_raw_values(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        Schema::table('pages', fn (Blueprint $table) => $table->string('enabled')->nullable());
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'title')->update([
+            'type' => 'radio_btn', 'details' => json_encode(['options' => ['a' => '10', 'b' => '2', 'c' => '2.0']]),
+        ]);
+        $rowId = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'enabled', 'type' => 'checkbox', 'browse' => true,
+            'details' => json_encode(['on' => 'Да', 'off' => 'Нет'])]);
+        foreach (['0', '1', null, '2', 'false', ''] as $index => $value) {
+            DB::table('pages')->insert(['id' => $index + 1, 'title' => ['a', 'b', 'c'][$index % 3], 'enabled' => $value]);
+        }
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('sortBy', 'title');
+        $this->assertSame([6, 5, 3, 2, 4, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('sortBy', 'enabled');
+        $this->assertSame([5, 4, 2, 6, 3, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('sortBy', 'enabled');
+        $this->assertSame([6, 3, 1, 5, 4, 2], $page->instance()->records()['rows']->pluck('id')->all());
+        $this->assertDatabaseHas('pages', ['id' => 5, 'enabled' => 'false', 'title' => 'b']);
+        // Inline checkbox has no on/off text in the original; it must bypass caption ordering.
+        DB::table('data_rows')->where('id', $rowId)->update(['details' => json_encode(['on' => 'Да', 'off' => 'Нет', 'browse_inline_checkbox' => false])]);
+        $query = (new \App\Models\Page)->newQuery()->toBase();
+        $this->assertFalse(app(\App\Filament\Bread\BreadOptionSort::class)->apply($query, 'pages.enabled', DB::table('data_rows')->find($rowId), 'asc'));
+        foreach ([['view' => 'custom'], ['relationship' => ['key' => 'id']], ['options' => ['a' => ['invalid']]], ['options' => []]] as $details) {
+            $this->assertFalse(app(\App\Filament\Bread\BreadOptionSort::class)->apply($query, 'pages.title',
+                (object) ['type' => 'select_dropdown', 'details' => json_encode($details)], 'asc'));
+        }
+    }
+
+    public function test_generic_sort_keeps_original_base_order_when_locale_changes_across_pages(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        DB::table('data_types')->where('name', 'pages')->update(['model_name' => BreadListTranslatedFixture::class]);
+        for ($id = 1; $id <= 12; $id++) {
+            DB::table('pages')->insert(['id' => $id, 'title' => sprintf('Base %02d', $id)]);
+            DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => $id, 'locale' => 'ru', 'value' => sprintf('Перевод %02d', 13 - $id)]);
+        }
+        // A blank translation stays blank; absence of a translation falls back to base.
+        DB::table('translations')->where('foreign_key', 2)->update(['value' => null]);
+        DB::table('translations')->where('foreign_key', 3)->delete();
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => 1, 'locale' => 'ru', 'value' => 'Последний перевод']);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('perPage', 10)->call('sortBy', 'title');
+        $this->assertSame(range(1, 10), $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('gotoPage', 2);
+        $this->assertSame([11, 12], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('changeLocale', 'ru');
+        $this->assertSame([11, 12], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('gotoPage', 1);
+        $rows = $page->instance()->records()['rows'];
+        $this->assertSame(range(1, 10), $rows->pluck('id')->all());
+        $this->assertSame('Последний перевод', $rows->firstWhere('id', 1)->title);
+        $this->assertNull($rows->firstWhere('id', 2)->title);
+        $this->assertSame('Base 03', $rows->firstWhere('id', 3)->title);
+        $page->call('gotoPage', 2);
+        $this->assertSame([11, 12], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('sortBy', 'title');
+        $this->assertSame(range(12, 3), $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('gotoPage', 2);
+        $this->assertSame([2, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('changeLocale', 'en');
+        $this->assertSame([2, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->call('gotoPage', 1);
+        $this->assertSame(range(12, 3), $page->instance()->records()['rows']->pluck('id')->all());
+        $this->assertSame('Base 12', $page->instance()->records()['rows']->first()->title);
+    }
+
+    public function test_generic_advanced_browse_matches_original_raw_json_and_group_indicators(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        Schema::table('pages', fn (Blueprint $table) => $table->text('json_payload')->nullable());
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        $groupDetails = ['fields' => ['fallback' => ['type' => 'text', 'label' => 'Secret default label', 'value' => 'Secret default value']]];
+        DB::table('data_rows')->insert([
+            ['data_type_id' => $typeId, 'field' => 'flags', 'type' => 'adv_fields_group', 'browse' => true, 'details' => json_encode($groupDetails)],
+            ['data_type_id' => $typeId, 'field' => 'json_payload', 'type' => 'adv_json', 'browse' => true, 'details' => '{}'],
+        ]);
+        DB::table('data_rows')->where('data_type_id', $typeId)->where('field', 'meta_description')->update(['type' => 'adv_page_layout', 'browse' => true]);
+        $group = json_encode(['fields' => [
+            'filled' => ['type' => 'text', 'label' => 'Secret group label', 'value' => 'Secret group value'],
+            'zero' => ['type' => 'number', 'label' => 'Zero', 'value' => '0'],
+            'empty' => ['type' => 'textarea', 'label' => 'Empty', 'value' => ''],
+        ]]);
+        $json = '{"fields":{"x":"Title"},"rows":[{"x":"Content"}],"internal_nonce":"Legacy"}';
+        $layout = '[{"type":"Field","key":"body","title":"Original section"}]';
+        DB::table('pages')->insert([
+            ['id' => 1, 'title' => 'Alpha', 'flags' => $group, 'json_payload' => $json, 'meta_description' => $layout],
+            ['id' => 2, 'title' => 'Beta', 'flags' => null, 'json_payload' => '{broken JSON', 'meta_description' => '[]'],
+        ]);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])
+            ->assertSee('viar-bread-group-indicators', false)->assertSee('data-filled="1"', false)->assertSee('data-filled="0"', false)
+            ->assertDontSee('Secret group value')->assertDontSee('Secret group label')->assertDontSee('Secret default label')->assertDontSee('Secret default value');
+        $record = $page->instance()->records()['rows']->firstWhere('id', 1);
+        $this->assertSame($json, $record->json_payload);
+        $this->assertSame($layout, $record->meta_description);
+        $this->assertSame($group, $record->flags);
+        foreach (['internal_nonce', 'Original section'] as $needle) {
+            $page->set('search', $needle);
+            $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        }
+        $page->set('search', 'Secret group value');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        $page->set('search', 'broken JSON');
+        $this->assertSame([2], $page->instance()->records()['rows']->pluck('id')->all());
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'meta_description', 'foreign_key' => 1, 'locale' => 'ru', 'value' => '[{"type":"Field","key":"body","title":"Translated section"}]']);
+        $page->call('changeLocale', 'ru')->set('search', 'Translated section');
+        $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('search', 'Original section');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        $codec = app(\App\Filament\Bread\BreadFieldsGroup::class);
+        $this->assertSame([true, false, false], $codec->browseIndicators($group, $groupDetails));
+        $this->assertSame([true], $codec->browseIndicators(null, $groupDetails));
+        $this->assertSame([true], $codec->browseIndicators('{broken', $groupDetails));
+        $this->assertSame([false, false, false], $codec->browseIndicators(null, []));
+        $this->assertSame([], $codec->browseIndicators('{"fields":[]}', $groupDetails));
+    }
+
+    public function test_generic_dynamic_catalog_search_respects_labels_filters_and_pivot_json_keys(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        Schema::create('select_nodes', function (Blueprint $table): void { $table->id(); $table->string('slug'); $table->string('name'); $table->boolean('active'); $table->softDeletes(); });
+        Schema::create('select_links', function (Blueprint $table): void { $table->unsignedBigInteger('page_id'); $table->unsignedBigInteger('node_id'); $table->string('note')->nullable(); });
+        DB::table('select_nodes')->insert([
+            ['id' => 11, 'slug' => 'one', 'name' => 'Ocean catalog', 'active' => 1, 'deleted_at' => null],
+            ['id' => 12, 'slug' => 'two', 'name' => 'Mountain catalog', 'active' => 1, 'deleted_at' => null],
+            ['id' => 13, 'slug' => 'deleted', 'name' => 'Deleted catalog', 'active' => 1, 'deleted_at' => now()],
+            ['id' => 14, 'slug' => 'inactive', 'name' => 'Inactive catalog', 'active' => 0, 'deleted_at' => null],
+        ]);
+        DB::table('pages')->insert([
+            ['id' => 1, 'title' => 'Alpha', 'author_id' => 11, 'flags' => '["two"]'],
+            ['id' => 2, 'title' => 'Beta', 'author_id' => 14, 'flags' => '["deleted"]'],
+            ['id' => 3, 'title' => 'Gamma', 'author_id' => 13, 'flags' => '[]'],
+        ]);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadDynamicCatalogFixture::class]);
+        DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => 'author_id', 'type' => 'select_dropdown', 'browse' => true,
+            'details' => json_encode(['options' => [], 'relationship' => ['key' => 'id', 'label' => 'name', 'where' => ['active', 1]]])]);
+        $details = ['relationship' => ['key' => 'slug', 'label' => 'name']];
+        $rowId = DB::table('data_rows')->insertGetId(['data_type_id' => $typeId, 'field' => 'flags', 'type' => 'select_multiple', 'browse' => true, 'details' => json_encode($details)]);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages']);
+        foreach (['Ocean catalog', 'Mountain catalog'] as $needle) {
+            $page->set('search', $needle);
+            $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        }
+        foreach (['Deleted catalog', 'Inactive catalog'] as $needle) {
+            $page->set('search', $needle);
+            $this->assertSame(0, $page->instance()->records()['rows']->total());
+        }
+        $details['relationship']['editablePivotFields'] = ['note'];
+        DB::table('data_rows')->where('id', $rowId)->update(['details' => json_encode($details)]);
+        DB::table('pages')->where('id', 1)->update(['flags' => '{"two":{"note":"private attribute"}}']);
+        DB::table('pages')->where('id', 2)->update(['flags' => '{"one":{"note":"two"}}']);
+        $page->set('search', 'Mountain catalog');
+        $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('search', 'Ocean catalog');
+        $this->assertSame([2, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('search', 'private attribute');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        DB::table('data_rows')->where('id', $rowId)->update(['details' => json_encode(['relationship' => ['key' => 'slug', 'label' => 'password', 'editablePivotFields' => ['note']]])]);
+        $page->set('search', 'Mountain catalog');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        DB::table('data_rows')->where('id', $rowId)->update(['details' => json_encode($details)]);
+        DB::table('data_types')->where('id', $typeId)->update(['model_name' => BreadRecordListCatalogFixture::class]);
+        $page->set('search', '');
+        $this->assertSame(3, $page->instance()->records()['rows']->total());
+        // These methods throw on an empty model: search must not invent a shared List catalog.
+        $page->set('search', 'Mountain catalog')->assertHasNoErrors();
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        foreach ([1 => [11 => 'Ocean catalog'], 2 => [12 => 'Mountain catalog']] as $id => $expected) {
+            $editor = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('openEdit', $id)->assertHasNoErrors();
+            $field = collect($editor->instance()->form->getFlatComponents())->first(fn ($field) => $field instanceof \Filament\Forms\Components\Select && $field->getName() === 'author_id');
+            $this->assertSame($expected, $field->getOptions());
+        }
+    }
+
+    public function test_generic_multiple_option_search_matches_selected_values_and_translations(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages']);
+        Schema::table('data_types', fn (Blueprint $table) => $table->boolean('server_side')->default(false));
+        Schema::table('pages', function (Blueprint $table): void { $table->text('choices')->nullable(); });
+        DB::table('data_types')->where('name', 'pages')->update(['model_name' => BreadMultipleTranslatedFixture::class]);
+        $typeId = DB::table('data_types')->where('name', 'pages')->value('id');
+        foreach (['choices' => 'select_multiple', 'flags' => 'multiple_checkbox'] as $field => $type) {
+            DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => $field, 'type' => $type, 'browse' => true,
+                'details' => json_encode(['options' => ['art' => 'Canvas art', 2 => 'Metal print', 22 => 'Large print', 'a"b' => 'Quoted option']])]);
+        }
+        DB::table('pages')->insert([
+            ['id' => 1, 'title' => 'First', 'choices' => '["art",2]', 'flags' => '{"2":"2"}'],
+            ['id' => 2, 'title' => 'Second', 'choices' => '[22]', 'flags' => '{"art":"22"}'],
+            ['id' => 3, 'title' => 'Third', 'choices' => '{bad json', 'flags' => 'null'],
+            ['id' => 4, 'title' => 'Fourth', 'choices' => '"art"', 'flags' => '{"nested":["art"]}'],
+            ['id' => 5, 'title' => 'Fifth', 'choices' => '["a\\"b"]', 'flags' => '[]'],
+        ]);
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->set('search', 'Canvas art');
+        $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('searchFilter', 'equals')->set('search', 'Metal print');
+        $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('search', 'Large print');
+        $this->assertSame([2], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('search', 'Quoted option');
+        $this->assertSame([5], $page->instance()->records()['rows']->pluck('id')->all());
+        $page->set('searchFilter', 'contains')->set('search', 'print');
+        $this->assertSame([2, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        $this->assertSame(2, $page->instance()->records()['rows']->total());
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'choices', 'foreign_key' => 1, 'locale' => 'ru', 'value' => '[22]']);
+        $page->call('changeLocale', 'ru')->set('search', 'Canvas art');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        $page->set('search', 'Large print');
+        $this->assertSame([2, 1], $page->instance()->records()['rows']->pluck('id')->all());
+        DB::table('translations')->where('foreign_key', 1)->where('column_name', 'choices')->update(['value' => null]);
+        $page->set('search', 'Canvas art');
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        DB::table('translations')->where('foreign_key', 1)->where('column_name', 'choices')->delete();
+        $this->assertSame([1], $page->instance()->records()['rows']->pluck('id')->all());
+        DB::table('data_rows')->where('data_type_id', $typeId)->whereIn('field', ['choices', 'flags'])->update(['browse' => false]);
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+        DB::table('data_rows')->where('data_type_id', $typeId)->whereIn('field', ['choices', 'flags'])->update(['browse' => true]);
+        DB::table('data_types')->where('id', $typeId)->update(['server_side' => true]);
+        $this->assertSame(0, $page->instance()->records()['rows']->total());
+    }
+
     public function test_generic_client_style_search_uses_visible_numbers_option_labels_and_current_translation(): void
     {
         $this->admin(['browse_admin', 'browse_pages']);
@@ -5392,6 +6026,45 @@ class VoyagerBreadTest extends TestCase
         $user = User::forceCreate(['email' => fake()->unique()->safeEmail(), 'password' => Hash::make('password'), 'role_id' => $role->id]);
         $this->actingAs($user, 'filament');
     }
+}
+
+class BreadDynamicCatalogFixture extends \App\Models\Page
+{
+    protected $table = 'pages';
+    public function authorId(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(BreadSelectNodeFixture::class, 'author_id');
+    }
+    public function flags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(BreadSelectNodeFixture::class, 'select_links', 'page_id', 'node_id');
+    }
+}
+
+class BreadRecordListCatalogFixture extends BreadDynamicCatalogFixture
+{
+    public function authorIdList(): \Illuminate\Support\Collection
+    {
+        if (! $this->exists) { throw new \LogicException('List requires a persisted record'); }
+        return BreadSelectNodeFixture::query()->where('id', $this->title === 'Alpha' ? 11 : 12)->get();
+    }
+    public function flagsList(): \Illuminate\Support\Collection
+    {
+        if (! $this->exists) { throw new \LogicException('List requires a persisted record'); }
+        return BreadSelectNodeFixture::query()->where('slug', $this->title === 'Alpha' ? 'two' : 'one')->get();
+    }
+}
+
+class BreadMultipleTranslatedFixture extends \App\Models\Page
+{
+    protected $table = 'pages';
+    protected $translatable = ['choices'];
+}
+
+class BreadCustomBrowseAccessorFixture extends \App\Models\Page
+{
+    protected $table = 'pages';
+    public function getTitleBrowseAttribute(): string { return 'Accessor: '.$this->getRawOriginal('title'); }
 }
 
 class BreadListTranslatedFixture extends \App\Models\Page

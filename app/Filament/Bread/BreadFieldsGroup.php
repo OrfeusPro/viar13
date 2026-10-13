@@ -6,6 +6,15 @@ use Illuminate\Validation\ValidationException;
 
 class BreadFieldsGroup
 {
+    /** Voyager browse shows only filled/empty indicators, with metadata fields as fallback. */
+    public function browseIndicators(mixed $value, array $details): array
+    {
+        $group = is_string($value) ? json_decode($value, true) : $value;
+        $fields = is_array($group) && isset($group['fields']) ? $group['fields'] : ($details['fields'] ?? null);
+        if (! is_array($fields)) { return [false, false, false]; }
+        return array_values(array_map(static fn ($field): bool => is_array($field) && ! empty($field['value']), $fields));
+    }
+
     public function document(mixed $value): ?array
     {
         if (is_string($value)) {
