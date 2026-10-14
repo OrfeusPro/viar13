@@ -56,3 +56,7 @@ SEO Meta перенесён в специализированный Filament res
 
 ## Реализация после аудита: ADM-AUD-03 — DONE
 Standalone SA inbox, global unread polling/optional sound, карточка, read snapshot, bind/create order и guarded reply/bot перенесены. 113 tests/1011 assertions PASS + дополнительная проверка отзыва прав; Chrome desktop/390px. Рабочие данные не менялись, реальная отправка выключена текущей настройкой; provider UAT отдельно. Evidence: storage/app/testing/sa-inbox-after-2026-10-08.png. Следующее: ADM-AUD-04.
+
+## Реализация после аудита: ADM-AUD-08 — DONE в исходной области, 2026-10-13
+Field/operator search, page size10/25/50/100, sorting и permission-aware bulk actions перенесены. Дополнительно сверены standard browse captions, переводы, static options/relations, file/media/image и Unicode previews/search. Финальный regression57tests813assertionsPASS; MariaDB SELECT-only28text/rich cases и6file/mediaordersPASS. Повторный metadata inventory: customviews/inline/List не включены в текущих BREAD настройках; новых подтверждённых пробелов не найдено. Рабочие данные, файлы и права не менялись.
+Scope closure не означает универсальную совместимость произвольных custom views/accessors/casts/List, malformed HTML/JSON и точных DataTables whitespace/type inference. Эти conditional cases и отдельная production-copy/device приёмка сохранены в MIGRATION_PLAN.md. Evidence Chrome и подробные проверки — MIGRATION_PROGRESS.md. Историческое отличие ADM-AUD-08 в таблице выше описывает состояние до реализации.

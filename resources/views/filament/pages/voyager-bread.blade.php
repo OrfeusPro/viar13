@@ -8,14 +8,14 @@
         .viar-bread-page .fi-page-main, .viar-bread-page .fi-section { min-width: 0; }
         .viar-bread-search { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(140px, .7fr) minmax(200px, 2fr) minmax(130px, .7fr); align-items: end; gap: 12px; margin-bottom: 24px; }
         .viar-bread-search label { display: grid; gap: 6px; font-size: 14px; }
-        .viar-bread-sort { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+        .viar-bread-sort { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; text-align: left; white-space: normal; overflow-wrap: anywhere; cursor: pointer; }
         .viar-bread-sort:focus-visible { outline: 2px solid #2563eb; outline-offset: 4px; border-radius: 3px; }
         @media (max-width: 900px) { .viar-bread-search { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 480px) { .viar-bread-search { grid-template-columns: minmax(0, 1fr); } }
         .viar-bread-table-scroll { width: 100%; max-width: 100%; overflow-x: auto; position: relative; border: 1px solid #dbe3ee; border-radius: 10px; }
         .viar-bread-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
         .viar-bread-table th, .viar-bread-table td { min-width: 150px; max-width: 240px; padding: 9px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
-        .viar-bread-table thead th { padding: 13px 12px; text-align: left; vertical-align: middle; white-space: nowrap; font-weight: 600; color: #334155; background: #eef2f8; border-bottom: 1px solid #dbe3ee; }
+        .viar-bread-table thead th { padding: 13px 12px; text-align: left; vertical-align: middle; white-space: normal; overflow-wrap: anywhere; font-weight: 600; color: #334155; background: #eef2f8; border-bottom: 1px solid #dbe3ee; }
         .viar-bread-table th:first-child, .viar-bread-table td:first-child { min-width: 75px; }
         .viar-bread-table .viar-bread-selection { min-width: 44px; width: 44px; max-width: 44px; text-align: center; }
         .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 6px -4px #9ca3af; }
@@ -175,7 +175,29 @@
                                 <td class="max-w-64 truncate p-2" title="{{ $column['type'] === 'adv_fields_group' || isset($column['details']['view']) ? '' : (is_scalar($value) ? \Illuminate\Support\Str::limit(in_array($column['type'], ['adv_json', 'adv_page_layout'], true) ? (string) $value : strip_tags((string) $value), 300) : '') }}">
                                     @if (isset($records['customCells'][$record->id][$column['field']]))
                                         {{ $records['customCells'][$record->id][$column['field']] }}
-                                    @elseif (in_array($column['type'], ['image', 'multiple_images', 'media_picker', 'adv_media_files'], true) || ($column['type'] === 'file' && \App\Filament\Bread\BreadImage::urls($value) !== []))
+                                    @elseif ($column['type'] === 'file')
+                                        @foreach (\App\Filament\Bread\BreadBrowseFiles::links($value) as $file)
+                                            <a href="{{ $file['url'] }}" target="_blank" rel="noopener noreferrer" style="display:block;color:#2563eb;">{{ $file['name'] }}</a>
+                                        @endforeach
+                                    @elseif ($column['type'] === 'media_picker')
+                                        @php($media = \App\Filament\Bread\BreadBrowseFiles::media($value, $column['details'] ?? []))
+                                        @if ($media['empty'])
+                                            {{ trans_choice('admin_bread.files', 0) }}
+                                        @elseif ($media['images'])
+                                            <div style="display:flex;align-items:center;gap:6px;max-width:220px;overflow:hidden;">
+                                                @foreach ($media['items'] as $path)
+                                                    @if ($url = \App\Filament\Bread\BreadBrowseFiles::url($path))
+                                                        <a href="{{ $url }}" target="_blank" rel="noopener noreferrer"><img src="{{ $url }}" alt="{{ $column['label'] }}" loading="lazy" style="width:52px;height:52px;object-fit:cover;border-radius:6px;"></a>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <ul style="list-style:disc;padding-left:18px;">
+                                                @foreach ($media['items'] as $path)<li>{{ is_scalar($path) ? $path : '' }}</li>@endforeach
+                                            </ul>
+                                        @endif
+                                        @if ($media['more'])<span>{{ __('admin_bread.files_more', ['count' => $media['more']]) }}</span>@endif
+                                    @elseif (in_array($column['type'], ['image', 'multiple_images', 'adv_media_files'], true))
                                         @php($images = $column['type'] === 'adv_media_files' ? (is_array($value) ? $value : []) : \App\Filament\Bread\BreadImage::urls($value))
                                         <div style="display:flex;align-items:center;gap:6px;max-width:220px;overflow:hidden;">
                                             @foreach (array_slice($images, 0, 3) as $url)
@@ -193,14 +215,23 @@
                                             </button>
                                             @error('inline.'.$record->id.'.'.$column['field'])<span role="alert" style="display:block;color:#dc2626;white-space:normal;">{{ $message }}</span>@enderror
                                         @else
-                                            {{ app(\App\Filament\Bread\BreadCheckbox::class)->caption($value, $column['details'] ?? []) }}
+                                            @if (\App\Filament\Bread\BreadInlineEdit::enabled('checkbox', $column['details'] ?? []))
+                                                <button type="button" role="switch" disabled aria-checked="{{ $value ? 'true' : 'false' }}" aria-label="{{ $column['label'] }}: {{ app(\App\Filament\Bread\BreadCheckbox::class)->caption($value, $column['details'] ?? []) }}"
+                                                    style="display:inline-flex;align-items:center;width:38px;height:22px;padding:3px;border-radius:999px;background:{{ $value ? '#2563eb' : '#94a3b8' }};cursor:default;">
+                                                    <span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:white;transform:translateX({{ $value ? 16 : 0 }}px);"></span>
+                                                </button>
+                                            @elseif (is_string($column['details']['on'] ?? null) && is_string($column['details']['off'] ?? null))
+                                                {{ app(\App\Filament\Bread\BreadCheckbox::class)->caption($value, $column['details'] ?? []) }}
+                                            @else
+                                                {{ is_scalar($value) ? $value : '' }}
+                                            @endif
                                         @endif
                                     @elseif (in_array($column['type'], ['text', 'number'], true) && array_key_exists($column['field'], $records['inlineValues'][$record->id] ?? []))
                                         @php($inlineValue = $records['inlineValues'][$record->id][$column['field']])
                                         <div wire:key="inline-{{ $record->id }}-{{ $column['field'] }}-{{ $locale }}-{{ md5(json_encode($inlineValue)) }}"
                                             x-data="{ editing: false, busy: false, value: @js($inlineValue), async save() { if (this.busy) return; this.busy = true; try { if (await $wire.saveInlineField({{ (int) $record->id }}, @js($column['field']), this.value)) this.editing = false; } finally { this.busy = false; } } }">
                                             <div x-show="!editing" style="display:flex;align-items:center;gap:8px;">
-                                                <span>{{ is_scalar($value) ? \Illuminate\Support\Str::limit(strip_tags((string) $value), 80) : '' }}</span>
+                                                <span>{{ \App\Filament\Bread\BreadCaption::preview($column['type'], $value, $column['translated'] ?? false) }}</span>
                                                 <x-filament::icon-button icon="heroicon-o-pencil-square" label="Редактировать поле" x-on:click="editing = true; $nextTick(() => { $refs.inlineInput.focus(); $refs.inlineInput.select(); })" />
                                             </div>
                                             <div x-show="editing" x-cloak style="display:flex;align-items:center;gap:6px;">
@@ -211,6 +242,8 @@
                                             </div>
                                             @error('inline.'.$record->id.'.'.$column['field'])<span role="alert" style="display:block;color:#dc2626;white-space:normal;">{{ $message }}</span>@enderror
                                         </div>
+                                    @elseif (in_array($column['type'], ['text', 'number', 'text_area', 'rich_text_box'], true))
+                                        <div>{{ \App\Filament\Bread\BreadCaption::preview($column['type'], $value, $column['translated'] ?? false) }}</div>
                                     @elseif ($column['type'] === 'adv_fields_group')
                                         <div class="viar-bread-group-indicators" style="display:flex;align-items:center;gap:8px;">
                                             @foreach (app(\App\Filament\Bread\BreadFieldsGroup::class)->browseIndicators($value, $column['details'] ?? []) as $filled)
@@ -223,7 +256,9 @@
                                         @if (($column['editable'] ?? false) && array_key_exists('browse_inline_editor', $column['details'] ?? []) && ! isset($column['details']['view']) && app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'edit', (int) $record->id))
                                             <x-filament::icon-button icon="heroicon-o-pencil-square" label="Редактировать группу" wire:click="mountAction('editInlineGroup', { id: {{ (int) $record->id }}, field: @js($column['field']) })" />
                                         @endif
-                                    @elseif (in_array($column['type'], ['adv_json', 'adv_page_layout'], true))
+                                    @elseif (in_array($column['type'], ['adv_json', 'adv_page_layout', 'multiple_checkbox', 'select_multiple'], true))
+                                        {{ is_scalar($value) ? \Illuminate\Support\Str::limit((string) $value, 80) : '' }}
+                                    @elseif (in_array($column['type'], ['select_dropdown', 'radio_btn'], true) && is_array($column['details']['options'] ?? null) && ! isset($column['details']['relationship']))
                                         {{ is_scalar($value) ? \Illuminate\Support\Str::limit((string) $value, 80) : '' }}
                                     @else
                                         {{ is_scalar($value) ? \Illuminate\Support\Str::limit(strip_tags((string) $value), 80) : '' }}

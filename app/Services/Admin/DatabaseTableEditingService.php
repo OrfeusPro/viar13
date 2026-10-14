@@ -170,24 +170,27 @@ class DatabaseTableEditingService
         }
         unset($column);
         $dropped = array_values(array_diff(array_keys($originals), array_keys($used)));
-        $affected = array_unique([...$dropped, ...array_keys($renames), ...array_column($changed, 'old_name')]);
+        $affected = array_unique([...$dropped, ...array_column($changed, 'old_name')]);
+        $foreignColumns = [];
         foreach ($snapshot['structure']['foreign_keys'] as $key) {
+            $foreignColumns = [...$foreignColumns, ...$key['columns']];
             if (array_intersect($affected, $key['columns']) !== []) { $this->fail('Колонка участвует во внешнем ключе. Сначала отдельно согласуйте изменение связи.'); }
         }
         foreach ($snapshot['incoming'] as $reference) {
+            $foreignColumns = [...$foreignColumns, ...$reference['key']['foreign_columns']];
             if (array_intersect($affected, $reference['key']['foreign_columns']) !== []) { $this->fail('На колонку ссылается другая таблица. Изменение заблокировано.'); }
+        }
+        if (array_intersect(array_keys($renames), $foreignColumns) !== [] && ! $this->supportsNativeColumnRename()) {
+            $this->fail('Колонку внешнего ключа можно только переименовать без изменения свойств в MySQL 8.0.3+ или MariaDB 10.5.2+.');
         }
         $dropIndexes = []; $addIndexes = [];
         foreach ($snapshot['structure']['indexes'] as $index) {
             if (count($index['columns']) !== 1) {
                 if (array_intersect($dropped, $index['columns']) !== []) { $this->fail('Составной индекс сохраняется: удаление его колонок требует отдельного редактора.'); }
                 if (array_intersect(array_keys($renames), $index['columns']) !== []) {
-                    $connection = DB::connection();
-                    $mysql = in_array($connection->getDriverName(), ['mysql', 'mariadb'], true);
-                    $nativeRename = $mysql && version_compare($connection->getServerVersion(), $connection->isMaria() ? '10.5.2' : '8.0.3', '>=');
                     $indexChanged = collect($data['columns'])->contains(fn ($column) => in_array($column['old_name'], $index['columns'], true)
                         && $column['index'] !== $originals[$column['old_name']]['index']);
-                    if (! $nativeRename || $indexChanged || array_intersect(array_column($changed, 'old_name'), $index['columns']) !== []) {
+                    if (! $this->supportsNativeColumnRename() || $indexChanged || array_intersect(array_column($changed, 'old_name'), $index['columns']) !== []) {
                         $this->fail('Колонку составного индекса можно только переименовать без изменения свойств в MySQL 8.0.3+ или MariaDB 10.5.2+.');
                     }
                 }
@@ -227,6 +230,13 @@ class DatabaseTableEditingService
         $plan = $this->plan($table, $input, $fingerprint);
         $plan['sql'] = $this->compile($table, $plan);
         return $plan;
+    }
+
+    private function supportsNativeColumnRename(): bool
+    {
+        $connection = DB::connection();
+        return in_array($connection->getDriverName(), ['mysql', 'mariadb'], true)
+            && version_compare($connection->getServerVersion(), $connection->isMaria() ? '10.5.2' : '8.0.3', '>=');
     }
 
     public function apply(string $table, array $input, string $fingerprint): void

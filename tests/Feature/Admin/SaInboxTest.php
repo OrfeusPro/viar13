@@ -244,6 +244,20 @@ class SaInboxTest extends TestCase
         Http::assertNothingSent(); Mail::assertNothingSent();
     }
 
+    public function test_global_badge_opens_unread_conversations_like_voyager(): void
+    {
+        $other = SaConversation::create(['conversation_id' => 'READ-OTHER', 'client_name' => 'Already read', 'unread_for_manager' => false]);
+        $badge = Livewire::test(\App\Livewire\Admin\SaInboxBadge::class);
+        $url = \App\Filament\Resources\SaConversations\SaConversationResource::getUrl('index', ['filters' => ['scope' => ['value' => 'unread']]]);
+        $badge->assertSeeHtml('href="'.e($url).'"');
+        parse_str(parse_url($url, PHP_URL_QUERY), $parameters);
+        Livewire::withQueryParams($parameters)->test(ListSaConversations::class)
+            ->assertCanSeeTableRecords([$this->conversation])->assertCanNotSeeTableRecords([$other]);
+        $this->assertTrue($this->conversation->fresh()->unread_for_manager);
+        $this->assertFalse($other->fresh()->unread_for_manager);
+        Http::assertNothingSent(); Mail::assertNothingSent();
+    }
+
     public function test_token_cannot_target_another_conversation_and_revocation_denies_page(): void
     {
         $service = app(OrderSaCommandService::class);

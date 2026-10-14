@@ -19,6 +19,12 @@ class BreadImage
                 continue;
             }
             $path = trim($path);
+            if (filter_var($path, FILTER_VALIDATE_URL)) {
+                if (in_array(strtolower(parse_url($path, PHP_URL_SCHEME) ?: ''), ['http', 'https'], true)) {
+                    $urls[] = $path;
+                }
+                continue;
+            }
             if ($path === '' || str_starts_with($path, '/') || str_contains($path, '..')
                 || str_contains($path, '://') || str_contains($path, '\\')
                 || ! preg_match('~\.(?:jpe?g|png|webp|gif|avif|svg)$~i', $path)) {

@@ -1881,7 +1881,8 @@ class VoyagerBread extends Page
             if (in_array($row->type, ['adv_image'], true) && $model instanceof HasMedia) {
                 $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => 'adv_media_files'];
             } elseif (in_array($row->field, $physical, true)) {
-                $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => $row->type, 'editable' => (bool) $row->edit, 'details' => json_decode($row->details ?: '{}', true) ?: []];
+                $columns[] = ['field' => $row->field, 'label' => $row->display_name ?: $row->field, 'type' => $row->type, 'editable' => (bool) $row->edit, 'details' => json_decode($row->details ?: '{}', true) ?: [],
+                    'translated' => config('voyager.multilingual.enabled', true) && method_exists($model, 'getTranslatableAttributes') && in_array($row->field, $model->getTranslatableAttributes(), true)];
                 $select[] = $row->field;
             } elseif ($row->type === 'relationship' && $relations->has($row->field)) {
                 $details = json_decode($row->details ?: '{}', true) ?: [];
@@ -1923,7 +1924,7 @@ class VoyagerBread extends Page
         $fieldRows = collect($this->registry()->rows($bread))->keyBy('field');
         $searchable = $fieldRows
             ->filter(fn (stdClass $row): bool => $row->browse && in_array($row->field, $physical, true) && in_array($row->type,
-                ($bread->server_side ?? true) ? ['text', 'text_area'] : ['text', 'text_area', 'rich_text_box', 'number', 'date', 'timestamp', 'time', 'color', 'checkbox', 'select_dropdown', 'radio_btn', 'adv_json', 'adv_page_layout'], true))
+                ($bread->server_side ?? true) ? ['text', 'text_area'] : ['text', 'text_area', 'rich_text_box', 'number', 'date', 'timestamp', 'time', 'color', 'checkbox', 'select_dropdown', 'radio_btn', 'adv_json', 'adv_page_layout', 'file', 'media_picker'], true))
             ->pluck('field')->intersect(array_keys($searchFields))->all();
         if (! ($bread->server_side ?? true)) { $searchable = array_values(array_intersect(array_unique(['id', ...$searchable, ...array_keys($searchRelations)]), array_keys($searchFields))); }
         if ($this->searchKey !== '' && array_key_exists($this->searchKey, $searchFields)) {
@@ -1937,121 +1938,160 @@ class VoyagerBread extends Page
                 ->pluck('field')->intersect(array_keys($searchFields))->all()]));
         }
         if ($this->search !== '' && $searchable !== []) {
-            $search = $this->search;
             $operator = $this->searchFilter === 'equals' ? '=' : 'like';
-            $searchValue = $operator === '=' ? $search : '%'.$search.'%';
-            $query->where(function ($builder) use ($searchable, $searchValue, $operator, $bread, $searchRelations, $model, $fieldRows, $search, $many, $children): void {
-                foreach ($searchable as $field) {
-                    if ($many->has($field)) {
-                        $relation = $many[$field];
-                        $details = $relation['details'];
-                        $builder->orWhereExists(DB::table($details['pivot_table'].' as viar_search_pivot')
-                            ->join($details['table'].' as viar_search_related', 'viar_search_related.'.$relation['relatedKey'], '=', 'viar_search_pivot.'.$relation['targetKey'])
-                            ->selectRaw('1')->whereColumn('viar_search_pivot.'.$relation['sourceKey'], $bread->name.'.'.$relation['parentKey'])
-                            ->where('viar_search_related.'.$details['label'], $operator, $searchValue));
-                    } elseif ($children->has($field)) {
-                        $relation = $children[$field];
-                        $details = $relation['details'];
-                        $child = $relation['model'];
-                        // A derived table keeps model scopes and disambiguates self relationships.
-                        $childSource = $child->newQuery()->select([
-                            $child->qualifyColumn($details['column']).' as parent_key',
-                            $child->qualifyColumn($details['label']).' as display_label',
-                            $child->getQualifiedKeyName().' as child_key',
-                        ])->toBase();
-                        $labelQuery = $child->getConnection()->query()->fromSub($childSource, 'viar_search_children')
-                            ->whereColumn('viar_search_children.parent_key', $bread->name.'.'.$details['key']);
-                        if ($details['type'] === 'hasOne') {
-                            $labelQuery->select('viar_search_children.display_label')->orderBy('viar_search_children.child_key')->limit(1);
-                            $builder->orWhere($labelQuery, $operator, $searchValue);
-                        } else {
-                            $builder->orWhereExists($labelQuery->selectRaw('1')->where('viar_search_children.display_label', $operator, $searchValue));
+            $smart = ! ($bread->server_side ?? true) && $this->searchKey === '' && $operator === 'like';
+            $terms = $smart
+                ? app(\App\Filament\Bread\BreadSmartSearch::class)->terms($this->search) : [$this->search];
+            $escapeClause = $smart ? " ESCAPE '!'" : '';
+            $grammar = $model->getConnection()->getQueryGrammar();
+            foreach ($terms as $search) {
+                $searchValue = $operator === '=' ? $search : ($smart ? app(\App\Filament\Bread\BreadSmartSearch::class)->containsPattern($search) : '%'.$search.'%');
+                $query->where(function ($builder) use ($searchable, $searchValue, $operator, $escapeClause, $grammar, $bread, $searchRelations, $model, $fieldRows, $search, $many, $children): void {
+                    foreach ($searchable as $field) {
+                        $previewRow = $fieldRows->get($field);
+                        $previewTranslated = config('voyager.multilingual.enabled', true) && method_exists($model, 'getTranslatableAttributes')
+                            && in_array($field, $model->getTranslatableAttributes(), true);
+                        if (! ($bread->server_side ?? true) && $this->searchKey === '' && $previewRow
+                            && app(\App\Filament\Bread\BreadTextPreviewSearch::class)->apply($builder, $grammar->wrap($bread->name.'.'.$field),
+                                $previewRow->type, json_decode($previewRow->details ?: '{}', true) ?: [], $previewTranslated, $search, $operator)) {
+                            continue;
                         }
-                    } elseif (! ($bread->server_side ?? true) && $this->searchKey === '' && ($optionRow = $fieldRows->get($field))
-                        && in_array($optionRow->type, ['multiple_checkbox', 'select_multiple'], true)) {
-                        $grammar = $model->getConnection()->getQueryGrammar();
-                        $expression = $grammar->wrap($bread->name.'.'.$field);
-                        $bindings = [];
-                        if ($this->locale !== config('voyager.multilingual.default', 'en') && method_exists($model, 'getTranslatableAttributes')
-                            && in_array($field, $model->getTranslatableAttributes(), true) && DatabaseSchema::hasTable('translations')) {
-                            $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
-                                ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
-                            $expression = 'COALESCE(('.$translation->toSql().'), '.$expression.')';
-                            $bindings = $translation->getBindings();
-                        }
-                        $options = (json_decode($optionRow->details ?: '{}', true) ?: [])['options'] ?? [];
-                        $objectKeys = false;
-                        if ($this->isSelectRelation($optionRow)) {
-                            $details = json_decode($optionRow->details ?: '{}', true) ?: [];
-                            try { $options = app(BreadSelectRelation::class)->options($model, $field, $details); }
-                            catch (\Illuminate\Validation\ValidationException) { $options = []; }
-                            $objectKeys = ! empty($details['relationship']['editablePivotFields']);
-                        }
-                        app(\App\Filament\Bread\BreadMultipleOptionSearch::class)->apply($builder, $expression, $bindings,
-                            is_array($options) ? $options : [], $search, $operator, $objectKeys);
-                    } elseif (! ($bread->server_side ?? true) && $this->searchKey === '' && ($optionRow = $fieldRows->get($field))
-                        && in_array($optionRow->type, ['select_dropdown', 'radio_btn'], true)
-                        && is_array(($optionDetails = json_decode($optionRow->details ?: '{}', true))['options'] ?? null)
-                        && ! isset($optionDetails['relationship']) && ! isset($optionDetails['view'])) {
-                        // Client DataTables searches the visible caption, never an unmapped stored key.
-                        $needle = mb_strtolower($search);
-                        $keys = array_keys(array_filter($optionDetails['options'], static function ($label) use ($needle, $operator): bool {
-                            if (! is_scalar($label)) { return false; }
-                            $label = mb_strtolower(strip_tags((string) $label));
-                            return $operator === '=' ? $label === $needle : str_contains($label, $needle);
-                        }));
-                        if ($keys === []) { $builder->orWhereRaw('1 = 0'); continue; }
-                        $expression = $model->getConnection()->getQueryGrammar()->wrap($bread->name.'.'.$field);
-                        $bindings = [];
-                        if ($this->locale !== config('voyager.multilingual.default', 'en') && method_exists($model, 'getTranslatableAttributes')
-                            && in_array($field, $model->getTranslatableAttributes(), true) && DatabaseSchema::hasTable('translations')) {
-                            $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
-                                ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
-                            $expression = 'COALESCE(('.$translation->toSql().'), '.$expression.')';
-                            $bindings = $translation->getBindings();
-                        }
-                        $placeholders = implode(', ', array_fill(0, count($keys), '?'));
-                        $builder->orWhereRaw($expression.' IN ('.$placeholders.')', [...$bindings, ...$keys]);
-                    } elseif (isset($searchRelations[$field])) {
-                        $details = $searchRelations[$field]['details'];
-                        $builder->orWhereIn($bread->name.'.'.$details['column'], DB::table($details['table'])
-                            ->select($details['key'])->where($details['label'], $operator, $searchValue));
-                    } else {
-                        if (! ($bread->server_side ?? true) && $this->locale !== config('voyager.multilingual.default', 'en')
-                            && method_exists($model, 'getTranslatableAttributes') && in_array($field, $model->getTranslatableAttributes(), true)
-                            && DatabaseSchema::hasTable('translations')) {
-                            $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
-                                ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
+                        if (! ($bread->server_side ?? true) && $this->searchKey === '' && ($fileRow = $fieldRows->get($field))
+                            && in_array($fileRow->type, ['file', 'media_picker'], true)) {
+                            app(\App\Filament\Bread\BreadBrowseFileSearch::class)->apply($builder, $grammar->wrap($bread->name.'.'.$field),
+                                $fileRow->type, json_decode($fileRow->details ?: '{}', true) ?: [], $search, $operator);
+                        } elseif ($many->has($field)) {
+                            $relation = $many[$field];
+                            $details = $relation['details'];
+                            $builder->orWhereExists(DB::table($details['pivot_table'].' as viar_search_pivot')
+                                ->join($details['table'].' as viar_search_related', 'viar_search_related.'.$relation['relatedKey'], '=', 'viar_search_pivot.'.$relation['targetKey'])
+                                ->selectRaw('1')->whereColumn('viar_search_pivot.'.$relation['sourceKey'], $bread->name.'.'.$relation['parentKey'])
+                                ->whereRaw($grammar->wrap('viar_search_related.'.$details['label']).' '.$operator.' ?'.$escapeClause, [$searchValue]));
+                        } elseif ($children->has($field)) {
+                            $relation = $children[$field];
+                            $details = $relation['details'];
+                            $child = $relation['model'];
+                            // A derived table keeps model scopes and disambiguates self relationships.
+                            $childSource = $child->newQuery()->select([
+                                $child->qualifyColumn($details['column']).' as parent_key',
+                                $child->qualifyColumn($details['label']).' as display_label',
+                                $child->getQualifiedKeyName().' as child_key',
+                            ])->toBase();
+                            $labelQuery = $child->getConnection()->query()->fromSub($childSource, 'viar_search_children')
+                                ->whereColumn('viar_search_children.parent_key', $bread->name.'.'.$details['key']);
+                            if ($details['type'] === 'hasOne') {
+                                $labelQuery->select('viar_search_children.display_label')->orderBy('viar_search_children.child_key')->limit(1);
+                                $builder->orWhereRaw('('.$labelQuery->toSql().') '.$operator.' ?'.$escapeClause, [...$labelQuery->getBindings(), $searchValue]);
+                            } else {
+                                $builder->orWhereExists($labelQuery->selectRaw('1')->whereRaw($grammar->wrap('viar_search_children.display_label').' '.$operator.' ?'.$escapeClause, [$searchValue]));
+                            }
+                        } elseif (! ($bread->server_side ?? true) && $this->searchKey === '' && ($inlineRow = $fieldRows->get($field))
+                            && $inlineRow->type === 'checkbox'
+                            && \App\Filament\Bread\BreadInlineEdit::enabled('checkbox', json_decode($inlineRow->details ?: '{}', true) ?: [])) {
+                            // DataTables reads cell text; an input-only toggle contributes no search value.
+                            $builder->orWhereRaw('1 = 0');
+                        } elseif (! ($bread->server_side ?? true) && $this->searchKey === '' && ($checkboxRow = $fieldRows->get($field))
+                            && $checkboxRow->type === 'checkbox'
+                            && is_string(($checkboxDetails = json_decode($checkboxRow->details ?: '{}', true))['on'] ?? null)
+                            && is_string($checkboxDetails['off'] ?? null) && ! isset($checkboxDetails['view'])
+                            && ! array_key_exists('browse_inline_checkbox', $checkboxDetails) && ! array_key_exists('browse_inline_editor', $checkboxDetails)) {
+                            $expression = $model->getConnection()->getQueryGrammar()->wrap($bread->name.'.'.$field);
+                            $bindings = [];
+                            if ($this->locale !== config('voyager.multilingual.default', 'en') && method_exists($model, 'getTranslatableAttributes')
+                                && in_array($field, $model->getTranslatableAttributes(), true) && DatabaseSchema::hasTable('translations')) {
+                                $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
+                                    ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
+                                $expression = 'COALESCE(('.$translation->toSql().'), '.$expression.')';
+                                $bindings = $translation->getBindings();
+                            }
+                            app(\App\Filament\Bread\BreadCheckboxSearch::class)->apply($builder, $expression, $bindings, $checkboxDetails, $search, $operator);
+                        } elseif (! ($bread->server_side ?? true) && $this->searchKey === '' && ($optionRow = $fieldRows->get($field))
+                            && in_array($optionRow->type, ['multiple_checkbox', 'select_multiple'], true)) {
                             $grammar = $model->getConnection()->getQueryGrammar();
-                            $builder->orWhereRaw('COALESCE(('.$translation->toSql().'), '.$grammar->wrap($bread->name.'.'.$field).') '.$operator.' ?', [...$translation->getBindings(), $searchValue]);
-                        } else {
-                            $builder->orWhere($bread->name.'.'.$field, $operator, $searchValue);
-                        }
-                        if (! ($bread->server_side ?? true) && $this->searchKey === '' && ($row = $fieldRows->get($field))) {
-                            $details = json_decode($row->details ?: '{}', true) ?: [];
-                            $options = in_array($row->type, ['select_dropdown', 'radio_btn'], true) && is_array($details['options'] ?? null) ? $details['options'] : [];
-                            if ($row->type === 'select_dropdown' && isset($details['relationship'])) {
-                                $options = [];
-                                if (! method_exists($model, \Illuminate\Support\Str::camel($field).'List')) {
-                                    try { $options = app(BreadDropdownOptions::class)->options($model, $field, $details); }
-                                    catch (\Illuminate\Validation\ValidationException) { $options = []; }
-                                }
+                            $expression = $grammar->wrap($bread->name.'.'.$field);
+                            $bindings = [];
+                            if ($this->locale !== config('voyager.multilingual.default', 'en') && method_exists($model, 'getTranslatableAttributes')
+                                && in_array($field, $model->getTranslatableAttributes(), true) && DatabaseSchema::hasTable('translations')) {
+                                $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
+                                    ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
+                                $expression = 'COALESCE(('.$translation->toSql().'), '.$expression.')';
+                                $bindings = $translation->getBindings();
                             }
-                            if ($row->type === 'checkbox') {
-                                $codec = app(\App\Filament\Bread\BreadCheckbox::class);
-                                $options = [0 => $codec->caption(false, $details), 1 => $codec->caption(true, $details)];
+                            $options = (json_decode($optionRow->details ?: '{}', true) ?: [])['options'] ?? [];
+                            if (is_array($options) && ! $this->isSelectRelation($optionRow)) { $options = array_filter($options); }
+                            if (is_array($options) && ! $this->isSelectRelation($optionRow)
+                                && array_key_exists('options', json_decode($optionRow->details ?: '{}', true) ?: [])) {
+                                app(\App\Filament\Bread\BreadMultipleOptionSearch::class)->applyEmpty($builder, $expression, $bindings, $optionRow->type, $search, $operator);
                             }
+                            $objectKeys = false;
+                            if ($this->isSelectRelation($optionRow)) {
+                                $details = json_decode($optionRow->details ?: '{}', true) ?: [];
+                                try { $options = app(BreadSelectRelation::class)->options($model, $field, $details); }
+                                catch (\Illuminate\Validation\ValidationException) { $options = []; }
+                                $objectKeys = ! empty($details['relationship']['editablePivotFields']);
+                            }
+                            app(\App\Filament\Bread\BreadMultipleOptionSearch::class)->apply($builder, $expression, $bindings,
+                                is_array($options) ? $options : [], $search, $operator, $objectKeys);
+                        } elseif (! ($bread->server_side ?? true) && $this->searchKey === '' && ($optionRow = $fieldRows->get($field))
+                            && in_array($optionRow->type, ['select_dropdown', 'radio_btn'], true)
+                            && is_array(($optionDetails = json_decode($optionRow->details ?: '{}', true))['options'] ?? null)
+                            && ! isset($optionDetails['relationship']) && ! isset($optionDetails['view'])) {
+                            // Client DataTables searches the visible caption, never an unmapped stored key.
                             $needle = mb_strtolower($search);
-                            $keys = array_keys(array_filter($options, function ($label) use ($needle, $operator): bool {
+                            $keys = array_keys(array_filter($optionDetails['options'], static function ($label) use ($needle, $operator): bool {
                                 if (! is_scalar($label)) { return false; }
-                                $label = mb_strtolower(strip_tags((string) $label));
+                                $label = mb_strtolower(\App\Filament\Bread\BreadCaption::htmlText((string) $label));
                                 return $operator === '=' ? $label === $needle : str_contains($label, $needle);
                             }));
-                            if ($keys !== []) { $builder->orWhereIn($bread->name.'.'.$field, $keys); }
+                            if ($keys === []) { $builder->orWhereRaw('1 = 0'); continue; }
+                            $expression = $model->getConnection()->getQueryGrammar()->wrap($bread->name.'.'.$field);
+                            $bindings = [];
+                            if ($this->locale !== config('voyager.multilingual.default', 'en') && method_exists($model, 'getTranslatableAttributes')
+                                && in_array($field, $model->getTranslatableAttributes(), true) && DatabaseSchema::hasTable('translations')) {
+                                $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
+                                    ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
+                                $expression = 'COALESCE(('.$translation->toSql().'), '.$expression.')';
+                                $bindings = $translation->getBindings();
+                            }
+                            $placeholders = implode(', ', array_fill(0, count($keys), '?'));
+                            $builder->orWhereRaw($expression.' IN ('.$placeholders.')', [...$bindings, ...$keys]);
+                        } elseif (isset($searchRelations[$field])) {
+                            $details = $searchRelations[$field]['details'];
+                            $builder->orWhereIn($bread->name.'.'.$details['column'], DB::table($details['table'])
+                                ->select($details['key'])->whereRaw($grammar->wrap($details['label']).' '.$operator.' ?'.$escapeClause, [$searchValue]));
+                        } else {
+                            if (! ($bread->server_side ?? true) && $this->locale !== config('voyager.multilingual.default', 'en')
+                                && method_exists($model, 'getTranslatableAttributes') && in_array($field, $model->getTranslatableAttributes(), true)
+                                && DatabaseSchema::hasTable('translations')) {
+                                $translation = DB::table('translations')->selectRaw("COALESCE(value, '')")->where('table_name', $bread->name)->where('column_name', $field)
+                                    ->where('locale', $this->locale)->whereColumn('foreign_key', $bread->name.'.id')->orderByDesc('id')->limit(1);
+                                $grammar = $model->getConnection()->getQueryGrammar();
+                                $builder->orWhereRaw('COALESCE(('.$translation->toSql().'), '.$grammar->wrap($bread->name.'.'.$field).') '.$operator.' ?'.$escapeClause, [...$translation->getBindings(), $searchValue]);
+                            } else {
+                                $builder->orWhereRaw($grammar->wrap($bread->name.'.'.$field).' '.$operator.' ?'.$escapeClause, [$searchValue]);
+                            }
+                            if (! ($bread->server_side ?? true) && $this->searchKey === '' && ($row = $fieldRows->get($field))) {
+                                $details = json_decode($row->details ?: '{}', true) ?: [];
+                                $options = in_array($row->type, ['select_dropdown', 'radio_btn'], true) && is_array($details['options'] ?? null) ? $details['options'] : [];
+                                if ($row->type === 'select_dropdown' && isset($details['relationship'])) {
+                                    $options = [];
+                                    if (! method_exists($model, \Illuminate\Support\Str::camel($field).'List')) {
+                                        try { $options = app(BreadDropdownOptions::class)->options($model, $field, $details); }
+                                        catch (\Illuminate\Validation\ValidationException) { $options = []; }
+                                    }
+                                }
+                                $needle = mb_strtolower($search);
+                                $keys = array_keys(array_filter($options, function ($label) use ($needle, $operator): bool {
+                                    if (! is_scalar($label)) { return false; }
+                                    $label = mb_strtolower(strip_tags((string) $label));
+                                    return $operator === '=' ? $label === $needle : str_contains($label, $needle);
+                                }));
+                                if ($keys !== []) { $builder->orWhereIn($bread->name.'.'.$field, $keys); }
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
 
         $order = $settings['order_column'] ?? null;
@@ -2071,7 +2111,8 @@ class VoyagerBread extends Page
                 ->whereColumn('viar_bread_related.'.$details['key'], $bread->name.'.'.$details['column'])->limit(1);
             $query->reorder()->orderBy($labelQuery, $direction === 'asc' ? 'asc' : 'desc');
         } elseif (($bread->server_side ?? true) || ! ($sortRow = $fieldRows->get($order))
-            || ! app(\App\Filament\Bread\BreadOptionSort::class)->apply($query, $bread->name.'.'.$order, $sortRow, $direction)) {
+            || (! app(\App\Filament\Bread\BreadBrowseFileSort::class)->apply($query, $bread->name.'.'.$order, $sortRow, $direction)
+                && ! app(\App\Filament\Bread\BreadOptionSort::class)->apply($query, $bread->name.'.'.$order, $sortRow, $direction))) {
             $query->reorder($bread->name.'.'.$order, $direction === 'asc' ? 'asc' : 'desc');
         }
         if ($order !== 'id') { $query->orderByDesc($bread->name.'.id'); }
@@ -2444,9 +2485,21 @@ class VoyagerBread extends Page
     {
         $details = json_decode($row->details ?: '{}', true) ?: [];
         $options = $details['options'] ?? [];
+        if ($browse && in_array($row->type, ['multiple_checkbox', 'select_multiple'], true)
+            && is_array($options) && array_key_exists('options', $details) && ! isset($details['relationship'])) {
+            $values = is_array($value) ? $value : json_decode((string) $value, true);
+            if ($values === null || $row->type === 'select_multiple' && ! $values && ! (is_string($value) && str_starts_with(ltrim($value), '{'))
+                || $row->type === 'multiple_checkbox' && $values === []) {
+                return \App\Filament\Bread\BreadCaption::none();
+            }
+            if (! is_array($values)) { return ''; }
+            return implode(', ', array_values(array_filter(array_map(static fn ($key): string =>
+                is_scalar($key) && is_scalar($options[$key] ?? null) && $options[$key] ? (string) $options[$key] : '', array_values($values)),
+                static fn (string $label): bool => $label !== '')));
+        }
         if ($browse && in_array($row->type, ['select_dropdown', 'radio_btn'], true)
             && is_array($options) && array_key_exists('options', $details) && ! isset($details['relationship'])) {
-            return is_scalar($value) && is_scalar($options[$value] ?? null) ? (string) $options[$value] : '';
+            return is_scalar($value) && is_scalar($options[$value] ?? null) ? \App\Filament\Bread\BreadCaption::htmlText((string) $options[$value]) : '';
         }
         if ($row->type === 'multiple_checkbox') { return app(\App\Filament\Bread\BreadMultiCheckbox::class)->summary($value, $details); }
         if ($row->type === 'select_dropdown') {
@@ -2498,7 +2551,7 @@ class VoyagerBread extends Page
                 if ($row->type === 'adv_fields_group') { $values[$row->field] = $this->groupState($values[$row->field], json_decode($row->details ?: '{}', true) ?: []); }
             }
             if ($row->type === 'rich_text_box' && is_string($values[$row->field] ?? null)
-                && app(\App\Filament\Bread\BreadRichEditor::class)->requiresSource($values[$row->field])) {
+                && app(\App\Filament\Bread\BreadRichEditor::class)->requiresSource($values[$row->field], $bread->name)) {
                 $this->enableRichSource($row->field);
             }
         }

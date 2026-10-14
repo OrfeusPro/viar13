@@ -53,8 +53,8 @@ class BreadOptionSort
         $wrapped = $query->getGrammar()->wrap($column);
         $bindings = [];
         if ($checkbox) {
-            $cast = $query->getConnection()->getDriverName() === 'sqlite' ? 'TEXT' : 'CHAR';
-            $sql = "CASE WHEN {$wrapped} IS NOT NULL AND CAST({$wrapped} AS {$cast}) NOT IN ('', '0') THEN ? ELSE ? END";
+            $cast = $query->getConnection()->getDriverName() === 'sqlite' ? "CAST({$wrapped} AS TEXT)" : "BINARY CAST({$wrapped} AS CHAR)";
+            $sql = "CASE WHEN {$wrapped} IS NOT NULL AND {$cast} NOT IN ('', '0') THEN ? ELSE ? END";
             $bindings = [$ranks[2], $ranks[1]];
         } else {
             $sql = 'CASE';

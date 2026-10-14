@@ -18,7 +18,7 @@
      x-on:click.capture="if(moved && $event.detail !== 0) { $event.preventDefault(); $event.stopPropagation(); moved = false; }"
      x-on:resize.window="resize()" x-on:sa-inbox-count.window="update($event.detail.count)">
     @if($allowed)
-        <a href="{{ \App\Filament\Resources\SaConversations\SaConversationResource::getUrl() }}" draggable="false" aria-label="SA-диалоги, непрочитанных: {{ $count }}" class="viar-sa-global-link">
+        <a href="{{ \App\Filament\Resources\SaConversations\SaConversationResource::getUrl('index', ['filters' => ['scope' => ['value' => 'unread']]]) }}" draggable="false" aria-label="SA-диалоги, непрочитанных: {{ $count }}" class="viar-sa-global-link">
             <x-filament::icon icon="heroicon-s-chat-bubble-left-right"/>
             <span>SA-диалоги</span><strong class="viar-sa-global-count">{{ $count }}</strong>
         </a>
