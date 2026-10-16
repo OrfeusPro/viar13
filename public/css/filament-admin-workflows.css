@@ -31,6 +31,7 @@
 .viar-seo-table .viar-seo-native-bulk { display:none; }
 .viar-seo-table .fi-ta-row > .fi-ta-cell { vertical-align:top; padding-block:10px; }
 .viar-seo-table .fi-ta-row .fi-ta-text { padding-block:0; }
+.viar-seo-page-url { min-width:160px; max-width:320px; white-space:normal; overflow-wrap:anywhere; }
 .viar-seo-table .fi-ta-row > .fi-ta-cell:last-child .fi-ta-actions { align-items:flex-start; flex-direction:column; gap:10px; }
 .viar-seo-error { padding:10px; border-radius:8px; background:#fef2f2; color:#b91c1c; }
 .viar-admin-table { border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }

@@ -13,6 +13,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -464,6 +465,7 @@ class VoyagerBreadTest extends TestCase
         $permission = DB::table('permissions')->where('key', 'browse_pages')->value('id');
         $page = Livewire::test(\App\Filament\Pages\DatabaseTables::class)->set('search', 'pages')
             ->assertSee('Открыть BREAD')->call('deleteBread')->assertHasErrors('breadConfirmation');
+        $this->assertStringNotContainsString('@js(', $page->html());
         $page->call('prepareBreadDeletion', 'pages')->assertSet('breadDeletionTable', 'pages')
             ->set('breadConfirmation', 'wrong')->call('deleteBread')->assertHasErrors('breadConfirmation');
         $this->assertDatabaseHas('data_types', ['id' => $type->id]);
@@ -2406,6 +2408,16 @@ class VoyagerBreadTest extends TestCase
         $this->assertSame('Перевод', $page->instance()->records()['rows']->first()->title);
         $this->assertSame('Base', $page->instance()->records()['inlineValues'][$id]['title']);
         $page->assertSee('Редактировать поле')->assertSee('x-on:keydown.enter.prevent', false)->assertSee('Отменить изменение поля');
+        $this->assertStringNotContainsString('@js(', $page->html());
+        $document = new \DOMDocument();
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$page->html());
+        $cancelExpressions = [];
+        foreach ($document->getElementsByTagName('button') as $button) {
+            if ($button->getAttribute('aria-label') === 'Отменить изменение поля') {
+                $cancelExpressions[] = $button->getAttribute('x-on:click');
+            }
+        }
+        $this->assertContains("value = 'Base'; editing = false", $cancelExpressions);
         $page->call('saveInlineField', $id, 'title', 'Updated')->assertHasNoErrors();
         $this->assertDatabaseHas('pages', ['id' => $id, 'title' => 'Updated', 'image' => 'keep.jpg', 'meta_description' => '1', 'flags' => '0']);
         $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'value' => 'Перевод']);
@@ -2475,8 +2487,9 @@ class VoyagerBreadTest extends TestCase
         $translated = json_encode(array_replace($details, ['version' => 99]));
         DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'meta_description', 'foreign_key' => $id, 'locale' => 'ru', 'value' => $translated]);
         $action = \Filament\Actions\Testing\TestAction::make('editInlineGroup')->arguments(['id' => $id, 'field' => 'meta_description']);
-        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->assertSee('Редактировать группу')
-            ->call('changeLocale', 'ru')->mountAction($action)->assertActionMounted('editInlineGroup');
+        $page = Livewire::test(VoyagerBread::class, ['type' => 'pages'])->assertSee('Редактировать группу');
+        $this->assertStringNotContainsString('@js(', $page->html());
+        $page->call('changeLocale', 'ru')->mountAction($action)->assertActionMounted('editInlineGroup');
         $schema = $page->instance()->getSchema($page->instance()->getMountedActionSchemaName());
         $this->assertSame(['values.caption'], collect($schema->getFlatComponents())->filter(fn ($field) => $field instanceof \Filament\Forms\Components\TextInput)->map(fn ($field) => $field->getName())->values()->all());
         $page->call('unmountAction');
@@ -3720,6 +3733,429 @@ class VoyagerBreadTest extends TestCase
         $this->assertSame(['main' => 'main'], json_decode(DB::table('pages')->where('id', $id)->value('flags'), true));
     }
 
+    private function createMenuManagementTables(): void
+    {
+        Schema::create('menus', function (Blueprint $table): void {
+            $table->id(); $table->string('name')->unique(); $table->timestamps();
+        });
+        Schema::create('menu_items', function (Blueprint $table): void {
+            $table->id(); $table->foreignId('menu_id'); $table->boolean('status')->default(true);
+            $table->string('title'); $table->text('url')->nullable(); $table->string('target')->nullable();
+            $table->string('icon_class')->nullable(); $table->string('color')->nullable();
+            $table->foreignId('parent_id')->nullable(); $table->integer('order');
+            $table->string('route')->nullable(); $table->text('parameters')->nullable(); $table->timestamps();
+        });
+    }
+
+    public function test_menu_tree_reorder_matches_voyager_sibling_order_and_rejects_incomplete_or_foreign_trees(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'edit_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $other = DB::table('menus')->insertGetId(['name' => 'other']);
+        $first = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'First', 'order' => 1, 'url' => '/first']);
+        $child = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Child', 'parent_id' => $first, 'order' => 1]);
+        $second = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Second', 'order' => 2]);
+        $foreign = DB::table('menu_items')->insertGetId(['menu_id' => $other, 'title' => 'Foreign', 'order' => 1]);
+        DB::table('translations')->insert(['table_name' => 'menu_items', 'column_name' => 'title', 'foreign_key' => $child, 'locale' => 'ru', 'value' => 'Child RU']);
+        $component = Livewire::test(VoyagerMenuItems::class);
+        $this->assertSame($child, $component->instance()->menuTree()[0]['children'][0]['item']->id);
+        \Illuminate\Support\Facades\Cache::put('voyager_menu_admin', ['old'], 60);
+        $tree = [['id' => $second, 'children' => [['id' => $child]]], ['id' => $first]];
+        $component->call('reorderItems', $menu, $tree)->assertHasNoErrors()->assertReturned(true);
+        $this->assertDatabaseHas('menu_items', ['id' => $second, 'parent_id' => null, 'order' => 1]);
+        $this->assertDatabaseHas('menu_items', ['id' => $first, 'parent_id' => null, 'order' => 2, 'url' => '/first']);
+        $this->assertDatabaseHas('menu_items', ['id' => $child, 'parent_id' => $second, 'order' => 1]);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $child, 'value' => 'Child RU']);
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has('voyager_menu_admin'));
+        $before = DB::table('menu_items')->orderBy('id')->get()->toJson();
+        $deep = []; for ($id = 6; $id >= 1; $id--) { $deep = [['id' => $id, 'children' => $deep]]; }
+        foreach ([[], [['id' => $first], ['id' => $child]],
+            [['id' => $first], ['id' => $child], ['id' => $foreign]],
+            [['id' => $first, 'children' => [['id' => $first]]], ['id' => $child], ['id' => $second]],
+            [['id' => $first, 'children' => 'bad']], $deep] as $invalid) {
+            $component->call('reorderItems', $menu, $invalid)->assertHasErrors('menuOrder');
+            $this->assertSame($before, DB::table('menu_items')->orderBy('id')->get()->toJson());
+        }
+        Livewire::test(VoyagerMenuItems::class)->call('reorderItems', $other, [])->assertStatus(422);
+    }
+
+    public function test_menu_tree_accepts_five_levels_and_keeps_legacy_orphans_and_cycles_visible(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'edit_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $ids = [];
+        for ($depth = 1; $depth <= 5; $depth++) {
+            $ids[] = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Level '.$depth,
+                'parent_id' => $ids === [] ? null : end($ids), 'order' => 1]);
+        }
+        $tree = [];
+        foreach (array_reverse($ids) as $id) { $tree = [['id' => $id, 'children' => $tree]]; }
+        $component = Livewire::test(VoyagerMenuItems::class)->call('reorderItems', $menu, $tree)->assertHasNoErrors()->assertReturned(true);
+        DB::table('menu_items')->where('id', $ids[0])->update(['parent_id' => $ids[1]]);
+        DB::table('menu_items')->where('id', $ids[2])->update(['parent_id' => 99999]);
+        $before = DB::table('menu_items')->get()->toJson();
+        $visible = [];
+        $walk = function (array $nodes) use (&$walk, &$visible): void {
+            foreach ($nodes as $node) { $visible[] = $node['item']->id; $walk($node['children']); }
+        };
+        $walk($component->instance()->menuTree());
+        sort($visible);
+        $this->assertSame($ids, $visible);
+        $this->assertSame($before, DB::table('menu_items')->get()->toJson());
+    }
+
+    public function test_menu_tree_reorder_rolls_back_all_changes_when_a_later_update_fails(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'edit_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $first = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'First', 'order' => 1]);
+        $second = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Second', 'order' => 2]);
+        \Illuminate\Support\Facades\Cache::put('voyager_menu_admin', ['cached'], 60);
+        DB::statement("CREATE TRIGGER reject_menu_order BEFORE UPDATE ON menu_items WHEN OLD.id = $first BEGIN SELECT RAISE(ABORT, 'Synthetic order failure'); END");
+        $component = Livewire::test(VoyagerMenuItems::class);
+        try {
+            $component->instance()->reorderItems($menu, [['id' => $second], ['id' => $first]]);
+            $this->fail('The first update must be rolled back.');
+        } catch (\Illuminate\Database\QueryException $error) {
+            $this->assertStringContainsString('Synthetic order failure', $error->getMessage());
+        }
+        $this->assertDatabaseHas('menu_items', ['id' => $first, 'order' => 1]);
+        $this->assertDatabaseHas('menu_items', ['id' => $second, 'order' => 2]);
+        $this->assertTrue(\Illuminate\Support\Facades\Cache::has('voyager_menu_admin'));
+    }
+
+    public function test_menu_creation_and_rename_support_empty_list_validate_names_and_clear_original_cache(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'add_menus', 'edit_menus']);
+        $component = Livewire::test(VoyagerMenuItems::class)->assertSet('menuId', 0)
+            ->assertSee('Меню ещё не созданы.')->assertDontSee('Добавить пункт')
+            ->call('openCreateMenu')->set('menuName', '   ')->call('saveMenuName')->assertHasErrors('menuName')
+            ->set('menuName', str_repeat('a', 256))->call('saveMenuName')->assertHasErrors('menuName')
+            ->set('menuName', ' footer ')->call('saveMenuName')->assertHasNoErrors()->assertSet('menuEditing', false);
+        $id = DB::table('menus')->where('name', 'footer')->value('id');
+        $this->assertNotNull($id);
+        $component->assertSet('menuId', $id)->assertSee('Добавить пункт')
+            ->call('openCreateMenu')->set('menuName', 'footer')->call('saveMenuName')->assertHasErrors('menuName')
+            ->call('cancelMenu')->assertSet('menuEditing', false);
+        $this->assertSame(1, DB::table('menus')->count());
+        $item = DB::table('menu_items')->insertGetId(['menu_id' => $id, 'title' => 'Existing item', 'order' => 1]);
+        \Illuminate\Support\Facades\Cache::put('voyager_menu_footer', ['old'], 60);
+        \Illuminate\Support\Facades\Cache::put('voyager_menu_footer-new', ['stale'], 60);
+        $component->call('openRenameMenu')->assertSet('menuName', 'footer')
+            ->set('menuName', 'footer-new')->call('saveMenuName')->assertHasNoErrors();
+        $this->assertDatabaseHas('menus', ['id' => $id, 'name' => 'footer-new']);
+        $this->assertDatabaseHas('menu_items', ['id' => $item, 'menu_id' => $id, 'title' => 'Existing item']);
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has('voyager_menu_footer'));
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has('voyager_menu_footer-new'));
+    }
+
+    public function test_menu_deletion_removes_its_tree_and_translations_without_touching_other_menus(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'delete_menus', 'edit_menus']);
+        $id = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $other = DB::table('menus')->insertGetId(['name' => 'footer']);
+        $parent = DB::table('menu_items')->insertGetId(['menu_id' => $id, 'title' => 'Parent', 'order' => 1]);
+        $child = DB::table('menu_items')->insertGetId(['menu_id' => $id, 'parent_id' => $parent, 'title' => 'Child', 'order' => 1]);
+        $unrelated = DB::table('menu_items')->insertGetId(['menu_id' => $other, 'title' => 'Other', 'order' => 1]);
+        foreach ([$parent, $child, $unrelated] as $item) {
+            DB::table('translations')->insert(['table_name' => 'menu_items', 'column_name' => 'title', 'foreign_key' => $item, 'locale' => 'ru', 'value' => 'Translation']);
+        }
+        DB::table('translations')->insert(['table_name' => 'pages', 'column_name' => 'title', 'foreign_key' => $parent, 'locale' => 'ru', 'value' => 'Page']);
+        \Illuminate\Support\Facades\Cache::put('voyager_menu_admin', ['cached'], 60);
+        \Illuminate\Support\Facades\Cache::put('voyager_menu_footer', ['untouched'], 60);
+        $component = Livewire::test(VoyagerMenuItems::class)->call('openRenameMenu')
+            ->call('deleteMenu', $id)->assertHasNoErrors()->assertSet('menuId', $other)
+            ->assertSet('menuEditing', false)->assertSet('itemId', null);
+        $this->assertDatabaseMissing('menus', ['id' => $id]);
+        $this->assertDatabaseMissing('menu_items', ['id' => $parent]);
+        $this->assertDatabaseMissing('menu_items', ['id' => $child]);
+        $this->assertDatabaseHas('menu_items', ['id' => $unrelated, 'menu_id' => $other]);
+        $this->assertSame(2, DB::table('translations')->count());
+        $this->assertFalse(\Illuminate\Support\Facades\Cache::has('voyager_menu_admin'));
+        $this->assertTrue(\Illuminate\Support\Facades\Cache::has('voyager_menu_footer'));
+        $component->call('deleteMenu', $other)->assertSet('menuId', 0)->assertSee('Меню ещё не созданы.')->assertDontSee('Удалить меню');
+        $this->assertSame(0, DB::table('menu_items')->count());
+        $this->assertSame(1, DB::table('translations')->count());
+        $this->assertDatabaseHas('translations', ['table_name' => 'pages', 'value' => 'Page']);
+    }
+
+    public function test_menu_deletion_rolls_back_items_translations_and_keeps_cache_if_menu_delete_fails(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'delete_menus']);
+        $id = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $item = DB::table('menu_items')->insertGetId(['menu_id' => $id, 'title' => 'Item', 'order' => 1]);
+        DB::table('translations')->insert(['table_name' => 'menu_items', 'column_name' => 'title', 'foreign_key' => $item, 'locale' => 'ru', 'value' => 'Translation']);
+        \Illuminate\Support\Facades\Cache::put('voyager_menu_admin', ['cached'], 60);
+        DB::statement("CREATE TRIGGER reject_menu_delete BEFORE DELETE ON menus BEGIN SELECT RAISE(ABORT, 'Synthetic failure'); END");
+        $component = Livewire::test(VoyagerMenuItems::class);
+        try {
+            $component->instance()->deleteMenu($id);
+            $this->fail('A failure must roll back the full deletion.');
+        } catch (\Illuminate\Database\QueryException $error) {
+            $this->assertStringContainsString('Synthetic failure', $error->getMessage());
+        }
+        $this->assertDatabaseHas('menus', ['id' => $id]);
+        $this->assertDatabaseHas('menu_items', ['id' => $item]);
+        $this->assertDatabaseHas('translations', ['table_name' => 'menu_items', 'foreign_key' => $item]);
+        $this->assertTrue(\Illuminate\Support\Facades\Cache::has('voyager_menu_admin'));
+        $this->assertSame($id, $component->get('menuId'));
+    }
+
+    public function test_menu_management_actions_require_their_own_permissions(): void
+    {
+        $this->createMenuManagementTables();
+        DB::table('menus')->insert(['name' => 'admin']);
+        $this->admin(['browse_admin', 'browse_menus']);
+        Livewire::test(VoyagerMenuItems::class)->assertDontSee('Создать меню')->assertDontSee('Переименовать меню')
+            ->call('openCreateMenu')->assertForbidden();
+        Livewire::test(VoyagerMenuItems::class)->call('openRenameMenu')->assertForbidden();
+        Livewire::test(VoyagerMenuItems::class)->call('reorderItems', 1, [])->assertForbidden();
+        Livewire::test(VoyagerMenuItems::class)->assertDontSee('Удалить меню')->call('deleteMenu', 1)->assertForbidden();
+        Livewire::test(VoyagerMenuItems::class)->set('menuEditing', true)->set('menuName', 'Forged')
+            ->call('saveMenuName')->assertForbidden();
+        $this->assertSame(['admin'], DB::table('menus')->pluck('name')->all());
+    }
+
+    public function test_menu_item_fields_match_voyager_link_modes_color_and_root_order(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'add_menus', 'edit_menus', 'delete_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $other = DB::table('menus')->insertGetId(['name' => 'footer']);
+        DB::table('menu_items')->insert(['menu_id' => $other, 'title' => 'Original root', 'order' => 12]);
+        $component = Livewire::test(VoyagerMenuItems::class)->call('openCreate')
+            ->assertSet('data.order', 13)->assertSet('data.link_type', 'url')->assertSet('data.color', '#000000');
+        $component->set('data.title', 'New URL')->set('data.url', '/about?type=2')->set('data.color', '#12aBcF')
+            ->set('data.target', '_blank')->set('data.icon_class', 'voyager-photo')->call('save')->assertHasNoErrors();
+        $id = DB::table('menu_items')->where('title', 'New URL')->value('id');
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'menu_id' => $menu, 'url' => '/about?type=2', 'route' => null,
+            'parameters' => '', 'color' => '#12aBcF', 'target' => '_blank', 'icon_class' => 'voyager-photo', 'order' => 13]);
+        Cache::put('voyager_menu_admin', 'Stale');
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->set('data.link_type', 'route')
+            ->set('data.route', 'catalog.show')->set('data.parameters', '{"id":974,"type":2}')
+            ->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'url' => '', 'route' => 'catalog.show', 'parameters' => '{"id":974,"type":2}', 'color' => '#12aBcF']);
+        $this->assertFalse(Cache::has('voyager_menu_admin'));
+        $component = Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->assertSet('data.link_type', 'route');
+        $this->assertInstanceOf(\Filament\Forms\Components\Textarea::class, $component->instance()->form->getFlatFields()['parameters']);
+        $component->set('data.link_type', 'url')->set('data.url', '#section')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'url' => '#section', 'route' => null, 'parameters' => '']);
+        Cache::put('voyager_menu_admin', 'Stale');
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->call('changeLocale', 'ru')->set('data.title', 'Перевод')->call('save')->assertHasNoErrors();
+        $this->assertFalse(Cache::has('voyager_menu_admin'));
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'url' => '#section', 'color' => '#12aBcF', 'title' => 'New URL']);
+        Cache::put('voyager_menu_admin', 'Stale');
+        Livewire::test(VoyagerMenuItems::class)->call('deleteItem', $id)->assertHasNoErrors();
+        $this->assertFalse(Cache::has('voyager_menu_admin'));
+    }
+
+    public function test_menu_item_rejects_invalid_color_parameters_mode_target_and_foreign_item(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'edit_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $other = DB::table('menus')->insertGetId(['name' => 'footer']);
+        $id = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Original', 'order' => 1, 'route' => 'catalog.show', 'url' => '/legacy', 'parameters' => '{"id":1}', 'color' => '#123456']);
+        $foreign = DB::table('menu_items')->insertGetId(['menu_id' => $other, 'title' => 'Foreign', 'order' => 1]);
+        foreach (['color' => 'red;display:none', 'parameters' => '{broken', 'link_type' => 'unsafe', 'target' => '_top'] as $field => $value) {
+            Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->set('data.'.$field, $value)->call('save')->assertHasErrors('data.'.$field);
+        }
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'url' => '/legacy', 'color' => '#123456', 'parameters' => '{"id":1}']);
+        $component = Livewire::test(VoyagerMenuItems::class);
+        try {
+            $component->instance()->openEdit($foreign);
+            $this->fail('Foreign menu item must be rejected.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $error) { $this->assertSame(404, $error->getStatusCode()); }
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->set('data.link_type', 'url')
+            ->set('data.parameters', '{ignored')->set('data.url', '/new')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'url' => '/new', 'route' => null, 'parameters' => '']);
+    }
+
+    public function test_menu_item_editor_schema_cannot_be_forged_without_action_permission(): void
+    {
+        $this->createMenuManagementTables();
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $id = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Original', 'order' => 1]);
+        $this->admin(['browse_admin', 'browse_menus']);
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->assertForbidden();
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->assertForbidden();
+        $component = Livewire::test(VoyagerMenuItems::class)->set('editing', true)->set('itemId', $id);
+        $this->assertSame([], $component->instance()->form->getFlatFields());
+        $component->call('save')->assertForbidden();
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'title' => 'Original']);
+    }
+
+    public function test_menu_item_translation_drafts_keep_common_fields_and_create_all_languages_together(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'add_menus', 'edit_menus']);
+        DB::table('menus')->insert(['name' => 'admin']);
+        $component = Livewire::test(VoyagerMenuItems::class)->call('openCreate')->set('data.title', 'English draft')
+            ->set('data.link_type', 'route')->set('data.route', 'catalog.show')->set('data.parameters', '{"type":2}')
+            ->set('data.color', '#123456')->set('data.icon_class', 'voyager-photo')->set('data.target', '_blank')
+            ->call('changeLocale', 'ru')->assertSet('data.route', 'catalog.show')->assertSet('data.color', '#123456')
+            ->set('data.title', 'Русский черновик')->call('changeLocale', 'lv')->set('data.title', 'Latviski')
+            ->call('changeLocale', 'en')->assertSet('data.title', 'English draft')
+            ->call('changeLocale', 'ru')->assertSet('data.title', 'Русский черновик');
+        $fields = $component->instance()->form->getFlatFields();
+        $this->assertSame('Заголовок RU', $fields['title']->getLabel());
+        $this->assertFalse($fields['title']->isRequired());
+        foreach (['route', 'parameters', 'color', 'icon_class', 'target', 'parent_id', 'order', 'status'] as $field) {
+            $this->assertArrayHasKey($field, $fields);
+        }
+        $component->call('save')->assertHasNoErrors();
+        $id = DB::table('menu_items')->value('id');
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'title' => 'English draft', 'route' => 'catalog.show', 'parameters' => '{"type":2}',
+            'url' => '', 'color' => '#123456', 'icon_class' => 'voyager-photo', 'target' => '_blank']);
+        $this->assertDatabaseHas('translations', ['table_name' => 'menu_items', 'foreign_key' => $id, 'column_name' => 'title', 'locale' => 'ru', 'value' => 'Русский черновик']);
+        $this->assertDatabaseHas('translations', ['table_name' => 'menu_items', 'foreign_key' => $id, 'locale' => 'lv', 'value' => 'Latviski']);
+        $this->assertDatabaseCount('menu_items', 1);
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->call('changeLocale', 'ru')->assertSet('data.title', 'Русский черновик')
+            ->set('data.title', 'Изменённый черновик')->set('data.color', '#abcdef')->call('changeLocale', 'en')
+            ->set('data.title', 'Changed EN')->call('changeLocale', 'ru')->assertSet('data.title', 'Изменённый черновик')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'title' => 'Changed EN', 'color' => '#abcdef']);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'locale' => 'ru', 'value' => 'Изменённый черновик']);
+    }
+
+    public function test_menu_item_translation_drafts_validate_hidden_languages_and_cancel_without_writes(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'add_menus', 'edit_menus']);
+        DB::table('menus')->insert(['name' => 'admin']);
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->call('changeLocale', 'ru')->set('data.title', 'Only RU')
+            ->call('save')->assertHasErrors('titleTranslations.en')->assertSee('Заголовок EN');
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->set('data.title', 'English')->call('changeLocale', 'ru')
+            ->set('data.title', str_repeat('a', 256))->call('changeLocale', 'en')->call('save')->assertHasErrors('titleTranslations.ru');
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->set('data.title', 'English')
+            ->set('titleTranslations.zz', 'Forged')->call('save')->assertHasErrors('titleTranslations');
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->set('data.title', 'Draft')->call('changeLocale', 'ru')->set('data.title', 'Черновик')
+            ->call('cancel')->assertSet('titleTranslations', [])->assertSet('data', [])->assertSet('editing', false);
+        $this->assertDatabaseCount('menu_items', 0);
+        $this->assertDatabaseCount('translations', 0);
+    }
+
+    public function test_menu_item_translation_failure_rolls_back_creation_and_can_retry_same_draft(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'add_menus']);
+        DB::table('menus')->insert(['name' => 'admin']);
+        $component = Livewire::test(VoyagerMenuItems::class)->call('openCreate')->set('data.title', 'English')
+            ->call('changeLocale', 'ru')->set('data.title', 'Русский');
+        Cache::put('voyager_menu_admin', 'Retain until commit');
+        DB::statement("CREATE TRIGGER reject_menu_translation BEFORE INSERT ON translations BEGIN SELECT RAISE(ABORT, 'Synthetic translation failure'); END");
+        try {
+            $component->instance()->save();
+            $this->fail('Translation failure must roll back creation.');
+        } catch (\Illuminate\Database\QueryException $error) { $this->assertStringContainsString('Synthetic translation failure', $error->getMessage()); }
+        $this->assertDatabaseCount('menu_items', 0);
+        $this->assertDatabaseCount('translations', 0);
+        $this->assertNull($component->instance()->itemId);
+        $this->assertTrue($component->instance()->editing);
+        $this->assertSame('Retain until commit', Cache::get('voyager_menu_admin'));
+        DB::statement('DROP TRIGGER reject_menu_translation');
+        $component->instance()->save();
+        $this->assertDatabaseCount('menu_items', 1);
+        $this->assertDatabaseHas('menu_items', ['title' => 'English']);
+        $this->assertDatabaseHas('translations', ['locale' => 'ru', 'value' => 'Русский']);
+        $this->assertFalse(Cache::has('voyager_menu_admin'));
+    }
+
+    public function test_menu_item_empty_translation_matches_original_skip_and_preserves_unconfigured_languages(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'edit_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $id = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'English', 'order' => 1]);
+        foreach (['ru' => 'Original RU', 'zz' => 'Legacy outside configured locales'] as $locale => $title) {
+            DB::table('translations')->insert(['table_name' => 'menu_items', 'column_name' => 'title', 'foreign_key' => $id, 'locale' => $locale, 'value' => $title]);
+        }
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->call('changeLocale', 'ru')->set('data.title', '')
+            ->set('data.url', '/changed')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'locale' => 'ru', 'value' => 'Original RU']);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'locale' => 'zz', 'value' => 'Legacy outside configured locales']);
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'title' => 'English', 'url' => '/changed']);
+        $component = Livewire::test(VoyagerMenuItems::class)->call('openEdit', $id)->set('data.title', 'New EN')
+            ->set('data.color', '#abcdef')->call('changeLocale', 'ru')->set('data.title', 'New RU');
+        DB::statement("CREATE TRIGGER reject_menu_translation_edit BEFORE UPDATE ON translations BEGIN SELECT RAISE(ABORT, 'Synthetic translation edit failure'); END");
+        try {
+            $component->instance()->save();
+            $this->fail('Translation failure must roll back common field changes.');
+        } catch (\Illuminate\Database\QueryException $error) { $this->assertStringContainsString('Synthetic translation edit failure', $error->getMessage()); }
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'title' => 'English', 'color' => null]);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'locale' => 'ru', 'value' => 'Original RU']);
+        DB::statement('DROP TRIGGER reject_menu_translation_edit');
+        $component->instance()->save();
+        $this->assertDatabaseHas('menu_items', ['id' => $id, 'title' => 'New EN', 'color' => '#abcdef']);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'locale' => 'ru', 'value' => 'New RU']);
+    }
+
+    public function test_menu_item_parent_deletion_matches_voyager_and_retains_children_and_their_translations(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'delete_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $parent = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Parent', 'order' => 1]);
+        $child = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Child', 'parent_id' => $parent, 'order' => 1]);
+        $grandchild = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Grandchild', 'parent_id' => $child, 'order' => 1]);
+        foreach ([$parent, $child, $grandchild] as $id) {
+            DB::table('translations')->insert(['table_name' => 'menu_items', 'column_name' => 'title', 'foreign_key' => $id, 'locale' => 'ru', 'value' => 'RU '.$id]);
+        }
+        $component = Livewire::test(VoyagerMenuItems::class)->call('requestDeleteItem', $parent)
+            ->assertSet('pendingItemDeletion', $parent)->assertSee('Дочерние пункты сохранятся');
+        $this->assertDatabaseCount('menu_items', 3);
+        $component->call('cancelDeleteItem')->assertSet('pendingItemDeletion', null);
+        $this->assertDatabaseCount('menu_items', 3);
+        Cache::put('voyager_menu_admin', 'Stale');
+        $component->call('requestDeleteItem', $parent)->call('confirmDeleteItem')->assertHasNoErrors()->assertSet('pendingItemDeletion', null);
+        $this->assertDatabaseMissing('menu_items', ['id' => $parent]);
+        $this->assertDatabaseMissing('translations', ['table_name' => 'menu_items', 'foreign_key' => $parent]);
+        $this->assertDatabaseHas('menu_items', ['id' => $child, 'parent_id' => $parent]);
+        $this->assertDatabaseHas('menu_items', ['id' => $grandchild, 'parent_id' => $child]);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $child, 'value' => 'RU '.$child]);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $grandchild, 'value' => 'RU '.$grandchild]);
+        $tree = $component->instance()->menuTree();
+        $this->assertSame($child, $tree[0]['item']->id);
+        $this->assertSame($grandchild, $tree[0]['children'][0]['item']->id);
+        $this->assertFalse(Cache::has('voyager_menu_admin'));
+    }
+
+    public function test_menu_item_delete_rolls_back_translations_and_rechecks_permissions_and_menu(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'delete_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $other = DB::table('menus')->insertGetId(['name' => 'footer']);
+        $id = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Parent', 'order' => 1]);
+        $foreign = DB::table('menu_items')->insertGetId(['menu_id' => $other, 'title' => 'Foreign', 'order' => 1]);
+        DB::table('translations')->insert(['table_name' => 'menu_items', 'column_name' => 'title', 'foreign_key' => $id, 'locale' => 'ru', 'value' => 'Original']);
+        $component = Livewire::test(VoyagerMenuItems::class)->call('requestDeleteItem', $id);
+        Cache::put('voyager_menu_admin', 'Retain');
+        DB::statement("CREATE TRIGGER reject_menu_item_delete BEFORE DELETE ON menu_items BEGIN SELECT RAISE(ABORT, 'Synthetic item delete failure'); END");
+        try {
+            $component->instance()->confirmDeleteItem();
+            $this->fail('Deletion must roll back.');
+        } catch (\Illuminate\Database\QueryException $error) { $this->assertStringContainsString('Synthetic item delete failure', $error->getMessage()); }
+        $this->assertDatabaseHas('menu_items', ['id' => $id]);
+        $this->assertDatabaseHas('translations', ['foreign_key' => $id, 'value' => 'Original']);
+        $this->assertSame('Retain', Cache::get('voyager_menu_admin'));
+        DB::statement('DROP TRIGGER reject_menu_item_delete');
+        try {
+            $component->instance()->requestDeleteItem($foreign);
+            $this->fail('Foreign item must be rejected.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $error) { $this->assertSame(404, $error->getStatusCode()); }
+        $component->call('selectMenu', $other)->assertSet('pendingItemDeletion', null)->call('confirmDeleteItem')->assertStatus(409);
+        $this->admin(['browse_admin', 'browse_menus']);
+        Livewire::test(VoyagerMenuItems::class)->call('requestDeleteItem', $id)->assertForbidden();
+        Livewire::test(VoyagerMenuItems::class)->call('confirmDeleteItem')->assertForbidden();
+        $this->assertDatabaseCount('menu_items', 2);
+    }
+
     public function test_menu_item_and_its_translation_are_editable(): void
     {
         Schema::create('menus', function (Blueprint $table): void {
@@ -3812,6 +4248,390 @@ class VoyagerBreadTest extends TestCase
             \Illuminate\Support\Facades\File::deleteDirectory($directory);
         }
     }
+    private function createSettingsManagementTables(): void
+    {
+        Schema::create('settings', function (Blueprint $table): void {
+            $table->id(); $table->string('key')->unique(); $table->string('display_name');
+            $table->text('value')->nullable(); $table->text('details')->nullable();
+            $table->string('type'); $table->integer('order')->default(0); $table->string('group')->nullable();
+        });
+    }
+
+    public function test_setting_creation_and_group_changes_match_original_key_and_global_order(): void
+    {
+        $this->createSettingsManagementTables();
+        $this->admin(['browse_admin', 'browse_settings', 'add_settings', 'edit_settings']);
+        $component = Livewire::test(VoyagerSettings::class)->assertSee('Настройки ещё не созданы.')
+            ->call('openCreate')->set('data', ['display_name' => 'Title', 'key' => 'title', 'type' => 'text', 'group' => 'Site', 'details' => '{bad'])
+            ->call('createSetting')->assertHasErrors('data.details')
+            ->set('data.details', '{"placeholder":"Title"}')->call('createSetting')->assertHasNoErrors()->assertSet('activeGroup', 'Site');
+        $this->assertDatabaseHas('settings', ['key' => 'site.title', 'value' => '', 'order' => 0, 'group' => 'Site']);
+        $id = DB::table('settings')->where('key', 'site.title')->value('id');
+        $component->call('openCreate')->set('data', ['display_name' => 'Caption', 'key' => 'caption', 'type' => 'text_area', 'group' => 'My Group', 'details' => null])
+            ->call('createSetting')->assertHasNoErrors()->assertSet('activeGroup', 'My Group');
+        $this->assertDatabaseHas('settings', ['key' => 'my-group.caption', 'order' => 1]);
+        $component->call('openCreate')->set('data', ['display_name' => 'Duplicate', 'key' => 'title', 'type' => 'text', 'group' => 'Site'])
+            ->call('createSetting')->assertHasErrors('data.key')->call('cancel');
+        $this->assertSame(2, DB::table('settings')->count());
+        $component->call('openEdit', $id)->set('data.value', 'New')->set('data.group', 'Admin')
+            ->call('save')->assertHasNoErrors()->assertSet('activeGroup', 'Admin');
+        $this->assertDatabaseHas('settings', ['id' => $id, 'key' => 'admin.title', 'group' => 'Admin', 'value' => 'New', 'order' => 0]);
+        DB::table('settings')->insert(['key' => 'other.title', 'display_name' => 'Other title', 'type' => 'text', 'group' => 'Other']);
+        $component->call('openEdit', $id)->set('data.group', 'Other')->call('save')->assertHasErrors('data.group');
+        $this->assertDatabaseHas('settings', ['id' => $id, 'key' => 'admin.title', 'group' => 'Admin']);
+    }
+
+    public function test_setting_order_swaps_only_neighbors_in_same_group_and_stops_at_boundaries(): void
+    {
+        $this->createSettingsManagementTables();
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $first = DB::table('settings')->insertGetId(['key' => 'site.first', 'display_name' => 'First', 'type' => 'text', 'group' => 'Site', 'order' => 0]);
+        $second = DB::table('settings')->insertGetId(['key' => 'site.second', 'display_name' => 'Second', 'type' => 'text', 'group' => 'Site', 'order' => 10]);
+        $other = DB::table('settings')->insertGetId(['key' => 'other.title', 'display_name' => 'Other', 'type' => 'text', 'group' => 'Other', 'order' => 5]);
+        $component = Livewire::test(VoyagerSettings::class)->call('moveSetting', $second, 'up')->assertHasNoErrors()->assertSet('activeGroup', 'Site');
+        $this->assertDatabaseHas('settings', ['id' => $first, 'order' => 10]);
+        $this->assertDatabaseHas('settings', ['id' => $second, 'order' => 0]);
+        $this->assertDatabaseHas('settings', ['id' => $other, 'order' => 5]);
+        $component->call('moveSetting', $second, 'up')->assertHasNoErrors()
+            ->call('moveSetting', $second, 'down')->assertHasNoErrors();
+        $this->assertDatabaseHas('settings', ['id' => $first, 'order' => 0]);
+        $this->assertDatabaseHas('settings', ['id' => $second, 'order' => 10]);
+        DB::statement("CREATE TRIGGER reject_setting_order BEFORE UPDATE ON settings WHEN OLD.id = $second BEGIN SELECT RAISE(ABORT, 'Synthetic order failure'); END");
+        try {
+            $component->instance()->moveSetting($first, 'down');
+            $this->fail('Both order updates must roll back.');
+        } catch (\Illuminate\Database\QueryException $error) {
+            $this->assertStringContainsString('Synthetic order failure', $error->getMessage());
+        }
+        $this->assertDatabaseHas('settings', ['id' => $first, 'order' => 0]);
+        $this->assertDatabaseHas('settings', ['id' => $second, 'order' => 10]);
+    }
+
+    public function test_setting_delete_and_clear_follow_original_image_and_file_rules(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        Storage::disk('public')->put('settings/image.png', 'Image bytes');
+        Storage::disk('public')->put('settings/file.pdf', 'Document bytes');
+        $this->admin(['browse_admin', 'browse_settings', 'delete_settings']);
+        $image = DB::table('settings')->insertGetId(['key' => 'site.image', 'display_name' => 'Image', 'type' => 'image', 'group' => 'Site', 'value' => 'settings/image.png']);
+        $file = DB::table('settings')->insertGetId(['key' => 'site.file', 'display_name' => 'File', 'type' => 'file', 'group' => 'Site', 'value' => 'settings/file.pdf']);
+        $component = Livewire::test(VoyagerSettings::class)->call('requestRemove', $image, true)
+            ->assertDispatched('open-modal', id: 'remove-setting')->assertSee('Файл изображения также будет удалён.');
+        $this->assertSame('Image bytes', Storage::disk('public')->get('settings/image.png'));
+        $component->call('confirmRemove')->assertHasNoErrors()->assertSet('pendingId', null);
+        Storage::disk('public')->assertMissing('settings/image.png');
+        $this->assertDatabaseHas('settings', ['id' => $image, 'value' => '']);
+        $component->call('requestRemove', $file, true)->call('confirmRemove')->assertHasNoErrors();
+        $this->assertSame('Document bytes', Storage::disk('public')->get('settings/file.pdf'));
+        Storage::disk('public')->put('settings/image.png', 'Keep on row delete');
+        DB::table('settings')->where('id', $image)->update(['value' => 'settings/image.png']);
+        $component->call('requestRemove', $image)->call('confirmRemove')->assertHasNoErrors();
+        $this->assertDatabaseMissing('settings', ['id' => $image]);
+        $this->assertSame('Keep on row delete', Storage::disk('public')->get('settings/image.png'));
+        $component->call('requestRemove', $file)->call('confirmRemove')->assertSee('Настройки ещё не созданы.');
+    }
+
+    public function test_setting_actions_check_permissions_and_restore_image_after_database_failure(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        Storage::disk('public')->put('settings/image.png', 'Original bytes');
+        $image = DB::table('settings')->insertGetId(['key' => 'site.image', 'display_name' => 'Image', 'type' => 'image', 'group' => 'Site', 'value' => 'settings/image.png']);
+        $this->admin(['browse_admin', 'browse_settings']);
+        $forged = Livewire::test(VoyagerSettings::class)->set('settingId', $image);
+        $this->assertSame([], $forged->instance()->form->getFlatFields());
+        Livewire::test(VoyagerSettings::class)->assertDontSee('Добавить настройку')->call('openCreate')->assertForbidden();
+        Livewire::test(VoyagerSettings::class)->set('creating', true)->call('createSetting')->assertForbidden();
+        Livewire::test(VoyagerSettings::class)->call('moveSetting', $image, 'up')->assertForbidden();
+        Livewire::test(VoyagerSettings::class)->call('requestRemove', $image)->assertForbidden();
+        Livewire::test(VoyagerSettings::class)->set('pendingId', $image)->set('clearingValue', true)->call('confirmRemove')->assertForbidden();
+        $permission = Permission::create(['key' => 'delete_settings']);
+        auth('filament')->user()->role->permissions()->attach($permission);
+        auth('filament')->user()->unsetRelations();
+        DB::statement("CREATE TRIGGER reject_setting_clear BEFORE UPDATE ON settings BEGIN SELECT RAISE(ABORT, 'Synthetic setting failure'); END");
+        $component = Livewire::test(VoyagerSettings::class)->call('requestRemove', $image, true);
+        try {
+            $component->instance()->confirmRemove();
+            $this->fail('The image must be restored after failure.');
+        } catch (\Illuminate\Database\QueryException $error) {
+            $this->assertStringContainsString('Synthetic setting failure', $error->getMessage());
+        }
+        $this->assertSame('Original bytes', Storage::disk('public')->get('settings/image.png'));
+        $this->assertDatabaseHas('settings', ['id' => $image, 'value' => 'settings/image.png']);
+    }
+
+    public function test_setting_text_code_choice_and_checkbox_types_preserve_original_values_and_defaults(): void
+    {
+        $this->createSettingsManagementTables();
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $cases = [
+            ['text', 'Old', [], str_repeat('x', 6000), \Filament\Forms\Components\TextInput::class],
+            ['text_area', "Line1\nLine2", [], "New1\nNew2", \Filament\Forms\Components\Textarea::class],
+            ['code_editor', 'old()', ['language' => 'javascript', 'theme' => 'monokai'], "const x = '<>&';\n", \Filament\Forms\Components\CodeEditor::class],
+            ['rich_text_box', '<section data-custom="1"><p>Old</p></section>', [], '<section data-custom="2">New</section>', \Filament\Forms\Components\CodeEditor::class],
+            ['checkbox', '2', ['on' => 'Yes', 'off' => 'No'], true, \Filament\Forms\Components\Toggle::class],
+            ['select_dropdown', '', ['options' => ['a' => 'A', 'b' => 'B'], 'default' => 'b'], 'a', \Filament\Forms\Components\Select::class],
+            ['radio_btn', 'right', ['options' => ['left' => 'Left', 'right' => 'Right'], 'default' => 'left'], 'left', \Filament\Forms\Components\Radio::class],
+        ];
+        foreach ($cases as [$type, $old, $details, $value, $class]) {
+            $id = DB::table('settings')->insertGetId(['key' => 'site.'.$type, 'display_name' => $type, 'type' => $type,
+                'group' => 'Site', 'value' => $old, 'details' => json_encode($details)]);
+            $component = Livewire::test(VoyagerSettings::class)->call('openEdit', $id);
+            $this->assertInstanceOf($class, $component->instance()->form->getFlatFields()['value']);
+            if ($type === 'checkbox') { $component->assertSet('data.value', false)->assertSee('Yes / No'); }
+            if ($type === 'select_dropdown') { $component->assertSet('data.value', 'b'); }
+            if ($type === 'rich_text_box') { $component->assertSet('richSource', true); }
+            $component->set('data.value', $value)->call('save')->assertHasNoErrors();
+            $this->assertDatabaseHas('settings', ['id' => $id, 'value' => $type === 'checkbox' ? '1' : $value]);
+        }
+        $visual = DB::table('settings')->insertGetId(['key' => 'site.visual', 'display_name' => 'Visual', 'type' => 'rich_text_box', 'group' => 'Site', 'value' => '<p>Hello</p>']);
+        $component = Livewire::test(VoyagerSettings::class)->call('openEdit', $visual)->assertSet('richSource', false);
+        $this->assertInstanceOf(\Filament\Forms\Components\RichEditor::class, $component->instance()->form->getFlatFields()['value']);
+        $select = DB::table('settings')->where('type', 'select_dropdown')->value('id');
+        Livewire::test(VoyagerSettings::class)->call('openEdit', $select)->set('data.value', 'outside')->call('save')->assertHasErrors('data.value');
+        $this->assertDatabaseHas('settings', ['id' => $select, 'value' => 'a']);
+    }
+
+    public function test_setting_file_and_image_uploads_keep_legacy_shape_and_retain_unchanged_sources(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        Storage::disk('public')->put('settings/manual.txt', 'Existing');
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $legacy = json_encode([['download_link' => 'settings/manual.txt', 'original_name' => 'Manual.txt']]);
+        $file = DB::table('settings')->insertGetId(['key' => 'site.file', 'display_name' => 'File', 'type' => 'file', 'group' => 'Site',
+            'value' => $legacy, 'details' => json_encode(['preserveFileUploadName' => true])]);
+        Livewire::test(VoyagerSettings::class)->call('openEdit', $file)->assertSee('Manual.txt')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('settings', ['id' => $file, 'value' => $legacy]);
+        Livewire::test(VoyagerSettings::class)->call('openEdit', $file)
+            ->set('data.replacement', [UploadedFile::fake()->createWithContent('manual.txt', 'Replacement')])->call('save')->assertHasNoErrors();
+        $stored = json_decode(DB::table('settings')->where('id', $file)->value('value'), true);
+        $this->assertSame('manual.txt', $stored[0]['original_name']);
+        $this->assertSame('Replacement', Storage::disk('public')->get($stored[0]['download_link']));
+        $this->assertSame('Existing', Storage::disk('public')->get('settings/manual.txt'));
+        Livewire::test(VoyagerSettings::class)->call('openEdit', $file)
+            ->set('data.replacement', [UploadedFile::fake()->createWithContent('manual.txt', 'Second replacement')])->call('save')->assertHasNoErrors();
+        $second = json_decode(DB::table('settings')->where('id', $file)->value('value'), true);
+        $this->assertSame('manual1.txt', basename($second[0]['download_link']));
+        $this->assertSame('Replacement', Storage::disk('public')->get($stored[0]['download_link']));
+        $beforeRejected = Storage::disk('public')->allFiles();
+        Livewire::test(VoyagerSettings::class)->call('openEdit', $file)
+            ->set('data.replacement', [UploadedFile::fake()->createWithContent('blocked.php', '<?php echo 1;')])->call('save')->assertHasErrors('data.replacement');
+        $this->assertSame($beforeRejected, Storage::disk('public')->allFiles());
+        $this->assertSame($second, json_decode(DB::table('settings')->where('id', $file)->value('value'), true));
+        $image = DB::table('settings')->insertGetId(['key' => 'site.image', 'display_name' => 'Image', 'type' => 'image', 'group' => 'Site',
+            'value' => 'settings/old.png', 'details' => json_encode(['resize' => ['width' => 10], 'upsize' => false])]);
+        Storage::disk('public')->put('settings/old.png', 'Old bytes');
+        Livewire::test(VoyagerSettings::class)->call('openEdit', $image)->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('settings', ['id' => $image, 'value' => 'settings/old.png']);
+        Livewire::test(VoyagerSettings::class)->call('openEdit', $image)->set('data.replacement', [UploadedFile::fake()->image('photo.png', 40, 20)])
+            ->call('save')->assertHasNoErrors();
+        $path = DB::table('settings')->where('id', $image)->value('value');
+        $size = getimagesizefromstring(Storage::disk('public')->get($path));
+        $this->assertSame([10, 5], [$size[0], $size[1]]);
+        $this->assertSame('Old bytes', Storage::disk('public')->get('settings/old.png'));
+    }
+
+    public function test_setting_failed_image_save_cleans_copies_and_can_retry_the_same_upload(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        Storage::disk('public')->put('settings/original.png', 'Original');
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $id = DB::table('settings')->insertGetId(['key' => 'site.image', 'display_name' => 'Image', 'type' => 'image', 'group' => 'Site', 'value' => 'settings/original.png']);
+        $component = Livewire::test(VoyagerSettings::class)->call('openEdit', $id)->set('data.replacement', [UploadedFile::fake()->image('new.png', 40, 20)]);
+        DB::statement("CREATE TRIGGER reject_setting_upload BEFORE UPDATE ON settings BEGIN SELECT RAISE(ABORT, 'Synthetic upload failure'); END");
+        try {
+            $component->instance()->save();
+            $this->fail('The failed upload must be cleaned.');
+        } catch (\Illuminate\Database\QueryException $error) {
+            $this->assertStringContainsString('Synthetic upload failure', $error->getMessage());
+        }
+        $this->assertSame(['settings/original.png'], Storage::disk('public')->allFiles());
+        $this->assertDatabaseHas('settings', ['id' => $id, 'value' => 'settings/original.png']);
+        DB::statement('DROP TRIGGER reject_setting_upload');
+        $component->instance()->save();
+        $path = DB::table('settings')->where('id', $id)->value('value');
+        $this->assertNotSame('settings/original.png', $path);
+        Storage::disk('public')->assertExists($path);
+        $this->assertSame('Original', Storage::disk('public')->get('settings/original.png'));
+    }
+
+    public function test_settings_joint_editor_saves_all_groups_and_preserves_media_without_upload(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $ids = [];
+        foreach (['text', 'text_area', 'rich_text_box', 'code_editor', 'checkbox', 'radio_btn', 'select_dropdown', 'image', 'file'] as $index => $type) {
+            $group = $index % 2 ? 'Admin' : 'Site';
+            $ids[$type] = DB::table('settings')->insertGetId(['key' => strtolower($group).'.'.$type, 'display_name' => $type, 'type' => $type,
+                'group' => $group, 'value' => $type === 'rich_text_box' ? '<section>Old</section>' : ($type === 'image' ? 'settings/old.png' : 'old'),
+                'details' => json_encode(['options' => ['old' => 'Old', 'new' => 'New']])]);
+        }
+        Storage::disk('public')->put('settings/old.png', 'Original');
+        $component = Livewire::test(VoyagerSettings::class)->call('openEditAll')->assertSet('editingAll', true)->assertSee('Сохранить настройки');
+        foreach (['text', 'text_area', 'rich_text_box', 'code_editor', 'checkbox', 'radio_btn', 'select_dropdown'] as $type) {
+            $component->set('data.value_'.$ids[$type], $type === 'checkbox' ? true : ($type === 'rich_text_box' ? '<section>New</section>' : 'new'));
+        }
+        $component->set('data.group_'.$ids['text'], 'Other')->call('saveAll')->assertHasNoErrors()->assertSet('editingAll', false);
+        foreach (['text', 'text_area', 'rich_text_box', 'code_editor', 'checkbox', 'radio_btn', 'select_dropdown'] as $type) {
+            $this->assertDatabaseHas('settings', ['id' => $ids[$type], 'value' => $type === 'checkbox' ? '1' : ($type === 'rich_text_box' ? '<section>New</section>' : 'new')]);
+        }
+        $this->assertDatabaseHas('settings', ['id' => $ids['text'], 'key' => 'other.text', 'group' => 'Other']);
+        $this->assertDatabaseHas('settings', ['id' => $ids['image'], 'value' => 'settings/old.png']);
+        $this->assertDatabaseHas('settings', ['id' => $ids['file'], 'value' => 'old']);
+        $this->assertSame('Original', Storage::disk('public')->get('settings/old.png'));
+    }
+
+    public function test_settings_joint_editor_rolls_back_rows_and_uploads_then_retries(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $file = DB::table('settings')->insertGetId(['key' => 'site.file', 'display_name' => 'File', 'type' => 'file', 'group' => 'Site', 'value' => 'original']);
+        $text = DB::table('settings')->insertGetId(['key' => 'admin.text', 'display_name' => 'Text', 'type' => 'text', 'group' => 'Admin', 'value' => 'old']);
+        $component = Livewire::test(VoyagerSettings::class)->call('openEditAll')
+            ->set('data.replacement_'.$file, [UploadedFile::fake()->createWithContent('manual.txt', 'Uploaded bytes')])->set('data.value_'.$text, 'new');
+        DB::statement("CREATE TRIGGER reject_joint_save BEFORE UPDATE ON settings WHEN NEW.id = $text BEGIN SELECT RAISE(ABORT, 'Synthetic joint failure'); END");
+        try {
+            $component->instance()->saveAll();
+            $this->fail('Joint save must fail.');
+        } catch (\Illuminate\Database\QueryException $error) { $this->assertStringContainsString('Synthetic joint failure', $error->getMessage()); }
+        $this->assertDatabaseHas('settings', ['id' => $file, 'value' => 'original']);
+        $this->assertDatabaseHas('settings', ['id' => $text, 'value' => 'old']);
+        $this->assertSame([], Storage::disk('public')->allFiles());
+        DB::statement('DROP TRIGGER reject_joint_save');
+        $component->instance()->saveAll();
+        $stored = json_decode(DB::table('settings')->where('id', $file)->value('value'), true);
+        $this->assertSame('Uploaded bytes', Storage::disk('public')->get($stored[0]['download_link']));
+        $this->assertDatabaseHas('settings', ['id' => $text, 'value' => 'new']);
+    }
+
+    public function test_settings_joint_editor_validates_choices_keys_snapshot_and_permissions(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $id = DB::table('settings')->insertGetId(['key' => 'site.choice', 'display_name' => 'Choice', 'type' => 'select_dropdown', 'group' => 'Site', 'value' => 'a', 'details' => '{"options":{"a":"A","b":"B"}}']);
+        DB::table('settings')->insert(['key' => 'other.choice', 'display_name' => 'Other', 'type' => 'text', 'group' => 'Other', 'value' => 'original']);
+        Livewire::test(VoyagerSettings::class)->call('openEditAll')->set('data.value_'.$id, 'invalid')->call('saveAll')->assertHasErrors('data.value_'.$id);
+        Livewire::test(VoyagerSettings::class)->call('openEditAll')->set('data.group_'.$id, 'Other')->call('saveAll')->assertHasErrors('data.group_'.$id);
+        $this->assertDatabaseHas('settings', ['id' => $id, 'value' => 'a', 'key' => 'site.choice']);
+        $component = Livewire::test(VoyagerSettings::class)->call('openEditAll');
+        $new = DB::table('settings')->insertGetId(['key' => 'site.new', 'display_name' => 'New', 'type' => 'text', 'group' => 'Site', 'value' => 'Untouched']);
+        $component->set('data.value_'.$new, 'Forged')->set('data.value_'.$id, 'b')->call('saveAll')->assertHasNoErrors();
+        $this->assertDatabaseHas('settings', ['id' => $new, 'value' => 'Untouched']);
+        $component = Livewire::test(VoyagerSettings::class)->call('openEditAll');
+        $component->set('data.group_'.$id, 'Fresh')->set('data.group_'.DB::table('settings')->where('key', 'other.choice')->value('id'), 'Fresh')
+            ->call('saveAll')->assertHasErrors();
+        $this->assertDatabaseHas('settings', ['id' => $id, 'key' => 'site.choice']);
+        $component = Livewire::test(VoyagerSettings::class)->call('openEditAll');
+        DB::table('settings')->where('id', $id)->delete();
+        $component->call('saveAll')->assertStatus(409);
+        $this->admin(['browse_admin', 'browse_settings']);
+        Livewire::test(VoyagerSettings::class)->call('openEditAll')->assertForbidden();
+        Livewire::test(VoyagerSettings::class)->set('editingAll', true)->call('saveAll')->assertForbidden();
+        $this->assertSame([], Storage::disk('public')->allFiles());
+    }
+
+    public function test_setting_rich_attachment_is_cleaned_on_sql_failure_and_same_draft_can_retry(): void
+    {
+        $this->createSettingsManagementTables();
+        Storage::fake('public');
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $id = DB::table('settings')->insertGetId(['key' => 'site.rich', 'display_name' => 'Rich', 'type' => 'rich_text_box', 'group' => 'Site', 'value' => '<p>Original</p>']);
+        foreach ([false, true] as $bulk) {
+            DB::table('settings')->where('id', $id)->update(['value' => '<p>Original</p>']);
+            $field = $bulk ? 'value_'.$id : 'value';
+            $editor = Livewire::test(VoyagerSettings::class)->call($bulk ? 'openEditAll' : 'openEdit', ...($bulk ? [] : [$id]));
+            $attach = \Filament\Actions\Testing\TestAction::make('attachFiles')->schemaComponent($field, 'form')
+                ->arguments(['editorSelection' => ['anchor' => 1, 'head' => 1, 'type' => 'text']]);
+            $editor->callAction($attach, ['file' => UploadedFile::fake()->image('inline.png'), 'alt' => 'Inline'])->assertHasNoActionErrors();
+            $uploads = $editor->get('componentFileAttachments.data.'.$field);
+            $uuid = array_key_first($uploads);
+            $document = ['type' => 'doc', 'content' => [['type' => 'image', 'attrs' => ['id' => $uuid, 'src' => $uploads[$uuid]->temporaryUrl()]]]];
+            $editor->set('data.'.$field, $document);
+            $beforeFiles = Storage::disk('public')->allFiles();
+            $beforeValue = DB::table('settings')->where('id', $id)->value('value');
+            DB::statement("CREATE TRIGGER reject_rich_setting BEFORE UPDATE ON settings BEGIN SELECT RAISE(ABORT, 'Synthetic rich setting failure'); END");
+            try {
+                $bulk ? $editor->instance()->saveAll() : $editor->instance()->save();
+                $this->fail('Rich save must fail.');
+            } catch (\Illuminate\Database\QueryException $error) { $this->assertStringContainsString('Synthetic rich setting failure', $error->getMessage()); }
+            $this->assertSame($beforeFiles, Storage::disk('public')->allFiles());
+            $this->assertDatabaseHas('settings', ['id' => $id, 'value' => $beforeValue]);
+            $this->assertSame($document, $editor->instance()->data[$field]);
+            DB::statement('DROP TRIGGER reject_rich_setting');
+            $bulk ? $editor->instance()->saveAll() : $editor->instance()->save();
+            $stored = DB::table('settings')->where('id', $id)->value('value');
+            $this->assertStringContainsString('<img', $stored);
+            $this->assertCount(count($beforeFiles) + 1, Storage::disk('public')->allFiles());
+        }
+    }
+
+    public function test_setting_groups_use_voyager_global_order_instead_of_alphabetical_names(): void
+    {
+        $this->createSettingsManagementTables();
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        foreach (['Site' => 1, 'Admin' => 2, 'Соц. сети' => 3, 'Модульные картины' => 4, '' => 99] as $group => $order) {
+            DB::table('settings')->insert(['key' => 'key'.$order, 'display_name' => 'Name'.$order, 'type' => 'text', 'group' => $group, 'order' => $order, 'value' => 'Value']);
+        }
+        $component = Livewire::test(VoyagerSettings::class);
+        $this->assertSame(['', 'Site', 'Admin', 'Соц. сети', 'Модульные картины'], array_keys($component->instance()->groups()));
+        $component->call('openEditAll');
+        $tabs = $component->instance()->form->getComponents()[0]->getChildSchema()->getComponents();
+        $this->assertSame(['Общие', 'Site', 'Admin', 'Соц. сети', 'Модульные картины'], array_map(fn ($tab) => $tab->getLabel(), $tabs));
+        foreach ($tabs as $tab) { $this->assertSame($tab->getId(), $tab->getKey(isAbsolute: false)); }
+        $expectedEffect = $component->instance()->form->getComponents()[0]->getExtraAlpineAttributes()['x-effect'];
+        $document = new \DOMDocument;
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$component->html());
+        $nodes = (new \DOMXPath($document))->query('//*[@x-effect]');
+        $effects = [];
+        foreach ($nodes as $node) { $effects[] = $node->getAttribute('x-effect'); }
+        $this->assertContains($expectedEffect, $effects, 'HTML parsing must retain the complete tab synchronization expression.');
+    }
+
+    public function test_joint_settings_html_action_is_scoped_to_one_rich_field_and_preserves_other_drafts(): void
+    {
+        $this->createSettingsManagementTables();
+        $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
+        $ids = [];
+        foreach (['first' => 'rich_text_box', 'second' => 'rich_text_box', 'text' => 'text'] as $key => $type) {
+            $ids[$key] = DB::table('settings')->insertGetId(['key' => 'site.'.$key, 'display_name' => $key,
+                'type' => $type, 'group' => 'Site', 'value' => '<p>Original</p>']);
+        }
+        $editor = Livewire::test(VoyagerSettings::class)->call('openEditAll')->set('data.value_'.$ids['second'], '<p>Second draft</p>')
+            ->set('data.value_'.$ids['text'], 'Text draft');
+        $html = '<section data-custom="retained"><p>Exact HTML &amp; Unicode: тест</p></section>';
+        $action = \Filament\Actions\Testing\TestAction::make('breadSource')->schemaComponent('value_'.$ids['first'], 'form');
+        $editor->callAction($action, ['html' => $html])->assertHasNoActionErrors()
+            ->assertSet('richSources.'.$ids['first'], true)->assertSet('richSources.'.$ids['second'], false)
+            ->assertSet('data.value_'.$ids['first'], $html)
+            ->assertSet('data.value_'.$ids['text'], 'Text draft');
+        $fields = $editor->instance()->form->getFlatFields();
+        $this->assertInstanceOf(\Filament\Forms\Components\CodeEditor::class, $fields['value_'.$ids['first']]);
+        $this->assertInstanceOf(\Filament\Forms\Components\RichEditor::class, $fields['value_'.$ids['second']]);
+        $this->assertSame('<p>Second draft</p>', $fields['value_'.$ids['second']]->getState());
+        foreach (['value_'.$ids['text'], 'value_999999'] as $field) {
+            try {
+                $editor->instance()->enableRichSource($field);
+                $this->fail('Only an open rich setting may enter HTML mode.');
+            } catch (\Symfony\Component\HttpKernel\Exception\HttpException $error) { $this->assertSame(403, $error->getStatusCode()); }
+        }
+        $editor->call('saveAll')->assertHasNoErrors();
+        $this->assertDatabaseHas('settings', ['id' => $ids['first'], 'value' => $html]);
+        $this->assertDatabaseHas('settings', ['id' => $ids['second'], 'value' => '<p>Second draft</p>']);
+        $this->assertDatabaseHas('settings', ['id' => $ids['text'], 'value' => 'Text draft']);
+        $single = Livewire::test(VoyagerSettings::class)->call('openEdit', $ids['second']);
+        $singleAction = \Filament\Actions\Testing\TestAction::make('breadSource')->schemaComponent('value', 'form');
+        $single->callAction($singleAction, ['html' => $html])->assertHasNoActionErrors()->assertSet('data.value', $html);
+        $this->assertInstanceOf(\Filament\Forms\Components\CodeEditor::class, $single->instance()->form->getFlatFields()['value']);
+        $single->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('settings', ['id' => $ids['second'], 'value' => $html]);
+    }
+
     public function test_voyager_setting_requires_permission_and_saves_value(): void
     {
         Schema::create('settings', function (Blueprint $table): void {
@@ -4255,6 +5075,7 @@ class VoyagerBreadTest extends TestCase
         $other = Permission::create(['key' => 'browse_orders', 'table_name' => 'orders']);
         $component = Livewire::test(VoyagerBread::class, ['type' => 'roles'])
             ->call('openCreate')->assertSet('rolePermissionIds', [])
+            ->assertDontSee('@js(', escape: false)
             ->set('data.name', 'manager')->set('data.display_name', 'Manager')
             ->call('selectRolePermissions', 'pages', true)
             ->assertSet('rolePermissionIds', [(string) $browse->id, (string) $edit->id])
@@ -6915,6 +7736,337 @@ class VoyagerBreadTest extends TestCase
         $page->set('search', '');
         $this->assertSame(['Allowed'], $page->instance()->records()['rows']->pluck('title')->all());
         $this->assertDatabaseCount('pages', 2);
+    }
+
+    public function test_cache_tools_get_does_not_run_commands_and_permission_is_required(): void
+    {
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
+        $this->admin(['browse_admin']);
+        $this->get('/filament/cache-tools')->assertForbidden();
+        Livewire::test(\App\Filament\Pages\CacheTools::class)->assertForbidden();
+        $this->admin(['browse_admin', 'browse_compass']);
+        Livewire::test(\App\Filament\Pages\CacheTools::class)->assertSee('Очистить кеш приложения')->assertSee('Собрать кеш конфигурации и маршрутов')
+            ->call('run', 'migrate:fresh')->assertHasErrors('operation');
+    }
+
+    public function test_cache_tools_authorized_http_get_is_read_only(): void
+    {
+        $this->admin(['browse_admin', 'browse_compass']);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
+        $this->get('/filament/cache-tools')->assertOk()->assertSee('Очистить кеш приложения')->assertSee('Собрать кеш конфигурации и маршрутов');
+    }
+
+    public function test_cache_tools_execute_only_the_original_commands_in_order(): void
+    {
+        $this->admin(['browse_admin', 'browse_compass']);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('cache:clear')->once()->ordered()->andReturn(0);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('config:cache')->once()->ordered()->andReturn(0);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('route:cache')->once()->ordered()->andReturn(0);
+        Livewire::test(\App\Filament\Pages\CacheTools::class)->call('run', 'clear')->assertHasNoErrors()
+            ->assertNotified(\Filament\Notifications\Notification::make()->title('Кеш приложения очищен')->success());
+        Livewire::test(\App\Filament\Pages\CacheTools::class)->call('run', 'build')->assertHasNoErrors()
+            ->assertNotified(\Filament\Notifications\Notification::make()->title('Кеш конфигурации и маршрутов собран')->success());
+    }
+
+    public function test_cache_tools_reports_partial_failure_and_does_not_expose_exception_secrets(): void
+    {
+        $this->admin(['browse_admin', 'browse_compass']);
+        \Illuminate\Support\Facades\Log::spy();
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('config:cache')->once()->ordered()->andReturn(0);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('route:cache')->once()->ordered()->andReturn(2);
+        Livewire::test(\App\Filament\Pages\CacheTools::class)->call('run', 'build')
+            ->assertNotified(\Filament\Notifications\Notification::make()->title('Не удалось выполнить route:cache')->danger()->body('Уже выполнено: config:cache.'));
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('cache:clear')->once()->andThrow(new \RuntimeException('SECRET_SYNTHETIC_VALUE'));
+        Livewire::test(\App\Filament\Pages\CacheTools::class)->call('run', 'clear')->assertDontSee('SECRET_SYNTHETIC_VALUE')
+            ->assertNotified(\Filament\Notifications\Notification::make()->title('Не удалось выполнить cache:clear')->danger()->body('Операция не завершена.'));
+        \Illuminate\Support\Facades\Log::shouldHaveReceived('warning')->with('Admin cache command failed', ['command' => 'cache:clear', 'exit_code' => -1, 'exception' => \RuntimeException::class])->once();
+    }
+
+    public function test_cache_tools_permission_is_rechecked_before_execution(): void
+    {
+        $this->admin(['browse_admin', 'browse_compass']);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
+        $page = Livewire::test(\App\Filament\Pages\CacheTools::class);
+        $this->admin(['browse_admin']);
+        $page->call('run', 'clear')->assertForbidden();
+    }
+
+    public function test_compass_resources_preserve_original_icon_catalogue_and_filter_without_writes(): void
+    {
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $this->get('/filament/compass')->assertOk()->assertSee('Иконки Voyager')->assertSee('Документация Voyager');
+        $page = Livewire::test(\App\Filament\Pages\Compass::class);
+        $this->assertCount(206, $page->instance()->icons());
+        $this->assertContains('voyager-bread', $page->instance()->icons());
+        $this->assertContains('voyager-home', $page->instance()->icons());
+        $this->assertSame('a', $page->instance()->iconCharacter('voyager-bread'));
+        $this->assertSame('', $page->instance()->iconCharacter('untrusted-class'));
+        $page->set('iconSearch', 'VOYAGER-HOME');
+        foreach ($page->instance()->icons() as $name) { $this->assertStringContainsString('voyager-home', $name); }
+        $page->set('iconSearch', 'No-icon-matches-123')->assertSee('Иконки не найдены.');
+        $this->assertSame([], $page->instance()->icons());
+        $css = file_get_contents(public_path('vendor/voyager-icons/icons.css'));
+        $this->assertStringNotContainsString('voyager-assets?', $css);
+        foreach (['woff', 'ttf', 'svg', 'eot'] as $extension) { $this->assertFileExists(public_path('vendor/voyager-icons/fonts/voyager.'.$extension)); }
+        $this->assertFileExists(public_path('vendor/voyager-icons/LICENSE'));
+    }
+
+    public function test_compass_resources_apply_original_permission_and_environment_gate(): void
+    {
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin']);
+        $this->get('/filament/compass')->assertForbidden();
+        $this->admin(['browse_admin', 'browse_compass']);
+        $originalEnvironment = $this->app['env'];
+        try {
+            $this->app['env'] = 'production';
+            config(['voyager.compass_in_production' => false]);
+            $this->assertFalse(\App\Filament\Pages\Compass::canAccess());
+            Livewire::test(\App\Filament\Pages\Compass::class)->assertForbidden();
+            $this->app['env'] = 'local';
+            $this->assertTrue(\App\Filament\Pages\Compass::canAccess());
+            $this->app['env'] = 'production';
+            config(['voyager.compass_in_production' => true]);
+            $this->assertTrue(\App\Filament\Pages\Compass::canAccess());
+        } finally { $this->app['env'] = $originalEnvironment; }
+    }
+
+    public function test_menu_icon_catalogue_hint_requires_compass_access(): void
+    {
+        $this->createMenuManagementTables();
+        DB::table('menus')->insert(['name' => 'admin']);
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_menus', 'add_menus']);
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->assertDontSee('Каталог иконок');
+        $this->admin(['browse_admin', 'browse_menus', 'add_menus', 'browse_compass']);
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->assertSee('Каталог иконок')->assertSee('/filament/compass#fonts');
+    }
+
+    public function test_compass_log_tab_reads_filters_and_pages_artificial_logs_without_writes(): void
+    {
+        Storage::fake('compass-logs-ui');
+        $disk = Storage::disk('compass-logs-ui');
+        $content = '';
+        for ($index = 1; $index <= 24; $index++) { $content .= '[2026-10-16 10:00:00] local.INFO: Synthetic '.$index."\n"; }
+        $content .= "[2026-10-16 10:00:01] local.ERROR: <script>synthetic</script>\n#0 Synthetic stack trace\n";
+        $disk->put('laravel-test.log', $content);
+        $this->app->instance(\App\Services\Admin\CompassLogReader::class, new \App\Services\Admin\CompassLogReader($disk->path('')));
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'logs')
+            ->assertSet('logFile', 'laravel-test.log')->assertSee('Synthetic stack trace')->assertSee('<script>synthetic</script>')
+            ->assertDontSee('<script>synthetic</script>', false);
+        $this->assertSame(25, $page->instance()->logData()['total']);
+        $this->assertCount(10, $page->instance()->logData()['entries']);
+        $page->call('changeLogPage', 2)->assertSet('logPage', 2);
+        $this->assertSame('Synthetic 15', $page->instance()->logData()['entries'][0]['text']);
+        $page->set('logLevel', 'error')->assertSet('logPage', 1);
+        $this->assertSame(1, $page->instance()->logData()['total']);
+        $page->set('logSearch', 'No-match')->assertSee('Записи не найдены.');
+        $page->set('logSearch', '')->set('logLevel', '')->set('logPerPage', 25);
+        $this->assertCount(25, $page->instance()->logData()['entries']);
+        $page->set('logFile', '../outside.log')->assertSee('Файл журнала не найден.');
+        $this->assertSame($content, $disk->get('laravel-test.log'));
+        $this->assertSame(['laravel-test.log'], $disk->allFiles());
+    }
+
+    public function test_compass_log_tab_handles_empty_directory_and_denies_revoked_access(): void
+    {
+        Storage::fake('compass-logs-ui');
+        $this->app->instance(\App\Services\Admin\CompassLogReader::class,
+            new \App\Services\Admin\CompassLogReader(Storage::disk('compass-logs-ui')->path('')));
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'logs')->assertSee('Журналов нет')->assertSee('Записи не найдены.');
+        $this->admin(['browse_admin']);
+        $page->call('selectTab', 'logs')->assertForbidden();
+    }
+
+    public function test_compass_log_download_streams_exact_file_and_rejects_foreign_paths(): void
+    {
+        Storage::fake('compass-logs-ui');
+        $disk = Storage::disk('compass-logs-ui');
+        $disk->put('download.log', "Synthetic bytes\r\n");
+        $this->app->instance(\App\Services\Admin\CompassLogReader::class, new \App\Services\Admin\CompassLogReader($disk->path('')));
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $response = $this->get('/filament/compass/download?file=download.log')->assertOk()->assertDownload('download.log');
+        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\BinaryFileResponse::class, $response->baseResponse);
+        $this->assertTrue($response->baseResponse->headers->hasCacheControlDirective('no-store'));
+        $this->assertSame("Synthetic bytes\r\n", file_get_contents($response->baseResponse->getFile()->getPathname()));
+        $this->getJson('/filament/compass/download?file=..%2Foutside.log')->assertUnprocessable();
+        $this->getJson('/filament/compass/download?file=missing.log')->assertUnprocessable();
+        $this->getJson('/filament/compass/download?file[]=download.log')->assertUnprocessable();
+        $this->assertSame("Synthetic bytes\r\n", $disk->get('download.log'));
+    }
+
+    public function test_compass_log_download_does_not_apply_the_preview_size_limit(): void
+    {
+        Storage::fake('compass-logs-ui');
+        $disk = Storage::disk('compass-logs-ui');
+        $stream = fopen($disk->path('large.log'), 'wb');
+        try { ftruncate($stream, \App\Services\Admin\CompassLogReader::MAX_FILE_SIZE + 1); } finally { fclose($stream); }
+        $this->app->instance(\App\Services\Admin\CompassLogReader::class, new \App\Services\Admin\CompassLogReader($disk->path('')));
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $response = $this->get('/filament/compass/download?file=large.log')->assertOk()->assertDownload('large.log');
+        $this->assertSame(\App\Services\Admin\CompassLogReader::MAX_FILE_SIZE + 1, $response->baseResponse->getFile()->getSize());
+    }
+
+    public function test_compass_log_download_requires_permission(): void
+    {
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin']);
+        $this->get('/filament/compass/download?file=laravel.log')->assertForbidden();
+    }
+
+    public function test_compass_log_delete_confirmation_cancels_and_deletes_only_its_snapshot(): void
+    {
+        Storage::fake('compass-logs-ui');
+        $disk = Storage::disk('compass-logs-ui');
+        $disk->put('first.log', 'First');
+        $disk->put('second.log', 'Second');
+        $disk->put('notes.txt', 'Keep');
+        $this->app->instance(\App\Services\Admin\CompassLogReader::class, new \App\Services\Admin\CompassLogReader($disk->path('')));
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'logs')
+            ->call('requestLogDeletion')->assertSet('logsToDelete', ['second.log']);
+        $this->assertSame('Second', $disk->get('second.log'));
+        $page->call('cancelLogDeletion')->assertSet('logsToDelete', []);
+        $this->assertSame('Second', $disk->get('second.log'));
+        $page->call('requestLogDeletion', true)->assertSet('logsToDelete', ['second.log', 'first.log']);
+        $disk->put('new-after-dialog.log', 'Keep new');
+        $page->call('confirmLogDeletion')->assertHasNoErrors()->assertSet('logsToDelete', [])
+            ->assertSet('logFile', 'new-after-dialog.log');
+        $this->assertSame(['new-after-dialog.log', 'notes.txt'], $disk->allFiles());
+        $this->assertSame('Keep new', $disk->get('new-after-dialog.log'));
+        $page->call('requestLogDeletion')->call('confirmLogDeletion')->assertSet('logFile', null);
+        $disk->assertExists('notes.txt');
+    }
+
+    public function test_compass_log_delete_handles_stale_selection_and_revoked_permission(): void
+    {
+        Storage::fake('compass-logs-ui');
+        $disk = Storage::disk('compass-logs-ui');
+        $disk->put('first.log', 'First');
+        $disk->put('second.log', 'Second');
+        $this->app->instance(\App\Services\Admin\CompassLogReader::class, new \App\Services\Admin\CompassLogReader($disk->path('')));
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'logs')->call('requestLogDeletion', true);
+        $disk->delete('first.log');
+        $page->call('confirmLogDeletion')->assertHasErrors('logDelete');
+        $this->assertSame('Second', $disk->get('second.log'));
+        $page->call('cancelLogDeletion')->call('requestLogDeletion');
+        $this->admin(['browse_admin']);
+        $page->call('confirmLogDeletion')->assertForbidden();
+        $this->assertSame('Second', $disk->get('second.log'));
+    }
+
+    public function test_compass_log_download_requires_filament_login(): void
+    {
+        $this->get('/filament/compass/download?file=laravel.log')->assertRedirect('/filament/login');
+    }
+
+    public function test_compass_log_delete_partial_failure_retains_failed_names_for_retry(): void
+    {
+        Storage::fake('compass-logs-ui');
+        $disk = Storage::disk('compass-logs-ui');
+        $disk->put('remove.log', 'Remove');
+        $disk->put('locked.log', 'Keep');
+        $reader = new class($disk->path('')) extends \App\Services\Admin\CompassLogReader {
+            protected function removeFile(string $path): bool { return basename($path) === 'locked.log' ? false : parent::removeFile($path); }
+        };
+        $this->app->instance(\App\Services\Admin\CompassLogReader::class, $reader);
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'logs')->call('requestLogDeletion', true)
+            ->call('confirmLogDeletion')->assertHasErrors('logDelete')->assertSet('logsToDelete', ['locked.log']);
+        $this->assertSame('Keep', $disk->get('locked.log'));
+        $disk->assertMissing('remove.log');
+        $page->call('cancelLogDeletion')->assertSet('logsToDelete', []);
+    }
+
+    public function test_compass_command_catalogue_filters_deduplicates_aliases_and_keeps_argument_drafts(): void
+    {
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $first = (new \Symfony\Component\Console\Command\Command('fixture:first'))->setDescription('Первая команда');
+        $second = (new \Symfony\Component\Console\Command\Command('fixture:second'))->setDescription('Вторая команда');
+        $hidden = (new \Symfony\Component\Console\Command\Command('fixture:hidden'))->setHidden(true);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('all')->andReturn(['fixture:first' => $first, 'fixture:alias' => $first, 'fixture:second' => $second, 'fixture:hidden' => $hidden]);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'commands');
+        $this->assertSame(['fixture:first' => 'Первая команда', 'fixture:second' => 'Вторая команда'], $page->instance()->commands());
+        $html = $page->html();
+        $this->assertStringNotContainsString('@js(', $html);
+        $document = new \DOMDocument();
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $actions = [];
+        foreach ($document->getElementsByTagName('button') as $button) {
+            $actions[] = $button->getAttribute('wire:click');
+        }
+        $this->assertContains("selectCommand('fixture:first')", $actions);
+        $this->assertContains("selectCommand('fixture:second')", $actions);
+        $page->set('commandSearch', 'ПЕРВАЯ');
+        $this->assertSame(['fixture:first' => 'Первая команда'], $page->instance()->commands());
+        $page->call('selectCommand', 'fixture:first')->set('commandArgs', '--name="First draft"')
+            ->call('selectCommand', 'fixture:second')->assertSet('commandArgs', '')
+            ->set('commandArgs', '--name="Second draft"')->call('selectCommand', 'fixture:first')->assertSet('commandArgs', '--name="First draft"');
+        $page->call('clearCommandOutput')->assertSet('lastCommandName', null);
+    }
+
+    public function test_compass_commands_validate_registered_name_before_execution(): void
+    {
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $command = new \Symfony\Component\Console\Command\Command('fixture:first');
+        \Illuminate\Support\Facades\Artisan::shouldReceive('all')->andReturn(['fixture:first' => $command]);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'commands');
+        $page->call('runCommand')->assertHasErrors('commandName');
+        $page->set('commandName', 'fixture:first; injected')->call('runCommand')->assertHasErrors('commandName');
+        $page->set('commandName', 'fixture:missing')->call('runCommand')->assertHasErrors('commandName');
+        $page->set('commandName', 'fixture:first')->set('commandArgs', str_repeat('a', 65536))->call('runCommand')->assertHasErrors('commandArgs');
+    }
+
+    public function test_compass_command_execution_preserves_quoted_arguments_and_escapes_output_and_errors(): void
+    {
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        $command = new \Symfony\Component\Console\Command\Command('fixture:first');
+        \Illuminate\Support\Facades\Artisan::shouldReceive('all')->andReturn(['fixture:first' => $command]);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('fixture:first --name="quoted value" --flag')->once()->andReturn(0);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('fixture:first')->once()->andReturn(7);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->with('fixture:first --throw')->once()->andThrow(new \RuntimeException('<script>synthetic-error</script>'));
+        \Illuminate\Support\Facades\Artisan::shouldReceive('output')->twice()->andReturn('<b>Synthetic output</b>', 'Synthetic failure output');
+        $page = Livewire::test(\App\Filament\Pages\Compass::class)->call('selectTab', 'commands')->call('selectCommand', 'fixture:first')
+            ->set('commandArgs', '--name="quoted value" --flag')->call('runCommand')->assertHasNoErrors()->assertSet('commandExitCode', 0)
+            ->assertSet('commandOutput', '<b>Synthetic output</b>')->assertSee('<b>Synthetic output</b>')->assertDontSee('<b>Synthetic output</b>', false)
+            ->assertNotified(\Filament\Notifications\Notification::make()->title('Команда выполнена')->success());
+        $page->set('commandArgs', '')->call('runCommand')->assertSet('commandExitCode', 7)->assertSet('commandOutput', 'Synthetic failure output')
+            ->assertNotified(\Filament\Notifications\Notification::make()->title('Команда завершилась ошибкой')->danger());
+        $page->set('commandArgs', '--throw')->call('runCommand')->assertSet('commandExitCode', 1)
+            ->assertSet('commandOutput', '<script>synthetic-error</script>')->assertDontSee('<script>synthetic-error</script>', false);
+        $page->call('clearCommandOutput')->assertSet('commandOutput', '')->assertSet('commandExitCode', null)->assertSet('lastCommandName', null);
+    }
+
+    public function test_compass_command_execution_rechecks_permission_and_environment(): void
+    {
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin', 'browse_compass']);
+        \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
+        $page = Livewire::test(\App\Filament\Pages\Compass::class);
+        config(['voyager.compass_in_production' => false]);
+        try {
+            $page->instance()->runCommand();
+            $this->fail('Environment gate must prevent execution.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $error) { $this->assertSame(403, $error->getStatusCode()); }
+        config(['voyager.compass_in_production' => true]);
+        $this->admin(['browse_admin']);
+        $page->call('runCommand')->assertForbidden();
     }
 
     private function admin(array $permissions): void

@@ -185,7 +185,7 @@ class AdminOrderCreateForm
     }
 
     /** @return array<int, string> */
-    private static function styleOptions(): array
+    public static function styleOptions(): array
     {
         $options = [0 => 'Нет категории'];
         foreach (IndexController::get_styles_for_quiz('ru') as $style) {

@@ -34,8 +34,8 @@
                 <header>
                     <div><h3 style="font-weight:600">{{ $group['title'] }}</h3>@if ($group['table'])<small>{{ $group['table'] }}</small>@endif</div>
                     <div style="display:flex;gap:8px">
-                        <x-filament::button type="button" size="xs" color="gray" wire:click="selectRolePermissions(@js($group['table']), true)" aria-label="Выбрать все: {{ $group['title'] }}">Все</x-filament::button>
-                        <x-filament::button type="button" size="xs" color="gray" wire:click="selectRolePermissions(@js($group['table']), false)" aria-label="Снять все: {{ $group['title'] }}">Снять</x-filament::button>
+                        <x-filament::button type="button" size="xs" color="gray" wire:click="selectRolePermissions({{ \Illuminate\Support\Js::from($group['table']) }}, true)" aria-label="Выбрать все: {{ $group['title'] }}">Все</x-filament::button>
+                        <x-filament::button type="button" size="xs" color="gray" wire:click="selectRolePermissions({{ \Illuminate\Support\Js::from($group['table']) }}, false)" aria-label="Снять все: {{ $group['title'] }}">Снять</x-filament::button>
                     </div>
                 </header>
                 <div class="role-options">

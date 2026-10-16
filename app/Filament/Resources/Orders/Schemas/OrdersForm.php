@@ -18,11 +18,7 @@ class OrdersForm
                 Section::make('Управление заказом')
                     ->columns(2)
                     ->schema([
-                        Select::make('manager_id')
-                            ->label('Менеджер')
-                            ->relationship('manager', 'email')
-                            ->searchable()
-                            ->preload(),
+                        OrderDetailsForm::manager(),
                         Select::make('status')
                             ->label('Статус')
                             ->options(array_combine(UpdateOrderService::STATUSES, [
@@ -55,6 +51,11 @@ class OrdersForm
                         TextInput::make('prepayment_price')->label('Предоплата')->numeric()->minValue(0),
                         Textarea::make('admin_comment')->label('Комментарий администратора')->columnSpanFull(),
                     ]),
+                OrderDeliveryForm::section(),
+                OrderDetailsForm::parameters(),
+                ...OrderInformationForm::sections(),
+                OrderDetailsForm::company(),
+                OrderItemsForm::section(),
             ]);
     }
 }

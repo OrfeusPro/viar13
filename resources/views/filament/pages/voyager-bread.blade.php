@@ -16,11 +16,18 @@
         .viar-bread-table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
         .viar-bread-table th, .viar-bread-table td { min-width: 150px; max-width: 240px; padding: 9px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
         .viar-bread-table thead th { padding: 13px 12px; text-align: left; vertical-align: middle; white-space: normal; overflow-wrap: anywhere; font-weight: 600; color: #334155; background: #eef2f8; border-bottom: 1px solid #dbe3ee; }
+        .viar-bread-table .viar-bread-value { white-space: normal; overflow-wrap: anywhere; }
         .viar-bread-table th:first-child, .viar-bread-table td:first-child { min-width: 75px; }
         .viar-bread-table .viar-bread-selection { min-width: 44px; width: 44px; max-width: 44px; text-align: center; }
         .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 6px -4px #9ca3af; }
         .dark .viar-bread-table th:last-child, .dark .viar-bread-table td:last-child { background: #18181b; }
         .viar-bread-table thead th:last-child { background: #eef2f8; }
+        .viar-bread-row-actions { display: flex; align-items: center; gap: 8px; }
+        @media (max-width: 640px) {
+            .viar-bread-table th:last-child, .viar-bread-table td:last-child { width: 84px; min-width: 84px; max-width: 84px; }
+            .viar-bread-table td:last-child > .viar-bread-row-actions { display: grid; grid-template-columns: repeat(2, 24px); }
+            .viar-bread-table th:last-child { font-size: 12px; }
+        }
         .dark .viar-bread-table-scroll { border-color: #334155; }
         .dark .viar-bread-table thead th { color: #e2e8f0; background: #243047; border-color: #334155; }
         .viar-bread-page .viar-bread-image-single { width: 100%; max-width: 280px; }
@@ -172,7 +179,7 @@
                             @if ($canDeleteRecord)<td class="viar-bread-selection"><input type="checkbox" value="{{ $record->id }}" wire:model.live="selectedRecords" aria-label="Выбрать запись {{ $record->id }}" /></td>@endif
                             @foreach ($records['columns'] as $column)
                                 @php($value = $record->{$column['field']} ?? null)
-                                <td class="max-w-64 truncate p-2" title="{{ $column['type'] === 'adv_fields_group' || isset($column['details']['view']) ? '' : (is_scalar($value) ? \Illuminate\Support\Str::limit(in_array($column['type'], ['adv_json', 'adv_page_layout'], true) ? (string) $value : strip_tags((string) $value), 300) : '') }}">
+                                <td class="viar-bread-value max-w-64 p-2" title="{{ $column['type'] === 'adv_fields_group' || isset($column['details']['view']) ? '' : (is_scalar($value) ? \Illuminate\Support\Str::limit(in_array($column['type'], ['adv_json', 'adv_page_layout'], true) ? (string) $value : strip_tags((string) $value), 300) : '') }}">
                                     @if (isset($records['customCells'][$record->id][$column['field']]))
                                         {{ $records['customCells'][$record->id][$column['field']] }}
                                     @elseif ($column['type'] === 'file')
@@ -238,7 +245,7 @@
                                                 <input x-ref="inlineInput" x-model="value" type="{{ $column['type'] === 'number' ? 'number' : 'text' }}" step="any" aria-label="{{ $column['label'] }}" :disabled="busy"
                                                     x-on:keydown.enter.prevent="save()" x-on:keydown.escape.prevent="value = @js($inlineValue); editing = false" style="width:160px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;" />
                                                 <x-filament::icon-button icon="heroicon-o-check" label="Сохранить поле" x-on:click="save()" x-bind:disabled="busy" />
-                                                <x-filament::icon-button icon="heroicon-o-x-mark" label="Отменить изменение поля" x-on:click="value = @js($inlineValue); editing = false" x-bind:disabled="busy" />
+                                                <x-filament::icon-button icon="heroicon-o-x-mark" label="Отменить изменение поля" x-on:click="value = {{ \Illuminate\Support\Js::from($inlineValue) }}; editing = false" x-bind:disabled="busy" />
                                             </div>
                                             @error('inline.'.$record->id.'.'.$column['field'])<span role="alert" style="display:block;color:#dc2626;white-space:normal;">{{ $message }}</span>@enderror
                                         </div>
@@ -254,7 +261,7 @@
                                             @endforeach
                                         </div>
                                         @if (($column['editable'] ?? false) && array_key_exists('browse_inline_editor', $column['details'] ?? []) && ! isset($column['details']['view']) && app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'edit', (int) $record->id))
-                                            <x-filament::icon-button icon="heroicon-o-pencil-square" label="Редактировать группу" wire:click="mountAction('editInlineGroup', { id: {{ (int) $record->id }}, field: @js($column['field']) })" />
+                                            <x-filament::icon-button icon="heroicon-o-pencil-square" label="Редактировать группу" wire:click="mountAction('editInlineGroup', { id: {{ (int) $record->id }}, field: {{ \Illuminate\Support\Js::from($column['field']) }} })" />
                                         @endif
                                     @elseif (in_array($column['type'], ['adv_json', 'adv_page_layout', 'multiple_checkbox', 'select_multiple'], true))
                                         {{ is_scalar($value) ? \Illuminate\Support\Str::limit((string) $value, 80) : '' }}
@@ -265,7 +272,7 @@
                                     @endif
                                 </td>
                             @endforeach
-                            <td class="whitespace-nowrap p-2"><div style="display:flex;align-items:center;gap:8px">
+                            <td class="whitespace-nowrap p-2"><div class="viar-bread-row-actions">
                                 @if (app(\App\Filament\Bread\BreadRegistry::class)->permitted($bread, 'read'))
                                     <x-filament::icon-button size="sm" color="gray" :icon="\Filament\Support\Icons\Heroicon::OutlinedEye" label="Просмотр" tooltip="Просмотр" wire:click="openView({{ (int) $record->id }})" />
                                 @endif

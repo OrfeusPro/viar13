@@ -76,6 +76,7 @@ class SeoMetaSuggestionResource extends Resource
                     'approved_meta_description', 'seo_keywords', 'error'])
                 ->wrap()->color('primary')->url(fn ($record) => static::editUrl($record)),
             TextColumn::make('page_url')->label('Страница')->searchable()->wrap()->limit(80)->color('primary')
+                ->extraAttributes(['class' => 'viar-seo-page-url'])
                 ->getStateUsing(fn ($record) => $record->page_url ?: 'Без URL страницы')
                 ->description(fn ($record) => $record->title_field.' / '.$record->description_field)
                 ->url(fn ($record) => preg_match('~^https?://~i', (string) $record->page_url) ? $record->page_url : null)->openUrlInNewTab(),

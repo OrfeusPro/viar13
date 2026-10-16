@@ -31,7 +31,7 @@
                             @if($table['browse_url'])<x-filament::button tag="a" size="sm" color="warning" icon="heroicon-o-eye" href="{{ $table['browse_url'] }}">Открыть BREAD</x-filament::button>@endif
                             @if(\App\Filament\Pages\BreadMetadata::canAccess())
                                 <x-filament::button tag="a" size="sm" color="{{ $table['bread_id'] ? 'gray' : 'success' }}" icon="heroicon-o-adjustments-horizontal" href="{{ \App\Filament\Pages\BreadMetadata::getUrl().($table['bread_id'] ? '?section='.$table['bread_id'] : '?create='.rawurlencode($table['name'])) }}">{{ $table['bread_id'] ? 'Редактировать BREAD' : 'Добавить BREAD' }}</x-filament::button>
-                                @if($table['bread_id'])<x-filament::button size="sm" color="danger" icon="heroicon-o-trash" wire:click="prepareBreadDeletion(@js($table['name']))">Удалить BREAD</x-filament::button>@endif
+                                @if($table['bread_id'])<x-filament::button size="sm" color="danger" icon="heroicon-o-trash" wire:click="prepareBreadDeletion({{ \Illuminate\Support\Js::from($table['name']) }})">Удалить BREAD</x-filament::button>@endif
                             @endif
                             @if(! $table['bread_id'] && ! \App\Filament\Pages\BreadMetadata::canAccess())<span class="viar-management-muted">Без BREAD</span>@endif
                         </div></td>

@@ -4,13 +4,31 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Filament\Resources\Orders\OrdersResource;
 use App\Models\Orders;
+use App\Services\Admin\OrderDeliveryEditor;
+use App\Services\Admin\OrderItemEditor;
 use App\Services\Admin\UpdateOrderService;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class EditOrders extends EditRecord
 {
     protected static string $resource = OrdersResource::class;
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['delivery_edit'] = app(OrderDeliveryEditor::class)->state($this->getRecord());
+        $data['items_edit'] = app(OrderItemEditor::class)->state($this->getRecord());
+        $data['manager_id'] = $data['manager_id'] ?? 0;
+        $data['catid'] = $data['catid'] ?? 0;
+        $data['sale_eur'] = $data['sale_eur'] ?: 0;
+        $data['sale_percent'] = $data['sale_percent'] ?: 0;
+        if (empty($data['approved_date']) && $this->getRecord()->created_at) {
+            $data['approved_date'] = $this->getRecord()->created_at->format('d.m.Y H:i');
+        }
+
+        return $data;
+    }
 
     protected function getHeaderActions(): array
     {
@@ -19,7 +37,7 @@ class EditOrders extends EditRecord
         ];
     }
 
-    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
         /** @var Orders $record */
         return app(UpdateOrderService::class)->update($record, $data);

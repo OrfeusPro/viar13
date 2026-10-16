@@ -135,6 +135,9 @@ class BreadMenuTree
             $row->url === '/admin/alt-suggestions' => '/filament/image-alt-suggestions',
             $row->url === '/admin/seo-meta-suggestions' || $row->route === 'voyager.seo-meta-suggestions.index' => '/filament/seo-meta-suggestions',
             $row->url === '/admin/settings' || $row->route === 'voyager.settings.index' => '/filament/voyager-settings',
+            $row->url === '/admin/media' || $row->route === 'voyager.media.index' => '/filament/media',
+            in_array($row->url, ['/admin/cache/clear', '/admin/cache/set'], true) => '/filament/cache-tools',
+            $row->url === '/admin/compass' || $row->route === 'voyager.compass.index' => '/filament/compass',
             $row->url === '/admin/translations' => '/'.config('translation-manager.route.prefix'),
             default => null,
         };

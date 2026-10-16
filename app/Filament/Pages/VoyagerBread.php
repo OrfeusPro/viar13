@@ -1324,21 +1324,7 @@ class VoyagerBread extends Page
         abort_unless(($details['show_folders'] ?? false) && ($details['allow_create_folder'] ?? false), 403);
         abort_unless($this->libraryPathAllowed($this->libraryFolder, $this->libraryRoot($details)), 422);
         $this->resetValidation('libraryNewFolder');
-        $name = trim($this->libraryNewFolder);
-        validator(['libraryNewFolder' => $name], [
-            'libraryNewFolder' => ['required', 'string', 'max:100', 'regex:/\A[\pL\pN][\pL\pN _-]*\z/u'],
-        ], ['libraryNewFolder.regex' => 'Используйте буквы, цифры, пробелы, дефис или подчёркивание.'])->validate();
-        if (preg_match('/\A(?:CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])\z/i', $name)) {
-            throw ValidationException::withMessages(['libraryNewFolder' => 'Это имя зарезервировано системой.']);
-        }
-        $disk = Storage::disk('public');
-        $path = $this->libraryFolder . '/' . $name;
-        if ($disk->exists($path)) {
-            throw ValidationException::withMessages(['libraryNewFolder' => 'Папка или файл с таким именем уже существует.']);
-        }
-        if (! $disk->makeDirectory($path)) {
-            throw ValidationException::withMessages(['libraryNewFolder' => 'Не удалось создать папку.']);
-        }
+        app(\App\Filament\Bread\BreadLibraryFolders::class)->create($this->libraryFolder, $this->libraryNewFolder, 'libraryNewFolder');
         $this->libraryNewFolder = '';
         Notification::make()->title('Папка создана')->success()->send();
     }
@@ -1424,44 +1410,9 @@ class VoyagerBread extends Page
         $source = $this->libraryRenameFolder;
         $this->checkedLibraryDirectory($source, 'allow_rename');
         $this->resetValidation('libraryFolderName');
-        $name = trim($this->libraryFolderName);
-        validator(['libraryFolderName' => $name], ['libraryFolderName' => ['required', 'string', 'max:100', 'regex:/\A[\pL\pN][\pL\pN _-]*\z/u']])->validate();
-        if (preg_match('/\A(?:CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])\z/i', $name)) {
-            throw ValidationException::withMessages(['libraryFolderName' => 'Это имя зарезервировано системой.']);
-        }
-        $target = dirname($source) . '/' . $name;
-        $disk = Storage::disk('public');
-        $count = \Illuminate\Support\Facades\Cache::lock('bread-library:' . sha1($target), 120)->block(5, function () use ($disk, $source, $target): int {
-            if ($disk->exists($target)) {
-                throw ValidationException::withMessages(['libraryFolderName' => 'Укажите новое имя, которое ещё не занято.']);
-            }
-            $files = $disk->allFiles($source);
-            $folders = $disk->allDirectories($source);
-            if (count($files) + count($folders) > 500) {
-                throw ValidationException::withMessages(['libraryFolderName' => 'В папке больше 500 объектов. Переименуйте вложенные папки отдельно.']);
-            }
-            $createdFiles = [];
-            $createdFolders = [];
-            try {
-                $destinations = array_merge([$target], array_map(fn ($path) => $target . substr($path, strlen($source)), $folders));
-                usort($destinations, fn ($a, $b) => strlen($a) <=> strlen($b));
-                foreach ($destinations as $folder) {
-                    if (! $disk->makeDirectory($folder)) throw new \RuntimeException('Unable to create destination directory.');
-                    $createdFolders[] = $folder;
-                }
-                foreach ($files as $file) {
-                    $destination = $target . substr($file, strlen($source));
-                    $createdFiles[] = $destination;
-                    if (! $disk->copy($file, $destination)) throw new \RuntimeException('Unable to copy library file.');
-                }
-
-                return DB::transaction(fn () => app(\App\Filament\Bread\BreadLibraryReferences::class)->replace($source, $target, $this->registry(), true));
-            } catch (\Throwable $exception) {
-                foreach ($createdFiles as $file) $disk->delete($file);
-                foreach (array_reverse($createdFolders) as $folder) @rmdir($disk->path($folder));
-                throw $exception;
-            }
-        });
+        $result = app(\App\Filament\Bread\BreadLibraryFolders::class)->rename($source, $this->libraryFolderName, 'libraryFolderName', $this->registry());
+        $target = $result['target'];
+        $count = $result['count'];
         $this->data = \App\Filament\Bread\BreadLibraryReferences::replaceValue($this->data, $source, $target, true);
         if ($this->libraryFolder === $source || str_starts_with($this->libraryFolder, $source . '/')) {
             $this->libraryFolder = $target . substr($this->libraryFolder, strlen($source));
@@ -1476,13 +1427,7 @@ class VoyagerBread extends Page
     {
         $this->checkedLibraryDirectory($path, 'allow_delete');
         $this->resetValidation('libraryFolderName');
-        $disk = Storage::disk('public');
-        \Illuminate\Support\Facades\Cache::lock('bread-library:' . sha1($path), 30)->block(5, function () use ($disk, $path): void {
-            // rmdir is atomic and non-recursive: a new or hidden file also prevents deletion.
-            if ($disk->files($path) !== [] || $disk->directories($path) !== [] || ! @rmdir($disk->path($path))) {
-                throw ValidationException::withMessages(['libraryFolderName' => 'Удаление возможно только для пустой папки без вложенных папок.']);
-            }
-        });
+        app(\App\Filament\Bread\BreadLibraryFolders::class)->deleteEmpty($path, 'libraryFolderName');
         if ($this->libraryFolder === $path) $this->libraryFolder = dirname($path);
         if ($this->libraryRenameFolder === $path) $this->libraryRenameFolder = null;
         Notification::make()->title('Пустая папка удалена')->success()->send();
@@ -1518,26 +1463,9 @@ class VoyagerBread extends Page
         abort_unless($this->libraryPathAllowed($folder, $this->libraryRoot($details)), 422);
         abort_unless($name === basename($source) || ($details['allow_rename'] ?? false), 403);
         abort_unless($folder === dirname($source) || ($details['allow_move'] ?? false), 403);
-        $target = $folder . '/' . $name;
-        $disk = Storage::disk('public');
-        abort_unless($disk->directoryExists($folder), 404);
-        if ($source === $target || $disk->exists($target)) {
-            throw ValidationException::withMessages(['libraryTargetName' => 'Укажите новый путь, который ещё не занят.']);
-        }
-        $count = \Illuminate\Support\Facades\Cache::lock('bread-library:' . sha1($target), 60)->block(5, function () use ($disk, $source, $target): int {
-            if ($disk->exists($target)) {
-                throw ValidationException::withMessages(['libraryTargetName' => 'Файл с таким именем уже существует.']);
-            }
-            if (! $disk->copy($source, $target)) {
-                throw ValidationException::withMessages(['libraryTargetName' => 'Не удалось скопировать файл.']);
-            }
-            try {
-                return DB::transaction(fn () => app(\App\Filament\Bread\BreadLibraryReferences::class)->replace($source, $target, $this->registry()));
-            } catch (\Throwable $exception) {
-                $disk->delete($target);
-                throw $exception;
-            }
-        });
+        $result = app(\App\Filament\Bread\BreadLibraryFiles::class)->relocate($source, $folder, $name, 'libraryTargetName', $this->registry());
+        $target = $result['target'];
+        $count = $result['count'];
         // Keep the original for URLs embedded in rich text, settings, or external content.
         $this->data = \App\Filament\Bread\BreadLibraryReferences::replaceValue($this->data, $source, $target);
         $this->librarySourceFile = null;
