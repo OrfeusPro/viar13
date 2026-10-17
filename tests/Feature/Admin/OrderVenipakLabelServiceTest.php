@@ -4,7 +4,9 @@ namespace Tests\Feature\Admin;
 
 use App\Models\Orders;
 use App\Services\Admin\OrderVenipakLabelService;
+use App\Services\Admin\VenipakPickupCatalog;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
@@ -16,6 +18,7 @@ class OrderVenipakLabelServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Http::preventStrayRequests();
 
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
@@ -162,6 +165,142 @@ class OrderVenipakLabelServiceTest extends TestCase
         }
 
         Http::assertSentCount(1);
+    }
+
+    public function test_label_defaults_use_delivery_identity_when_linked_client_is_missing(): void
+    {
+        $order = $this->createOrder('delivery');
+        DB::table('users')->where('id', $order->user_id)->delete();
+        $delivery = json_decode($order->delivery, true);
+        $order->forceFill(['delivery' => json_encode($delivery + [
+            'first_name' => 'Recipient', 'last_name' => 'Fixture', 'phone' => '+37120000001',
+            'email' => 'recipient@example.test',
+        ])])->save();
+        $defaults = app(OrderVenipakLabelService::class)->defaultData($order);
+        $this->assertSame('Fixture Recipient', $defaults['g_name']);
+        $this->assertSame('recipient@example.test', $defaults['email_receiver']);
+        $this->assertSame('+37120000001', $defaults['g_contact_t']);
+        Http::assertNothingSent();
+    }
+
+    public function test_pickup_defaults_use_the_selected_workshop_title_without_provider_requests(): void
+    {
+        Schema::create('delivery_pickup_at_viar_workshop', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title');
+        });
+        DB::table('delivery_pickup_at_viar_workshop')->insert(['id' => 5, 'title' => 'Workshop pickup title']);
+        $order = $this->createOrder('pickup_at_viar_workshop');
+        $delivery = json_decode($order->delivery, true);
+        $delivery['pickup_workshop_id'] = 5;
+        $order->delivery = json_encode($delivery);
+        $this->assertSame('Workshop pickup title', app(OrderVenipakLabelService::class)->defaultData($order)['pickup_match']);
+        Http::assertNothingSent();
+    }
+
+    public function test_selected_catalog_identity_is_serialized_into_pickup_label_xml(): void
+    {
+        Cache::flush();
+        Http::fake([
+            '*country=LV' => Http::response([
+                ['id' => 10, 'city' => 'Rīga', 'address' => 'Street & 1', 'zip' => 'LV-1001', 'name' => 'Shop & Co', 'display_name' => 'Shop', 'company_code' => 'LV123'],
+            ]),
+            'https://venipak.example.test/import' => Http::response('<response type="1"><text>V08354E7718401</text></response>'),
+        ]);
+        $order = $this->createOrder('pickup_at_viar_workshop');
+        $catalog = app(VenipakPickupCatalog::class);
+        $payload = array_replace($this->addressPayload(), ['destination' => 'pickup'],
+            $catalog->selection('LV', $catalog->match('LV', 'Shop')));
+        app(OrderVenipakLabelService::class)->create($order, $payload);
+        $request = Http::recorded(fn ($request): bool => $request->url() === 'https://venipak.example.test/import')->first()[0];
+        $xml = $request->body();
+        $this->assertStringContainsString('<name>Shop &amp; Co</name>', $xml);
+        $this->assertStringContainsString('<company_code>LV123</company_code>', $xml);
+        $this->assertStringContainsString('<address>Street &amp; 1</address>', $xml);
+        $this->assertStringContainsString('<post_code>LV-1001</post_code>', $xml);
+        Http::assertSentCount(2);
+        $this->assertSame('V08354E7718401', $order->fresh()->labels);
+    }
+
+    public function test_print_rejects_html_empty_error_and_http_failures_without_changing_order(): void
+    {
+        $order = $this->createOrder('delivery', 'V08354E7718401');
+        Http::fakeSequence()->push('<html>Login required</html>', 200)
+            ->push('', 200)->push('Error: unavailable', 200)->push('%PDF-1.4 unavailable', 503);
+        foreach (range(1, 4) as $attempt) {
+            try {
+                app(OrderVenipakLabelService::class)->print($order, 'V08354E7718401');
+                $this->fail('Invalid PDF accepted on attempt '.$attempt);
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('label', $exception->errors());
+            }
+        }
+        $this->assertSame('V08354E7718401', $order->fresh()->labels);
+        Http::assertSentCount(4);
+        $request = Http::recorded()->first()[0];
+        $this->assertSame('POST', $request->method());
+        foreach (['user', 'pass', 'login_id', 'pack_no'] as $field) {
+            $this->assertStringContainsString('name="'.$field.'"', $request->body());
+        }
+        $this->assertStringNotContainsString('name="format"', $request->body());
+    }
+
+    public function test_rejected_create_responses_preserve_previous_labels_and_restore_libxml_setting(): void
+    {
+        $order = $this->createOrder('delivery', 'OLD-LABEL');
+        Http::fakeSequence()->push('not xml', 200)
+            ->push('<response><error><text>Rejected fixture</text></error></response>', 200)
+            ->push('<response/>', 200)->push('unavailable', 503);
+        $previous = libxml_use_internal_errors(false);
+        try {
+            foreach (range(1, 4) as $attempt) {
+                try {
+                    app(OrderVenipakLabelService::class)->create($order, $this->addressPayload());
+                    $this->fail('Invalid create response accepted on attempt '.$attempt);
+                } catch (ValidationException $exception) {
+                    $this->assertArrayHasKey('venipak', $exception->errors());
+                }
+                $this->assertSame('OLD-LABEL', $order->fresh()->labels);
+                $this->assertFalse(libxml_use_internal_errors());
+            }
+        } finally {
+            libxml_use_internal_errors($previous);
+        }
+        Http::assertSentCount(4);
+    }
+
+    public function test_created_labels_are_reported_if_model_vetoes_saving_and_no_retry_is_sent(): void
+    {
+        $order = $this->createOrder('delivery', 'OLD-LABEL');
+        Http::fake(['*' => Http::response('<response><text>V08354E7718401</text></response>')]);
+        $dispatcher = Orders::getEventDispatcher();
+        Orders::setEventDispatcher(clone $dispatcher);
+        Orders::saving(fn () => false);
+        try {
+            app(OrderVenipakLabelService::class)->create($order, $this->addressPayload());
+            $this->fail('Vetoed save returned success.');
+        } catch (ValidationException $exception) {
+            $message = $exception->errors()['venipak'][0];
+            $this->assertStringContainsString('V08354E7718401', $message);
+            $this->assertStringContainsString('Не отправляйте запрос повторно', $message);
+        } finally {
+            Orders::setEventDispatcher($dispatcher);
+        }
+        $this->assertSame('OLD-LABEL', $order->fresh()->labels);
+        Http::assertSentCount(1);
+    }
+
+    public function test_repeat_create_replaces_previous_labels_like_original(): void
+    {
+        $order = $this->createOrder('delivery', 'OLD-LABEL');
+        Http::fakeSequence()->push('<response><text>NEW-1</text></response>')
+            ->push('<response><text>NEW-2</text><text>NEW-3</text></response>');
+        $service = app(OrderVenipakLabelService::class);
+        $service->create($order, $this->addressPayload());
+        $this->assertSame('NEW-1', $order->fresh()->labels);
+        $service->create($order, $this->addressPayload());
+        $this->assertSame('NEW-2,NEW-3', $order->fresh()->labels);
+        Http::assertSentCount(2);
     }
 
     private function createOrder(string $method, ?string $labels = null): Orders

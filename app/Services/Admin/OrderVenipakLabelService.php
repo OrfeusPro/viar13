@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin;
 
+use App\Models\DeliveryPickupAtViarWorkshop;
 use App\Models\Orders;
 use App\Models\VenipakData;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,10 @@ class OrderVenipakLabelService
         $destination = in_array((string) ($delivery['sposob'] ?? ''), self::PICKUP_METHODS, true)
             ? 'pickup'
             : 'address';
+        $pickupTitle = (string) ($delivery['address'] ?? $delivery['city'] ?? '');
+        if ($destination === 'pickup' && (int) ($delivery['pickup_workshop_id'] ?? 0) > 0) {
+            $pickupTitle = (string) (DeliveryPickupAtViarWorkshop::query()->find($delivery['pickup_workshop_id'])?->title ?? $pickupTitle);
+        }
         $sizes = collect($items)
             ->filter(fn ($item): bool => is_array($item))
             ->map(fn (array $item): mixed => $item['sizeId'] ?? $item['size_name'] ?? null)
@@ -33,7 +38,9 @@ class OrderVenipakLabelService
         return [
             'doc_no' => '',
             'destination' => $destination,
-            'g_name' => trim((string) ($order->user?->last_name).' '.(string) ($order->user?->first_name)),
+            'g_name' => $order->user
+                ? trim((string) $order->user->last_name.' '.(string) $order->user->first_name)
+                : trim((string) ($delivery['last_name'] ?? '').' '.(string) ($delivery['first_name'] ?? '')),
             'g_code' => '',
             'r_country' => (string) ($delivery['country'] ?? ''),
             'g_city' => (string) ($delivery['city'] ?? ''),
@@ -52,6 +59,7 @@ class OrderVenipakLabelService
             'g_post_pickup' => (string) ($delivery['postal_index'] ?? ''),
             'g_name_pickup' => '',
             'g_code_pickup' => '',
+            'pickup_match' => $pickupTitle,
             's_name' => (string) ($sender?->s_name ?? ''),
             's_code' => (string) ($sender?->s_code ?? ''),
             's_country' => (string) ($sender?->s_country ?? 'LV'),
@@ -142,7 +150,7 @@ class OrderVenipakLabelService
         } catch (\Throwable $exception) {
             Log::error('Admin Venipak label request failed.', [
                 'order_id' => $order->id,
-                'exception' => $exception,
+                'exception_type' => $exception::class,
             ]);
             throw ValidationException::withMessages(['venipak' => 'Не удалось подключиться к Venipak.']);
         }
@@ -156,11 +164,24 @@ class OrderVenipakLabelService
         }
 
         $labels = $this->parseLabels($response->body());
-        DB::transaction(function () use ($order, $labels): void {
-            Orders::query()->lockForUpdate()->findOrFail($order->id)->forceFill([
-                'labels' => implode(',', $labels),
-            ])->save();
-        });
+        try {
+            DB::transaction(function () use ($order, $labels): void {
+                $saved = Orders::query()->lockForUpdate()->findOrFail($order->id)->forceFill([
+                    'labels' => implode(',', $labels),
+                ])->save();
+                if (! $saved) {
+                    throw new \RuntimeException('Order label persistence was vetoed.');
+                }
+            });
+        } catch (\Throwable $exception) {
+            Log::error('Admin Venipak labels could not be stored.', [
+                'order_id' => $order->id, 'labels' => $labels, 'exception_type' => $exception::class,
+            ]);
+            throw ValidationException::withMessages([
+                'venipak' => 'Venipak создал этикетки, но сохранить номера в заказе не удалось: '.implode(', ', $labels)
+                    .'. Не отправляйте запрос повторно; сохраните номера и проверьте заказ.',
+            ]);
+        }
 
         Log::info('Admin Venipak labels created.', [
             'order_id' => $order->id,
@@ -186,13 +207,13 @@ class OrderVenipakLabelService
             Log::error('Admin Venipak label print failed.', [
                 'order_id' => $order->id,
                 'label' => $label,
-                'exception' => $exception,
+                'exception_type' => $exception::class,
             ]);
             throw ValidationException::withMessages(['label' => 'Не удалось получить PDF-этикетку Venipak.']);
         }
 
         $content = $response->body();
-        if (! $response->successful() || $content === '' || str_starts_with($content, 'Error')) {
+        if (! $response->successful() || ! str_starts_with(ltrim($content), '%PDF-')) {
             Log::warning('Admin Venipak label print rejected.', [
                 'order_id' => $order->id,
                 'label' => $label,
@@ -272,8 +293,13 @@ class OrderVenipakLabelService
 
     private function parseLabels(string $body): array
     {
-        libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($body);
+        $previousErrors = libxml_use_internal_errors(true);
+        try {
+            $xml = simplexml_load_string($body, \SimpleXMLElement::class, LIBXML_NONET);
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousErrors);
+        }
         if ($xml === false) {
             throw ValidationException::withMessages(['venipak' => 'Venipak вернул некорректный XML.']);
         }

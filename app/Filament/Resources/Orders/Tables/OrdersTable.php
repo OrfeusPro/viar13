@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Filament\Resources\Orders\Schemas\OrderVenipakActions;
 use App\Http\Controllers\IndexController;
 use App\Models\AOrderFrom;
 use App\Models\CountryTel;
@@ -14,26 +15,22 @@ use App\Services\Admin\OrderPaymentService;
 use App\Services\Admin\OrderRecipientEmailService;
 use App\Services\Admin\OrderReviewRequestService;
 use App\Services\Admin\OrderUserService;
-use App\Services\Admin\OrderVenipakLabelService;
 use App\Services\Admin\UpdateOrderVrNumberService;
 use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -448,99 +445,31 @@ class OrdersTable
                 Filter::make('order_id')
                     ->label('ID заказа')
                     ->schema([TextInput::make('value')->label('ID заказа')->numeric()])
+                    ->indicateUsing(fn (array $data): array => filled($data['value'] ?? null)
+                        ? [Indicator::make('Заказ: '.$data['value'])->removeField('value')] : [])
                     ->query(fn (Builder $query, array $data): Builder => $query->when(
                         filled($data['value'] ?? null),
                         fn (Builder $query): Builder => $query->whereKey((int) $data['value']),
                     )),
-                Filter::make('payment_request')
-                    ->label('Номер запроса оплаты')
-                    ->schema([TextInput::make('value')->label('Номер (OPR-...)')])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        fn (Builder $query): Builder => $query->whereHas(
-                            'order_payment_requests',
-                            fn (Builder $query): Builder => $query->where('public_number', 'like', '%'.trim($data['value']).'%'),
-                        ),
-                    )),
-                Filter::make('customer')
-                    ->label('Клиент')
-                    ->schema([TextInput::make('value')->label('Email, имя, телефон или ID')])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        function (Builder $query) use ($data): Builder {
-                            $value = trim($data['value']);
-
-                            if (preg_match('/^(VR00|BAW|VRR445|DS020)(\d+)$/i', $value, $matches)) {
-                                $column = match (strtoupper($matches[1])) {
-                                    'VR00' => 'vrv_1',
-                                    'BAW' => 'vrv_2',
-                                    'VRR445' => 'vrv_3',
-                                    default => 'vrv_4',
-                                };
-
-                                return $query->whereHas('vrNumber', fn (Builder $query): Builder => $query
-                                    ->where($column, (int) $matches[2]));
-                            }
-
-                            return $query->where(function (Builder $query) use ($value): void {
-                                $query->whereHas('user', function (Builder $query) use ($value): void {
-                                    $query->where('email', 'like', "%{$value}%")
-                                        ->orWhere('first_name', 'like', "%{$value}%")
-                                        ->orWhere('last_name', 'like', "%{$value}%")
-                                        ->orWhere('phone', 'like', "%{$value}%");
-
-                                    if (ctype_digit($value)) {
-                                        $query->orWhereKey((int) $value);
-                                    }
-                                })->orWhere('delivery', 'like', "%{$value}%");
-                            });
-                        },
-                    )),
+                OrderSearchFilters::paymentRequest(),
+                OrderSearchFilters::customer(),
                 Filter::make('user_id')
                     ->label('ID клиента')
                     ->schema([TextInput::make('value')->label('ID клиента')->numeric()])
+                    ->indicateUsing(fn (array $data): array => filled($data['value'] ?? null)
+                        ? [Indicator::make('ID клиента: '.$data['value'])->removeField('value')] : [])
                     ->query(fn (Builder $query, array $data): Builder => $query->when(
                         filled($data['value'] ?? null),
                         fn (Builder $query): Builder => $query->where('user_id', (int) $data['value']),
                     )),
-                Filter::make('phone')
-                    ->label('Телефон')
-                    ->schema([TextInput::make('value')->label('Телефон')])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        function (Builder $query) use ($data): Builder {
-                            $phone = preg_replace('/[^0-9+]/', '', $data['value']);
-
-                            return $query->where(fn (Builder $query): Builder => $query
-                                ->whereHas('user', fn (Builder $query): Builder => $query->where('phone', 'like', "%{$phone}%"))
-                                ->orWhere('delivery', 'like', "%{$phone}%"));
-                        },
-                    )),
+                OrderSearchFilters::phone(),
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->options(self::statusLabels()),
                 SelectFilter::make('payment_status')
                     ->label('Оплата')
                     ->options(self::paymentLabels()),
-                SelectFilter::make('manager_id')
-                    ->label('Менеджер')
-                    ->options(fn (): array => ['__admin__' => 'Админ / без менеджера'] + User::query()
-                        ->where('role_id', 4)
-                        ->orderBy('email')
-                        ->get()
-                        ->mapWithKeys(fn (User $user): array => [$user->id => trim(($user->nick ? $user->nick.' — ' : '').$user->email)])
-                        ->all())
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        fn (Builder $query): Builder => $data['value'] === '__admin__'
-                            ? $query->where(function (Builder $query): void {
-                                $managerIds = User::query()->where('role_id', 4)->pluck('id');
-                                $query->whereNull('manager_id')->orWhereNotIn('manager_id', $managerIds);
-                            })
-                            : $query->where('manager_id', $data['value']),
-                    ))
-                    ->searchable()
-                    ->preload(),
+                OrderSearchFilters::manager(),
                 SelectFilter::make('painter')
                     ->label('Художник')
                     ->options(fn (): array => User::query()->where('role_id', 3)->orderBy('email')->pluck('email', 'id')->all())
@@ -564,41 +493,9 @@ class OrdersTable
                     ->label('Страна')
                     ->options(fn (): array => CountryTel::query()->orderBy('sort')->pluck('country_name', 'country_code')->all())
                     ->searchable(),
-                Filter::make('price')
-                    ->label('Точная сумма')
-                    ->schema([TextInput::make('value')->label('Сумма')->numeric()])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        fn (Builder $query): Builder => $query->where(function (Builder $query) use ($data): void {
-                            $query->where('price', $data['value'])->orWhere('sale_price', $data['value']);
-                        }),
-                    )),
-                Filter::make('size')
-                    ->label('Размер')
-                    ->schema([TextInput::make('value')->label('Размер или ID размера')])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        function (Builder $query) use ($data): Builder {
-                            $size = trim((string) $data['value']);
-
-                            return $query->where(function (Builder $query) use ($size): void {
-                                foreach (range(0, 9) as $index) {
-                                    $method = $index === 0 ? 'whereJsonContains' : 'orWhereJsonContains';
-                                    $query->{$method}("items->{$index}->sizeId", $size)
-                                        ->orWhereJsonContains("items->{$index}->size_name", $size);
-                                }
-                            });
-                        },
-                    )),
-                Filter::make('created_at')
-                    ->label('Дата создания')
-                    ->schema([
-                        DatePicker::make('from')->label('С'),
-                        DatePicker::make('until')->label('По'),
-                    ])
-                    ->query(fn (Builder $query, array $data): Builder => $query
-                        ->when($data['from'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date))
-                        ->when($data['until'] ?? null, fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date))),
+                OrderSearchFilters::price(),
+                OrderSearchFilters::size(),
+                OrderSearchFilters::createdAt(),
                 TernaryFilter::make('is_admin_order')
                     ->label('Административный заказ'),
             ])
@@ -686,142 +583,8 @@ class OrdersTable
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
-                Action::make('createVenipakLabel')
-                    ->label('Создание этикетки')
-                    ->modalHeading(fn ($record): string => 'Этикетка Venipak для заказа №'.$record->id)
-                    ->modalSubmitActionLabel('Создать этикетку')
-                    ->modalWidth('5xl')
-                    ->schema([
-                        Section::make('Получатель')
-                            ->columns(3)
-                            ->schema([
-                                TextInput::make('doc_no')->label('№ документа на посылку')->maxLength(16),
-                                Select::make('destination')
-                                    ->label('Направление')
-                                    ->options(['address' => 'На адрес', 'pickup' => 'На отделение'])
-                                    ->required()
-                                    ->live(),
-                                TextInput::make('r_country')->label('Страна')->required()->length(2),
-                                TextInput::make('g_name')->label('Название / получатель')->required()->maxLength(60),
-                                TextInput::make('g_code')->label('Код компании')->maxLength(20),
-                                TextInput::make('g_contact_p')->label('Контактное лицо')->required()->maxLength(80),
-                                TextInput::make('g_contact_t')->label('Телефон')->tel()->required()->maxLength(30),
-                                TextInput::make('email_receiver')->label('Email')->email()->maxLength(100),
-                                TextInput::make('g_city')->label('Город')->required()->maxLength(40)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('g_address')->label('Улица')->required()->maxLength(100)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('g_house')->label('Дом')->maxLength(15)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('g_flat')->label('Квартира')->maxLength(15)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('g_post')->label('Почтовый индекс')->required()->maxLength(12)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('door_code')->label('Код двери')->maxLength(10)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('office_no')->label('Номер офиса')->maxLength(10)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('warehous_no')->label('Номер склада')->maxLength(10)
-                                    ->visible(fn ($get): bool => $get('destination') === 'address'),
-                                TextInput::make('g_city_pickup')->label('Город отделения')->required()->maxLength(40)
-                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
-                                TextInput::make('g_address_pickup')->label('Адрес отделения')->required()->maxLength(120)
-                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
-                                TextInput::make('g_post_pickup')->label('Индекс отделения')->required()->maxLength(12)
-                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
-                                TextInput::make('g_name_pickup')
-                                    ->label('Название пункта Venipak')
-                                    ->helperText('Укажите название выбранного пункта выдачи Venipak.')
-                                    ->required()
-                                    ->maxLength(100)
-                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
-                                TextInput::make('g_code_pickup')
-                                    ->label('Код пункта Venipak')
-                                    ->required()
-                                    ->maxLength(30)
-                                    ->visible(fn ($get): bool => $get('destination') === 'pickup'),
-                            ]),
-                        Section::make('Отправитель')
-                            ->columns(3)
-                            ->collapsible()
-                            ->schema([
-                                TextInput::make('s_name')->label('Название')->required()->maxLength(60),
-                                TextInput::make('s_code')->label('Код компании')->required()->maxLength(20),
-                                TextInput::make('s_country')->label('Страна')->required()->length(2),
-                                TextInput::make('s_city')->label('Город')->required()->maxLength(40),
-                                TextInput::make('s_address')->label('Адрес')->required()->maxLength(100),
-                                TextInput::make('s_post')->label('Почтовый индекс')->required()->maxLength(12),
-                                TextInput::make('s_contact_p')->label('Контактное лицо')->required()->maxLength(60),
-                                TextInput::make('s_contact_t')->label('Телефон')->tel()->required()->maxLength(30),
-                                TextInput::make('email_sender')->label('Email')->email()->maxLength(100),
-                            ]),
-                        Section::make('Доставка и услуги')
-                            ->columns(3)
-                            ->schema([
-                                Select::make('delivery_type')
-                                    ->label('Срок доставки')
-                                    ->options([
-                                        'nwd' => 'Следующий рабочий день',
-                                        'nwd10' => 'Следующий рабочий день до 10:00',
-                                        'nwd12' => 'Следующий рабочий день до 12:00',
-                                        'nwd8_14' => 'Следующий рабочий день 8:00–14:00',
-                                        'nwd14_17' => 'Следующий рабочий день 14:00–17:00',
-                                        'nwd18_22' => 'Следующий рабочий день 18:00–22:00',
-                                        'sat' => 'Суббота',
-                                    ])->required(),
-                                Select::make('delivery_express')
-                                    ->label('Экспресс')
-                                    ->options(['0' => '48 часов', '1' => '24 часа'])
-                                    ->required(),
-                                TextInput::make('cod')->label('Наложенный платёж')->numeric()->minValue(0),
-                                Select::make('cod_type')->label('Валюта COD')->options(['EUR' => 'EUR', 'PLN' => 'PLN', 'CZK' => 'CZK'])->required(),
-                                Toggle::make('comment_call')->label('Позвонить перед доставкой'),
-                                Toggle::make('four_hands')->label('Нужны четыре руки'),
-                            ]),
-                        Section::make('Посылки')
-                            ->schema([
-                                Repeater::make('packages')
-                                    ->label('')
-                                    ->minItems(1)
-                                    ->maxItems(20)
-                                    ->defaultItems(1)
-                                    ->addActionLabel('Добавить посылку')
-                                    ->columns(3)
-                                    ->schema([
-                                        TextInput::make('weight')->label('Вес, кг')->numeric()->minValue(0.01)->required(),
-                                        TextInput::make('volume')->label('Объём')->numeric()->minValue(0),
-                                        Select::make('pallet')->label('Паллет')->options([
-                                            '0' => 'Нет', '2' => '1.2m / 0.8m', '6' => '1.2m / 1m', '7' => '1.2m / 1.2m',
-                                            '3' => '0.8m / 0.6m', '4' => 'Другое',
-                                        ])->required(),
-                                    ]),
-                            ]),
-                    ])
-                    ->fillForm(fn ($record): array => app(OrderVenipakLabelService::class)->defaultData($record))
-                    ->action(function ($record, array $data): void {
-                        $labels = app(OrderVenipakLabelService::class)->create($record, $data);
-                        $record->refresh();
-                        Notification::make()
-                            ->success()
-                            ->title('Этикетка Venipak создана')
-                            ->body('Номера: '.implode(', ', $labels))
-                            ->send();
-                    })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
-                    ->extraAttributes(['class' => 'hidden']),
-                Action::make('printVenipakLabel')
-                    ->label('Печать этикетки')
-                    ->action(function ($record, array $arguments) {
-                        $download = app(OrderVenipakLabelService::class)->print($record, (string) ($arguments['label'] ?? ''));
-
-                        return response()->streamDownload(
-                            static fn () => print ($download['content']),
-                            $download['filename'],
-                            ['Content-Type' => 'application/pdf', 'Cache-Control' => 'no-store, no-cache'],
-                        );
-                    })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
-                    ->extraAttributes(['class' => 'hidden']),
+                OrderVenipakActions::create()->extraAttributes(['class' => 'hidden']),
+                OrderVenipakActions::print()->extraAttributes(['class' => 'hidden']),
                 Action::make('updateUserPdfLocale')
                     ->label('Язык счёта')
                     ->modalHeading(fn ($record): string => 'Язык счёта пользователя заказа №'.$record->id)

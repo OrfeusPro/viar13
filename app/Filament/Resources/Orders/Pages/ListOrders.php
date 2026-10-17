@@ -37,7 +37,7 @@ class ListOrders extends ListRecords
                 )),
             'completed' => Tab::make('Завершённые')
                 ->badge(fn (): int => Orders::query()->where('status', 'completed')->count())
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'completed')),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'completed')->orderByDesc('created_at')),
             'unpaid' => Tab::make('Неоплаченные')
                 ->badge(fn (): int => Orders::query()->where('status', '!=', 'completed')->where('payment_status', 'not_payed')->count())
                 ->badgeColor('danger')
@@ -47,7 +47,7 @@ class ListOrders extends ListRecords
                 )),
             'production' => Tab::make('В производстве')
                 ->badge(fn (): int => Orders::query()->where('status', 'in_production')->count())
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'in_production')),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'in_production')->orderByDesc('orders.id')),
             'printing' => Tab::make('У печатника')
                 ->badge(fn (): int => Orders::query()->where('status', '!=', 'completed')->whereHas('printingAssignment')->count())
                 ->modifyQueryUsing(fn (Builder $query): Builder => $this->applyLegacyRotation(
@@ -64,16 +64,29 @@ class ListOrders extends ListRecords
                 ->badge(fn (): int => Orders::query()->where('status', 'sended')->whereDate('send_date', today())->count())
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query
                     ->where('status', 'sended')
-                    ->whereDate('send_date', today())),
+                    ->whereDate('send_date', today())->orderByDesc('send_date')),
             'sent' => Tab::make('Отправленные')
                 ->badge(fn (): int => Orders::query()->where('status', 'sended')->count())
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'sended')),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'sended')->orderByDesc('orders.id')),
             'new_recently' => Tab::make('Новые сегодня/вчера')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query
-                    ->where('status', 'new')
-                    ->whereBetween('created_at', [today()->subDay()->startOfDay(), today()->endOfDay()])),
-            'all' => Tab::make('Все'),
+                    ->whereBetween('created_at', [today()->subDay()->startOfDay(), today()->endOfDay()])->orderByDesc('orders.id')),
+            'all' => Tab::make('Все')->modifyQueryUsing(fn (Builder $query): Builder => $query->orderByDesc('created_at')),
         ];
+    }
+
+    protected function modifyQueryWithActiveTab(Builder $query, bool $isResolvingRecord = false): Builder
+    {
+        // Original order_filter is an alternative to the tab branches, not an extra condition.
+        foreach ($this->tableFilters ?? [] as $filter) {
+            foreach ((array) $filter as $value) {
+                if (filled(is_string($value) ? trim($value) : $value)) {
+                    return $query->orderByDesc('orders.created_at');
+                }
+            }
+        }
+
+        return parent::modifyQueryWithActiveTab($query, $isResolvingRecord);
     }
 
     private function applyLegacyRotation(Builder $query, Builder $prioritySource, bool $express = false): Builder
