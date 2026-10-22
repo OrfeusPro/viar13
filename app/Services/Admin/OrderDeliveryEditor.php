@@ -97,7 +97,9 @@ class OrderDeliveryEditor
             }
             if ($pickup !== null) {
                 $set('delivery_edit.address', $options[$pickup]);
-                $set('delivery_edit.city', $method === 'pickup_at_viar_workshop' ? null : $options[$pickup]);
+                // Voyager clears the hidden city on method/country changes for every pickup variant.
+                // Selecting a pickup explicitly has its separate callback and save still resolves its title.
+                $set('delivery_edit.city', null);
             }
         } elseif ($method === 'city_delivery') {
             $options = $this->towns($country);

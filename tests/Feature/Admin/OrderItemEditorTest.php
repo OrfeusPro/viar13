@@ -6,7 +6,9 @@ use App\Filament\Resources\Orders\Schemas\OrderInformationForm;
 use App\Filament\Resources\Orders\Schemas\OrderItemsForm;
 use App\Models\Orders;
 use App\Models\User;
+use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\OrderItemEditor;
+use App\Services\Admin\OrderItemUploads;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\Testing\TestAction;
@@ -34,6 +36,7 @@ class OrderItemEditorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->andReturn('https://example.test/invoice.pdf')->byDefault();
         $this->assertSame('sqlite', DB::connection()->getDriverName());
         $this->assertSame(':memory:', DB::connection()->getDatabaseName());
         Http::preventStrayRequests();
@@ -107,6 +110,9 @@ class OrderItemEditorTest extends TestCase
 
     public function test_update_matches_original_item_fields_presentation_and_aggregates_without_changing_paths(): void
     {
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->once()
+            ->withArgs(fn (Orders $saved): bool => json_decode($saved->fresh()->items, true)[0]['name'] === 'Updated'
+                && (float) $saved->fresh()->price === 1254.57)->andReturn('https://example.test/invoice.pdf');
         $order = Orders::findOrFail(1);
         $before = json_decode($order->items, true);
         $input = app(OrderItemEditor::class)->state($order)[0];
@@ -332,6 +338,9 @@ class OrderItemEditorTest extends TestCase
 
     public function test_add_position_with_upload_preserves_existing_rows_and_uses_production_codes(): void
     {
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->once()
+            ->withArgs(fn (Orders $saved): bool => json_decode($saved->fresh()->items, true)[3]['name'] === 'Added'
+                && (float) $saved->fresh()->price === 37.56)->andReturn('https://example.test/invoice.pdf');
         Storage::disk('uploads')->put('orders/keep.jpg', 'unchanged bytes');
         $order = Orders::findOrFail(1);
         $before = json_decode($order->items, true);
@@ -362,8 +371,46 @@ class OrderItemEditorTest extends TestCase
         $this->assertSame(10.0, (float) $updated->sale_percent);
     }
 
+    public function test_pdf_failure_when_adding_item_rolls_back_order_and_removes_new_upload_only(): void
+    {
+        Storage::disk('uploads')->put('orders/keep.jpg', 'existing bytes');
+        $order = Orders::findOrFail(1);
+        $before = $order->getRawOriginal();
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->once()
+            ->andThrow(new RuntimeException('PDF failed'));
+        try {
+            app(OrderItemEditor::class)->add($order, array_replace(app(OrderItemEditor::class)->newState(), [
+                'name' => 'Rolled back', 'price' => 10, 'files' => [UploadedFile::fake()->image('new.png')],
+            ]));
+            $this->fail('PDF failure must reject adding the item.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('PDF failed', $exception->getMessage());
+        }
+        $this->assertSame($before, $order->fresh()->getRawOriginal());
+        $this->assertSame(['orders/keep.jpg'], Storage::disk('uploads')->allFiles());
+        $this->assertSame('existing bytes', Storage::disk('uploads')->get('orders/keep.jpg'));
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_pdf_failure_when_updating_item_rolls_back_all_totals_and_json(): void
+    {
+        $order = Orders::findOrFail(1);
+        $before = $order->getRawOriginal();
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->once()
+            ->andThrow(new RuntimeException('PDF failed'));
+        try {
+            app(OrderItemEditor::class)->update($order, array_replace(app(OrderItemEditor::class)->state($order)[0], ['price' => 999]));
+            $this->fail('PDF failure must reject updating the item.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('PDF failed', $exception->getMessage());
+        }
+        $this->assertSame($before, $order->fresh()->getRawOriginal());
+    }
+
     public function test_attach_only_appends_to_selected_position_and_never_overwrites_colliding_files(): void
     {
+        $this->mock(OrderInvoiceService::class)->shouldNotReceive('refreshDocument');
         Storage::disk('uploads')->put('orders/keep.jpg', 'unchanged');
         $order = Orders::findOrFail(1);
         $before = $order->getAttributes();
@@ -385,6 +432,33 @@ class OrderItemEditorTest extends TestCase
         }
         $this->assertSame(20, $items[2]['price']);
         $this->assertSame('unchanged', Storage::disk('uploads')->get('orders/keep.jpg'));
+    }
+
+    public function test_attachment_batch_limit_is_atomic_and_preserves_existing_sources(): void
+    {
+        $order = Orders::findOrFail(1);
+        $before = $order->getAttributes();
+        $disk = Storage::disk('uploads');
+        $disk->put('orders/keep.jpg', 'original source');
+        $files = array_map(fn (int $index) => UploadedFile::fake()->image('source-'.$index.'.png', 10, 10), range(1, 31));
+        $editor = app(OrderItemEditor::class);
+        try {
+            $editor->attach($order, $editor->state($order)[1] + ['files' => $files]);
+            $this->fail('An oversized batch must be rejected before writing files.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('files', $exception->errors());
+            $this->assertSame($before, $order->fresh()->getAttributes());
+            $this->assertSame(['orders/keep.jpg'], $disk->allFiles());
+        }
+        $updated = $editor->attach($order, $editor->state($order)[1] + ['files' => array_slice($files, 0, 30)]);
+        $items = json_decode($updated->items, true);
+        $this->assertCount(30, $items[2]['orig_images']);
+        $this->assertCount(30, array_unique($items[2]['orig_images']));
+        $this->assertSame(json_decode($before['items'], true)[0], $items[0]);
+        $this->assertSame('original source', $disk->get('orders/keep.jpg'));
+        foreach ($items[2]['orig_images'] as $index => $url) {
+            $this->assertSame(file_get_contents($files[$index]->getPathname()), $disk->get(ltrim(parse_url($url, PHP_URL_PATH), '/')));
+        }
     }
 
     public function test_upload_failure_rolls_back_db_and_removes_only_new_files(): void
@@ -463,6 +537,7 @@ class OrderItemEditorTest extends TestCase
         $items = json_decode(Orders::findOrFail(1)->items, true);
         $this->assertSame('Other', $items[2]['name']);
         $this->assertCount(1, $items[2]['orig_images']);
+        $test->assertSee(basename($items[2]['orig_images'][0]));
         $test->callAction($this->action($keys[1]))->assertHasNoErrors();
         $this->assertSame('Unsaved draft', json_decode(Orders::findOrFail(1)->items, true)[2]['name']);
     }
@@ -584,6 +659,52 @@ class OrderItemEditorTest extends TestCase
         $this->assertSame(5, FileUploadConfiguration::maxUploadTime());
         $this->assertTrue(FileUploadConfiguration::shouldCleanupOldUploads());
         $this->assertContains('jpg', config('livewire.temporary_file_upload.preview_mimes'));
+    }
+
+    public function test_original_source_formats_are_sniffed_and_attached_without_changing_bytes(): void
+    {
+        // Filament's bundled MIME detector maps .fig to application/x-xfig when the browser has no type.
+        $this->assertContains('application/x-xfig', OrderItemUploads::acceptedTypes(true));
+        $this->assertNotContains('application/x-xfig', OrderItemUploads::acceptedTypes(false));
+        $sources = [
+            'source.heic' => pack('N', 24).'ftypheic'.pack('N', 0).'mif1heic',
+            'source.heif' => pack('N', 24).'ftypmif1'.pack('N', 0).'mif1heic',
+            'source.psd' => '8BPS'.pack('n', 1).str_repeat("\0", 6).pack('nNNnn', 3, 1, 1, 8, 3).str_repeat("\0", 64),
+            'source.fig' => 'fig-kiwi'.pack('V', 15).implode('', array_map('chr', range(128, 255))),
+            'source-xfig.fig' => "#FIG 3.2  Produced by xfig version 3.2.5\nLandscape\nCenter\nMetric\nA4\n100.00\nSingle\n-2\n1200 2\n",
+        ];
+        $editor = app(OrderItemEditor::class);
+        $order = Orders::findOrFail(1);
+        foreach ($sources as $filename => $bytes) {
+            $temporary = UploadedFile::fake()->createWithContent($filename, $bytes);
+            // A real UploadedFile uses fileinfo rather than the fake's extension-based MIME.
+            $file = new UploadedFile($temporary->getPathname(), $filename, null, null, true);
+            $this->assertContains($file->getMimeType(), OrderItemUploads::acceptedTypes(true), $filename.': '.$file->getMimeType());
+            $order = $editor->attach($order, $editor->state($order)[0] + ['files' => [$file]]);
+            $images = json_decode($order->items, true)[0]['orig_images'];
+            $path = ltrim(parse_url(end($images), PHP_URL_PATH), '/');
+            $this->assertStringEndsWith('.'.pathinfo($filename, PATHINFO_EXTENSION), $path);
+            $this->assertSame($bytes, Storage::disk('uploads')->get($path));
+            if (in_array(pathinfo($filename, PATHINFO_EXTENSION), ['psd', 'fig'], true)) {
+                $before = $order->getRawOriginal();
+                $paths = Storage::disk('uploads')->allFiles();
+                try {
+                    $editor->add($order, array_replace($editor->newState(), ['name' => 'Rejected document', 'files' => [$file]]));
+                    $this->fail('Image-only new-item flow accepted '.$filename);
+                } catch (ValidationException) {
+                    $this->assertSame($before, $order->fresh()->getRawOriginal());
+                    $this->assertSame($paths, Storage::disk('uploads')->allFiles());
+                }
+            } else {
+                $added = $editor->add($order, array_replace($editor->newState(), ['name' => 'HEIF image item', 'files' => [$file]]));
+                $lastItem = collect(json_decode($added->items, true))->filter(fn ($row) => is_array($row) && ($row['name'] ?? '') === 'HEIF image item')->last();
+                $imagePath = ltrim(parse_url($lastItem['orig_images'][0], PHP_URL_PATH), '/');
+                $this->assertSame($bytes, Storage::disk('uploads')->get($imagePath));
+                $order = $added;
+            }
+        }
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
     }
 
     private function action(string $key): TestAction

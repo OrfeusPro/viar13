@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Livewire;
+use Mockery\MockInterface;
 use Tests\TestCase;
 
 class OrderLifecycleServiceTest extends TestCase
@@ -213,6 +214,68 @@ class OrderLifecycleServiceTest extends TestCase
         $this->actingAs($this->admin(['browse_orders', 'read_orders']), 'filament');
 
         $this->get('/filament/orders/create')->assertForbidden();
+    }
+
+    public function test_open_lifecycle_forms_do_not_call_services_after_permission_revocation(): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        $order = Orders::query()->forceCreate(['status' => 'watching', 'delivery' => '{}']);
+        $this->mock(OrderLifecycleService::class, function (MockInterface $mock): void {
+            $mock->shouldNotReceive('updateStatus');
+            $mock->shouldNotReceive('updateDeliveryDate');
+            $mock->shouldNotReceive('delete');
+        });
+        foreach ([
+            'updateOrderStatus' => ['status' => 'completed'],
+            'updateOrderDeliveryDate' => ['delivery_date' => '2026-10-18'],
+            'deleteOrder' => [],
+        ] as $action => $data) {
+            $editor = $this->admin(['edit_orders', 'delete_orders']);
+            $this->actingAs($editor, 'filament');
+            $component = Livewire::test(LifecycleTestTable::class)
+                ->mountAction(TestAction::make($action)->table($order))
+                ->assertActionMounted(TestAction::make($action)->table($order));
+            if ($data !== []) {
+                $component->fillForm($data);
+            }
+            DB::table('permission_role')->where('role_id', $editor->role_id)->delete();
+            $this->actingAs(User::findOrFail($editor->id), 'filament');
+            $this->assertFalse(auth('filament')->user()->can($action === 'deleteOrder' ? 'delete' : 'update', $order));
+            $component->callMountedAction();
+            $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'watching', 'delivery' => '{}']);
+        }
+        Mail::assertNothingSent();
+    }
+
+    public function test_printing_lifecycle_hides_delete_and_existing_date_editor_but_retains_original_actions(): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        $editor = $this->admin(['edit_orders', 'add_orders', 'delete_orders']);
+        $editor->role->forceFill(['name' => 'printing'])->save();
+        $this->actingAs($editor, 'filament');
+        $order = Orders::query()->forceCreate([
+            'status' => 'watching', 'delivery' => json_encode(['when_send' => '2026-10-18']),
+            'photo' => 'https://example.test/outgoing.pdf',
+        ]);
+        $order->setRelation('user', null);
+        $html = view('filament.tables.columns.order-lifecycle', ['getRecord' => fn () => $order])->render();
+        foreach (["save('status'", 'Создать заказ', 'Редактировать заказ', 'Просмотр клиента', 'Исходящая накладная', 'Скачать', 'доставить через:'] as $visible) {
+            $this->assertStringContainsString($visible, $html);
+        }
+        foreach (['deleteOrder', "save('delivery_date'", 'желаемая дата доставки:'] as $hidden) {
+            $this->assertStringNotContainsString($hidden, $html);
+        }
+        $order->delivery = '{}';
+        $html = view('filament.tables.columns.order-lifecycle', ['getRecord' => fn () => $order])->render();
+        $this->assertStringContainsString("save('delivery_date'", $html);
+        $this->assertStringContainsString('желаемая дата доставки:', $html);
+        $this->assertStringNotContainsString('deleteOrder', $html);
+        $editor->role->forceFill(['name' => 'admin'])->save();
+        $order->delivery = json_encode(['when_send' => '2026-10-18']);
+        $html = view('filament.tables.columns.order-lifecycle', ['getRecord' => fn () => $order])->render();
+        $this->assertStringContainsString("save('delivery_date'", $html);
+        $this->assertStringContainsString('deleteOrder', $html);
+        Mail::assertNothingSent();
     }
 
     private function admin(array $permissions): User

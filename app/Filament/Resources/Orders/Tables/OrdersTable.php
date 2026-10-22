@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Filament\Resources\Orders\Pages\ListOrders;
+use App\Filament\Resources\Orders\Schemas\OrderPaymentRequestsForm;
 use App\Filament\Resources\Orders\Schemas\OrderVenipakActions;
 use App\Http\Controllers\IndexController;
 use App\Models\AOrderFrom;
-use App\Models\CountryTel;
 use App\Models\Orders;
-use App\Models\User;
 use App\Models\UserType;
 use App\Services\Admin\OrderAdminChatService;
 use App\Services\Admin\OrderInvoiceService;
@@ -28,6 +28,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ViewColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
@@ -42,6 +43,9 @@ class OrdersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->emptyStateHeading('Заказы не найдены')
+            ->description(fn ($livewire): ?string => OrderListSummary::forTable($livewire))
+            ->extraAttributes(['class' => 'viar-orders-table'])
             ->recordUrl(null)
             ->modifyQueryUsing(fn (Builder $query): Builder => $query
                 ->with([
@@ -49,8 +53,8 @@ class OrdersTable
                     'manager',
                     'vrNumber',
                     'adminChats.user',
-                    'order_user_comments' => fn ($query) => $query->oldest('id'),
-                    'order_painter_comments' => fn ($query) => $query->oldest('id'),
+                    'order_user_comments' => fn ($query) => $query->oldest('created_at')->oldest('id'),
+                    'order_painter_comments' => fn ($query) => $query->latest('created_at')->latest('id'),
                     'orders_chats' => fn ($query) => $query->oldest('id'),
                     'saMessages' => fn ($query) => $query->oldest('id'),
                     'saConversations',
@@ -70,7 +74,10 @@ class OrdersTable
                     'saConversations as unread_sa_conversations_count' => fn ($query) => $query
                         ->where('unread_for_manager', 1),
                 ]))
-            ->paginated([13, 25, 50, 100])
+            ->paginationPageOptions(fn ($livewire): array => [
+                $livewire instanceof ListOrders && $livewire->hasActiveOrderFilters() ? 10 : 13,
+                25, 50, 100,
+            ])
             ->defaultPaginationPageOption(13)
             ->columns([
                 ViewColumn::make('number_controls')
@@ -219,6 +226,7 @@ class OrdersTable
                         return $paymentRequest ? "{$number} · {$paymentRequest}" : $number;
                     })
                     ->wrap()
+                    ->visible(fn (): bool => auth('filament')->user()?->role?->name !== 'printing')
                     ->toggleable(isToggledHiddenByDefault: true),
                 ViewColumn::make('user_controls')
                     ->label('Пользователь')
@@ -227,6 +235,7 @@ class OrdersTable
                     ->label('Менеджер')
                     ->placeholder('Не назначен')
                     ->searchable()
+                    ->visible(fn (): bool => auth('filament')->user()?->role?->name !== 'printing')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('country')
                     ->label('Страна')
@@ -287,11 +296,13 @@ class OrdersTable
                     ->label('Канал')
                     ->formatStateUsing(fn ($state): string => AOrderFrom::query()->whereKey($state)->value('title') ?? (string) $state)
                     ->placeholder('—')
+                    ->visible(fn (): bool => auth('filament')->user()?->role?->name !== 'printing')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('catid')
                     ->label('Категория')
                     ->formatStateUsing(fn ($state): string => filled($state) && (int) $state !== 0 ? '#'.$state : 'нет')
                     ->color(fn ($state): string => filled($state) && (int) $state !== 0 ? 'gray' : 'danger')
+                    ->visible(fn (): bool => auth('filament')->user()?->role?->name !== 'printing')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('painterAssignment.user.email')
                     ->label('Художник')
@@ -398,6 +409,7 @@ class OrdersTable
                             ->money('EUR'),
                     )
                     ->sortable()
+                    ->visible(fn (): bool => auth('filament')->user()?->role?->name !== 'printing')
                     ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_admin_order')
                     ->label('Админ-заказ')
@@ -434,6 +446,7 @@ class OrdersTable
                     ->date('d.m.Y')
                     ->placeholder('—')
                     ->color(fn ($state): string => filled($state) && strtotime((string) $state) <= today()->addDay()->timestamp ? 'danger' : 'gray')
+                    ->visible(fn (): bool => auth('filament')->user()?->role?->name !== 'printing')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->label('Создан')
@@ -453,33 +466,11 @@ class OrdersTable
                     )),
                 OrderSearchFilters::paymentRequest(),
                 OrderSearchFilters::customer(),
-                Filter::make('user_id')
-                    ->label('ID клиента')
-                    ->schema([TextInput::make('value')->label('ID клиента')->numeric()])
-                    ->indicateUsing(fn (array $data): array => filled($data['value'] ?? null)
-                        ? [Indicator::make('ID клиента: '.$data['value'])->removeField('value')] : [])
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        fn (Builder $query): Builder => $query->where('user_id', (int) $data['value']),
-                    )),
                 OrderSearchFilters::phone(),
-                SelectFilter::make('status')
-                    ->label('Статус')
-                    ->options(self::statusLabels()),
+                OrderSearchFilters::price(),
                 SelectFilter::make('payment_status')
                     ->label('Оплата')
                     ->options(self::paymentLabels()),
-                OrderSearchFilters::manager(),
-                SelectFilter::make('painter')
-                    ->label('Художник')
-                    ->options(fn (): array => User::query()->where('role_id', 3)->orderBy('email')->pluck('email', 'id')->all())
-                    ->query(fn (Builder $query, array $data): Builder => $query->when(
-                        filled($data['value'] ?? null),
-                        fn (Builder $query): Builder => $query->whereHas('painterAssignment', fn (Builder $query): Builder => $query
-                            ->where('user_id', $data['value'])),
-                    ))
-                    ->searchable()
-                    ->preload(),
                 SelectFilter::make('a_order_from')
                     ->label('Канал продаж')
                     ->options(fn (): array => AOrderFrom::query()->orderBy('sortorder')->pluck('title', 'id')->all())
@@ -491,15 +482,56 @@ class OrdersTable
                     ->preload(),
                 SelectFilter::make('country')
                     ->label('Страна')
-                    ->options(fn (): array => CountryTel::query()->orderBy('sort')->pluck('country_name', 'country_code')->all())
+                    ->options(fn (): array => OrderSearchFilters::countryOptions())
                     ->searchable(),
-                OrderSearchFilters::price(),
+                SelectFilter::make('painter')
+                    ->label('Художник')
+                    ->options(fn (): array => OrderSearchFilters::painterOptions())
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        filled($data['value'] ?? null),
+                        fn (Builder $query): Builder => $query->whereHas('painterAssignment', fn (Builder $query): Builder => $query
+                            ->where('user_id', $data['value'])),
+                    ))
+                    ->searchable()
+                    ->preload(),
+                OrderSearchFilters::manager(),
                 OrderSearchFilters::size(),
                 OrderSearchFilters::createdAt(),
+                Filter::make('user_id')
+                    ->label('ID клиента')
+                    ->schema([TextInput::make('value')->label('ID клиента')->numeric()])
+                    ->indicateUsing(fn (array $data): array => filled($data['value'] ?? null)
+                        ? [Indicator::make('ID клиента: '.$data['value'])->removeField('value')] : [])
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        filled($data['value'] ?? null),
+                        fn (Builder $query): Builder => $query->where('user_id', (int) $data['value']),
+                    )),
+                SelectFilter::make('status')
+                    ->label('Статус')
+                    ->options(self::statusLabels()),
                 TernaryFilter::make('is_admin_order')
                     ->label('Административный заказ'),
-            ])
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormColumns(['default' => 1, 'sm' => 2, 'lg' => 4, 'xl' => 8, '2xl' => 10])
             ->recordActions([
+                OrderInlineActions::update()->extraAttributes(['class' => 'hidden']),
+                OrderInlineActions::updateFirm()->extraAttributes(['class' => 'hidden']),
+                Action::make('createVrNumber')
+                    ->label('Создать накладную')
+                    ->modalHeading(fn ($record): string => 'Создать накладную заказа №'.$record->id)
+                    ->schema([
+                        Select::make('prefix')->label('Фирма')->options(fn (): array => UpdateOrderVrNumberService::prefixOptions())->required(),
+                    ])
+                    ->fillForm(fn (array $arguments): array => ['prefix' => $arguments['prefix'] ?? null])
+                    ->action(function ($record, array $data): void {
+                        abort_unless(auth('filament')->user()?->can('update', $record), 403);
+                        app(UpdateOrderVrNumberService::class)->generate($record, $data['prefix']);
+                        $record->unsetRelation('vrNumber');
+                        Notification::make()->success()->title('Накладная создана')->send();
+                    })
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->extraAttributes(['class' => 'hidden']),
+
                 Action::make('manageVrNumber')
                     ->label('Накладная')
                     ->modalHeading(fn ($record): string => 'Накладная заказа №'.$record->id)
@@ -521,24 +553,7 @@ class OrdersTable
                     })
                     ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
-                Action::make('createPaymentRequest')
-                    ->label('Создать платёж')
-                    ->modalHeading(fn ($record): string => 'Создать платёж для заказа №'.$record->id)
-                    ->modalSubmitActionLabel('Создать платёж')
-                    ->schema([
-                        TextInput::make('amount')->label('Сумма, EUR')->numeric()->minValue(0.01)->maxValue(999999.99)->required(),
-                        TextInput::make('purpose')->label('Назначение платежа')->maxLength(255),
-                    ])
-                    ->fillForm(fn ($record): array => [
-                        'amount' => number_format((float) ($record->sale_price ?: $record->price), 2, '.', ''),
-                    ])
-                    ->action(function ($record, array $data): void {
-                        app(OrderPaymentRequestService::class)->createForOrder($record, $data, auth('filament')->user());
-                        $record->unsetRelation('order_payment_requests');
-                        Notification::make()->success()->title('Заявка на оплату создана')->send();
-                    })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
-                    ->extraAttributes(['class' => 'hidden']),
+                OrderPaymentRequestsForm::createAction()->extraAttributes(['class' => 'hidden']),
                 Action::make('updatePaymentStatus')
                     ->label('Статус оплаты')
                     ->modalHeading(fn ($record): string => 'Статус оплаты заказа №'.$record->id)
@@ -707,6 +722,9 @@ class OrdersTable
                 OrderPainterChatActions::reply(),
                 OrderPainterChatActions::read(),
                 OrderArtistActions::manage()->extraAttributes(['class' => 'hidden']),
+                OrderArtistActions::updateField()->extraAttributes(['class' => 'hidden']),
+                OrderArtistActions::updateMediaStatus()->extraAttributes(['class' => 'hidden']),
+                OrderArtistActions::paintingStatuses()->extraAttributes(['class' => 'hidden']),
                 OrderLifecycleActions::updateStatus()->extraAttributes(['class' => 'hidden']),
                 OrderLifecycleActions::updateDeliveryDate()->extraAttributes(['class' => 'hidden']),
                 OrderLifecycleActions::viewClient()->extraAttributes(['class' => 'hidden']),
@@ -825,9 +843,7 @@ class OrdersTable
 
     public static function clientStatusOptions(): array
     {
-        static $statuses;
-
-        return $statuses ??= UserType::query()->pluck('name', 'id')->all();
+        return once(fn (): array => UserType::query()->pluck('name', 'id')->all());
     }
 
     public static function localeOptions(): array

@@ -288,6 +288,26 @@ class OrderPainterChatTest extends TestCase
         Livewire::test(PainterChatTestTable::class)->assertActionHidden(TestAction::make('viewPainterChat')->table($this->order));
     }
 
+    public function test_open_inline_composer_blocks_send_and_refresh_after_edit_permission_revocation(): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        $this->mock(OrderPainterChatService::class, fn (MockInterface $mock) => $mock->shouldNotReceive('send'));
+        $this->actingAs($this->editor, 'filament');
+        $parameters = ['orderId' => $this->order->id, 'stream' => 'painter'];
+        $sender = Livewire::test(OrderChatComposer::class, $parameters)->set('text', 'Pending draft');
+        $viewer = Livewire::test(OrderChatComposer::class, $parameters);
+        DB::table('permission_role')->where('role_id', $this->editor->role_id)
+            ->where('permission_id', Permission::query()->where('key', 'edit_orders')->value('id'))->delete();
+        $this->actingAs(User::findOrFail($this->editor->id), 'filament');
+        $this->assertTrue(auth('filament')->user()->canAccessPanel(Filament::getPanel('admin')));
+        $this->assertTrue(auth('filament')->user()->can('view', $this->order));
+        $this->assertFalse(auth('filament')->user()->can('update', $this->order));
+        $sender->call('send')->assertForbidden();
+        $viewer->call('$refresh')->assertForbidden();
+        $this->assertDatabaseCount('orders_chats', 0);
+        Mail::assertNothingSent();
+    }
+
     public function test_inline_painter_composer_preserves_general_flags_without_notifications(): void
     {
         $this->actingAs($this->editor, 'filament');

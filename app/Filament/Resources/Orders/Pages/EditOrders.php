@@ -20,6 +20,9 @@ class EditOrders extends EditRecord
         $data['delivery_edit'] = app(OrderDeliveryEditor::class)->state($this->getRecord());
         $data['items_edit'] = app(OrderItemEditor::class)->state($this->getRecord());
         $data['manager_id'] = $data['manager_id'] ?? 0;
+        if ($data['manager_id'] && ! \App\Models\User::query()->whereKey($data['manager_id'])->where('role_id', 4)->exists()) {
+            $data['manager_id'] = 0;
+        }
         $data['catid'] = $data['catid'] ?? 0;
         $data['sale_eur'] = $data['sale_eur'] ?: 0;
         $data['sale_percent'] = $data['sale_percent'] ?: 0;

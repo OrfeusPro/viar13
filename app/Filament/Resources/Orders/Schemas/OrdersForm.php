@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Services\Admin\UpdateOrderService;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +17,7 @@ class OrdersForm
         return $schema
             ->components([
                 Section::make('Управление заказом')
+                    ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         OrderDetailsForm::manager(),
@@ -53,8 +55,17 @@ class OrdersForm
                     ]),
                 OrderDeliveryForm::section(),
                 OrderDetailsForm::parameters(),
+                OrderPaymentRequestsForm::section(),
                 ...OrderInformationForm::sections(),
                 OrderDetailsForm::company(),
+                OrderMediaForm::section(),
+                Section::make('Фото коммент и текст клиента')->columnSpanFull()->schema([
+                    Placeholder::make('client_image_comments')->label('Комментарии клиента к изображениям')->hiddenLabel()
+                        ->content(fn ($record) => view('filament.orders.client-image-comments', [
+                            'record' => $record,
+                            'comments' => $record->order_user_comments()->oldest('created_at')->oldest('id')->get(),
+                        ])),
+                ]),
                 OrderItemsForm::section(),
             ]);
     }

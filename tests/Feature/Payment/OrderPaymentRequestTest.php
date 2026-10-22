@@ -2,13 +2,21 @@
 
 namespace Tests\Feature\Payment;
 
+use App\Http\Controllers\Payment\OrderPaymentRequestController;
 use App\Models\OrderPaymentRequest;
+use App\Models\Orders;
 use App\Models\User;
 use App\Services\Payment\OrderPaymentRequestService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class OrderPaymentRequestTest extends TestCase
@@ -16,6 +24,9 @@ class OrderPaymentRequestTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        Http::preventStrayRequests();
+        Mail::fake();
 
         $this->createSchema();
     }
@@ -144,7 +155,7 @@ class OrderPaymentRequestTest extends TestCase
         ]);
 
         $paymentRequest = app(OrderPaymentRequestService::class)->createForOrder(
-            \App\Models\Orders::query()->findOrFail(704),
+            Orders::query()->findOrFail(704),
             ['amount' => '18.00', 'purpose' => 'Доплата'],
             $admin
         );
@@ -187,7 +198,8 @@ class OrderPaymentRequestTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $service = new class extends OrderPaymentRequestService {
+        $service = new class extends OrderPaymentRequestService
+        {
             public function exposeGatewayPayload(OrderPaymentRequest $paymentRequest, string $paymentMethod): array
             {
                 return $this->buildGatewayPayload($paymentRequest, $paymentMethod);
@@ -203,6 +215,167 @@ class OrderPaymentRequestTest extends TestCase
         $this->assertSame('Lovelace', $payload['last_name']);
         $this->assertSame('legacy.request@example.test', $payload['email']);
         $this->assertSame('LV', $payload['country']);
+    }
+
+    public static function saveStages(): array
+    {
+        return [['first'], ['public number']];
+    }
+
+    #[DataProvider('saveStages')]
+    public function test_creation_failure_leaves_no_partial_request(string $stage): void
+    {
+        $this->createUser(31, 2, 'atomic@example.test');
+        $this->createOrder(731, 31);
+        $event = 'eloquent.saving: '.OrderPaymentRequest::class;
+        app('events')->listen($event, fn ($request) => ($stage === 'first' || filled($request->public_number)) ? false : null);
+        try {
+            app(OrderPaymentRequestService::class)->createForOrder(Orders::findOrFail(731), ['amount' => 10]);
+            $this->fail('Failed save must reject creation.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('amount', $exception->errors());
+        } finally {
+            app('events')->forget($event);
+        }
+        $this->assertDatabaseCount('order_payment_requests', 0);
+        $this->assertDatabaseHas('orders', ['id' => 731, 'payment_status' => 'not_payed']);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public static function invalidCreations(): array
+    {
+        return [
+            [[], 'amount'], [['amount' => 0], 'amount'], [['amount' => -1], 'amount'],
+            [['amount' => 1000000], 'amount'], [['amount' => 'abc'], 'amount'],
+            [['amount' => 10, 'purpose' => ['invalid']], 'purpose'],
+            [['amount' => 10, 'purpose' => str_repeat('a', 256)], 'purpose'],
+        ];
+    }
+
+    #[DataProvider('invalidCreations')]
+    public function test_service_rejects_invalid_creation_before_writes(array $data, string $field): void
+    {
+        $this->createUser(31, 2, 'invalid@example.test');
+        $this->createOrder(731, 31);
+        try {
+            app(OrderPaymentRequestService::class)->createForOrder(Orders::findOrFail(731), $data);
+            $this->fail('Invalid data must fail.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey($field, $exception->errors());
+        }
+        $this->assertDatabaseCount('order_payment_requests', 0);
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
+    public function test_manual_creations_get_independent_public_links_and_fresh_customer_snapshots(): void
+    {
+        $creator = $this->createUser(30, 1, 'creator@example.test');
+        $this->createUser(31, 2, 'customer@example.test');
+        $this->createOrder(731, 31);
+        $order = Orders::findOrFail(731);
+        DB::table('orders')->where('id', 731)->update(['delivery' => json_encode([
+            'first_name' => 'Fresh', 'last_name' => 'Recipient', 'email' => 'fresh@example.test', 'country' => 'PL',
+        ])]);
+        $before = DB::table('orders')->where('id', 731)->first();
+        $service = app(OrderPaymentRequestService::class);
+        $first = $service->createForOrder($order, ['amount' => '12.345', 'purpose' => '  Shipping  '], $creator);
+        $second = $service->createForOrder($order, ['amount' => '0.01'], $creator);
+        $this->assertSame('12.35', $first->amount);
+        $this->assertSame('Shipping', $first->purpose);
+        $this->assertSame('EUR', $first->currency);
+        $this->assertSame('pending', $first->status);
+        $this->assertSame('OPR-'.str_pad((string) $first->id, 6, '0', STR_PAD_LEFT), $first->public_number);
+        $this->assertSame(40, strlen($first->token));
+        $this->assertNotSame($first->token, $second->token);
+        $this->assertNotSame($first->public_number, $second->public_number);
+        $this->assertSame('fresh@example.test', $first->customer_email);
+        $this->assertSame('Fresh', $first->customer_first_name);
+        $this->assertSame('Recipient', $first->customer_last_name);
+        $this->assertSame('PL', $first->customer_country);
+        $this->assertEquals(30, $first->created_by);
+        $this->assertSame(url('pl/payment-request/'.$first->token), $first->publicUrl());
+        $this->assertEquals($before, DB::table('orders')->where('id', 731)->first());
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
+    public static function publicStates(): array
+    {
+        return [['pending'], ['paid']];
+    }
+
+    #[DataProvider('publicStates')]
+    public function test_public_controller_content_displays_state_without_starting_payment_or_writing_data(string $status): void
+    {
+        $this->createUser(31, 2, 'public@example.test');
+        $this->createOrder(731, 31);
+        $request = app(OrderPaymentRequestService::class)->createForOrder(Orders::findOrFail(731), ['amount' => 12.5]);
+        DB::table('order_payment_requests')->where('id', $request->id)->update(['status' => $status]);
+        $before = DB::table('order_payment_requests')->get()->toJson();
+        Schema::create('locales', fn (Blueprint $table) => $table->id());
+        $service = \Mockery::mock(OrderPaymentRequestService::class);
+        $service->shouldNotReceive('start');
+        $this->app->instance(OrderPaymentRequestService::class, $service);
+        $controller = app(OrderPaymentRequestController::class);
+        $response = $controller->show($request->token);
+        $content = $response->getData()['content'];
+        $resolved = $content->getData()['paymentRequest'];
+        $this->assertTrue($resolved->relationLoaded('order'));
+        $this->assertTrue($resolved->relationLoaded('customer'));
+        $html = $content->render();
+        $this->assertStringContainsString($request->public_number, $html);
+        $this->assertStringContainsString('12.50 €', $html);
+        $this->assertStringContainsString($request->customer_email, $html);
+        $document = new \DOMDocument;
+        $previous = libxml_use_internal_errors(true);
+        try {
+            $document->loadHTML('<?xml encoding="UTF-8">'.$html);
+            $forms = (new \DOMXPath($document))->query('//form[@method="POST"]');
+            if ($status === 'paid') {
+                $this->assertCount(0, $forms);
+                $this->assertStringContainsString(__('account_new.payment_request_success_message'), $html);
+            } else {
+                $this->assertGreaterThan(0, $forms->count());
+                $this->assertStringContainsString('PayPal', $html);
+                $this->assertStringContainsString(route('payment_request.start', ['token' => $request->token]), $html);
+            }
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+        $this->assertSame($before, DB::table('order_payment_requests')->get()->toJson());
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
+    public function test_unknown_public_token_is_not_found_without_gateway_calls(): void
+    {
+        $this->mock(OrderPaymentRequestService::class)->shouldNotReceive('start');
+        $this->expectException(ModelNotFoundException::class);
+        try {
+            app(OrderPaymentRequestController::class)->show('unknown-token');
+        } finally {
+            $this->assertDatabaseCount('order_payment_requests', 0);
+            Http::assertNothingSent();
+            Mail::assertNothingSent();
+        }
+    }
+
+    public function test_paid_public_request_redirects_before_gateway_start(): void
+    {
+        $this->createUser(31, 2, 'public@example.test');
+        $this->createOrder(731, 31);
+        $request = app(OrderPaymentRequestService::class)->createForOrder(Orders::findOrFail(731), ['amount' => 12.5]);
+        $request->forceFill(['status' => 'paid', 'paid_at' => now()])->save();
+        $before = $request->fresh()->getRawOriginal();
+        $this->mock(OrderPaymentRequestService::class)->shouldNotReceive('start');
+        $this->post(route('payment_request.start', ['token' => $request->token]), ['payment' => 'paypalOnetimePayment'])
+            ->assertRedirect($request->publicUrl())->assertSessionHas('payment_request_flash', 'paid');
+        $this->assertSame($before, $request->fresh()->getRawOriginal());
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
     }
 
     private function createSchema(): void

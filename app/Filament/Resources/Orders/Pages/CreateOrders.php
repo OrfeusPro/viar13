@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Filament\Resources\Orders\OrdersResource;
 use App\Filament\Resources\Orders\Schemas\AdminOrderCreateForm;
+use App\Models\AOrderFrom;
+use App\Models\CountryTel;
 use App\Models\Orders;
 use App\Services\Admin\AdminOrderCreationService;
 use Filament\Resources\Pages\CreateRecord;
@@ -27,7 +29,13 @@ class CreateOrders extends CreateRecord
             abort_unless(auth('filament')->user()?->can('view', $source), 403);
         }
 
-        $this->form->fill(app(AdminOrderCreationService::class)->defaults($source));
+        $defaults = app(AdminOrderCreationService::class)->defaults($source);
+        // Voyager selects the first real option when the client has no country.
+        if (! $source?->user?->country) {
+            $defaults['country'] = CountryTel::query()->orderBy('sort')->value('country_code') ?: $defaults['country'];
+        }
+        $defaults['a_order_from'] = AOrderFrom::query()->orderBy('id')->value('id');
+        $this->form->fill($defaults);
     }
 
     public function form(Schema $schema): Schema
@@ -58,7 +66,7 @@ class CreateOrders extends CreateRecord
 
     public function getTitle(): string|Htmlable
     {
-        $sourceId = request()->integer('from_order_id');
+        $sourceId = $this->data['source_order_id'] ?? request()->integer('from_order_id');
 
         return $sourceId ? 'Новый заказ для клиента заказа №'.$sourceId : 'Создание заказа менеджером';
     }

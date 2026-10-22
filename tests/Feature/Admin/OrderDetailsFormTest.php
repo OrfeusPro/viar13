@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Filament\Resources\Orders\Pages\EditOrders;
 use App\Filament\Resources\Orders\Schemas\OrderDetailsForm;
 use App\Models\Orders;
+use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\UpdateOrderService;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
@@ -23,6 +24,7 @@ class OrderDetailsFormTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->andReturn('https://example.test/invoice.pdf')->byDefault();
         $this->assertSame('sqlite', DB::connection()->getDriverName());
         $this->assertSame(':memory:', DB::connection()->getDatabaseName());
         Mail::fake();
@@ -138,6 +140,15 @@ class OrderDetailsFormTest extends TestCase
         $this->assertSame('', $updated->refresh()->ur_name);
         $this->assertSame('Edited company', $updated->ur_name_l);
         Mail::assertNothingSent();
+    }
+
+    public function test_unknown_or_non_manager_selection_displays_admin_like_original(): void
+    {
+        foreach ([6009, 8] as $manager) {
+            DB::table('orders')->where('id', 1)->update(['manager_id' => $manager]);
+            Livewire::test(OrderDetailsFormHarness::class)->assertSet('data.manager_id', 0);
+            $this->assertEquals($manager, DB::table('orders')->where('id', 1)->value('manager_id'));
+        }
     }
 
     public function test_missing_source_stays_hidden_and_clear_date_does_not_erase_previous_date(): void

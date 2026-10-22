@@ -1,5 +1,7 @@
 @php
     $record = $getRecord();
+    $isPrinting = auth('filament')->user()?->role?->name === 'printing';
+    $canEdit = auth('filament')->user()?->can('update', $record) ?? false;
     $vr = $record->vrNumber;
     $vrNumber = match (true) {
         filled($vr?->vrv_1) => 'VR00' . $vr->vrv_1,
@@ -8,23 +10,9 @@
         filled($vr?->vrv_4) => 'DS020' . $vr->vrv_4,
         default => null,
     };
-    $paymentRequests = $record->order_payment_requests;
+    $paymentRequests = $isPrinting ? collect() : $record->order_payment_requests;
     $shouldRenderInvoice = (int) $record->has_pdf === 1 || filled($vrNumber) || filled($record->ur_name);
-    $defaultFirm = str_starts_with((string) $vrNumber, 'VR00')
-        ? [
-            'name' => 'SIA "ViarStudia"',
-            'address' => 'Druvas iela4, Daugavpils nov., LV-5459',
-            'bank' => 'Swedbank',
-            'account' => 'LV85HABA0551039079593',
-            'office' => 'Lubānas 63/65, Rīga',
-        ]
-        : [
-            'name' => 'Viarcanvas',
-            'address' => 'Sėlių a. 16-2, Zarasai',
-            'bank' => 'LT193250067283712555',
-            'account' => null,
-            'office' => null,
-        ];
+    $defaultFirm = $vrNumber ? app(\App\Services\Admin\OrderInvoiceService::class)->defaultFirmData($record, $vrNumber) : [];
     $paymentMethodLabels = [
         'online_paysera' => 'Онлайн банкинг',
         'creditcart' => 'Картой онлайн',
@@ -35,7 +23,7 @@
     ];
 @endphp
 
-<div style="width: 180px; min-width: 170px; padding: 2px 0; text-align: center; font-size: 13px; line-height: 1.4;">
+<div x-data="{ save(field, value) { $wire.mountTableAction('updateOrderInlineField', '{{ $record->getKey() }}', { field, value }) } }" style="width: 180px; min-width: 170px; padding: 2px 0; text-align: center; font-size: 13px; line-height: 1.4;">
     <div style="margin-bottom: 18px; color: #7b8190; font-size: 14px; font-weight: 400;">
         №: {{ $record->id }}
     </div>
@@ -43,37 +31,41 @@
     @if(!$vrNumber)
         <select
             aria-label="Накладная заказа №{{ $record->id }}"
-            x-on:change="if ($el.value) { $wire.mountTableAction('manageVrNumber', '{{ $record->getKey() }}'); } $el.selectedIndex = 0"
+            x-on:change="if ($el.value) save('vr_prefix', $el.value)" @disabled(! $canEdit || $isPrinting) wire:loading.attr="disabled"
             style="display: block; width: 100%; margin-bottom: 18px; padding: 5px 8px; border: 1px solid #9ca3af; border-radius: 4px; background: white; color: #7b8190; font-size: 13px;"
         >
             <option value="">Накладная -</option>
-            <option value="VR00">D-Art-Solutions SIA</option>
-            <option value="BAW">D-Art-Solutions UAB</option>
-            <option value="VRR445">SIA ViarStudia</option>
-            <option value="DS020">SIA VR-Technology</option>
+            @foreach(\App\Services\Admin\UpdateOrderVrNumberService::prefixOptions() as $prefix => $title)
+                <option value="{{ $prefix }}">{{ $title }}</option>
+            @endforeach
         </select>
     @else
         <div style="margin-bottom: 10px;">
-            <input type="text" value="{{ $vrNumber }}" readonly style="width: 100%; padding: 5px 7px; border: 1px solid #9ca3af; border-radius: 4px; text-align: center; font-size: 13px;">
+            <input type="text" aria-label="Номер накладной заказа №{{ $record->id }}" x-ref="vrNumber" value="{{ $vrNumber }}" @readonly(! $canEdit || $isPrinting) style="width: 100%; padding: 3px 5px; border: 1px solid #9ca3af; border-radius: 2px; text-align: center; font-size: 13px;">
+            @if(! $isPrinting && $canEdit)
             <div style="display: flex; justify-content: center; gap: 5px; margin-top: 8px;">
-                <button type="button" x-on:click.stop="$wire.mountTableAction('manageVrNumber', '{{ $record->getKey() }}')" style="padding: 4px 8px; border: 0; border-radius: 3px; background: #337ab7; color: white; font-size: 12px; cursor: pointer;">Обновить</button>
-                <button type="button" aria-label="Удалить накладную заказа №{{ $record->id }}" x-on:click.stop="$wire.mountTableAction('manageVrNumber', '{{ $record->getKey() }}')" style="padding: 4px 8px; border: 0; border-radius: 3px; background: #d9534f; color: white; font-size: 12px; cursor: pointer;">×</button>
+                <button type="button" x-on:click.stop="save('vr_number', $refs.vrNumber.value)" wire:loading.attr="disabled" style="padding: 4px 8px; border: 0; border-radius: 3px; background: #22a7e8; color: white; font-size: 12px; cursor: pointer;">Обновить</button>
+                <button type="button" aria-label="Удалить накладную заказа №{{ $record->id }}" x-on:click.stop="save('vr_number', null)" wire:loading.attr="disabled" style="padding: 4px 8px; border: 0; border-radius: 3px; background: #ff442a; color: white; font-size: 12px; cursor: pointer;">×</button>
             </div>
+            @endif
         </div>
 
-        <details style="margin-bottom: 10px; text-align: left;">
+        <details wire:key="order-firm-{{ $record->id }}-{{ $vrNumber }}" style="margin-bottom: 10px; text-align: left;">
             <summary style="display: inline-block; padding: 5px 9px; border: 1px solid #d1d5db; border-radius: 4px; background: #f3f4f6; cursor: pointer;">данные фирмы</summary>
-            <div style="margin-top: 6px; font-size: 11px; color: #4b5563;">
-                <div><strong>{{ $defaultFirm['name'] }}</strong></div>
-                <div>{{ $defaultFirm['address'] }}</div>
-                <div>{{ $defaultFirm['bank'] }}</div>
-                @if($defaultFirm['account'])<div>{{ $defaultFirm['account'] }}</div>@endif
-                @if($defaultFirm['office'])<div>{{ $defaultFirm['office'] }}</div>@endif
-                <button type="button" x-on:click.stop="$wire.mountTableAction('editInvoiceFirm', '{{ $record->getKey() }}')" style="display: block; width: 100%; margin-top: 7px; padding: 4px 7px; border: 0; border-radius: 3px; background: #337ab7; color: white; font-size: 11px; cursor: pointer;">Изменить данные</button>
-            </div>
+            <form x-data="{ firm: @js($defaultFirm) }" @if($canEdit && ! $isPrinting) x-on:submit.prevent="$wire.mountTableAction('updateOrderInvoiceFirm', '{{ $record->getKey() }}', firm)" @else x-on:submit.prevent @endif style="margin-top: 6px; font-size: 11px; color: #4b5563;">
+                @foreach(['name' => 'Фирма', 'reg_num' => 'Рег. ном.', 'addr' => 'Адрес', 'bank' => 'Банк', 'vat_num' => 'Банк VAT', 'bank_code' => 'Код банка', 'office_addr' => 'Адрес офиса', 'acc_num' => 'Номер аккаунта'] as $field => $label)
+                    <label style="display: block; margin-top: 7px;">{{ $label }}
+                        <input type="text" name="{{ $field }}" aria-label="{{ $label }} счёта заказа №{{ $record->id }}" x-model="firm.{{ $field }}" value="{{ $defaultFirm[$field] ?? '' }}" @required(in_array($field, ['name', 'addr'], true)) maxlength="{{ in_array($field, ['addr', 'office_addr'], true) ? 500 : 255 }}" @readonly(! $canEdit || $isPrinting) style="display: block; width: 100%; min-width: 0; padding: 4px 5px; border: 1px solid #d1d5db; border-radius: 3px; background: white;">
+                    </label>
+                @endforeach
+                @if($canEdit && ! $isPrinting)
+                    <button type="submit" wire:loading.attr="disabled" style="display: block; margin-top: 10px; padding: 4px 8px; border: 0; border-radius: 3px; background: #22a7e8; color: white; font-size: 12px; cursor: pointer;">Обновить</button>
+                @endif
+            </form>
         </details>
     @endif
 
+    @if(! $isPrinting)
     @if($shouldRenderInvoice)
         <div style="margin-top: 10px; padding: 10px 12px; border: 1px solid #e8e8e8; border-radius: 8px; background: white; text-align: center;">
             @if((int) $record->has_pdf === 1)
@@ -125,8 +117,17 @@
                 <span style="display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: {{ $paymentRequest->status === 'paid' ? '#e8f7e8' : '#fff0d4' }}; color: {{ $paymentRequest->status === 'paid' ? '#247a24' : '#8a5a00' }}; font-size: 11px; font-weight: 600;">
                     {{ $paymentRequest->status === 'paid' ? 'Оплачено' : 'Ожидает оплаты' }}
                 </span>
-                <button type="button" x-on:click="navigator.clipboard.writeText(@js($paymentRequest->publicUrl()))" style="display: block; width: 100%; margin-top: 6px; padding: 3px 6px; border: 1px solid #d1d5db; border-radius: 3px; background: white; font-size: 11px; cursor: pointer;">Скопировать ссылку</button>
+                <div x-data="adminPaymentRequestCopy()">
+                    <button type="button" x-on:click.stop="copy(@js($paymentRequest->publicUrl()))" x-bind:disabled="copying" style="display: block; width: 100%; margin-top: 6px; padding: 3px 6px; border: 1px solid #d1d5db; border-radius: 3px; background: white; font-size: 11px; cursor: pointer;">Скопировать ссылку</button>
+                    <span x-cloak x-show="copied" role="status" style="display: block; margin-top: 4px; color: #247a24;">Ссылка скопирована</span>
+                    <div x-cloak x-show="manual" style="margin-top: 4px;">
+                        <label style="display: block;">Скопируйте ссылку вручную
+                            <input type="text" readonly value="{{ $paymentRequest->publicUrl() }}" x-on:click.stop="$el.select()" style="width: 100%; padding: 4px; border: 1px solid #d1d5db;">
+                        </label>
+                    </div>
+                </div>
             </div>
         @endforeach
     </div>
+    @endif
 </div>

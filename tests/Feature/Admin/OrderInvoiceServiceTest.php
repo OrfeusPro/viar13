@@ -4,12 +4,19 @@ namespace Tests\Feature\Admin;
 
 use App\Http\Controllers\DynamicPDFController;
 use App\Models\Orders;
+use App\Models\User;
 use App\Services\Admin\OrderInvoiceService;
 use App\Services\BestEffortMailService;
+use App\Services\Invoice\InvoicePdfWriter;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -18,6 +25,9 @@ class OrderInvoiceServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        Http::preventStrayRequests();
+        Mail::fake();
 
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
@@ -115,8 +125,9 @@ class OrderInvoiceServiceTest extends TestCase
         $this->app->instance(BestEffortMailService::class, $mail);
 
         $service = app(OrderInvoiceService::class);
+        $staleOrder = $order->fresh();
         $first = $service->approve($order);
-        $second = $service->approve($order);
+        $second = $service->approve($staleOrder);
 
         $this->assertTrue($first['mail_sent']);
         $this->assertFalse($first['reapproved']);
@@ -175,6 +186,99 @@ class OrderInvoiceServiceTest extends TestCase
         $this->assertTrue($result['email_suppressed']);
         $this->assertTrue($result['mail_logged']);
         $this->assertFalse($result['mail_sent']);
+    }
+
+    public function test_edit_refresh_uses_current_order_and_vr_without_changing_invoice_flags(): void
+    {
+        $order = $this->createOrder(attributes: ['items' => '[{"name":"Old"}]']);
+        DB::table('orders')->where('id', $order->id)->update([
+            'items' => '[{"name":"Updated","price":75}]', 'price' => 75,
+            'delivery' => '{"address":"New address"}',
+        ]);
+        DB::table('vr_numbers')->insert(['order_id' => $order->id, 'vrv_1' => 123]);
+        $before = $order->fresh()->getRawOriginal();
+        $pdf = Mockery::mock(DynamicPDFController::class);
+        $pdf->shouldReceive('getPDFFromOrder')->once()->withArgs(function (array $data, $vr, $firm): bool {
+            $this->assertSame('Updated', $data['items'][0]['name']);
+            $this->assertSame('New address', $data['delivery']['address']);
+            $this->assertSame('75 €', $data['price']);
+            $this->assertNotEmpty($vr);
+            $this->assertNull($firm);
+
+            return true;
+        })->andReturn('https://example.test/invoice.pdf');
+        $this->app->instance(DynamicPDFController::class, $pdf);
+        $this->assertSame('https://example.test/invoice.pdf', app(OrderInvoiceService::class)->refreshDocument($order));
+        $this->assertSame($before, $order->fresh()->getRawOriginal());
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public static function failedInvoiceSaves(): array
+    {
+        return [
+            'generation' => ['generate', 'order', 1],
+            'approval flag' => ['approve', 'order', 1],
+            'approval link' => ['approve', 'order', 2],
+            'inviter bonus' => ['approve', 'inviter', 1],
+            'customer invitation' => ['approve', 'customer', 1],
+        ];
+    }
+
+    #[DataProvider('failedInvoiceSaves')]
+    public function test_failed_save_rolls_back_invoice_and_referral_without_sending_mail(string $operation, string $target, int $saveNumber): void
+    {
+        DB::table('stocks')->insert(['id' => 1, 'friend_sale' => 5]);
+        $inviter = User::findOrFail(DB::table('users')->insertGetId(['email' => 'inviter@example.test', 'bonuses' => 10, 'inv_sale_code' => 'INVITE01']));
+        $customer = User::findOrFail(DB::table('users')->insertGetId(['email' => 'customer@example.test', 'locale' => 'ru', 'invited' => 'INVITE01']));
+        $order = $this->createOrder($customer->id, ['has_pdf' => 1]);
+        $disk = Storage::fake('invoice-rollback-test');
+        $disk->put('invoice.pdf', '%PDF original');
+        $before = $order->getRawOriginal();
+        $saves = 0;
+        $event = $target === 'order' ? 'eloquent.saving: '.Orders::class : 'eloquent.saving: '.User::class;
+        $targetId = match ($target) {
+            'order' => $order->id,
+            'inviter' => $inviter->id,
+            default => $customer->id,
+        };
+        $listener = function ($model) use ($targetId, $saveNumber, &$saves) {
+            if ($model->id === $targetId && ++$saves === $saveNumber) {
+                return false;
+            }
+        };
+        app('events')->listen($event, $listener);
+        $pdf = Mockery::mock(DynamicPDFController::class);
+        if ($operation === 'approve' && $target === 'order' && $saveNumber === 1) {
+            $pdf->shouldNotReceive('getPDFFromOrder');
+        } else {
+            $pdf->shouldReceive('getPDFFromOrder')->once()->andReturnUsing(function () use ($disk): string {
+                app(InvoicePdfWriter::class)->write($disk->path('invoice.pdf'), '%PDF replacement');
+
+                return 'https://example.test/invoice.pdf';
+            });
+        }
+        $this->app->instance(DynamicPDFController::class, $pdf);
+        $mail = Mockery::mock(BestEffortMailService::class);
+        $mail->shouldNotReceive('send');
+        $mail->shouldNotReceive('attempt');
+        $this->app->instance(BestEffortMailService::class, $mail);
+        try {
+            app(OrderInvoiceService::class)->{$operation}($order);
+            $this->fail('Saving veto must reject the invoice action.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('invoice', $exception->errors());
+        } finally {
+            app('events')->forget($event);
+        }
+        $this->assertSame($before, $order->fresh()->getRawOriginal());
+        $this->assertEquals(10, $inviter->fresh()->bonuses);
+        $this->assertSame('INVITE01', $inviter->fresh()->inv_sale_code);
+        $this->assertSame('INVITE01', $customer->fresh()->invited);
+        $this->assertSame('%PDF original', $disk->get('invoice.pdf'));
+        $this->assertSame(['invoice.pdf'], $disk->allFiles());
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
     }
 
     private function createOrder(?int $userId = null, array $attributes = []): Orders

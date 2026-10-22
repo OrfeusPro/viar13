@@ -53,33 +53,43 @@ class OrderPaymentService
                         ->first();
 
                     if ($inviter) {
-                        $inviter->forceFill(['bonuses' => (float) $inviter->bonuses + 5])->save();
+                        if (! $inviter->forceFill(['bonuses' => (float) $inviter->bonuses + 5])->save()) {
+                            throw ValidationException::withMessages(['payment_status' => 'Не удалось начислить бонус за приглашение.']);
+                        }
                     }
                 }
 
                 if ((int) $lockedOrder->use_bonus === 0) {
-                    $customer->forceFill([
+                    if (! $customer->forceFill([
                         'bonuses' => (float) $customer->bonuses + $this->calculateBonus((float) $lockedOrder->price),
-                    ])->save();
+                    ])->save()) {
+                        throw ValidationException::withMessages(['payment_status' => 'Не удалось сохранить бонус клиента.']);
+                    }
                     $lockedOrder->use_bonus = 2;
                 } else {
                     $lockedOrder->use_bonus = 1;
                 }
+            } elseif ($status === 'not_payed') {
+                $lockedOrder->use_bonus = 1;
             }
 
             $lockedOrder->payment_status = $status;
-            $lockedOrder->save();
+            if (! $lockedOrder->save()) {
+                throw ValidationException::withMessages(['payment_status' => 'Не удалось сохранить статус оплаты.']);
+            }
+            $giftCardMailable = $status === 'payed' && $customer
+                ? $this->prepareGiftCards($lockedOrder, $customer)
+                : null;
 
             return [
                 'customer' => $customer,
                 'inviter' => $inviter,
+                'gift_card_mailable' => $giftCardMailable,
             ];
         });
 
         $notificationsEnabled = (bool) config('admin_migration.payment_notifications_enabled', false);
-        $giftCardMailable = $status === 'payed' && $result['customer']
-            ? $this->prepareGiftCards($order->fresh(), $result['customer'])
-            : null;
+        $giftCardMailable = $result['gift_card_mailable'];
         $mailProcessed = false;
         if ($result['customer'] && in_array($status, ['prepayment', 'payed'], true)) {
             $locale = strtolower((string) ($result['customer']->country ?: $result['customer']->preferredLocale() ?: 'ru'));
@@ -161,9 +171,11 @@ class OrderPaymentService
         ])->validate();
 
         DB::transaction(function () use ($order, $data): void {
-            Orders::query()->lockForUpdate()->findOrFail($order->id)->forceFill([
+            if (! Orders::query()->lockForUpdate()->findOrFail($order->id)->forceFill([
                 'prepayment_price' => $data['prepayment_price'],
-            ])->save();
+            ])->save()) {
+                throw ValidationException::withMessages(['prepayment_price' => 'Не удалось сохранить сумму предоплаты.']);
+            }
         });
 
         Log::info('Admin order prepayment amount updated.', [
@@ -214,7 +226,7 @@ class OrderPaymentService
             return null;
         }
 
-        $settings = json_decode((string) $customer->settings, true);
+        $settings = is_array($customer->settings) ? $customer->settings : json_decode((string) $customer->settings, true);
         $locale = (string) (is_array($settings) ? ($settings['locale'] ?? null) : null)
             ?: $customer->preferredLocale()
             ?: strtolower((string) $customer->country)
@@ -233,10 +245,11 @@ class OrderPaymentService
                     'order_id' => $order->id,
                     'user_id' => $customer->id,
                 ]);
-                continue;
+
+                throw ValidationException::withMessages(['payment_status' => 'Не удалось создать подарочный сертификат.']);
             }
 
-            $coupon->forceFill([
+            if (! $coupon->forceFill([
                 'pdf' => $this->giftcards->generateGiftCardPDF(
                     $customer->id,
                     $order->id,
@@ -245,7 +258,9 @@ class OrderPaymentService
                     $locale,
                     $couponCode,
                 ),
-            ])->save();
+            ])->save()) {
+                throw ValidationException::withMessages(['payment_status' => 'Не удалось сохранить PDF подарочного сертификата.']);
+            }
         }
 
         return new GiftCard([

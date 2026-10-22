@@ -126,3 +126,57 @@
 .dark .viar-venipak-form .fi-section-header-heading { color: #d4d4d8; }
 .dark .viar-venipak-form .fi-fo-field-label-content { color: #d4d4d8; }
 .dark .viar-venipak-form .fi-input-wrp { background: #27272a; box-shadow: 0 0 0 1px #52525b; }
+
+/* Orders: keep the original top filter compact without changing other tables. */
+.viar-orders-table .fi-ta-filters-above-content-ctn { padding:12px 16px; }
+.viar-orders-table .fi-ta-filters { row-gap:10px; }
+.viar-orders-table .fi-ta-filters .fi-sc.fi-sc-has-gap { gap:10px 12px; }
+.viar-orders-table .fi-ta-filters .fi-fo-field { row-gap:4px; }
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-content { font-size:12px; line-height:18px; }
+.viar-orders-table .fi-ta-filters .fi-input,
+.viar-orders-table .fi-ta-filters .fi-select-input-btn { padding-block:5px; font-size:13px; line-height:20px; }
+.viar-orders-table .fi-ta-filters .fi-ta-filters-heading { font-size:14px; line-height:20px; }
+.viar-orders-table .fi-ta-filters .fi-ta-filters-actions-ctn .fi-btn { padding-block:5px; font-size:13px; }
+@media (max-width:639px) {
+    .viar-orders-table .fi-ta-filters-above-content-ctn { padding:12px; }
+    .viar-orders-table .fi-ta-filters .fi-input,
+    .viar-orders-table .fi-ta-filters .fi-select-input-btn { min-height:40px; }
+}
+/* Native selects and searchable selects must match text/date inputs. */
+.viar-orders-table .fi-ta-filters { --viar-filter-control-height:32px; }
+.viar-orders-table .fi-ta-filters input.fi-input,
+.viar-orders-table .fi-ta-filters select.fi-select-input,
+.viar-orders-table .fi-ta-filters .fi-select-input-btn {
+    box-sizing:border-box;
+    height:var(--viar-filter-control-height);
+    min-height:var(--viar-filter-control-height);
+    padding-block:5px;
+    font-size:13px;
+    line-height:20px;
+}
+.viar-orders-table .fi-ta-filters .fi-select-input div[x-ref='select'] {
+    min-height:var(--viar-filter-control-height);
+}
+.viar-orders-table .fi-ta-filters .fi-select-input-value-ctn {
+    overflow:hidden;
+    white-space:nowrap;
+}
+.viar-orders-table .fi-ta-filters .fi-select-input-value-label,
+.viar-orders-table .fi-ta-filters .fi-select-input-placeholder {
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+@media (max-width:639px) {
+    .viar-orders-table .fi-ta-filters { --viar-filter-control-height:40px; }
+}
+
+/* Keep the create form close to Voyager's compact, single-column field rhythm. */
+.viar-order-create-form .fi-sc.fi-sc-has-gap { gap:14px; }
+.viar-order-create-form .fi-fo-field { row-gap:4px; }
+
+/* Creation form: Voyager's payment-status colors, scoped to this field. */
+select.viar-create-payment-status[data-payment-status="not_payed"] { background-color:#ff9d9d; color:#1e2533; }
+select.viar-create-payment-status[data-payment-status="prepayment"] { background-color:#c19300; color:#fff; }
+select.viar-create-payment-status[data-payment-status="payed"] { background-color:#2ba92b; color:#fff; }
+select.viar-create-payment-status option { background-color:#fff; color:#1e2533; }

@@ -20,32 +20,94 @@ class OrderArtistService
 {
     public function __construct(private readonly BestEffortMailService $mail) {}
 
+    public function updatePaintingStatuses(Orders $order, array $input): void
+    {
+        $data = validator($input, [
+            'images' => ['required', 'array', 'min:1'],
+            'images.*.id' => ['required', 'integer', 'distinct'],
+            'images.*.status' => ['nullable', 'integer', 'exists:a_painter_images_status,id'],
+        ])->validate();
+
+        DB::transaction(function () use ($order, $data): void {
+            $lockedOrder = Orders::query()->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
+            foreach ($data['images'] as $image) {
+                $updated = $lockedOrder->order_painter_images()->whereKey($image['id'])
+                    ->where('is_img_painter', 1)
+                    ->update(['status' => $image['status'] ?? null, 'updated_at' => now()]);
+                if ($updated !== 1) {
+                    throw ValidationException::withMessages(['images' => 'Изображение не является готовой картиной этого заказа.']);
+                }
+            }
+        });
+        $order->unsetRelation('order_painter_images');
+    }
+
+    public function updateMediaStatus(Orders $order, int $imageId, string $type, mixed $status): void
+    {
+        $data = validator(compact('type', 'status'), [
+            'type' => ['required', Rule::in(['sketch', 'painting'])],
+            'status' => ['required', 'integer', 'exists:a_painter_images_status,id'],
+        ])->validate();
+        DB::transaction(function () use ($order, $imageId, $data): void {
+            $locked = Orders::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $flag = $data['type'] === 'sketch' ? 'is_img_sketch' : 'is_img_painter';
+            $updated = $locked->order_painter_images()->whereKey($imageId)->where($flag, 1)
+                ->update(['status' => $data['status'], 'updated_at' => now()]);
+            if ($updated !== 1) {
+                throw ValidationException::withMessages(['status' => 'Изображение не принадлежит выбранной галерее этого заказа.']);
+            }
+        });
+        $order->unsetRelation('order_painter_images');
+    }
+
     public function update(Orders $order, array $input): array
+    {
+        return $this->persist($order, $input, false);
+    }
+
+    public function updateField(Orders $order, string $field, mixed $value): array
+    {
+        if (! in_array($field, ['painter_id', 'printing_id', 'painter_endtime', 'painter_payed', 'is_show_painter_images'], true)) {
+            throw ValidationException::withMessages(['field' => 'Неизвестное поле художника.']);
+        }
+
+        return $this->persist($order, [$field => $value], true);
+    }
+
+    private function persist(Orders $order, array $input, bool $partial): array
     {
         $data = validator($input, [
             'painter_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('role_id', 3)],
             'printing_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('role_id', 6)],
             'painter_endtime' => ['nullable', 'date_format:Y-m-d'],
-            'painter_payed' => ['required', 'boolean'],
-            'is_show_painter_images' => ['required', 'boolean'],
+            'painter_payed' => [$partial ? 'sometimes' : 'required', 'boolean'],
+            'is_show_painter_images' => [$partial ? 'sometimes' : 'required', 'boolean'],
             'images' => ['array'],
             'images.*.id' => ['required', 'integer'],
             'images.*.status' => ['nullable', 'integer', 'exists:a_painter_images_status,id'],
         ])->validate();
 
-        $result = DB::transaction(function () use ($order, $data): array {
+        $result = DB::transaction(function () use ($order, $data, $partial): array {
             $lockedOrder = Orders::query()->whereKey($order->getKey())->lockForUpdate()->firstOrFail();
             $oldPainterId = PainterOrder::query()->where('order_id', $lockedOrder->id)->lockForUpdate()->value('user_id');
             $oldShowing = (bool) $lockedOrder->is_show_painter_images;
 
-            $this->syncAssignment(PainterOrder::class, $lockedOrder->id, $data['painter_id'] ?? null);
-            $this->syncAssignment(PrintingOrder::class, $lockedOrder->id, $data['printing_id'] ?? null);
+            if (! $partial || array_key_exists('painter_id', $data)) {
+                $this->syncAssignment(PainterOrder::class, $lockedOrder->id, $data['painter_id'] ?? null);
+            }
+            if (! $partial || array_key_exists('printing_id', $data)) {
+                $this->syncAssignment(PrintingOrder::class, $lockedOrder->id, $data['printing_id'] ?? null);
+            }
 
-            $lockedOrder->forceFill([
-                'painter_endtime' => $data['painter_endtime'] ?? null,
-                'painter_payed' => $data['painter_payed'] ? 1 : null,
-                'is_show_painter_images' => $data['is_show_painter_images'] ? 1 : null,
-            ])->save();
+            $attributes = [];
+            foreach (['painter_endtime', 'painter_payed', 'is_show_painter_images'] as $field) {
+                if (! $partial || array_key_exists($field, $data)) {
+                    $attributes[$field] = $field === 'painter_endtime' ? ($data[$field] ?? null) : ($data[$field] ? 1 : null);
+                }
+            }
+            if ($attributes !== []) {
+                $lockedOrder->forceFill($attributes)->save();
+            }
 
             foreach ($data['images'] ?? [] as $image) {
                 $updated = $lockedOrder->order_painter_images()
@@ -61,9 +123,9 @@ class OrderArtistService
 
             return [
                 'order_id' => $lockedOrder->id,
-                'painter_id' => $data['painter_id'] ?? null,
-                'painter_changed' => (int) $oldPainterId !== (int) ($data['painter_id'] ?? 0),
-                'show_enabled' => ! $oldShowing && (bool) $data['is_show_painter_images'],
+                'painter_id' => array_key_exists('painter_id', $data) ? $data['painter_id'] : ($partial ? $oldPainterId : null),
+                'painter_changed' => (! $partial || array_key_exists('painter_id', $data)) && (int) $oldPainterId !== (int) ($data['painter_id'] ?? 0),
+                'show_enabled' => ! $oldShowing && (bool) ($data['is_show_painter_images'] ?? false),
             ];
         }, 3);
 

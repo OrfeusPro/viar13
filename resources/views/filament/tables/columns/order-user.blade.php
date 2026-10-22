@@ -2,6 +2,7 @@
     use App\Filament\Resources\Orders\Tables\OrdersTable;
 
     $record = $getRecord();
+    $isPrinting = auth('filament')->user()?->role?->name === 'printing';
     $user = $record->user;
     $delivery = is_array($record->delivery) ? $record->delivery : (json_decode((string) $record->delivery, true) ?: []);
     $fallbackName = trim((string) ($delivery['first_name'] ?? '').' '.(string) ($delivery['last_name'] ?? ''));
@@ -15,14 +16,14 @@
     $clientStatuses = OrdersTable::clientStatusOptions();
     // Legacy selects the first option when no status has been saved. Display only: no DB write.
     $displayClientStatus = $user?->client_status ?? array_key_first($clientStatuses);
-    $channel = OrdersTable::salesChannelLabel($record->a_order_from);
-    $category = OrdersTable::categoryLabel($record->catid);
-    $manager = $record->manager && (int) $record->manager->role_id === 4
+    $channel = $isPrinting ? null : OrdersTable::salesChannelLabel($record->a_order_from);
+    $category = $isPrinting ? null : OrdersTable::categoryLabel($record->catid);
+    $manager = ! $isPrinting && $record->manager && (int) $record->manager->role_id === 4
         ? trim(($record->manager->nick ? $record->manager->nick.' - ' : '').$record->manager->email)
         : 'Админ';
 @endphp
 
-<div style="width: 205px; min-width: 190px; padding: 2px 7px; text-align: center; font-size: 13px; line-height: 1.35; color: #20242c;">
+<div x-data="{ save(field, value) { $wire.mountTableAction('updateOrderInlineField', '{{ $record->getKey() }}', { field, value }) } }" style="width: 205px; min-width: 190px; padding: 2px 7px; text-align: center; font-size: 13px; line-height: 1.35; color: #20242c;">
     <div style="margin-bottom: 7px;">Данные пользователя:</div>
 
     @if(filled($name))
@@ -49,12 +50,12 @@
     @endif
 
     <label style="display: block; margin-top: 8px;">
-        <span style="display: block; margin-bottom: 4px;">Язык счета:</span>
+        <span>Язык счета:</span>
         @if($user)
             <select
                 aria-label="Язык счета пользователя заказа №{{ $record->id }}"
-                x-on:change.stop="$wire.mountTableAction('updateUserPdfLocale', '{{ $record->getKey() }}', { pdf_locale: $el.value }); $el.value = @js($pdfLocale)"
-                style="width: 100%; padding: 3px 5px; border: 1px solid #9ca3af; border-radius: 3px; background: white; color: #374151; font-size: 12px;"
+                x-on:change.stop="save('pdf_locale', $el.value)" wire:loading.attr="disabled"
+                style="width: auto; padding: 1px 3px; border: 1px solid #9ca3af; border-radius: 2px; background: white; color: #374151; font-size: 12px;"
             >
                 @foreach(OrdersTable::localeOptions() as $locale => $label)
                     <option value="{{ $locale }}" @selected($pdfLocale === $locale)>{{ $locale }}</option>
@@ -65,6 +66,7 @@
         @endif
     </label>
 
+    @if(! $isPrinting)
     <div style="margin-top: 12px;">Канал продаж:</div>
     <strong>{{ $channel ?: '—' }}</strong>
 
@@ -77,13 +79,14 @@
 
     <div style="margin-top: 12px;">Менеджер:</div>
     <strong style="overflow-wrap: anywhere;">{{ $manager }}</strong>
+    @endif
 
     <label style="display: block; margin-top: 12px;">
         <span style="display: block; margin-bottom: 4px;">Статус клиента</span>
         @if($user)
             <select
                 aria-label="Статус клиента заказа №{{ $record->id }}"
-                x-on:change.stop="$wire.mountTableAction('updateClientStatus', '{{ $record->getKey() }}', { client_status: $el.value }); $el.value = @js($displayClientStatus)"
+                x-on:change.stop="save('client_status', $el.value)" wire:loading.attr="disabled"
                 style="width: 100%; padding: 3px 5px; border: 1px solid #9ca3af; border-radius: 3px; background: white; color: #374151; font-size: 12px;"
             >
                 @foreach($clientStatuses as $statusId => $statusName)

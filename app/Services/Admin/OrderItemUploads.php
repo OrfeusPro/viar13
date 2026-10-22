@@ -18,7 +18,7 @@ class OrderItemUploads
         'heic' => ['image/heic', 'image/heif', 'image/heic-sequence'],
         'heif' => ['image/heif', 'image/heic', 'image/heif-sequence'],
         'pdf' => ['application/pdf'], 'psd' => ['image/vnd.adobe.photoshop', 'image/x-photoshop'],
-        'fig' => ['application/octet-stream', 'application/zip', 'application/x-fig', 'image/x-xfig'],
+        'fig' => ['application/octet-stream', 'application/zip', 'application/x-fig', 'application/x-xfig', 'image/x-xfig'],
     ];
 
     public static function acceptedTypes(bool $attachments = false): array

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Schemas;
 use App\Models\Orders;
 use App\Services\Admin\OrderItemEditor;
 use App\Services\Admin\OrderItemUploads;
+use App\Support\Admin\OrderFileUploadLimits;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -79,7 +80,9 @@ class OrderItemActions
                     }
                 }
                 $component->state($states);
+                $record->setRawAttributes($updated->getAttributes(), true);
                 $livewire->record = $updated;
+                $livewire->forceRender();
                 Notification::make()->success()->title('Фото добавлены')->send();
             });
     }
@@ -87,6 +90,7 @@ class OrderItemActions
     private static function files(bool $attachments): FileUpload
     {
         return FileUpload::make('files')->label('Исходники')->multiple()->storeFiles(false)
+            ->extraAlpineAttributes(OrderFileUploadLimits::alpineAttributes(OrderItemUploads::MAX_KB))
             ->acceptedFileTypes(OrderItemUploads::acceptedTypes($attachments))
             ->maxFiles(30)->maxSize(OrderItemUploads::MAX_KB);
     }

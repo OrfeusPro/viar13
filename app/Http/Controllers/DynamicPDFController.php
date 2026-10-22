@@ -6,6 +6,7 @@ use App;
 use App\Models\OrderString;
 use App\Models\User;
 use App\Services\Invoice\InvoiceSummaryRenderer;
+use App\Services\Invoice\InvoicePdfWriter;
 use App\Services\Invoice\InvoiceTotalsCalculator;
 use App\Services\Invoice\InvoiceVatResolver;
 use Illuminate\Support\Facades\Hash;
@@ -34,7 +35,8 @@ class DynamicPDFController extends Controller
         $pdf = App::make('dompdf.wrapper');
         $pdf->loadHTML($orderDataHtml);
         $filePath = public_path() . '/storage/pdf/' . $order['id'] . '.pdf';
-        $pdf->setPaper('a4', 'portrait')->setWarnings(false)->save($filePath);
+        $contents = $pdf->setPaper('a4', 'portrait')->setWarnings(false)->output();
+        app(InvoicePdfWriter::class)->write($filePath, $contents);
         $home_url = URL::to('/');
 
         return $home_url . '/storage/pdf/' . $order['id'] . '.pdf';

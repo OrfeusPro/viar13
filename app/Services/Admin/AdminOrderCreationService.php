@@ -94,7 +94,7 @@ class AdminOrderCreationService
                     $createdUser = true;
                     $randomPassword = Str::random(16);
                     $user = new User;
-                    $user->forceFill([
+                    if (! $user->forceFill([
                         'first_name' => trim($data['first_name']),
                         'last_name' => trim((string) ($data['last_name'] ?? '')),
                         'email' => $email,
@@ -110,7 +110,9 @@ class AdminOrderCreationService
                         'active_coupon' => null,
                         'password' => Hash::make($randomPassword),
                         'settings' => ['locale' => strtolower($data['country'])],
-                    ])->save();
+                    ])->save()) {
+                        throw ValidationException::withMessages(['email' => 'Не удалось сохранить клиента.']);
+                    }
                 }
 
                 $bonus = round((float) ($data['bonus'] ?? 0), 2);
@@ -120,7 +122,9 @@ class AdminOrderCreationService
                             'bonus' => 'Недостаточно бонусов у выбранного клиента.',
                         ]);
                     }
-                    $user->forceFill(['bonuses' => round((float) $user->bonuses - $bonus, 2)])->save();
+                    if (! $user->forceFill(['bonuses' => round((float) $user->bonuses - $bonus, 2)])->save()) {
+                        throw ValidationException::withMessages(['bonus' => 'Не удалось списать бонусы клиента.']);
+                    }
                 }
 
                 $delivery = $this->delivery($data);
@@ -132,7 +136,7 @@ class AdminOrderCreationService
                 $price = max(0, round($subtotal - $bonus, 2));
 
                 $order = new Orders;
-                $order->forceFill([
+                if (! $order->forceFill([
                     'user_id' => $user->id,
                     'manager_id' => $data['manager_id'] ?? 0,
                     'is_admin_order' => 1,
@@ -161,7 +165,9 @@ class AdminOrderCreationService
                     'ur_bank_name' => $data['legal_bank_name'] ?? '',
                     'ur_bank_code' => $data['legal_bank_code'] ?? '',
                     'ur_bank_acc_code' => $data['legal_bank_account'] ?? '',
-                ])->save();
+                ])->save()) {
+                    throw ValidationException::withMessages(['items' => 'Не удалось создать заказ.']);
+                }
 
                 $basket = [];
                 $hasExpress = (bool) ($data['is_manual_express'] ?? false);
@@ -183,9 +189,11 @@ class AdminOrderCreationService
                     'delivery' => json_encode($delivery, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 ]);
                 $basket = $this->storeSources($order, $basket, $data['items'], $storedPaths);
-                $order->forceFill([
+                if (! $order->forceFill([
                     'items' => json_encode($basket, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                ])->save();
+                ])->save()) {
+                    throw ValidationException::withMessages(['items' => 'Не удалось сохранить позиции заказа.']);
+                }
 
                 return $order->refresh()->load('user');
             });
@@ -256,7 +264,7 @@ class AdminOrderCreationService
             'items.*.existing_images.*' => ['string', 'max:2048'],
             'items.*.legacy_payload' => ['nullable', 'array'],
             'items.*.images' => ['nullable', 'array'],
-            'items.*.images.*' => ['file', 'max:102400', 'mimetypes:image/*,application/pdf,application/postscript'],
+            'items.*.images.*' => ['file', 'max:102400', 'mimetypes:image/*,image/heic,image/heif'],
         ];
     }
 
@@ -381,11 +389,12 @@ class AdminOrderCreationService
                 while ($disk->exists('orders/'.$name)) {
                     $name = $base.'-'.$sequence++.'.'.$extension;
                 }
+                // Track the reserved new path even if the adapter writes partially before failing.
+                $storedPaths[] = 'orders/'.$name;
                 $path = $disk->putFileAs('orders', $file, $name);
                 if (! $path) {
                     throw ValidationException::withMessages(['items.'.$index.'.images' => 'Не удалось сохранить файл позиции.']);
                 }
-                $storedPaths[] = $path;
                 $basket[$index]['orig_images'][] = url('/'.$path);
             }
         }

@@ -53,7 +53,7 @@ class GiftcardController extends Controller
         $pdf_name = "storage/pdf-gift-card/".$order_id."_".$user_id."_".$coupon_id.".pdf";
 
         $filePath = public_path($pdf_name);
-        $pdf->save($filePath);
+        app(\App\Services\Invoice\InvoicePdfWriter::class)->write($filePath, $pdf->output());
 
         return URL::to('/') . '/'.$pdf_name;
     }

@@ -7,6 +7,8 @@ use App\Models\AdminChats;
 use App\Models\OrderPainterComment;
 use App\Models\Orders;
 use App\Models\OrderUserComments;
+use App\Models\SaConversation;
+use App\Models\SaMessage;
 use App\Models\User;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -127,6 +129,61 @@ class OrdersDisplayParityTest extends TestCase
         $this->assertStringNotContainsString('max-height: 38px', $html);
     }
 
+    public function test_recipient_placeholder_payer_uses_portrait_phone_and_preserves_leading_zeroes(): void
+    {
+        $order = (new Orders)->forceFill([
+            'id' => 42,
+            'items' => [['content' => 'Phone: 0037120000000<br>Email: portrait@example.test']],
+            'delivery' => json_encode(['payer_phone' => '-', 'phone' => '+37129999999']),
+        ]);
+        $order->setRelation('user', new User(['phone' => '+37128888888']));
+        $html = view('filament.tables.columns.order-recipient', ['getRecord' => fn () => $order])->render();
+        $this->assertStringContainsString('Телефон заказчика: 0037120000000', $html);
+        $this->assertStringContainsString('Телефон получателя: +37129999999', $html);
+        $this->assertStringContainsString('href="https://wa.me/0037120000000"', $html);
+        $this->assertStringNotContainsString('Телефон заказчика: -', $html);
+    }
+
+    public function test_pickup_indicator_uses_truck_only_for_positive_delivery_charge(): void
+    {
+        foreach ([0, -5, 4] as $charge) {
+            $order = (new Orders)->forceFill([
+                'id' => 42, 'delivery' => json_encode(['sposob' => 'pickup_Riga', 'deliv_price' => $charge]),
+            ]);
+            $order->setRelation('user', null);
+            $html = view('filament.tables.columns.order-recipient', ['getRecord' => fn () => $order])->render();
+            $expected = $charge > 0 ? 'truck_icon.png' : 'riga.png';
+            $this->assertStringContainsString('src="'.asset('storage/images/'.$expected).'"', $html);
+        }
+    }
+
+    public function test_production_inline_preview_queries_use_original_client_and_painter_chronology(): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        foreach (['order_user_comments', 'order_painter_comments'] as $table) {
+            Schema::create($table, function (Blueprint $table): void {
+                $table->id();
+                $table->integer('order_id');
+                $table->text('comment');
+                $table->timestamps();
+            });
+            DB::table($table)->insert([
+                ['id' => 1, 'order_id' => 42, 'comment' => 'Later', 'created_at' => '2026-10-17 12:00:00'],
+                ['id' => 2, 'order_id' => 42, 'comment' => 'Earlier', 'created_at' => '2026-10-16 12:00:00'],
+                ['id' => 3, 'order_id' => 99, 'comment' => 'Other order', 'created_at' => '2026-10-15 12:00:00'],
+            ]);
+        }
+        $host = Livewire::test(OrderNumberSearchTable::class)->instance();
+        $query = OrdersTable::configure(Table::make($host))->query(Orders::query())->getQuery();
+        $constraints = $query->getEagerLoads();
+        $order = (new Orders)->forceFill(['id' => 42]);
+        foreach (['order_user_comments' => [2, 1], 'order_painter_comments' => [1, 2]] as $name => $expected) {
+            $relation = $order->{$name}();
+            $constraints[$name]($relation);
+            $this->assertSame($expected, $relation->pluck('id')->all());
+        }
+    }
+
     public function test_comments_column_keeps_the_complete_voyager_previews(): void
     {
         $order = (new Orders)->forceFill([
@@ -149,13 +206,44 @@ class OrdersDisplayParityTest extends TestCase
         $order->setRelation('order_painter_comments', $messages('PAINTER PREVIEW', OrderPainterComment::class));
         $order->setRelation('adminChats', $adminMessages);
         $order->setRelation('saConversations', collect());
+        $order->setRelation('saMessages', collect());
 
         $html = view('filament.tables.columns.order-comments', ['getRecord' => fn () => $order])->render();
 
+        $this->assertStringContainsString('title="01.09.2026 10:05"', $html);
         foreach (['CLIENT', 'PAINTER', 'ADMIN'] as $prefix) {
             $this->assertStringContainsString("{$prefix} PREVIEW 1", $html);
             $this->assertStringContainsString("{$prefix} PREVIEW 5", $html);
         }
+    }
+
+    public function test_order_sa_badge_counts_messages_like_original_independently_of_manager_acknowledgement(): void
+    {
+        $order = (new Orders)->forceFill(['id' => 42]);
+        foreach (['order_user_comments', 'order_painter_comments', 'adminChats'] as $relation) {
+            $order->setRelation($relation, collect());
+        }
+        $conversation = (new SaConversation)->forceFill(['conversation_id' => 'ONE', 'unread_for_manager' => 1]);
+        $order->setRelation('saConversations', collect([$conversation]));
+        $messages = collect([
+            ['direction' => 'inbound', 'status' => 'received', 'from_json' => '{}'],
+            ['direction' => 'inbound', 'status' => null, 'from_json' => 'malformed'],
+            ['direction' => 'outbound', 'status' => 'delivered', 'from_json' => '{"type":"BOT"}'],
+            ['direction' => 'outbound', 'status' => 'failed', 'from_json' => '{"type":"bot"}'],
+            ['direction' => 'inbound', 'status' => 'read', 'from_json' => '{}'],
+            ['direction' => 'outbound', 'status' => 'read', 'from_json' => '{"type":"bot"}'],
+            ['direction' => 'outbound', 'status' => 'delivered', 'from_json' => '{"type":"manager"}'],
+            ['direction' => 'outbound', 'status' => 'sent', 'from_json' => '{"type":"system"}'],
+        ])->map(fn (array $data) => (new SaMessage)->forceFill($data + ['conversation_id' => 'ONE']));
+        $order->setRelation('saMessages', $messages);
+        foreach ([true, false] as $unreadForManager) {
+            $conversation->unread_for_manager = $unreadForManager;
+            $html = view('filament.tables.columns.order-comments', ['getRecord' => fn () => $order])->render();
+            $this->assertMatchesRegularExpression('/title="Непрочитанные сообщения WhatsApp"[^>]*>4<\/span>/', $html);
+        }
+        $messages->each(fn ($message) => $message->status = 'read');
+        $html = view('filament.tables.columns.order-comments', ['getRecord' => fn () => $order])->render();
+        $this->assertStringNotContainsString('title="Непрочитанные сообщения WhatsApp"', $html);
     }
 
     #[DataProvider('locales')]

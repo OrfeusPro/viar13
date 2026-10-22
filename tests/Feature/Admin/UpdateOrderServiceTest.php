@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Orders;
+use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\UpdateOrderService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ class UpdateOrderServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->andReturn('https://example.test/invoice.pdf')->byDefault();
 
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
@@ -343,6 +345,25 @@ class UpdateOrderServiceTest extends TestCase
         } finally {
             Orders::flushEventListeners();
         }
+    }
+
+    public function test_pdf_refresh_sees_saved_delivery_and_failure_rolls_back_edit(): void
+    {
+        $order = $this->deliveryOrder();
+        $before = $order->getRawOriginal();
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->once()
+            ->withArgs(function (Orders $saved): bool {
+                $this->assertSame('New address', json_decode($saved->fresh()->delivery, true)['address']);
+
+                return true;
+            })->andThrow(new \RuntimeException('PDF failed'));
+        try {
+            app(UpdateOrderService::class)->update($order, $this->updateData(['address' => 'New address']));
+            $this->fail('PDF failure must reject the edit.');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('PDF failed', $exception->getMessage());
+        }
+        $this->assertSame($before, $order->fresh()->getRawOriginal());
     }
 
     private function deliveryOrder(): Orders

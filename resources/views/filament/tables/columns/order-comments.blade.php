@@ -4,7 +4,12 @@
     $clientPreviews = $record->order_user_comments;
     $painterPreviews = $record->order_painter_comments;
     $adminPreviews = $record->adminChats;
-    $saUnread = $record->saConversations->where('unread_for_manager', true)->count();
+    $saUnread = $record->saMessages->filter(function ($message): bool {
+        $fromType = strtolower((string) data_get(json_decode((string) $message->from_json, true) ?: [], 'type', ''));
+
+        return ($message->direction === 'inbound' || ($message->direction === 'outbound' && $fromType === 'bot'))
+            && $message->status !== 'read';
+    })->count();
 @endphp
 
 <style>
@@ -53,7 +58,7 @@
         <div style="margin-top: 8px; text-align: left;">
             @foreach($adminPreviews as $message)
                 <div style="margin-bottom: 5px; padding: 5px 7px; border-radius: 4px; background: #f3f4f6;">
-                    <strong style="font-size: 11px;">{{ trim((string) ($message->user?->first_name.' '.$message->user?->last_name)) ?: ($message->user?->email ?: 'Администратор') }}</strong>
+                    <strong @if($message->created_at) title="{{ $message->created_at->format('d.m.Y H:i') }}" @endif style="font-size: 11px;">{{ trim((string) ($message->user?->first_name.' '.$message->user?->last_name)) ?: ($message->user?->email ?: 'Администратор') }}</strong>
                     <div>{{ $message->comment }}</div>
                 </div>
             @endforeach
@@ -62,7 +67,7 @@
 
     <button type="button" x-on:click.stop="$wire.mountTableAction('viewSaChat', '{{ $record->getKey() }}')" style="display: block; min-width: 145px; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #25d366; color: white; cursor: pointer;">
         WhatsApp Чат (SA)
-        @if($saUnread)<span title="Непрочитанные диалоги" style="display: inline-block; margin-left: 4px; padding: 1px 5px; border-radius: 9px; background: #fff; color: #111827;">{{ $saUnread }}</span>@endif
+        @if($saUnread)<span title="Непрочитанные сообщения WhatsApp" style="display: inline-block; margin-left: 4px; padding: 1px 5px; border-radius: 9px; background: #fff; color: #111827;">{{ $saUnread }}</span>@endif
     </button>
 
     <button type="button" x-on:click.stop="$wire.mountTableAction('viewPainterChat', '{{ $record->getKey() }}')" style="display: block; width: 122px; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">

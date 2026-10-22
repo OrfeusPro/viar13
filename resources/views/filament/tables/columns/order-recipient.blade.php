@@ -2,12 +2,15 @@
     $record = $getRecord();
     $delivery = is_array($record->delivery) ? $record->delivery : (json_decode((string) $record->delivery, true) ?: []);
     $recipientPhone = $delivery['phone'] ?? App\Models\Orders::getFieldPortraitCalc($record, 'Phone') ?? '-';
-    $payerPhone = $delivery['payer_phone'] ?? $record->user?->phone ?: (App\Models\Orders::getFieldPortraitCalc($record, 'Phone') ?? '-');
+    $payerPhone = $delivery['payer_phone'] ?? $record->user?->phone;
+    if (! $payerPhone || $payerPhone === '-') {
+        $payerPhone = App\Models\Orders::getFieldPortraitCalc($record, 'Phone') ?? '-';
+    }
     $hasRecipientPhone = array_key_exists('payer_phone', $delivery) || ! empty($delivery['is_no_payer']);
     $normalizePhone = static fn ($phone): string => preg_replace('/\D+/', '', (string) $phone);
     $samePhone = $payerPhone && $recipientPhone && $normalizePhone($payerPhone) === $normalizePhone($recipientPhone);
     $displayPhone = ($payerPhone && $payerPhone !== '-') ? $payerPhone : $recipientPhone;
-    $whatsAppPhone = ltrim($normalizePhone($displayPhone), '0');
+    $whatsAppPhone = $normalizePhone($displayPhone);
     $method = match ($delivery['sposob'] ?? null) {
         'to_the_door' => 'Доставка до дверей дома или работы',
         'pickup_Riga' => 'Самовывоз Рига',
@@ -32,7 +35,7 @@
     $deliveryIcon = match ($delivery['sposob'] ?? null) {
         'venipak' => 'images/venipak_new.png',
         'pickup_at_viar_workshop' => 'images/pickup_at_viar_workshop.png',
-        'pickup_Riga', 'pickup_Daugavplis', 'pickup_Daugavpils' => ! empty($delivery['deliv_price']) ? 'storage/images/truck_icon.png' : 'storage/images/riga.png',
+        'pickup_Riga', 'pickup_Daugavplis', 'pickup_Daugavpils' => ($delivery['deliv_price'] ?? 0) > 0 ? 'storage/images/truck_icon.png' : 'storage/images/riga.png',
         'to_the_door', 'city_delivery' => 'storage/images/truck_icon.png',
         default => null,
     };

@@ -4,6 +4,7 @@
     use App\Filament\Resources\Orders\Tables\OrdersTable;
 
     $record = $getRecord();
+    $isPrinting = auth('filament')->user()?->role?->name === 'printing';
     $canEdit = auth('filament')->user()?->can('update', $record) ?? false;
     $canDelete = auth('filament')->user()?->can('delete', $record) ?? false;
     $delivery = json_decode((string) $record->delivery, true) ?: [];
@@ -28,12 +29,12 @@
     .adm-fil-order-lifecycle select, .adm-fil-order-lifecycle input { color: #374151; }
 </style>
 
-<div class="adm-fil-order-lifecycle" style="width:190px;min-width:180px;padding:3px 5px;color:#313942;font-size:12px;line-height:1.35;">
+<div class="adm-fil-order-lifecycle" x-data="{ save(field, value) { $wire.mountTableAction('updateOrderInlineField', '{{ $record->getKey() }}', { field, value }) } }" style="width:190px;min-width:180px;padding:3px 5px;color:#313942;font-size:12px;line-height:1.35;">
     <div style="font-weight:600;">Статус заказа:</div>
     @if($canEdit)
         <select
             aria-label="Статус заказа №{{ $record->id }}"
-            x-on:change.stop="$wire.mountTableAction('updateOrderStatus', '{{ $record->getKey() }}', { status: $el.value }); $el.value = @js($record->status)"
+            x-on:change.stop="save('status', $el.value)" wire:loading.attr="disabled"
             style="width:100%;margin-top:4px;padding:5px;border:1px solid #9ca3af;border-radius:3px;background:#fff;font-size:12px;"
         >
             @foreach(OrderLifecycleActions::statusOptions() as $value => $label)
@@ -74,10 +75,14 @@
     </div>
 
     <div style="margin-top:13px;">
+        @if(! $isPrinting || $whenSendTimestamp === false)
         <strong>желаемая дата доставки:</strong>
-        <div style="margin-top:3px;">{{ $whenSendTimestamp === false ? 'не задана' : date('d.m.Y', $whenSendTimestamp) }}</div>
         @if($canEdit)
-            <button type="button" x-on:click.stop="$wire.mountTableAction('updateOrderDeliveryDate', '{{ $record->getKey() }}')" style="margin-top:5px;padding:4px 8px;border:0;border-radius:3px;background:#337ab7;color:#fff;font-size:11px;cursor:pointer;">Обновить</button>
+            <input type="date" aria-label="Желаемая дата доставки заказа №{{ $record->id }}" x-ref="deliveryDate" value="{{ $whenSendTimestamp === false ? '' : date('Y-m-d', $whenSendTimestamp) }}" style="display:block;width:100%;margin-top:4px;padding:3px;border:1px solid #9ca3af;border-radius:2px;background:#fff;font-size:12px;">
+            <button type="button" x-on:click.stop="save('delivery_date', $refs.deliveryDate.value || null)" wire:loading.attr="disabled" style="margin-top:5px;padding:4px 8px;border:0;border-radius:3px;background:#337ab7;color:#fff;font-size:11px;cursor:pointer;">Обновить</button>
+        @else
+            <div style="margin-top:3px;">{{ $whenSendTimestamp === false ? 'не задана' : date('d.m.Y', $whenSendTimestamp) }}</div>
+        @endif
         @endif
         @if($days !== null)
             <div style="margin-top:7px;"><strong>доставить через:</strong><br>
@@ -102,7 +107,7 @@
         @if($record->user_id)
             <a href="{{ OrdersResource::getUrl('index', ['tab' => 'all', 'filters' => ['user_id' => ['value' => $record->user_id]]]) }}" style="{{ $button }}background:#16a34a;">Все заказы ранее</a>
         @endif
-        @if($canDelete)
+        @if($canDelete && ! $isPrinting)
             <button type="button" x-on:click.stop="$wire.mountTableAction('deleteOrder', '{{ $record->getKey() }}')" style="{{ $button }}background:#dc2626;">Удалить</button>
         @endif
     </div>

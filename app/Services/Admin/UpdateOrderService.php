@@ -96,6 +96,8 @@ class UpdateOrderService
                 throw ValidationException::withMessages(['status' => 'Не удалось сохранить заказ.']);
             }
 
+            app(OrderInvoiceService::class)->refreshDocument($order);
+
             return $order->refresh();
         });
     }

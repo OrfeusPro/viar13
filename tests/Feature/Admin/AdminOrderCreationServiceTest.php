@@ -2,18 +2,26 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Filament\Resources\Orders\Pages\CreateOrders;
 use App\Models\Orders;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Admin\AdminOrderCreationService;
 use App\Services\Admin\OrderItemPresentationService;
+use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Mockery;
 use RuntimeException;
 use Tests\TestCase;
@@ -90,6 +98,265 @@ class AdminOrderCreationServiceTest extends TestCase
                 $table->timestamps();
             });
         }
+    }
+
+    public function test_full_create_page_starts_fresh_then_creates_for_source_client_without_cloning_order(): void
+    {
+        $this->prepareCreatePage(['add_orders', 'read_orders']);
+        DB::table('country_tels')->insert(['country_code' => 'NL', 'sort' => 0]);
+        $client = User::query()->forceCreate([
+            'email' => 'source@example.test', 'first_name' => 'Source client',
+            'phone' => '+37129999999', 'country' => 'LV', 'address' => 'Client street', 'bonuses' => 20,
+        ]);
+        $source = app(AdminOrderCreationService::class)->create($this->validData([
+            'email' => $client->email, 'payment_status' => 'payed', 'sale_eur' => 12,
+            'items' => [['name' => 'Original portrait', 'price' => 100]],
+        ]));
+        $before = $source->getRawOriginal();
+        $page = Livewire::withQueryParams(['from_order_id' => $source->id])->test(CreateOrders::class)
+            ->assertSuccessful()
+            ->assertSee('Новый заказ для клиента заказа №'.$source->id)
+            ->assertFormSet([
+                'email' => $client->email, 'first_name' => 'Source client',
+                'client_id' => $client->id, 'source_order_id' => $source->id,
+                'address' => 'Client street', 'payment' => 'cash_in_office',
+                'country' => 'LV',
+                'payment_status' => 'not_payed', 'bonus' => 0, 'sale_eur' => 0, 'sale_percent' => 0,
+            ]);
+        $items = array_values($page->get('data.items'));
+        $this->assertCount(1, $items);
+        $this->assertNotSame('Original portrait', $items[0]['name']);
+        $this->assertEmpty($items[0]['existing_images']);
+
+        $page->fillForm($this->validData([
+            'email' => $client->email, 'source_order_id' => $source->id,
+            'client_id' => $client->id, 'sale_eur' => 0,
+            'items' => [['name' => 'New canvas', 'price' => 60]],
+        ]))->assertSee('Новый заказ для клиента заказа №'.$source->id)
+            ->call('create')->assertHasNoFormErrors()->assertRedirect();
+
+        $new = Orders::query()->latest('id')->firstOrFail();
+        $this->assertNotSame($source->id, $new->id);
+        $this->assertSame($client->id, $new->user_id);
+        $this->assertSame('New canvas', json_decode($new->items, true)[0]['name']);
+        $this->assertSame(60.0, (float) $new->price);
+        $this->assertSame($before, $source->fresh()->getRawOriginal());
+        $this->assertSame(20.0, (float) $client->fresh()->bonuses);
+        $this->assertDatabaseCount('orders', 2);
+        $this->assertDatabaseCount('users', 2);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_full_create_page_uses_first_catalog_country_and_sales_channel_as_voyager(): void
+    {
+        $this->prepareCreatePage(['add_orders']);
+        DB::table('country_tels')->insert(['country_code' => 'NL', 'sort' => 0]);
+        DB::table('a_order_from')->insert([['id' => 7, 'title' => 'Later'], ['id' => 1, 'title' => 'Basket']]);
+        Livewire::test(CreateOrders::class)->assertSuccessful()
+            ->assertFormSet(['country' => 'NL', 'a_order_from' => 1]);
+        $this->assertDatabaseCount('orders', 0);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_full_create_page_subtotal_excludes_bonus_discount_delivery_and_status_color_follows_state(): void
+    {
+        $this->prepareCreatePage(['add_orders']);
+        $client = User::query()->forceCreate(['email' => 'totals@example.test', 'bonuses' => 20]);
+        $data = $this->validData(['email' => $client->email, 'bonus' => 5, 'sale_eur' => 10, 'delivery_price' => 4]);
+        $data['items'][] = array_replace($data['items'][0], ['name' => 'Second item', 'price' => 25]);
+        $page = Livewire::test(CreateOrders::class)->fillForm($data)
+            ->assertSee('Итого по товарам')->assertSee('125.00 €')
+            ->assertSee('Итого к оплате')->assertSee('114.00 €')
+            ->assertSee('data-payment-status="not_payed"', false)
+            ->set('data.payment_status', 'prepayment')->assertSee('data-payment-status="prepayment"', false)
+            ->set('data.payment_status', 'payed')->assertSee('data-payment-status="payed"', false);
+        $firstKey = array_key_first($page->get('data.items'));
+        $page->set('data.items.'.$firstKey.'.price', 30)
+            ->assertSee('55.00 €')->assertSee('44.00 €');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertSame(20.0, (float) $client->fresh()->bonuses);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_full_create_page_validation_does_not_create_an_empty_order(): void
+    {
+        $this->prepareCreatePage(['add_orders']);
+        Livewire::test(CreateOrders::class)->assertSuccessful()
+            ->assertFormSet(['email' => null, 'client_id' => null, 'source_order_id' => null])
+            ->call('create')->assertHasFormErrors(['email', 'first_name']);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 1);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_full_create_page_requires_add_permission(): void
+    {
+        $this->prepareCreatePage(['read_orders']);
+        Livewire::test(CreateOrders::class)->assertForbidden();
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_full_create_page_requires_read_permission_for_source_order(): void
+    {
+        $this->prepareCreatePage(['add_orders']);
+        $source = app(AdminOrderCreationService::class)->create($this->validData());
+        Livewire::withQueryParams(['from_order_id' => $source->id])->test(CreateOrders::class)->assertForbidden();
+        $this->assertDatabaseCount('orders', 1);
+    }
+
+    public function test_full_create_page_switching_email_does_not_keep_previous_client_identity(): void
+    {
+        $this->prepareCreatePage(['add_orders']);
+        $first = User::query()->forceCreate([
+            'email' => 'first@example.test', 'first_name' => 'First', 'last_name' => 'Client',
+            'phone' => '+37120000001', 'country' => 'LV', 'address' => 'First street', 'bonuses' => 12,
+        ]);
+        $second = User::query()->forceCreate([
+            'email' => 'second@example.test', 'first_name' => 'Second', 'last_name' => 'Client',
+            'phone' => '+37120000002', 'country' => 'LV', 'bonuses' => 3,
+        ]);
+        $before = [$first->fresh()->getRawOriginal(), $second->fresh()->getRawOriginal()];
+        Livewire::test(CreateOrders::class)
+            ->set('data.client_id', $first->id)
+            ->assertFormSet(['email' => $first->email, 'first_name' => 'First', 'recipient_phone' => $first->phone])
+            ->assertSee('Доступно бонусов: 12')
+            ->set('data.email', 'SECOND@example.test')
+            ->assertFormSet(['client_id' => $second->id, 'first_name' => 'Second', 'recipient_phone' => $second->phone])
+            ->assertSee('Доступно бонусов: 3')
+            ->set('data.email', 'new@example.test')
+            ->assertFormSet(['client_id' => null, 'first_name' => null, 'last_name' => null, 'phone' => null, 'recipient_phone' => null])
+            ->assertDontSee('Доступно бонусов:')
+            ->call('create')->assertHasFormErrors(['first_name']);
+        $this->assertSame($before, [$first->fresh()->getRawOriginal(), $second->fresh()->getRawOriginal()]);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 3);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_full_create_page_creates_new_client_and_stores_uploaded_source(): void
+    {
+        $this->prepareCreatePage(['add_orders', 'read_orders']);
+        $data = $this->validData();
+        $data['recipient_phone'] = '+371 (29) 999-999';
+        $data['items'][0]['images'] = [UploadedFile::fake()->image('new-source.jpg')];
+        Livewire::test(CreateOrders::class)->fillForm($data)
+            ->call('create')->assertHasNoFormErrors()->assertRedirect();
+        $order = Orders::query()->firstOrFail();
+        $client = $order->user;
+        $this->assertSame('new-client@example.test', $client->email);
+        $this->assertSame('Client', $client->first_name);
+        $this->assertSame('+37129999999', $client->phone);
+        $this->assertNotEmpty($client->password);
+        $this->assertSame('watching', $order->status);
+        $delivery = json_decode($order->delivery, true);
+        $this->assertSame('+37120000000', $delivery['payer_phone']);
+        $this->assertSame('+37129999999', $delivery['phone']);
+        $item = json_decode($order->items, true)[0];
+        $this->assertCount(1, $item['orig_images']);
+        $files = Storage::disk('uploads')->allFiles('orders');
+        $this->assertCount(1, $files);
+        $this->assertStringEndsWith($files[0], $item['orig_images'][0]);
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertDatabaseCount('users', 2);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_full_create_page_missing_source_returns_not_found_without_writes(): void
+    {
+        $this->prepareCreatePage(['add_orders', 'read_orders']);
+        try {
+            Livewire::withQueryParams(['from_order_id' => 99999])->test(CreateOrders::class);
+            $this->fail('Missing source was accepted.');
+        } catch (ModelNotFoundException $exception) {
+            $this->assertSame(Orders::class, $exception->getModel());
+            $this->assertSame([99999], $exception->getIds());
+        }
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 1);
+    }
+
+    public function test_full_create_page_revoked_add_permission_blocks_open_form_submission(): void
+    {
+        $this->prepareCreatePage(['add_orders']);
+        $page = Livewire::test(CreateOrders::class)->fillForm($this->validData());
+        DB::table('permission_role')->where('permission_id', Permission::query()->where('key', 'add_orders')->value('id'))->delete();
+        auth('filament')->user()->unsetRelations();
+        $page->call('create')->assertForbidden();
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 1);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    private function prepareCreatePage(array $permissions): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        Storage::fake('uploads');
+        Schema::create('roles', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+        Schema::create('permissions', function (Blueprint $table): void {
+            $table->id();
+            $table->string('key');
+            $table->timestamps();
+        });
+        foreach (['permission_role' => ['permission_id', 'role_id'], 'user_roles' => ['user_id', 'role_id']] as $name => $fields) {
+            Schema::create($name, function (Blueprint $table) use ($fields): void {
+                foreach ($fields as $field) {
+                    $table->unsignedBigInteger($field);
+                }
+            });
+        }
+        Schema::table('users', fn (Blueprint $table) => $table->string('nick')->nullable());
+        Schema::create('country_tels', function (Blueprint $table): void {
+            $table->id();
+            $table->string('country_code');
+            $table->integer('sort');
+        });
+        DB::table('country_tels')->insert(['country_code' => 'LV', 'sort' => 1]);
+        Schema::create('a_order_from', function (Blueprint $table): void {
+            $table->id();
+            $table->string('title');
+        });
+        Schema::create('translations', function (Blueprint $table): void {
+            $table->id();
+            $table->string('table_name');
+            $table->string('column_name');
+            $table->unsignedBigInteger('foreign_key');
+            $table->string('locale');
+            $table->text('value');
+        });
+        Schema::create('gallery_items', function (Blueprint $table): void {
+            $table->id();
+            $table->integer('id_type');
+            $table->string('name');
+            foreach (['custom_size_prices', 'custom_size_prices_form2', 'custom_users_prices'] as $field) {
+                $table->text($field)->nullable();
+            }
+        });
+        foreach (['canvas_header' => 'c_right_top', 'a_collage_head' => 'name'] as $name => $label) {
+            Schema::create($name, function (Blueprint $table) use ($label): void {
+                $table->id();
+                $table->string($label);
+                $table->text('sizes_30x40')->nullable();
+                $table->text('sizes_38x38')->nullable();
+            });
+            DB::table($name)->insert(['id' => 1, $label => $name]);
+        }
+        $role = Role::query()->create(['name' => 'create-page-operator']);
+        foreach (['browse_admin', 'browse_orders', ...$permissions] as $key) {
+            $role->permissions()->attach(Permission::query()->create(['key' => $key]));
+        }
+        $this->actingAs(User::query()->forceCreate(['role_id' => $role->id, 'email' => 'operator@example.test']), 'filament');
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
     }
 
     public function test_source_order_prefills_only_client_data_as_in_voyager(): void
@@ -320,6 +587,106 @@ class AdminOrderCreationServiceTest extends TestCase
         $this->assertSame(15.0, (float) $user->fresh()->bonuses);
         $this->assertDatabaseCount('orders', 0);
         Mail::assertNothingSent();
+    }
+
+    public function test_create_rejects_documents_before_creating_user_or_order(): void
+    {
+        Storage::fake('uploads');
+        foreach ([['source.pdf', '%PDF-1.4 test'], ['source.ps', '%!PS-Adobe-3.0 test']] as [$name, $content]) {
+            $data = $this->validData();
+            $data['items'][0]['images'] = [UploadedFile::fake()->createWithContent($name, $content)];
+            try {
+                app(AdminOrderCreationService::class)->create($data);
+                $this->fail('Document accepted in image-only create form.');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('items.0.images.0', $exception->errors());
+            }
+        }
+        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertSame([], Storage::disk('uploads')->allFiles());
+        Http::assertNothingSent();
+        Mail::assertNothingSent();
+    }
+
+    public function test_model_veto_rolls_back_each_creation_stage_and_new_files(): void
+    {
+        Storage::fake('uploads');
+        $user = User::query()->forceCreate(['email' => 'existing@example.test', 'bonuses' => 15]);
+        Storage::disk('uploads')->put('orders/existing.jpg', 'keep');
+        foreach (['user', 'bonus', 'insert', 'final'] as $stage) {
+            $data = $this->validData();
+            if ($stage === 'bonus' || $stage === 'final') {
+                $data['email'] = $user->email;
+                $data['bonus'] = 5;
+            }
+            $data['items'][0]['images'] = [UploadedFile::fake()->image('source.jpg')];
+            $model = in_array($stage, ['user', 'bonus'], true) ? User::class : Orders::class;
+            $event = 'eloquent.saving: '.$model;
+            Event::listen($event, function ($record) use ($stage) {
+                $veto = in_array($stage, ['user', 'bonus'], true)
+                    || ($stage === 'insert' && ! $record->exists)
+                    || ($stage === 'final' && $record->exists);
+                if ($veto) {
+                    if ($stage === 'final') {
+                        $this->assertCount(2, Storage::disk('uploads')->allFiles());
+                    }
+
+                    return false;
+                }
+            });
+            try {
+                app(AdminOrderCreationService::class)->create($data);
+                $this->fail('Model veto reported success: '.$stage);
+            } catch (ValidationException $exception) {
+                $key = match ($stage) {
+                    'user' => 'email', 'bonus' => 'bonus', default => 'items'
+                };
+                $this->assertArrayHasKey($key, $exception->errors());
+            } finally {
+                Event::forget($event);
+            }
+            $this->assertDatabaseCount('orders', 0);
+            $this->assertDatabaseCount('users', 1);
+            $this->assertSame(15.0, (float) $user->fresh()->bonuses);
+            $this->assertSame(['orders/existing.jpg'], Storage::disk('uploads')->allFiles());
+            $this->assertSame('keep', Storage::disk('uploads')->get('orders/existing.jpg'));
+        }
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_partial_file_write_is_removed_when_adapter_returns_false(): void
+    {
+        $disk = Storage::fake('uploads');
+        $disk->put('orders/existing.jpg', 'keep');
+        $adapter = Mockery::mock(FilesystemAdapter::class);
+        $adapter->shouldReceive('exists')->andReturn(false);
+        $reserved = null;
+        $adapter->shouldReceive('putFileAs')->once()->andReturnUsing(function ($directory, $file, $name) use ($disk, &$reserved) {
+            $reserved = $directory.'/'.$name;
+            $disk->put($reserved, 'partial');
+
+            return false;
+        });
+        $adapter->shouldReceive('delete')->once()->andReturnUsing(fn ($path) => $disk->delete($path));
+        Storage::shouldReceive('disk')->with('uploads')->andReturn($adapter);
+        $data = $this->validData();
+        $data['items'][0]['images'] = [UploadedFile::fake()->image('source.jpg')];
+        try {
+            app(AdminOrderCreationService::class)->create($data);
+            $this->fail('Partial write accepted.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items.0.images', $exception->errors());
+        }
+        $this->assertNotNull($reserved);
+        $this->assertFalse($disk->exists($reserved));
+        $this->assertSame('keep', $disk->get('orders/existing.jpg'));
+        $this->assertSame(['orders/existing.jpg'], $disk->allFiles());
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 0);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
     }
 
     public function test_production_codes_and_collision_preserve_existing_and_remote_files(): void

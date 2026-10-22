@@ -81,6 +81,8 @@ class OrderItemEditor
                     throw ValidationException::withMessages(['files' => 'Не удалось сохранить позицию заказа.']);
                 }
 
+                app(OrderInvoiceService::class)->refreshDocument($locked);
+
                 return $locked->refresh();
             });
         } catch (Throwable $exception) {
@@ -265,6 +267,8 @@ class OrderItemEditor
             ])->save()) {
                 throw ValidationException::withMessages(['fingerprint' => 'Не удалось сохранить позицию заказа.']);
             }
+
+            app(OrderInvoiceService::class)->refreshDocument($locked);
 
             return $locked->refresh();
         });

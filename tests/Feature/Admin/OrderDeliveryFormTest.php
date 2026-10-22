@@ -2,10 +2,15 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Filament\Resources\Orders\Schemas\AdminOrderCreateForm;
 use App\Filament\Resources\Orders\Schemas\OrderDeliveryForm;
 use App\Models\Orders;
+use App\Services\Admin\AdminOrderCreationService;
 use App\Services\Admin\OrderDeliveryEditor;
+use App\Services\Admin\OrderInvoiceService;
 use App\Services\Admin\UpdateOrderService;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
@@ -23,6 +28,7 @@ class OrderDeliveryFormTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->mock(OrderInvoiceService::class)->shouldReceive('refreshDocument')->andReturn('https://example.test/invoice.pdf')->byDefault();
         $this->assertSame('sqlite', DB::connection()->getDriverName());
         $this->assertSame(':memory:', DB::connection()->getDatabaseName());
         Mail::fake();
@@ -84,6 +90,32 @@ class OrderDeliveryFormTest extends TestCase
         $this->assertSame(['LV' => 'LV', 'EE' => 'EE'], $service->countries());
     }
 
+    public function test_creation_delivery_selectors_filter_and_fill_address_like_original(): void
+    {
+        Livewire::test(AdminCreateDeliveryHarness::class)
+            ->set('data.delivery_method', 'pickup_at_viar_workshop')
+            ->assertSet('data.pickup_workshop_id', 1)
+            ->assertSet('data.address', 'Рига')->assertSet('data.city', null)
+            ->set('data.country', 'EE')
+            ->assertSet('data.pickup_workshop_id', 3)->assertSet('data.address', 'Tallinn')
+            ->assertDontSee('Hidden')->assertDontSee('Daugavpils')
+            ->set('data.pickup_workshop_id', 6)->assertSet('data.address', 'Multi')
+            ->set('data.delivery_method', 'city_delivery')
+            ->assertSet('data.pickup_workshop_id', null)
+            ->assertSet('data.delivery_town_id', 8)->assertSet('data.city', 'Tartu')
+            ->set('data.country', 'LV')
+            ->assertSet('data.delivery_town_id', 7)->assertSet('data.city', 'Елгава')
+            ->set('data.delivery_town_id', 9)->assertSet('data.city', 'Any')
+            ->set('data.delivery_method', 'pickup_Riga')
+            ->assertSet('data.delivery_town_id', null)->assertSet('data.pickup_workshop_id', 1)
+            ->assertSet('data.address', 'Рига')->assertSet('data.city', null)
+            ->set('data.pickup_workshop_id', 2)->assertSet('data.address', 'Daugavpils')->assertSet('data.city', 'Daugavpils')
+            ->set('data.delivery_method', 'to_the_door')
+            ->assertSet('data.pickup_workshop_id', null)->assertSet('data.delivery_town_id', null);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
     public function test_form_method_country_and_select_changes_update_visible_address_without_writes(): void
     {
         Livewire::test(OrderDeliveryFormHarness::class)
@@ -108,7 +140,12 @@ class OrderDeliveryFormTest extends TestCase
             ->assertSet('data.delivery_edit.city', 'Any')
             ->set('data.delivery_edit.sposob', 'pickup_Daugavpils')
             ->assertSet('data.delivery_edit.pickup_workshop_id', 2)
+            ->assertSet('data.delivery_edit.city', null)
             ->assertSet('data.delivery_edit.delivery_town_id', null)
+            ->set('data.delivery_edit.pickup_workshop_id', 1)
+            ->assertSet('data.delivery_edit.city', 'Рига')
+            ->set('data.delivery_edit.sposob', 'pickup_Riga')
+            ->assertSet('data.delivery_edit.city', null)
             ->set('data.delivery_edit.sposob', 'to_the_door')
             ->assertSet('data.delivery_edit.pickup_workshop_id', null)
             ->assertSet('data.delivery_edit.delivery_town_id', null)
@@ -223,6 +260,42 @@ class OrderDeliveryFormHarness extends Component implements HasSchemas
     public function submit(): void
     {
         $this->submitted = $this->form->getState();
+    }
+
+    public function render(): string
+    {
+        return '<div>{{ $this->form }}</div>';
+    }
+}
+
+class AdminCreateDeliveryHarness extends Component implements HasSchemas
+{
+    use InteractsWithSchemas;
+
+    public array $data = [];
+
+    public function mount(): void
+    {
+        $this->form->fill(app(AdminOrderCreationService::class)->defaults());
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        $fields = [];
+        $sections = collect(AdminOrderCreateForm::configure($schema)->getComponents())
+            ->flatMap(fn ($component) => $component instanceof Group ? $component->getDefaultChildComponents() : [$component]);
+        foreach ($sections as $section) {
+            if (! $section instanceof Section) {
+                continue;
+            }
+            foreach ($section->getDefaultChildComponents() as $field) {
+                if (in_array($field->getName(), ['delivery_method', 'country', 'pickup_workshop_id', 'delivery_town_id', 'city', 'address'], true)) {
+                    $fields[] = $field;
+                }
+            }
+        }
+
+        return $schema->components($fields)->statePath('data');
     }
 
     public function render(): string

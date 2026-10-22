@@ -49,6 +49,8 @@
         'free_delivery' => 'Бесплатная доставка',
     ];
     $role = auth('filament')->user()?->role?->name ?? 'admin';
+    $oilPromoSrc = $products->contains(fn ($product) => isset($product['is_oil_portrait']))
+        ? \App\Support\Admin\OrderProductPreview::oilPromoUrl() : null;
 @endphp
 
 <style>
@@ -84,9 +86,9 @@
         @if(array_key_exists('deliv_price', $delivery))<div>Итого: <strong>{{ $formatPrice($total) }}</strong></div>@endif
 
         @foreach($legacyFlags as $flag => $label)
-            @if(! empty($delivery[$flag]))<div style="color: #f59e0b; font-weight: 700;">{{ $label }}</div>@endif
+            @if(isset($delivery[$flag]))<div style="color: #f59e0b; font-weight: 700;">{{ $label }}</div>@endif
         @endforeach
-        @if(filled($delivery['bonus'] ?? null))<div style="color: #f59e0b; font-weight: 700;">Использовано {{ $delivery['bonus'] }} бонусов</div>@endif
+        @if(isset($delivery['bonus']))<div style="color: #f59e0b; font-weight: 700;">Использовано {{ $delivery['bonus'] }} бонусов</div>@endif
         @if(filled($delivery['coupon_type'] ?? null) && isset($couponLabels[$delivery['coupon_type']]))
             <div style="color: #f59e0b; font-weight: 700;">{{ $couponLabels[$delivery['coupon_type']] }}</div>
         @endif
@@ -98,13 +100,14 @@
     @endif
 
     @if(filled(data_get($items, '1.content')))
-        <div style="margin-top: 7px; white-space: pre-wrap;">{{ data_get($items, '1.content') }}</div>
+        <div style="margin-top: 7px;">{{ \App\Support\Admin\OrderProductPreview::legacyContent((string) data_get($items, '1.content')) }}</div>
     @endif
 
     @forelse($products as $product)
         @php
             $activeSrc = filled($product['activeImage'] ?? null) ? order_image_url($product['activeImage']) : null;
             $savedSrc = filled($product['savedImage'] ?? null) ? order_image_url($product['savedImage']) : null;
+            $svgDocument = \App\Support\Admin\OrderProductPreview::svgDocument($product);
             $sameImage = $activeSrc && $savedSrc && basename((string) parse_url($activeSrc, PHP_URL_PATH)) === basename((string) parse_url($savedSrc, PHP_URL_PATH));
             $isCanvasLike = isset($product['is_construct'])
                 || isset($product['is_canvas_inter'])
@@ -121,8 +124,17 @@
             @if(filled($product['offsetImage'] ?? null))
                 <div><a target="_blank" rel="noopener" href="{{ order_image_url($product['offsetImage']) }}" style="color: #2563eb; text-decoration: underline;">Картинка с отступами</a></div>
             @endif
+            @if(isset($product['is_oil_portrait']) && $oilPromoSrc)
+                <img src="{{ $oilPromoSrc }}" alt="Портрет маслом" style="display: block; max-width: 150px; max-height: 170px; margin: 6px auto; object-fit: contain;">
+            @endif
             @if($activeSrc)
-                <a target="_blank" rel="noopener" href="{{ $activeSrc }}"><img src="{{ $activeSrc }}" alt="Изображение товара" style="display: block; max-width: 150px; max-height: 170px; margin: 6px auto; object-fit: contain;"></a>
+                <a target="_blank" rel="noopener" href="{{ $activeSrc }}" aria-label="Изображение товара">
+                    @if($svgDocument)
+                        <iframe title="SVG-превью товара" sandbox="" referrerpolicy="no-referrer" tabindex="-1" srcdoc="{{ $svgDocument }}" style="display: block; width: 150px; height: 170px; border: 0; margin: 6px auto; pointer-events: none;"></iframe>
+                    @else
+                        <img src="{{ $activeSrc }}" alt="Изображение товара" style="display: block; max-width: 150px; max-height: 170px; margin: 6px auto; object-fit: contain;">
+                    @endif
+                </a>
             @endif
             @if($savedSrc && ! $sameImage && ! $isCanvasLike)
                 <a target="_blank" rel="noopener" href="{{ $savedSrc }}"><img src="{{ $savedSrc }}" alt="Исходное изображение" style="display: block; max-width: 150px; max-height: 170px; margin: 6px auto; object-fit: contain;"></a>

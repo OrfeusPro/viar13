@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Models\CountryTel;
 use App\Models\User;
 use App\Services\Admin\OrderCustomerSearch;
 use Carbon\Carbon;
@@ -15,9 +16,22 @@ use Illuminate\Support\Facades\DB;
 
 class OrderSearchFilters
 {
+    public static function painterOptions(): array
+    {
+        return User::query()->where('role_id', 3)->orderBy('id')->get()
+            ->mapWithKeys(fn (User $user): array => [$user->id => trim((filled($user->nick) ? trim($user->nick).' - ' : '').$user->email)])->all();
+    }
+
+    public static function countryOptions(): array
+    {
+        return CountryTel::query()->with('translations')->orderBy('sort')->get()
+            ->mapWithKeys(fn (CountryTel $country): array => [$country->country_code => $country->getTranslatedAttribute('country_name', 'ru')])->all();
+    }
+
     public static function createdAt(): Filter
     {
-        return Filter::make('created_at')->label('Дата создания')
+        return Filter::make('created_at')->label('Период')->columns(2)
+            ->columnSpan(['default' => 1, 'sm' => 2])
             ->schema([
                 DatePicker::make('from')->label('С'),
                 DatePicker::make('until')->label('По'),
@@ -67,7 +81,7 @@ class OrderSearchFilters
     public static function size(): Filter
     {
         return Filter::make('size')->label('Размер')
-            ->schema([TextInput::make('value')->label('ID размера')])
+            ->schema([TextInput::make('value')->label('Размер')->placeholder('30x40')])
             ->indicateUsing(fn (array $data): array => ($data['value'] ?? '') !== '' && ($data['value'] ?? null) !== null
                 ? [Indicator::make('Размер: '.$data['value'])->removeField('value')] : [])
             ->query(function (Builder $query, array $data): Builder {
@@ -90,7 +104,8 @@ class OrderSearchFilters
     public static function customer(): Filter
     {
         return Filter::make('customer')->label('Клиент')
-            ->schema([TextInput::make('value')->label('Клиент: имя, email, телефон, адрес, индекс, страна или ID')])
+            ->schema([TextInput::make('value')->label('Клиент')
+                ->placeholder('ID, email, имя, телефон, адрес или индекс')])
             ->indicateUsing(fn (array $data): array => filled(trim((string) ($data['value'] ?? '')))
                 ? [Indicator::make('Клиент: '.trim($data['value']))->removeField('value')] : [])
             ->query(fn (Builder $query, array $data): Builder => app(OrderCustomerSearch::class)
@@ -130,7 +145,7 @@ class OrderSearchFilters
     public static function price(): Filter
     {
         return Filter::make('price')->label('Точная сумма')
-            ->schema([TextInput::make('value')->label('Сумма')->numeric()])
+            ->schema([TextInput::make('value')->label('Цена')->numeric()])
             ->indicateUsing(fn (array $data): array => filled($data['value'] ?? null)
                 ? [Indicator::make('Сумма: '.$data['value'])->removeField('value')] : [])
             ->query(fn (Builder $query, array $data): Builder => $query->when(
@@ -142,7 +157,7 @@ class OrderSearchFilters
     public static function paymentRequest(): Filter
     {
         return Filter::make('payment_request')->label('Номер запроса оплаты')
-            ->schema([TextInput::make('value')->label('Номер (OPR-...)')])
+            ->schema([TextInput::make('value')->label('Заявка на оплату')->placeholder('OPR-000001')])
             ->indicateUsing(fn (array $data): array => filled(trim((string) ($data['value'] ?? '')))
                 ? [Indicator::make('Заявка на оплату: '.strtoupper(trim($data['value'])))->removeField('value')] : [])
             ->query(fn (Builder $query, array $data): Builder => $query->when(

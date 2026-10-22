@@ -21,6 +21,15 @@ class OrderInvoiceService
         private readonly BestEffortMailService $mail,
     ) {}
 
+    public function refreshDocument(Orders $order): string
+    {
+        return $this->pdf->getPDFFromOrder(
+            $this->prepareOrder($order),
+            Orders::getVRById($order->id),
+            null,
+        );
+    }
+
     public function generate(Orders $order, ?array $firmData = null): string
     {
         $vrNumber = Orders::getVRById($order->id);
@@ -39,10 +48,12 @@ class OrderInvoiceService
                 $firmData,
             );
 
-            $lockedOrder->forceFill([
+            if (! $lockedOrder->forceFill([
                 'has_pdf' => 1,
                 'pdf_link' => $pdfUrl,
-            ])->save();
+            ])->save()) {
+                throw ValidationException::withMessages(['invoice' => 'Не удалось сохранить сформированный счёт.']);
+            }
 
             return $pdfUrl;
         });
@@ -73,19 +84,22 @@ class OrderInvoiceService
             ]);
         }
 
-        $wasApproved = (bool) $order->pdf_approved;
-        $pdfPath = DB::transaction(function () use ($order, $customer, $wasApproved): string {
+        $wasApproved = false;
+        $pdfPath = DB::transaction(function () use ($order, $customer, &$wasApproved): string {
             $lockedOrder = Orders::query()->lockForUpdate()->findOrFail($order->id);
+            $wasApproved = (bool) $lockedOrder->pdf_approved;
             $approvedDate = filled($lockedOrder->approved_date) && $lockedOrder->approved_date !== 'null'
                 ? $lockedOrder->approved_date
                 : now()->format('d.m.Y');
 
-            $lockedOrder->forceFill([
+            if (! $lockedOrder->forceFill([
                 'has_pdf' => 1,
                 'approved_date' => $approvedDate,
                 'pdf_approved' => 1,
                 'status' => $lockedOrder->status === 'watching' ? 'pegging' : $lockedOrder->status,
-            ])->save();
+            ])->save()) {
+                throw ValidationException::withMessages(['invoice' => 'Не удалось подтвердить счёт.']);
+            }
 
             $pdfUrl = $this->pdf->getPDFFromOrder(
                 $this->prepareOrder($lockedOrder),
@@ -93,7 +107,9 @@ class OrderInvoiceService
                 null,
             );
 
-            $lockedOrder->forceFill(['pdf_link' => $pdfUrl])->save();
+            if (! $lockedOrder->forceFill(['pdf_link' => $pdfUrl])->save()) {
+                throw ValidationException::withMessages(['invoice' => 'Не удалось сохранить ссылку на счёт.']);
+            }
 
             if (! $wasApproved) {
                 $lockedCustomer = User::query()->lockForUpdate()->findOrFail($customer->id);
@@ -116,13 +132,13 @@ class OrderInvoiceService
         }
         $freshOrder = $order->fresh();
         $mailable = new ApproveUserCheckoutMail(
-                $pdfPath,
-                (string) $freshOrder->getRawOriginal('updated_at'),
-                $this->decodeJson($freshOrder->getRawOriginal('items')),
-                $messageData,
-                $freshOrder->id,
-                $locale,
-            );
+            $pdfPath,
+            (string) $freshOrder->getRawOriginal('updated_at'),
+            $this->decodeJson($freshOrder->getRawOriginal('items')),
+            $messageData,
+            $freshOrder->id,
+            $locale,
+        );
         $emailEnabled = (bool) config('admin_migration.invoice_email_enabled', false);
         $mailProcessed = $emailEnabled
             ? $this->mail->send(
@@ -155,9 +171,9 @@ class OrderInvoiceService
         ];
     }
 
-    public function defaultFirmData(Orders $order): array
+    public function defaultFirmData(Orders $order, ?string $vrNumber = null): array
     {
-        if (str_starts_with((string) Orders::getVRById($order->id), 'VR00')) {
+        if (str_starts_with($vrNumber ?? (string) Orders::getVRById($order->id), 'VR00')) {
             return [
                 'name' => 'SIA "ViarStudia"',
                 'reg_num' => '',
@@ -220,12 +236,16 @@ class OrderInvoiceService
         }
 
         $bonus = (float) DB::table('stocks')->where('id', 1)->value('friend_sale');
-        $inviter->forceFill([
+        if (! $inviter->forceFill([
             'bonuses' => (float) $inviter->bonuses + $bonus,
             'inv_sale_code' => str()->random(8),
             'is_active_friend_inv' => 1,
-        ])->save();
+        ])->save()) {
+            throw ValidationException::withMessages(['invoice' => 'Не удалось начислить бонус за приглашение.']);
+        }
 
-        $customer->forceFill(['invited' => null])->save();
+        if (! $customer->forceFill(['invited' => null])->save()) {
+            throw ValidationException::withMessages(['invoice' => 'Не удалось сохранить начисление бонуса клиенту.']);
+        }
     }
 }
