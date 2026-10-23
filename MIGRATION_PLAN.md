@@ -3947,3 +3947,6 @@ DONE: повторный скриншот gallery-items?type=5 выявил от
 IN PROGRESS: длинные подписи одной строкой с ellipsis в ширине ячейки; «Сбросить» только при непустых применённых или ещё не применённых фильтрах. Сохранить штатный resetTableFiltersForm, нулевые значения считать заполненными. Проверить фильтрацию и сброс, выгрузить коммит в C:\OSPanel\domains\28 Viar.
 
 ADM-FILTERS-01 DONE реализация/автопроверки: scoped CSS labels no-wrap/ellipsis; override штатного filters Blade ограничивает reset visibility только ListOrders через реактивные applied+deferred state. 23 search tests /397 assertions +21 role/tabs tests /364 assertions PASS; JS3/3PASS. Browser визуальная приёмка TODO из-за отключённого управления. Миграций/API нет. Коммит выгрузить в пользовательскую папку за сегодня.
+
+### ADM-FILTERS-02 — сворачиваемая полоса фильтров, 2026-10-23
+DONE реализация: ListOrders по умолчанию expanded:false на всех ширинах, кнопка-полоса «Фильтры» раскрывает/сворачивает поля и «Применить», chevron/aria-expanded/keyboard support. Значения и условный reset сохранены. 34PHPtests/693assertions и JS3/3PASS; git diff --check PASS. Browser QA TODO: управление отключено. Выгрузить коммит в C:\OSPanel\domains\28 Viar.

@@ -176,6 +176,11 @@
 .viar-orders-table .fi-ta-filters .fi-fo-field-label-ctn,
 .viar-orders-table .fi-ta-filters .fi-fo-field-label { min-width:0; max-width:100%; }
 .viar-orders-table .fi-ta-filters .fi-fo-field-label-content { display:block; min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.viar-order-filters-toggle { display:flex; flex:1; align-items:center; justify-content:space-between; gap:12px; min-height:36px; text-align:left; cursor:pointer; }
+.viar-order-filters-toggle .fi-icon { width:18px; height:18px; transition:transform 150ms; }
+.viar-order-filters-toggle .fi-icon.is-expanded { transform:rotate(180deg); }
+.viar-order-filters-toggle:focus-visible { outline:2px solid var(--primary-500); outline-offset:3px; border-radius:4px; }
+.viar-order-filters-body { display:grid; gap:16px; }
 
 .viar-order-create-form .fi-sc.fi-sc-has-gap { gap:14px; }
 .viar-order-create-form .fi-fo-field { row-gap:4px; }
