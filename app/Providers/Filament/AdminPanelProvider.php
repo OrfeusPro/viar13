@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -9,6 +10,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Resources\Pages\Page;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Filament\Widgets\AccountWidget;
@@ -17,6 +19,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -28,15 +31,14 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('filament')
             ->brandName('Viar Admin')
-            ->renderHook('panels::global-search.after', fn () => \Illuminate\Support\Facades\Blade::render("@livewire('admin.sa-inbox-badge')"))
-            ->renderHook('panels::page.header.heading.before', fn (array $scopes) =>
-                collect($scopes)->contains(fn (string $scope): bool => is_subclass_of($scope, \Filament\Resources\Pages\Page::class))
+            ->renderHook('panels::global-search.after', fn () => Blade::render("@livewire('admin.sa-inbox-badge')"))
+            ->renderHook('panels::page.header.heading.before', fn (array $scopes) => collect($scopes)->contains(fn (string $scope): bool => is_subclass_of($scope, Page::class))
                     ? '' : view('filament.components.menu-location'))
             ->renderHook('panels::head.end', fn () => view('filament.components.order-chat-styles'))
             ->maxContentWidth(Width::Full)
             ->sidebarCollapsibleOnDesktop()
             ->authGuard('filament')
-            ->login()
+            ->login(Login::class)
             ->colors([
                 'primary' => Color::Blue,
             ])

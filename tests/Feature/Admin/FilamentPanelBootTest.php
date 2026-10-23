@@ -20,6 +20,19 @@ class FilamentPanelBootTest extends TestCase
         $this->get('/filament/login')->assertOk();
     }
 
+    public function test_password_is_masked_before_javascript_initializes(): void
+    {
+        $html = $this->get('/filament/login')->assertOk()->getContent();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $password = (new \DOMXPath($dom))->query('//input[@id="form.password"]')->item(0);
+
+        $this->assertNotNull($password);
+        $this->assertSame('password', $password->getAttribute('type'));
+        $this->assertSame('current-password', $password->getAttribute('autocomplete'));
+        $this->assertSame("isPasswordRevealed ? 'text' : 'password'", $password->getAttribute('x-bind:type'));
+    }
+
     public function test_frontend_session_does_not_block_filament_login(): void
     {
         Auth::guard('web')->setUser(new GenericUser([

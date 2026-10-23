@@ -1,5 +1,16 @@
 # План миграции viar13 на Laravel 13
 
+## DEV-AUTH-01 — вход на dev.viarcanvas.com, 2026-10-23
+
+- IN PROGRESS: онлайн `/filament/login` возвращает 200, но script
+  `/livewire-1fe4a532/livewire.js?id=4d123128` возвращает 404. Все восемь
+  проверенных остальных JS возвращают 200; Cloudflare Rocket Loader меняет type scripts.
+- Исправление: публиковать Livewire assets после Composer install/update, добавить
+  нативный type=password в login с сохранением кнопки показа. Проверить feature tests.
+- Следующий шаг: применить deployment-команды из docs/dev-login-deployment.md на
+  сервере, исключить админку из Rocket Loader, проверить JS 200 и вход пользователем.
+- Риск: без доступа к серверу конфигурация Nginx и успешный вход не подтверждены.
+
 Обновлено: 2026-09-30.
 
 ## Сверка исходных коммитов с `9a72e4b9` по `8101a9df` (2026-09-25)
@@ -3905,3 +3916,5 @@ IN PROGRESS. Продолжение сверки original resources/views/vendor
 Осталось: браузерная сверка раскрытой формы фирмы и сохранения PDF, оставшиеся сценарии этикетки и drag/drop; общий ADM-AUD-13 остаётся IN PROGRESS. Новых миграций и изменений контрактов CRM/SA нет.
 
 ADM-AUD-13 precommit gate, 2026-10-22: 348 tests / 3784 assertions, 0 failures/errors, 1 skip (legacy admin route intentionally disabled in test runtime); JUnit storage/logs/adm-aud-13-precommit-20261022.xml. JS payment-request-copy: 5/5 PASS. Pint пяти изменённых в этом шаге PHP-файлов PASS; git diff --cached --check PASS. Исправлены устаревшие ожидания тестов после переноса статусов/реквизитов в строку. Подготовлен общий коммит накопленных изменений ADM-AUD-13 (77 файлов); пользовательские удаления изображений и две модели AdmBrowserCycle вне коммита. Общая визуальная/провайдерная приёмка не закрыта.
+
+DEV-AUTH-01, результат 2026-10-23: DONE локальные изменения Login (нативный type=password с сохранением Alpine toggle) и Composer post-autoload-dump публикация Livewire assets. FilamentPanelBootTest + FilamentAuthorizationTest: 30 tests / 689 assertions PASS. TODO: серверное применение docs/dev-login-deployment.md и успешный онлайн-вход; общий статус IN PROGRESS.
