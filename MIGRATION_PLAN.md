@@ -3959,3 +3959,6 @@ DONE реализация по образцу: current/production оранжев
 
 ### ADM-TABS-COLOR-02 — убрать лишние счётчики и «Все», 2026-10-23
 DONE: нулевые badge возвращают null, у completed badge убран целиком; all удалена из tabs/порядка и CSS. 22tests/372assertionsPASS; Pint/diff checkPASS. Browser QA TODO. Коммит выгрузить в C:\OSPanel\domains\28 Viar.
+
+### ADM-TABS-COLOR-03 — спокойный стиль без обводки, 2026-10-23
+DONE CSS: пастельные статусные заливки, приглушённый текст, компактные badge, убрать рамку active и внешнюю ring/shadow панели. Active выделен насыщенностью фона/тонкой нижней линией. Dark/focus/hover предусмотрены. Только CSS, git diff --checkPASS; browser QA TODO (управление отключено). Коммит в C:\OSPanel\domains\28 Viar.

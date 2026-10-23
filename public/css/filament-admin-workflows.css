@@ -182,20 +182,27 @@
 .viar-order-filters-toggle:focus-visible { outline:2px solid var(--primary-500); outline-offset:3px; border-radius:4px; }
 .viar-order-filters-body { display:grid; gap:16px; }
 
-/* Order list tabs retain their status colors in both inactive and active states. */
-.viar-order-tab--current, .viar-order-tab--production { --viar-tab-bg:#f5a623; --viar-tab-fg:#392600; }
-.viar-order-tab--completed { --viar-tab-bg:#36afe2; --viar-tab-fg:#103247; }
-.viar-order-tab--express, .viar-order-tab--unpaid { --viar-tab-bg:#ff421f; --viar-tab-fg:#fff; }
-.viar-order-tab--printing { --viar-tab-bg:#b8df69; --viar-tab-fg:#314315; }
-.viar-order-tab--sent_today { --viar-tab-bg:#dedede; --viar-tab-fg:#414141; }
-.viar-order-tab--sent { --viar-tab-bg:#dceff7; --viar-tab-fg:#344854; }
-.viar-order-tab--new_recently { --viar-tab-bg:#36cd7c; --viar-tab-fg:#123b25; }
-.fi-tabs .fi-tabs-item.viar-order-tab { background:var(--viar-tab-bg); color:var(--viar-tab-fg); border:2px solid transparent; border-radius:5px; transition:filter 150ms, border-color 150ms; }
-.fi-tabs .fi-tabs-item.viar-order-tab .fi-tabs-item-label { color:inherit; font-weight:600; }
-.fi-tabs .fi-tabs-item.viar-order-tab:hover { filter:brightness(0.95); }
-.fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"] { border-color:currentColor; }
-.fi-tabs .fi-tabs-item.viar-order-tab:focus-visible { outline:2px solid var(--primary-600); outline-offset:3px; }
-.fi-tabs .fi-tabs-item.viar-order-tab .fi-badge { background:rgb(255 255 255 / 75%); color:#273444; }
+/* Quiet status colors; the active tab has a short accent instead of a frame. */
+.viar-order-tab--current, .viar-order-tab--production { --viar-tab-accent:#b77916; --viar-tab-fg:#805313; }
+.viar-order-tab--completed { --viar-tab-accent:#2885ac; --viar-tab-fg:#246982; }
+.viar-order-tab--express, .viar-order-tab--unpaid { --viar-tab-accent:#d35641; --viar-tab-fg:#aa4132; }
+.viar-order-tab--printing { --viar-tab-accent:#7b9838; --viar-tab-fg:#536d28; }
+.viar-order-tab--sent_today { --viar-tab-accent:#7b8490; --viar-tab-fg:#58616e; }
+.viar-order-tab--sent { --viar-tab-accent:#5689a0; --viar-tab-fg:#416b80; }
+.viar-order-tab--new_recently { --viar-tab-accent:#349364; --viar-tab-fg:#29744f; }
+.fi-tabs:has(> .viar-order-tab) { gap:6px; padding:4px; background:transparent; border:0; border-radius:0; box-shadow:none; --tw-ring-shadow:0 0 #0000; --tw-ring-inset-shadow:0 0 #0000; }
+.fi-tabs .fi-tabs-item.viar-order-tab { position:relative; flex-shrink:0; padding:10px 14px; background:color-mix(in srgb, var(--viar-tab-accent) 8%, white); color:var(--viar-tab-fg); border:0; border-radius:8px; transition:background-color 150ms; }
+.fi-tabs .fi-tabs-item.viar-order-tab .fi-tabs-item-label { color:inherit; font-weight:500; }
+.fi-tabs .fi-tabs-item.viar-order-tab:hover { background:color-mix(in srgb, var(--viar-tab-accent) 14%, white); }
+.fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"] { background:color-mix(in srgb, var(--viar-tab-accent) 18%, white); }
+.fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"] .fi-tabs-item-label { font-weight:600; }
+.fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"]::after { content:''; position:absolute; height:2px; bottom:0; inset-inline:14px; border-radius:2px; background:var(--viar-tab-accent); }
+.fi-tabs .fi-tabs-item.viar-order-tab:focus-visible { outline:2px solid var(--primary-600); outline-offset:2px; }
+.fi-tabs .fi-tabs-item.viar-order-tab .fi-badge { min-width:22px; padding:1px 6px; border-radius:6px; background:color-mix(in srgb, var(--viar-tab-accent) 12%, white); color:inherit; box-shadow:none; font-size:11px; }
+.dark .fi-tabs .fi-tabs-item.viar-order-tab { background:color-mix(in srgb, var(--viar-tab-accent) 13%, #18181b); color:color-mix(in srgb, var(--viar-tab-accent) 45%, white); }
+.dark .fi-tabs .fi-tabs-item.viar-order-tab:hover,
+.dark .fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"] { background:color-mix(in srgb, var(--viar-tab-accent) 24%, #18181b); }
+.dark .fi-tabs .fi-tabs-item.viar-order-tab .fi-badge { background:color-mix(in srgb, var(--viar-tab-accent) 20%, #18181b); }
 
 .viar-order-create-form .fi-sc.fi-sc-has-gap { gap:14px; }
 .viar-order-create-form .fi-fo-field { row-gap:4px; }
