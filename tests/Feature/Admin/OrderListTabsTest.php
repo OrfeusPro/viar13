@@ -16,6 +16,19 @@ use Tests\TestCase;
 
 class OrderListTabsTest extends TestCase
 {
+    public function test_tab_badges_hide_zero_counts_and_completed_total_and_all_tab_is_removed(): void
+    {
+        $tabs = (new ListOrders)->getTabs();
+        $this->assertArrayNotHasKey('all', $tabs);
+        $this->assertNull($tabs['completed']->getBadge());
+        $this->assertSame('2', $tabs['production']->getBadge());
+        $this->assertSame('2', $tabs['sent']->getBadge());
+        DB::table('orders')->whereIn('status', ['in_production', 'sended'])->delete();
+        $this->assertNull($tabs['production']->getBadge());
+        $this->assertNull($tabs['sent']->getBadge());
+        $this->assertNull($tabs['sent_today']->getBadge());
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

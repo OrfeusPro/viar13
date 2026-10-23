@@ -48,28 +48,27 @@ class ListOrders extends ListRecords
         $tabs = [
             'current' => Tab::make('Текущие')
                 ->visible(! $isPrinting)
-                ->badge(fn (): int => Orders::query()->where('status', '!=', 'completed')->count())
+                ->badge(fn (): ?int => Orders::query()->where('status', '!=', 'completed')->count() ?: null)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $this->applyLegacyRotation(
                     $query->where('status', '!=', 'completed'),
                     Orders::query()->where('status', '!=', 'completed'),
                 )),
             'completed' => Tab::make('Завершённые')
                 ->visible(! $isPrinting)
-                ->badge(fn (): int => Orders::query()->where('status', 'completed')->count())
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'completed')->orderByDesc('created_at')),
             'unpaid' => Tab::make('Неоплаченные')
                 ->visible(! $isPrinting)
-                ->badge(fn (): int => Orders::query()->where('status', '!=', 'completed')->where('payment_status', 'not_payed')->count())
+                ->badge(fn (): ?int => Orders::query()->where('status', '!=', 'completed')->where('payment_status', 'not_payed')->count() ?: null)
                 ->badgeColor('danger')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $this->applyLegacyRotation(
                     $query->where('status', '!=', 'completed')->where('payment_status', 'not_payed'),
                     Orders::query()->where('status', '!=', 'completed')->where('payment_status', 'not_payed'),
                 )),
             'production' => Tab::make('В производстве')
-                ->badge(fn (): int => Orders::query()->where('status', 'in_production')->count())
+                ->badge(fn (): ?int => Orders::query()->where('status', 'in_production')->count() ?: null)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'in_production')->orderByDesc('orders.id')),
             'printing' => Tab::make('У печатника')
-                ->badge(fn (): int => Orders::query()->where('status', '!=', 'completed')->whereHas('printingAssignment')->count())
+                ->badge(fn (): ?int => Orders::query()->where('status', '!=', 'completed')->whereHas('printingAssignment')->count() ?: null)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $this->applyLegacyRotation(
                     $query->where('status', '!=', 'completed')->whereHas('printingAssignment'),
                     Orders::query()->where('status', '!=', 'completed')->whereHas('printingAssignment'),
@@ -81,18 +80,16 @@ class ListOrders extends ListRecords
                     true,
                 )),
             'sent_today' => Tab::make('Отправлены сегодня')
-                ->badge(fn (): int => Orders::query()->where('status', 'sended')->whereDate('send_date', today())->count())
+                ->badge(fn (): ?int => Orders::query()->where('status', 'sended')->whereDate('send_date', today())->count() ?: null)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query
                     ->where('status', 'sended')
                     ->whereDate('send_date', today())->orderByDesc('send_date')),
             'sent' => Tab::make('Отправленные')
-                ->badge(fn (): int => Orders::query()->where('status', 'sended')->count())
+                ->badge(fn (): ?int => Orders::query()->where('status', 'sended')->count() ?: null)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'sended')->orderByDesc('orders.id')),
             'new_recently' => Tab::make('Новые сегодня/вчера')
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query
                     ->whereBetween('created_at', [today()->subDay()->startOfDay(), today()->endOfDay()])->orderByDesc('orders.id')),
-            'all' => Tab::make('Все')->visible(! $isPrinting)
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->orderByDesc('created_at')),
         ];
 
         foreach ($tabs as $key => $tab) {
@@ -100,8 +97,8 @@ class ListOrders extends ListRecords
         }
 
         $order = $isPrinting
-            ? ['current', 'completed', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid', 'express', 'all']
-            : ['current', 'completed', 'express', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid', 'all'];
+            ? ['current', 'completed', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid', 'express']
+            : ['current', 'completed', 'express', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid'];
 
         return array_combine($order, array_map(fn (string $key): Tab => $tabs[$key], $order));
     }

@@ -3956,3 +3956,6 @@ DONE: x-collapse.duration.250ms на блоке фильтров ListOrders — 
 
 ### ADM-TABS-COLOR-01 — цветные вкладки заказов, 2026-10-23
 DONE реализация по образцу: current/production оранжевые, completed голубая, express/unpaid красные, printing светло-зелёная, sent_today серая, sent светло-голубая, new_recently зелёная, all нейтральная. Цвета привязаны к ключам вкладок, не порядку/роли. Активная — контрастная рамка. 21tests/364assertionsPASS; Pint/diff checkPASS. Browser QA TODO (управление отключено). Выгрузить в C:\OSPanel\domains\28 Viar.
+
+### ADM-TABS-COLOR-02 — убрать лишние счётчики и «Все», 2026-10-23
+DONE: нулевые badge возвращают null, у completed badge убран целиком; all удалена из tabs/порядка и CSS. 22tests/372assertionsPASS; Pint/diff checkPASS. Browser QA TODO. Коммит выгрузить в C:\OSPanel\domains\28 Viar.

@@ -116,7 +116,7 @@ class OrderListRolePresentationTest extends TestCase
             $this->asRole($role);
             $tabs = (new ListOrders)->getTabs();
             $this->assertSame(
-                ['current', 'completed', 'express', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid', 'all'],
+                ['current', 'completed', 'express', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid'],
                 array_keys(array_filter($tabs, fn ($tab) => $tab->isVisible())),
             );
             $this->assertSame('Надо отправить сегодня', $tabs['express']->getLabel());
