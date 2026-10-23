@@ -21,6 +21,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use TCG\Voyager\Facades\Voyager;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -30,7 +31,13 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('filament')
-            ->brandName('Viar Admin')
+            ->brandName(fn (): string => trim((string) setting('admin.title')) ?: 'ViarCanvas')
+            ->brandLogo(fn () => view('filament.components.brand', [
+                'name' => trim((string) setting('admin.title')) ?: 'ViarCanvas',
+                'logo' => Voyager::image(trim((string) setting('admin.icon_image')))
+                    ?: 'https://viarcanvas.com/storage/settings/March2021/Ey47Eo1q2bpmmxdRrHDv.png',
+            ]))
+            ->brandLogoHeight('2rem')
             ->renderHook('panels::global-search.after', fn () => Blade::render("@livewire('admin.sa-inbox-badge')"))
             ->renderHook('panels::page.header.heading.before', fn (array $scopes) => collect($scopes)->contains(fn (string $scope): bool => is_subclass_of($scope, Page::class))
                     ? '' : view('filament.components.menu-location'))

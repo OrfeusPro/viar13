@@ -1,4 +1,4 @@
-@php($tree = \App\Filament\Bread\BreadMenuTree::make($navigation))
+@php($tree = $tree ?? \App\Filament\Bread\BreadMenuTree::make($navigation))
 <ul class="viar-menu-tree" x-bind:class="{ 'is-compact': ! $store.sidebar.isOpen }"
     x-effect="if ($store.sidebar.isOpen) $nextTick(() => $el.querySelector('[aria-current=page]')?.scrollIntoView({ block: 'nearest' }))">
     @foreach ($tree as $node)

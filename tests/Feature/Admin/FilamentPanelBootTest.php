@@ -3,7 +3,11 @@
 namespace Tests\Feature\Admin;
 
 use Illuminate\Auth\GenericUser;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class FilamentPanelBootTest extends TestCase
@@ -18,6 +22,38 @@ class FilamentPanelBootTest extends TestCase
     public function test_filament_login_page_is_available(): void
     {
         $this->get('/filament/login')->assertOk();
+    }
+
+    public function test_login_uses_default_logo_when_settings_are_unavailable(): void
+    {
+        $this->get('/filament/login')->assertOk()
+            ->assertSee('https://viarcanvas.com/storage/settings/March2021/Ey47Eo1q2bpmmxdRrHDv.png', false)
+            ->assertSee('ViarCanvas');
+    }
+
+    public function test_login_and_shared_header_logo_follow_admin_settings(): void
+    {
+        Schema::create('settings', function (Blueprint $table): void {
+            $table->string('key')->primary();
+            $table->text('value')->nullable();
+        });
+        DB::table('settings')->insert([
+            ['key' => 'admin.title', 'value' => 'ViarCanvas Studio'],
+            ['key' => 'admin.icon_image', 'value' => 'settings\\March2021\\custom.png'],
+        ]);
+        config(['voyager.storage.disk' => 'public', 'filesystems.disks.public.url' => 'https://example.test/storage']);
+
+        $this->get('/filament/login')->assertOk()
+            ->assertSee('ViarCanvas Studio')
+            ->assertSee('https://example.test/storage/settings/March2021/custom.png', false);
+
+        DB::table('settings')->where('key', 'admin.title')->update(['value' => '<Studio>']);
+        DB::table('settings')->where('key', 'admin.icon_image')->update(['value' => 'https://example.test/new.png']);
+        $headerLogo = Blade::render('<x-filament-panels::logo />');
+
+        $this->assertStringContainsString('https://example.test/new.png', $headerLogo);
+        $this->assertStringContainsString('&lt;Studio&gt;', $headerLogo);
+        $this->assertStringNotContainsString('<Studio>', $headerLogo);
     }
 
     public function test_password_is_masked_before_javascript_initializes(): void

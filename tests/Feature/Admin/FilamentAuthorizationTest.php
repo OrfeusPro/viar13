@@ -45,6 +45,7 @@ class FilamentAuthorizationTest extends TestCase
             $table->foreignId('role_id')->nullable();
             $table->string('email')->unique();
             $table->string('password');
+            $table->text('settings')->nullable();
             $table->string('last_ip')->nullable();
             $table->text('registration_page')->nullable();
             $table->text('referrer_url')->nullable();

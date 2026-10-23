@@ -111,16 +111,7 @@
             </div>
         @endif
 
-        <nav
-            aria-label="{{ __('filament-panels::layout.navigation.label') }}"
-            class="fi-sidebar-nav"
-        >
-            {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_NAV_START) }}
-
-            @include('filament.components.menu-tree', ['navigation' => $navigation])
-
-            {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_NAV_END) }}
-        </nav>
+        @livewire('admin.menu-preferences')
 
         @php
             $isAuthenticated = filament()->auth()->check();
