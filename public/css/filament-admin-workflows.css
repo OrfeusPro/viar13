@@ -172,6 +172,11 @@
 }
 
 /* Keep the create form close to Voyager's compact, single-column field rhythm. */
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-col,
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-ctn,
+.viar-orders-table .fi-ta-filters .fi-fo-field-label { min-width:0; max-width:100%; }
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-content { display:block; min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
 .viar-order-create-form .fi-sc.fi-sc-has-gap { gap:14px; }
 .viar-order-create-form .fi-fo-field { row-gap:4px; }
 

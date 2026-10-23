@@ -3942,3 +3942,8 @@ DONE: удалён box-shadow у закреплённых правых ячее�
 
 ### ADM-ACTIONS-02 — тень именно BREAD-таблицы, 2026-10-23
 DONE: повторный скриншот gallery-items?type=5 выявил отдельный inline CSS в voyager-bread.blade.php: box-shadow:-4px 0 6px -4px #9ca3af для th/td:last-child. Декларация удалена и для заголовка, и для строк. ADM-ACTIONS-01 удалял только стиль другой таблицы, его результат не подтверждал исправление BREAD. Проверены оба источника; git diff --check PASS. Browser QA остаётся TODO (управление отключено). Коммит выгрузить в C:\OSPanel\domains\28 Viar.
+
+### ADM-FILTERS-01 — подписи и сброс фильтров заказов, 2026-10-23
+IN PROGRESS: длинные подписи одной строкой с ellipsis в ширине ячейки; «Сбросить» только при непустых применённых или ещё не применённых фильтрах. Сохранить штатный resetTableFiltersForm, нулевые значения считать заполненными. Проверить фильтрацию и сброс, выгрузить коммит в C:\OSPanel\domains\28 Viar.
+
+ADM-FILTERS-01 DONE реализация/автопроверки: scoped CSS labels no-wrap/ellipsis; override штатного filters Blade ограничивает reset visibility только ListOrders через реактивные applied+deferred state. 23 search tests /397 assertions +21 role/tabs tests /364 assertions PASS; JS3/3PASS. Browser визуальная приёмка TODO из-за отключённого управления. Миграций/API нет. Коммит выгрузить в пользовательскую папку за сегодня.
