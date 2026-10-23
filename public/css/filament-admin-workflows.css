@@ -41,7 +41,7 @@
 .viar-admin-table .fi-ta-table thead { background:#eef2f8; }
 .viar-admin-table .fi-ta-header-cell { background:#eef2f8; padding:16px 12px; color:#475569; }
 .viar-admin-table .fi-ta-actions-header-cell { background:#eef2f8; }
-.viar-admin-table .fi-ta-row > .fi-ta-cell:last-child { position:sticky; inset-inline-end:0; background:white; box-shadow:-3px 0 6px #0f172a08; }
+.viar-admin-table .fi-ta-row > .fi-ta-cell:last-child { position:sticky; inset-inline-end:0; background:white; }
 .viar-admin-table .viar-sa-unread > .fi-ta-cell:last-child { background:#fffbeb; }
 .viar-admin-table .fi-ta-cell { border-bottom:1px solid #e2e8f0; }
 .viar-sa-table .fi-ta-text { padding-block:12px; }

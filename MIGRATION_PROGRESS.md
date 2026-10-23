@@ -4656,3 +4656,6 @@ ADM-MENU-02 выгрузка выполнена: C:\OSPanel\domains\28 Viar со
 
 ### ADM-COLOR-01 — основной синий по образцу, 2026-10-23
 Из пикселя приложенного PNG прочитан #337AB7. В AdminPanelProvider вместо Color::Blue задана приглушённая палитра generateV3Palette с точным primary-600 #337AB7 (основной фон кнопок). Единая настройка применяется к кнопкам, ссылкам, акцентам и меню Filament. Public frontend/статусные цвета не менялись. FilamentPanelBootTest 7 tests / 22 assertions PASS; Pint provider и git diff --check PASS, JUnit storage/logs/adm-muted-blue-20261023.xml. Браузерный вид после смены цвета не проверен из-за отключённого browser control. Изменение включается в новый коммит и выгрузку за сегодня в C:\OSPanel\domains\28 Viar; manifest/SHA256 обновляются.
+
+### ADM-ACTIONS-01 — тень колонки «Действия», 2026-10-23
+В public/css/filament-admin-workflows.css удалён box-shadow:-3px 0 6px #0f172a08 у последних ячеек .viar-admin-table. Это источник вертикальной тени на скриншоте. Sticky/фон/кнопки не изменены. git diff --check PASS; отдельные тесты для удаления декоративной CSS-декларации не требуются. Browser QA недоступна из-за отключённого управления. Коммит включить в сегодняшнюю выгрузку C:\OSPanel\domains\28 Viar с обновлением manifest/patch и проверкой SHA256.

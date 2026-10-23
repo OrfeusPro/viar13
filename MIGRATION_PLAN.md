@@ -3936,3 +3936,6 @@ ADM-MENU-02 упаковка DONE: 2 коммита / 16 файлов выгру
 
 ### ADM-COLOR-01 — приглушённый основной синий, 2026-10-23
 DONE реализация: точный цвет пользовательского образца #337AB7 используется как primary-600 Filament. Остальные оттенки через generateV3Palette сохраняют приглушённую насыщенность (generatePalette/Color::hex в установленном Filament сохраняет только hue и возвращает высокую chroma). FilamentPanelBootTest 7 tests / 22 assertions PASS; Pint/git diff --check PASS. Визуальная browser-проверка остаётся TODO (управление отключено). Коммит и сегодняшнюю выгрузку обновить в C:\OSPanel\domains\28 Viar.
+
+### ADM-ACTIONS-01 — убрать тень колонки действий, 2026-10-23
+DONE: удалён box-shadow у закреплённых правых ячеек .viar-admin-table; положение, фон и действия сохранены. Проверка diff: одна CSS-декларация удалена; git diff --check PASS. Браузерная проверка не выполнена (управление отключено). Выгрузить новый коммит в C:\OSPanel\domains\28 Viar.
