@@ -3962,3 +3962,6 @@ DONE: нулевые badge возвращают null, у completed badge убр�
 
 ### ADM-TABS-COLOR-03 — спокойный стиль без обводки, 2026-10-23
 DONE CSS: пастельные статусные заливки, приглушённый текст, компактные badge, убрать рамку active и внешнюю ring/shadow панели. Active выделен насыщенностью фона/тонкой нижней линией. Dark/focus/hover предусмотрены. Только CSS, git diff --checkPASS; browser QA TODO (управление отключено). Коммит в C:\OSPanel\domains\28 Viar.
+
+### ADM-ORDERS-COMPACT-01 — поиск в строке фильтров, 2026-10-23
+DONE CSS на ширине>=1024: native toolbar search/columns совмещён с полосой фильтров через grid, отдельная нижняя строка не занимает высоту. Поля раскрытия остаются полной ширины; на меньших экранах прежнее вертикальное размещение. Summary/RolePresentation15tests323assertionsPASS; diff checkPASS. Browser QA TODO (управление отключено), особенно проверить массовые действия/поиск и раскрытие. Выгрузить в C:\OSPanel\domains\28 Viar.
