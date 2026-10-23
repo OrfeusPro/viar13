@@ -3965,3 +3965,6 @@ DONE CSS: пастельные статусные заливки, приглуш
 
 ### ADM-ORDERS-COMPACT-01 — поиск в строке фильтров, 2026-10-23
 DONE CSS на ширине>=1024: native toolbar search/columns совмещён с полосой фильтров через grid, отдельная нижняя строка не занимает высоту. Поля раскрытия остаются полной ширины; на меньших экранах прежнее вертикальное размещение. Summary/RolePresentation15tests323assertionsPASS; diff checkPASS. Browser QA TODO (управление отключено), особенно проверить массовые действия/поиск и раскрытие. Выгрузить в C:\OSPanel\domains\28 Viar.
+
+### ADM-HEADING-TOTALS-01 — итоги возле заголовка, 2026-10-23
+DONE: количество/сумма перенесены к «Заказы», две компактные иконки с доступными подписями. table description убран. Сохранены query/filter/tab scope и role deny printing/lite_manager.16tests330assertionsPASS; Pint/diff checkPASS. Browser QA TODO из-за отключённого управления. Коммит выгрузить в C:\OSPanel\domains\28 Viar.

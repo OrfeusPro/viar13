@@ -4,17 +4,27 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Filament\Resources\Orders\OrdersResource;
 use App\Filament\Resources\Orders\Schemas\VenipakCourierAction;
+use App\Filament\Resources\Orders\Tables\OrderListSummary;
 use App\Http\Controllers\OrdersController;
 use App\Models\Orders;
 use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListOrders extends ListRecords
 {
     protected static string $resource = OrdersResource::class;
+
+    public function getHeading(): string|Htmlable
+    {
+        return view('filament.components.order-heading', [
+            'title' => $this->getTitle(),
+            'totals' => OrderListSummary::totalsForTable($this),
+        ]);
+    }
 
     public function getDefaultActiveTab(): string|int|null
     {

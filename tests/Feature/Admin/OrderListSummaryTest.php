@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Tables\OrderListSummary;
 use App\Filament\Resources\Orders\Tables\OrderSearchFilters;
 use App\Models\Orders;
@@ -64,6 +65,21 @@ class OrderListSummaryTest extends TestCase
             ->filterTable('price', ['value' => 99])->assertSee('Заказов: 0 · Сумма: 0 €')
             ->call('removeTableFilters')->assertSee('Заказов: 3 · Сумма: 40.5 €');
         Http::assertNothingSent();
+    }
+
+    public function test_heading_renders_filtered_totals_with_icons_and_hides_them_for_restricted_roles(): void
+    {
+        $page = Mockery::mock(ListOrders::class)->makePartial();
+        $page->shouldReceive('getTitle')->andReturn('Заказы');
+        $page->shouldReceive('getFilteredTableQuery')->once()->andReturn(Orders::query()->where('id', '<', 3));
+        $html = $page->getHeading()->render();
+        $this->assertStringContainsString('aria-label="Заказов: 2"', $html);
+        $this->assertStringContainsString('aria-label="Сумма: 20.5 €"', $html);
+        $this->assertSame(2, substr_count($html, '<svg'));
+        foreach (['printing', 'lite_manager'] as $role) {
+            $this->actingAs($this->user($role), 'filament');
+            $this->assertStringNotContainsString('viar-order-heading-totals', $page->getHeading()->render());
+        }
     }
 
     public function test_printing_and_lite_manager_never_request_summary_query(): void

@@ -11,12 +11,19 @@ class OrderListSummary
 {
     public static function forTable(HasTable $livewire): ?string
     {
+        $totals = self::totalsForTable($livewire);
+
+        return $totals ? self::format($totals) : null;
+    }
+
+    public static function totalsForTable(HasTable $livewire): ?array
+    {
         $user = Filament::auth()->user();
         if (! $user instanceof User || ! self::isVisibleTo($user)) {
             return null;
         }
 
-        return self::describe($livewire->getFilteredTableQuery());
+        return self::totalsForQuery($livewire->getFilteredTableQuery());
     }
 
     public static function isVisibleTo(User $user): bool
@@ -27,6 +34,18 @@ class OrderListSummary
 
     public static function describe(?Builder $query): ?string
     {
+        $totals = self::totalsForQuery($query);
+
+        return $totals ? self::format($totals) : null;
+    }
+
+    private static function format(array $totals): string
+    {
+        return 'Заказов: '.$totals['count'].' · Сумма: '.$totals['sum'].' €';
+    }
+
+    private static function totalsForQuery(?Builder $query): ?array
+    {
         if (! $query) {
             return null;
         }
@@ -36,6 +55,6 @@ class OrderListSummary
             ->first();
         $sum = rtrim(rtrim(number_format((float) $totals->order_sum, 2, '.', ''), '0'), '.');
 
-        return 'Заказов: '.$totals->order_count.' · Сумма: '.$sum.' €';
+        return ['count' => (int) $totals->order_count, 'sum' => $sum];
     }
 }

@@ -44,7 +44,6 @@ class OrdersTable
     {
         return $table
             ->emptyStateHeading('Заказы не найдены')
-            ->description(fn ($livewire): ?string => OrderListSummary::forTable($livewire))
             ->extraAttributes(['class' => 'viar-orders-table'])
             ->recordUrl(null)
             ->modifyQueryUsing(fn (Builder $query): Builder => $query

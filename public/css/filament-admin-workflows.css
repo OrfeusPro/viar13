@@ -181,6 +181,11 @@
 .viar-order-filters-toggle .fi-icon.is-expanded { transform:rotate(180deg); }
 .viar-order-filters-toggle:focus-visible { outline:2px solid var(--primary-500); outline-offset:3px; border-radius:4px; }
 .viar-order-filters-body { display:grid; gap:16px; }
+.viar-order-heading { display:flex; align-items:center; flex-wrap:wrap; gap:12px 20px; }
+.viar-order-heading-totals { display:inline-flex; flex-wrap:wrap; align-items:center; gap:8px 16px; color:var(--gray-500); font-size:14px; font-weight:500; line-height:1.5; letter-spacing:normal; }
+.viar-order-heading-stat { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.viar-order-heading-stat .fi-icon { width:18px; height:18px; color:var(--gray-400); }
+.dark .viar-order-heading-totals { color:var(--gray-400); }
 
 /* Share the compact filters row with the native search and column picker. */
 @media (min-width:1024px) {
