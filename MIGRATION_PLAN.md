@@ -3950,3 +3950,6 @@ ADM-FILTERS-01 DONE реализация/автопроверки: scoped CSS la
 
 ### ADM-FILTERS-02 — сворачиваемая полоса фильтров, 2026-10-23
 DONE реализация: ListOrders по умолчанию expanded:false на всех ширинах, кнопка-полоса «Фильтры» раскрывает/сворачивает поля и «Применить», chevron/aria-expanded/keyboard support. Значения и условный reset сохранены. 34PHPtests/693assertions и JS3/3PASS; git diff --check PASS. Browser QA TODO: управление отключено. Выгрузить коммит в C:\OSPanel\domains\28 Viar.
+
+### ADM-FILTERS-03 — плавное раскрытие, 2026-10-23
+DONE: x-collapse.duration.250ms на блоке фильтров ListOrders — анимация высоты в обе стороны через штатный Alpine collapse Filament. JS3/3PASS; git diff --check PASS. Визуальная browser QA недоступна (управление отключено). Коммит выгрузить в C:\OSPanel\domains\28 Viar.

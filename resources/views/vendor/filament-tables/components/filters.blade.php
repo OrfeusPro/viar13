@@ -58,7 +58,7 @@
     </div>
 
     @if ($this instanceof \App\Filament\Resources\Orders\Pages\ListOrders)
-        <div id="viar-order-filters-body" class="viar-order-filters-body" x-show="expanded" x-cloak>
+        <div id="viar-order-filters-body" class="viar-order-filters-body" x-show="expanded" x-collapse.duration.250ms x-cloak>
     @endif
 
     {{ $form }}
