@@ -47,7 +47,10 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('filament')
             ->login(Login::class)
             ->colors([
-                'primary' => Color::Blue,
+                // Muted blue from the supplied reference; keep its saturation across shades.
+                'primary' => array_replace(Color::generateV3Palette('#337ab7'), [
+                    600 => Color::convertToOklch('#337ab7'),
+                ]),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
