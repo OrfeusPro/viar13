@@ -4659,3 +4659,6 @@ ADM-MENU-02 выгрузка выполнена: C:\OSPanel\domains\28 Viar со
 
 ### ADM-ACTIONS-01 — тень колонки «Действия», 2026-10-23
 В public/css/filament-admin-workflows.css удалён box-shadow:-3px 0 6px #0f172a08 у последних ячеек .viar-admin-table. Это источник вертикальной тени на скриншоте. Sticky/фон/кнопки не изменены. git diff --check PASS; отдельные тесты для удаления декоративной CSS-декларации не требуются. Browser QA недоступна из-за отключённого управления. Коммит включить в сегодняшнюю выгрузку C:\OSPanel\domains\28 Viar с обновлением manifest/patch и проверкой SHA256.
+
+### ADM-ACTIONS-02 — исправлен второй источник тени, 2026-10-23
+Предыдущее изменение public/css относилось к .viar-admin-table; конкретная страница gallery-items использует .viar-bread-table и собственный inline CSS в resources/views/filament/pages/voyager-bread.blade.php. Удалён box-shadow у th:last-child и td:last-child, sticky/размеры/фон/разделитель сохранены. rg по двум источникам подтверждает отсутствие shadow в правилах закреплённых ячеек; git diff --check PASS. Новые автоматические тесты для удаления декоративной декларации не добавлялись. Полная визуальная проверка в браузере по-прежнему недоступна, не заявляется. Исправление и документация выгружаются в пользовательскую папку вместе с patch/обновлённым manifest SHA256.

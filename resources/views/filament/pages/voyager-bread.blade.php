@@ -19,7 +19,7 @@
         .viar-bread-table .viar-bread-value { white-space: normal; overflow-wrap: anywhere; }
         .viar-bread-table th:first-child, .viar-bread-table td:first-child { min-width: 75px; }
         .viar-bread-table .viar-bread-selection { min-width: 44px; width: 44px; max-width: 44px; text-align: center; }
-        .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 6px -4px #9ca3af; }
+        .viar-bread-table th:last-child, .viar-bread-table td:last-child { position: sticky; right: 0; width: 160px; min-width: 160px; max-width: 160px; z-index: 1; background: white; border-left: 1px solid #e5e7eb; }
         .dark .viar-bread-table th:last-child, .dark .viar-bread-table td:last-child { background: #18181b; }
         .viar-bread-table thead th:last-child { background: #eef2f8; }
         .viar-bread-row-actions { display: flex; align-items: center; gap: 8px; }
