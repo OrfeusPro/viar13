@@ -3953,3 +3953,6 @@ DONE реализация: ListOrders по умолчанию expanded:false н�
 
 ### ADM-FILTERS-03 — плавное раскрытие, 2026-10-23
 DONE: x-collapse.duration.250ms на блоке фильтров ListOrders — анимация высоты в обе стороны через штатный Alpine collapse Filament. JS3/3PASS; git diff --check PASS. Визуальная browser QA недоступна (управление отключено). Коммит выгрузить в C:\OSPanel\domains\28 Viar.
+
+### ADM-TABS-COLOR-01 — цветные вкладки заказов, 2026-10-23
+DONE реализация по образцу: current/production оранжевые, completed голубая, express/unpaid красные, printing светло-зелёная, sent_today серая, sent светло-голубая, new_recently зелёная, all нейтральная. Цвета привязаны к ключам вкладок, не порядку/роли. Активная — контрастная рамка. 21tests/364assertionsPASS; Pint/diff checkPASS. Browser QA TODO (управление отключено). Выгрузить в C:\OSPanel\domains\28 Viar.

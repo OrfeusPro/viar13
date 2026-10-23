@@ -95,6 +95,10 @@ class ListOrders extends ListRecords
                 ->modifyQueryUsing(fn (Builder $query): Builder => $query->orderByDesc('created_at')),
         ];
 
+        foreach ($tabs as $key => $tab) {
+            $tab->extraAttributes(['class' => 'viar-order-tab viar-order-tab--'.$key]);
+        }
+
         $order = $isPrinting
             ? ['current', 'completed', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid', 'express', 'all']
             : ['current', 'completed', 'express', 'production', 'printing', 'sent_today', 'sent', 'new_recently', 'unpaid', 'all'];

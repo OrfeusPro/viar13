@@ -4672,3 +4672,6 @@ CSS public/css/filament-admin-workflows.css: для labels фильтров .via
 
 ### ADM-FILTERS-03 — анимация фильтров, 2026-10-23
 В filters Blade для viar-order-filters-body добавлен штатный x-collapse.duration.250ms к существующему x-show. Раскрытие/сворачивание анимирует высоту за250мс, без новых зависимостей (x-collapse уже используется Filament tables). Логика и значения фильтров не менялись. JS reset3/3PASS; git diff --check PASS; браузерная визуальная проверка недоступна из-за отключённого управления. Коммит/patch/manifest выгружаются в C:\OSPanel\domains\28 Viar.
+
+### ADM-TABS-COLOR-01 — цветные кнопки списка заказов, 2026-10-23
+ListOrders::getTabs присваивает каждой вкладке CSS-классы по ключу. Scoped .fi-tabs-item.viar-order-tab цвета соответствуют присланному примеру, тёмный текст на светлых фонах для читаемости; красные — белый текст. Активная вкладка выделена рамкой, hover/focus сохранены; badge на светлом фоне с тёмной цифрой. Порядок/labels/счётчики/queries/видимость printing прежние. OrderListTabsTest+OrderListRolePresentationTest21tests/364assertionsPASS, Pint ListOrders и git diff --checkPASS; JUnit storage/logs/adm-order-tab-colors-20261023.xml. Browser приёмка недоступна; изменения/patch/manifest SHA256 в сегодняшнюю выгрузку C:\OSPanel\domains\28 Viar.
