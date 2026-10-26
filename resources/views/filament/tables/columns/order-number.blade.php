@@ -51,7 +51,7 @@
         </div>
 
         <details wire:key="order-firm-{{ $record->id }}-{{ $vrNumber }}" style="margin-bottom: 10px; text-align: left;">
-            <summary style="display: inline-block; padding: 5px 9px; border: 1px solid #d1d5db; border-radius: 4px; background: #f3f4f6; cursor: pointer;">данные фирмы</summary>
+            <summary style="display: block; width: fit-content; margin-inline: auto; padding: 5px 9px; border: 1px solid #d1d5db; border-radius: 4px; background: #f3f4f6; cursor: pointer;">данные фирмы</summary>
             <form x-data="{ firm: @js($defaultFirm) }" @if($canEdit && ! $isPrinting) x-on:submit.prevent="$wire.mountTableAction('updateOrderInvoiceFirm', '{{ $record->getKey() }}', firm)" @else x-on:submit.prevent @endif style="margin-top: 6px; font-size: 11px; color: #4b5563;">
                 @foreach(['name' => 'Фирма', 'reg_num' => 'Рег. ном.', 'addr' => 'Адрес', 'bank' => 'Банк', 'vat_num' => 'Банк VAT', 'bank_code' => 'Код банка', 'office_addr' => 'Адрес офиса', 'acc_num' => 'Номер аккаунта'] as $field => $label)
                     <label style="display: block; margin-top: 7px;">{{ $label }}

@@ -3974,3 +3974,6 @@ DONE: все четыре кнопки в order-comments Blade width145px/max-wi
 
 ### ADM-RECIPIENT-WRAP-01 — перенос получателя, 2026-10-26
 DONE: order-recipient wrapper white-space normal/overflow-wrap anywhere; адрес/email не наследуют nowrap таблицы. Только оформление; diff checkPASS, browser QA не выполнена. Выгрузка C:\OSPanel\domains\28 Viar.
+
+### ADM-FIRM-CENTER-01 — центрирование «данные фирмы», 2026-10-26
+DONE: summary block/fit-content/margin-inline auto; форма сохраняет левое выравнивание. Только оформление; diff checkPASS, browser QA не выполнена. Выгрузка C:\OSPanel\domains\28 Viar.

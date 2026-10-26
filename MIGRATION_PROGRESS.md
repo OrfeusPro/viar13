@@ -4693,3 +4693,6 @@ ListOrders::getHeading выводит order-heading Blade: «Заказы» и �
 
 ### ADM-RECIPIENT-WRAP-01 — длинный адрес и email, 2026-10-26
 В order-recipient Blade корневому205px контейнеру добавлены white-space:normal и overflow-wrap:anywhere, отменяющие унаследованный nowrap таблицы. Обычные фразы переносятся по пробелам, длинные непрерывные email/адреса — внутри слова. Данные, ссылки и действия не менялись. git diff --checkPASS; отдельные тесты для декоративной правки не добавлены, browser QA не выполнялась. Commit/patch/manifest26октября в C:\OSPanel\domains\28 Viar.
+
+### ADM-FIRM-CENTER-01 — кнопка реквизитов по центру, 2026-10-26
+В order-number Blade summary «данные фирмы» display:block/width:fit-content/margin-inline:auto. Кнопка центрирована независимо от text-align:left контейнера details, поля раскрытой формы прежние. Только CSS, git diff --checkPASS; отдельные тесты не добавлены, браузерная проверка не выполнялась. Commit/patch/manifest26октября в C:\OSPanel\domains\28 Viar.
