@@ -1,4 +1,4 @@
-<div class="viar-personal-menu">
+<div class="viar-personal-menu" x-bind:class="{ 'is-compact': ! $store.sidebar.isOpen }">
     <nav class="fi-sidebar-nav" aria-label="Основное меню">
         {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::SIDEBAR_NAV_START) }}
         @include('filament.components.menu-tree', ['tree' => $tree])

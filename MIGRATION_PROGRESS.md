@@ -4720,3 +4720,5 @@ ADM-AUD-13C лишний просмотр DONE, 2026-10-26: create возвра�
 
 ### ADM-AUD-13B — счётчик «Надо отправить сегодня», 2026-10-26
 DONE: express tab ранее не имела badge вообще; добавлен count той же выборки status!=completed. Исходный express сценарий сортирует все текущие заказы по приоритету, а не фильтрует strictly date=today — выборка/логика original не менялись. При нуле badge скрыт, как остальные. Тест noncompleted5/completed2/zero, вместе Tabs+RolePresentation23tests376assertionsPASS/PintPASS/diffcheckPASS. Chrome локальная админка показала «Надо отправить сегодня 77»; PNG storage/app/audit/order-express-count-20261026.png. Рабочие данные не менялись. Commit/export C:\OSPanel\domains\31 Viar.
+
+ADM-MENU-03 DONE,2026-10-26: Chrome collapsed72px вместо105.33px, gear42x42 вместонижнейbar81px; expanded320px сохранён. Collapse→expand→collapse и открытие/закрытие настроек шестерёнкой проверены, profile save не выполнялся.8tests60assertionsPASS/diffcheckPASS. Evidence storage/app/audit/menu-compact-72-20261026.png. Исправление commit/export31Viar; мобильная ширина штатная, правило ограничения действует толькоdesktop>=1024.

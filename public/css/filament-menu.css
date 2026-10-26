@@ -30,7 +30,7 @@
 .dark .viar-menu-flyout { background: var(--gray-900); border-color: var(--gray-700); }
 .dark .viar-menu-flyout-heading { border-color: var(--gray-700); }
 .dark .viar-menu-location [aria-current] { color: var(--gray-200); }
-.viar-personal-menu { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.viar-personal-menu { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
 .viar-personal-menu > .fi-sidebar-nav { flex: 1; min-height: 0; overflow-y: auto; }
 .viar-menu-preferences-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 8px 12px 12px; padding: 14px 10px; border: 1px solid var(--gray-200); border-radius: 18px; flex-shrink: 0; color: var(--gray-500); }
 .viar-menu-show-all { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
@@ -47,6 +47,12 @@
 .viar-menu-settings-button .fi-icon { width: 21px; height: 21px; }
 .viar-menu-settings-button:hover { background: var(--gray-100); color: var(--primary-600); }
 .viar-menu-settings-button:focus-visible { outline: 2px solid var(--primary-500); outline-offset: 2px; }
+.viar-personal-menu.is-compact > .fi-sidebar-nav { padding-inline: 12px; }
+.viar-personal-menu.is-compact .viar-menu-preferences-bar { width: 42px; height: 42px; margin: 8px auto 12px; padding: 0; border: 0; border-radius: 8px; }
+.viar-personal-menu.is-compact .viar-menu-settings-button { width: 42px; height: 42px; align-items: center; justify-content: center; padding: 0; border-radius: 8px; }
+@media (min-width: 1024px) {
+    .fi-body-has-sidebar-collapsible-on-desktop .fi-main-sidebar:not(.fi-sidebar-open) { width: var(--collapsed-sidebar-width, 4.5rem); flex: 0 0 var(--collapsed-sidebar-width, 4.5rem); }
+}
 .viar-menu-empty { padding: 12px; color: var(--gray-500); font-size: 14px; }
 .viar-menu-preferences-form { display: grid; gap: 20px; }
 .viar-menu-preferences-form fieldset { border: 1px solid var(--gray-200); border-radius: 12px; padding: 12px 16px 16px; min-width: 0; }
