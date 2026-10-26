@@ -4696,3 +4696,6 @@ ListOrders::getHeading выводит order-heading Blade: «Заказы» и �
 
 ### ADM-FIRM-CENTER-01 — кнопка реквизитов по центру, 2026-10-26
 В order-number Blade summary «данные фирмы» display:block/width:fit-content/margin-inline:auto. Кнопка центрирована независимо от text-align:left контейнера details, поля раскрытой формы прежние. Только CSS, git diff --checkPASS; отдельные тесты не добавлены, браузерная проверка не выполнялась. Commit/patch/manifest26октября в C:\OSPanel\domains\28 Viar.
+
+### ADM-ORDER-SPACING-01 — воздух сверху и снизу строки, 2026-10-26
+В filament-admin-workflows.css добавлен padding-block10px ячейкам .viar-orders-table .fi-ta-row>.fi-ta-cell. Содержимое отделено от границ строк сверху/снизу, ширины/действия/данные не менялись. git diff --checkPASS; отдельные тесты для декоративной CSS-правки не добавлялись, браузерная приёмка не выполнена. Commit/patch/manifest26октября выгружаются в C:\OSPanel\domains\28 Viar.
