@@ -3806,6 +3806,71 @@ class VoyagerBreadTest extends TestCase
         $this->assertSame($before, DB::table('menu_items')->get()->toJson());
     }
 
+    public function test_menu_tree_branch_keeps_all_descendants_after_move_edit_and_translation(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'edit_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $ids = [];
+        for ($depth = 1; $depth <= 5; $depth++) {
+            $ids[] = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Level '.$depth,
+                'parent_id' => $ids === [] ? null : end($ids), 'order' => 1, 'url' => '/level-'.$depth, 'target' => '_self']);
+        }
+        $other = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Other root', 'order' => 2]);
+        $branch = [];
+        foreach (array_reverse(array_slice($ids, 1)) as $id) { $branch = [['id' => $id, 'children' => $branch]]; }
+        Livewire::test(VoyagerMenuItems::class)->call('reorderItems', $menu,
+            [['id' => $other, 'children' => $branch], ['id' => $ids[0]]])->assertHasNoErrors()->assertReturned(true);
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $ids[1])->assertSet('data.parent_id', $other)
+            ->set('data.title', 'Edited branch')->call('changeLocale', 'ru')->set('data.title', 'Ветка')
+            ->call('save')->assertHasNoErrors();
+        $reopened = Livewire::test(VoyagerMenuItems::class)->call('openEdit', $ids[1])
+            ->assertSet('data.parent_id', $other)->assertSet('data.title', 'Edited branch');
+        $this->assertDatabaseHas('menu_items', ['id' => $ids[1], 'parent_id' => $other, 'order' => 1, 'url' => '/level-2']);
+        for ($index = 2; $index < 5; $index++) {
+            $this->assertDatabaseHas('menu_items', ['id' => $ids[$index], 'parent_id' => $ids[$index - 1], 'order' => 1]);
+        }
+        $this->assertDatabaseHas('translations', ['table_name' => 'menu_items', 'foreign_key' => $ids[1], 'locale' => 'ru', 'value' => 'Ветка']);
+        $nodes = $reopened->instance()->menuTree()[0]['children'];
+        foreach (array_slice($ids, 1) as $id) {
+            $this->assertCount(1, $nodes);
+            $this->assertSame($id, $nodes[0]['item']->id);
+            $nodes = $nodes[0]['children'];
+        }
+        $this->assertSame([], $nodes);
+    }
+
+    public function test_menu_tree_sorting_preserves_missing_parent_until_explicit_reparent(): void
+    {
+        $this->createMenuManagementTables();
+        $this->admin(['browse_admin', 'browse_menus', 'edit_menus']);
+        $menu = DB::table('menus')->insertGetId(['name' => 'admin']);
+        $root = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Root', 'order' => 1]);
+        $orphan = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Orphan', 'parent_id' => 99999, 'order' => 2]);
+        $child = DB::table('menu_items')->insertGetId(['menu_id' => $menu, 'title' => 'Child', 'parent_id' => $orphan, 'order' => 1]);
+        $component = Livewire::test(VoyagerMenuItems::class)->assertSee('Родитель #99999 отсутствует');
+        $component->call('reorderItems', $menu, [['id' => $orphan, 'children' => [['id' => $child]]], ['id' => $root]])
+            ->assertHasNoErrors()->assertReturned(true);
+        $this->assertDatabaseHas('menu_items', ['id' => $orphan, 'parent_id' => 99999]);
+        $this->assertDatabaseHas('menu_items', ['id' => $child, 'parent_id' => $orphan]);
+        Livewire::test(VoyagerMenuItems::class)->call('openEdit', $orphan)->assertSet('data.parent_id', 99999)
+            ->assertSee('Отсутствующий родитель #99999 (текущая связь)')->set('data.title', 'Renamed orphan')
+            ->call('changeLocale', 'ru')->set('data.title', 'Перевод')->call('save')->assertHasNoErrors();
+        $this->assertDatabaseHas('menu_items', ['id' => $orphan, 'parent_id' => 99999, 'title' => 'Renamed orphan']);
+        // Repeating an unrelated sort still must not flatten the recovery branch.
+        $component->call('reorderItems', $menu, [['id' => $root], ['id' => $orphan, 'children' => [['id' => $child]]]])
+            ->assertHasNoErrors()->assertReturned(true);
+        $this->assertDatabaseHas('menu_items', ['id' => $orphan, 'parent_id' => 99999]);
+        $component->call('reorderItems', $menu, [['id' => $root, 'children' => [['id' => $orphan, 'children' => [['id' => $child]]]]]])
+            ->assertHasNoErrors()->assertReturned(true);
+        $this->assertDatabaseHas('menu_items', ['id' => $orphan, 'parent_id' => $root]);
+        $this->assertDatabaseHas('menu_items', ['id' => $child, 'parent_id' => $orphan]);
+        // Making a repaired branch a genuine root remains possible.
+        $component->call('reorderItems', $menu, [['id' => $orphan, 'children' => [['id' => $child]]], ['id' => $root]])
+            ->assertHasNoErrors()->assertReturned(true);
+        $this->assertDatabaseHas('menu_items', ['id' => $orphan, 'parent_id' => null]);
+    }
+
     public function test_menu_tree_reorder_rolls_back_all_changes_when_a_later_update_fails(): void
     {
         $this->createMenuManagementTables();
@@ -4158,6 +4223,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_menu_item_and_its_translation_are_editable(): void
     {
+        Schema::table('users', function (Blueprint $table): void { $table->text('settings')->nullable(); });
         Schema::create('menus', function (Blueprint $table): void {
             $table->id(); $table->string('name'); $table->timestamps();
         });

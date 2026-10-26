@@ -10,6 +10,9 @@
             <x-filament::icon :icon="\App\Filament\Bread\BreadNavigationIcon::resolve($item->icon_class ?? null)" style="width:20px;height:20px;flex-shrink:0" />
             <div style="flex:1;min-width:100px;overflow-wrap:anywhere">
                 <strong>{{ $item->title }}</strong>
+                @if($node['missing_parent'] ?? false)
+                    <small style="display:block;color:#b45309">Родитель #{{ $item->parent_id }} отсутствует в этом меню. Связь сохранится при сортировке; выберите нового родителя в редактировании или перетащите в нужный раздел.</small>
+                @endif
                 <small style="display:block;color:#6b7280">{{ $item->route ?: $item->url ?: '—' }}</small>
             </div>
             <span @class(['viar-management-badge', 'is-enabled' => (bool) $item->status])>{{ $item->status ? 'Активен' : 'Скрыт' }}</span>

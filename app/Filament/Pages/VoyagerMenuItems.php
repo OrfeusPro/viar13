@@ -91,10 +91,10 @@ class VoyagerMenuItems extends Page
         $children = $items->groupBy(fn ($item) => $item->parent_id && $items->has($item->parent_id)
             && $item->parent_id !== $item->id ? $item->parent_id : 0);
         $seen = [];
-        $build = function (object $item) use (&$build, &$seen, $children): ?array {
+        $build = function (object $item) use (&$build, &$seen, $children, $items): ?array {
             if (isset($seen[$item->id])) { return null; }
             $seen[$item->id] = true;
-            return ['item' => $item, 'children' => collect($children->get($item->id, []))
+            return ['item' => $item, 'missing_parent' => $item->parent_id && ! $items->has($item->parent_id), 'children' => collect($children->get($item->id, []))
                 ->map(fn ($child) => $build($child))->filter()->values()->all()];
         };
         $tree = [];
@@ -127,9 +127,16 @@ class VoyagerMenuItems extends Page
         $name = DB::transaction(function () use ($menu, $rows, $fail): string {
             $record = DB::table('menus')->where('id', $menu)->lockForUpdate()->first();
             abort_unless($record, 404);
-            $ids = DB::table('menu_items')->where('menu_id', $menu)->lockForUpdate()->pluck('id')->map(fn ($id) => (int) $id)->all();
+            $existing = DB::table('menu_items')->where('menu_id', $menu)->lockForUpdate()->get(['id', 'parent_id'])->keyBy('id');
+            $ids = $existing->keys()->map(fn ($id) => (int) $id)->all();
             if (count($ids) !== count($rows) || array_diff($ids, array_keys($rows)) !== []) { $fail(); }
             foreach ($rows as $id => $values) {
+                // Recovery roots are displayed at the top without changing their stored parent.
+                // An unrelated drag must not silently turn a legacy orphan into a real root.
+                $originalParent = $existing[$id]->parent_id;
+                if ($values['parent_id'] === null && $originalParent && ! $existing->has($originalParent)) {
+                    $values['parent_id'] = $originalParent;
+                }
                 DB::table('menu_items')->where('menu_id', $menu)->where('id', $id)->update($values + ['updated_at' => now()]);
             }
             return $record->name;
@@ -229,6 +236,19 @@ class VoyagerMenuItems extends Page
         Notification::make()->title('Меню удалено')->success()->send();
     }
 
+    private function parentOptions(): array
+    {
+        $options = DB::table('menu_items')->where('menu_id', $this->menuId)
+            ->when($this->itemId, fn ($query) => $query->where('id', '!=', $this->itemId))
+            ->orderBy('title')->pluck('title', 'id')->all();
+        $parent = $this->itemId ? DB::table('menu_items')->where('menu_id', $this->menuId)
+            ->where('id', $this->itemId)->value('parent_id') : null;
+        if ($parent && $parent !== $this->itemId && ! array_key_exists($parent, $options)) {
+            $options[$parent] = 'Отсутствующий родитель #'.$parent.' (текущая связь)';
+        }
+        return $options;
+    }
+
     public function form(Schema $schema): Schema
     {
         if (! $this->editing || ! static::permitted($this->itemId ? 'edit' : 'add')) {
@@ -237,9 +257,7 @@ class VoyagerMenuItems extends Page
         return $schema->statePath('data')->components([
             TextInput::make('title')->label(fn (): string => 'Заголовок '.strtoupper($this->locale))
                 ->required(fn (): bool => $this->locale === config('voyager.multilingual.default', 'en'))->maxLength(255),
-            Select::make('parent_id')->label('Родитель')->options(fn (): array => DB::table('menu_items')
-                ->where('menu_id', $this->menuId)->when($this->itemId, fn ($query) => $query->where('id', '!=', $this->itemId))
-                ->orderBy('title')->pluck('title', 'id')->all())->nullable(),
+            Select::make('parent_id')->label('Родитель')->options(fn (): array => $this->parentOptions())->nullable(),
             TextInput::make('order')->label('Порядок')->integer()->required(),
             Select::make('link_type')->label('Тип ссылки')->options(['url' => 'Статический URL', 'route' => 'Именованный маршрут'])
                 ->required()->live(),
@@ -318,7 +336,11 @@ class VoyagerMenuItems extends Page
         $savedId = DB::transaction(function () use ($values, $default, $locales): int {
             $parent = $values['parent_id'] ?? null;
             if ($parent !== null && ! DB::table('menu_items')->where('menu_id', $this->menuId)->where('id', $parent)->exists()) {
-                throw ValidationException::withMessages(['data.parent_id' => 'Родитель не найден в этом меню.']);
+                $originalParent = $this->itemId ? DB::table('menu_items')->where('menu_id', $this->menuId)
+                    ->where('id', $this->itemId)->value('parent_id') : null;
+                if (! $originalParent || (int) $originalParent !== (int) $parent) {
+                    throw ValidationException::withMessages(['data.parent_id' => 'Родитель не найден в этом меню.']);
+                }
             }
             if ($parent !== null && $this->itemId !== null) {
                 $ancestor = (int) $parent;
