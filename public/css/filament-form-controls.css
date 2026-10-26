@@ -1,0 +1,41 @@
+/* Shared controls for the admin panel, including BREAD and modal forms. */
+.fi-body .fi-input-wrp {
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.fi-body .fi-input-wrp:not(.fi-disabled):not(.fi-invalid):hover { border-color: #98a2b3; }
+.fi-body .fi-input-wrp:not(.fi-disabled):not(.fi-invalid):focus-within {
+    border-color: var(--primary-600, #337ab7);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-600, #337ab7) 14%, transparent);
+}
+.fi-body .fi-input-wrp.fi-invalid { border-color: #dc2626; }
+.fi-body .fi-input-wrp.fi-invalid:focus-within { box-shadow: 0 0 0 3px rgb(220 38 38 / 12%); }
+.fi-body .fi-input-wrp.fi-disabled { background: #f2f4f7; border-color: #e4e7ec; }
+.fi-body .fi-input-wrp input::placeholder,
+.fi-body .fi-input-wrp textarea::placeholder { color: #98a2b3; }
+.fi-body .fi-input-wrp textarea { border-radius: inherit; }
+
+/* Legacy controls outside Filament wrappers retain their sizes and status colors. */
+.fi-body :is(input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="search"], input[type="url"], input[type="password"], input[type="date"], input[type="datetime-local"], select, textarea):not(.fi-input-wrp *):not([hidden]):not([aria-hidden="true"]) {
+    border: 1px solid #d0d5dd !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.fi-body :is(input, select, textarea):not(.fi-input-wrp *):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus-visible {
+    outline: 2px solid var(--primary-600, #337ab7);
+    outline-offset: 2px;
+}
+.fi-body :is(input, select, textarea)[aria-invalid="true"]:not(.fi-input-wrp *) { border-color: #dc2626 !important; }
+.dark .fi-body .fi-input-wrp { background: #18181b; border-color: #52525b; }
+.dark .fi-body .fi-input-wrp:not(.fi-disabled):not(.fi-invalid):hover { border-color: #71717a; }
+.dark .fi-body .fi-input-wrp.fi-invalid { border-color: #f87171; }
+.dark .fi-body .fi-input-wrp.fi-disabled { background: #27272a; border-color: #3f3f46; }
+.dark .fi-body :is(input, select, textarea):not(.fi-input-wrp *):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]) { border-color: #52525b !important; }
+@media (prefers-reduced-motion: reduce) {
+    .fi-body .fi-input-wrp,
+    .fi-body :is(input, select, textarea) { transition: none; }
+}
