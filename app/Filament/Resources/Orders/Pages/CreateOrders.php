@@ -8,6 +8,7 @@ use App\Models\AOrderFrom;
 use App\Models\CountryTel;
 use App\Models\Orders;
 use App\Services\Admin\AdminOrderCreationService;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
@@ -18,6 +19,11 @@ class CreateOrders extends CreateRecord
     protected static string $resource = OrdersResource::class;
 
     protected static bool $canCreateAnother = false;
+
+    protected function getCreateFormAction(): Action
+    {
+        return parent::getCreateFormAction()->label('Добавить');
+    }
 
     public function mount(): void
     {
@@ -68,6 +74,6 @@ class CreateOrders extends CreateRecord
     {
         $sourceId = $this->data['source_order_id'] ?? request()->integer('from_order_id');
 
-        return $sourceId ? 'Новый заказ для клиента заказа №'.$sourceId : 'Создание заказа менеджером';
+        return $sourceId ? 'Новый заказ для клиента заказа №'.$sourceId : 'Создание заказа';
     }
 }

@@ -13,9 +13,14 @@ class OrderDeliveryForm
 {
     public static function section(): Section
     {
+        return Section::make('Получатель и доставка')->columnSpanFull()->columns(2)->schema(self::fields());
+    }
+
+    public static function fields(): array
+    {
         $sync = fn ($get, $set) => app(OrderDeliveryEditor::class)->synchronize($get, $set);
 
-        return Section::make('Получатель и доставка')->columnSpanFull()->columns(2)->schema([
+        return [
             TextInput::make('delivery_edit.first_name')->label('Имя')->maxLength(255),
             TextInput::make('delivery_edit.last_name')->label('Фамилия')->maxLength(255),
             TextInput::make('delivery_edit.email')->label('Email')->email()->maxLength(255),
@@ -53,6 +58,6 @@ class OrderDeliveryForm
             DatePicker::make('delivery_edit.when_send')->label('Когда получить'),
             TextInput::make('delivery_edit.deliv_price')->label('Цена за доставку')->numeric()->minValue(0),
             Textarea::make('delivery_edit.comment')->label('Комментарий')->maxLength(10000)->columnSpanFull(),
-        ]);
+        ];
     }
 }

@@ -28,7 +28,8 @@ class AdminOrderCreateForm
             ->columns(['default' => 1, 'lg' => 2])->components([
                 Hidden::make('source_order_id'),
                 Group::make([
-                    Section::make('Клиент и заказ')
+                    Section::make('Данные пользователя')
+                        ->extraAttributes(['class' => 'viar-order-panel-muted'])
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
@@ -86,6 +87,7 @@ class AdminOrderCreateForm
                                 ->searchable()->preload()->default(0),
                         ]),
                     Section::make('Оплата и доставка')
+                        ->extraAttributes(['class' => 'viar-order-panel-muted'])
                         ->columnSpan(1)
                         ->columns(1)
                         ->schema([
@@ -163,7 +165,7 @@ class AdminOrderCreateForm
                             Placeholder::make('order_total')->label('Итого к оплате')
                                 ->content(fn ($get): string => number_format(self::total($get), 2, '.', ' ').' €'),
                         ]),
-                    Section::make('Юридическое лицо')
+                    Section::make('Юридическая информация')
                         ->columnSpanFull()->columns(1)->collapsible()
                         ->schema([
                             Toggle::make('is_legal_entity')->label('Оформить на юридическое лицо')->live()->columnSpanFull(),
@@ -176,7 +178,7 @@ class AdminOrderCreateForm
                             TextInput::make('legal_bank_account')->label('Номер счёта'),
                         ]),
                 ])->columnSpan(1),
-                Section::make('Состав заказа')
+                Section::make('Товары в заказе')
                     ->columnSpan(1)
                     ->schema([
                         Repeater::make('items')->label('Позиции')->minItems(1)->defaultItems(1)

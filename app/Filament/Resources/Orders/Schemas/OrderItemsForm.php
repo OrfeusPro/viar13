@@ -26,7 +26,7 @@ class OrderItemsForm
                 ->helperText('Изменения позиции сохраняются кнопкой «Обновить позицию».')
                 ->dehydrated(false)->validatedWhenNotDehydrated(false)
                 ->addable(false)->deletable(false)->reorderable(false)
-                ->columns(2)->itemLabel(fn (array $state): string => $state['name'] ?? 'Позиция')
+                ->columns(1)->itemLabel(fn (array $state): string => $state['name'] ?? 'Позиция')
                 ->schema([
                     Hidden::make('index'), Hidden::make('fingerprint'),
                     TextInput::make('name')->label('Имя')->maxLength(1000)->columnSpanFull(),

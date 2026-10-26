@@ -229,3 +229,45 @@ select.viar-create-payment-status[data-payment-status="not_payed"] { background-
 select.viar-create-payment-status[data-payment-status="prepayment"] { background-color:#c19300; color:#fff; }
 select.viar-create-payment-status[data-payment-status="payed"] { background-color:#2ba92b; color:#fff; }
 select.viar-create-payment-status option { background-color:#fff; color:#1e2533; }
+/* Order forms follow Voyager's two-panel, single-field-per-row layout. */
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-sc.fi-sc-has-gap { gap: 12px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section { border-radius: 4px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section-header { padding: 12px 16px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section-header-heading { font-size: 15px; font-weight: 500; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section-content { padding: 16px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-field { row-gap: 4px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-field-label-content { font-size: 13px; font-weight: 400; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-input-wrp { border-radius: 3px; }
+:is(.viar-order-edit-form, .viar-order-create-form) :is(input.fi-input, select.fi-select-input) { min-height: 34px; padding-block: 5px; font-size: 13px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-repeater-item { border-radius: 4px; }
+.viar-order-edit-form .viar-order-media-gallery { grid-template-columns: minmax(0, 1fr) !important; }
+.viar-order-edit-form .viar-order-media-gallery h3 { text-align: center; font-size: 18px; font-weight: 400 !important; }
+.viar-order-edit-form .viar-order-media-gallery section > div { justify-content: center; }
+.viar-order-edit-form .viar-order-media-gallery section > div > p { color: #6b7280; font-size: 12px; }
+/* Voyager highlights related order fields against white inputs and media panels. */
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted {
+    background: #fafafa;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    box-shadow: none;
+}
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted > .fi-section {
+    background: inherit;
+    border-radius: inherit;
+    box-shadow: none;
+}
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-section-header {
+    background: transparent;
+    border-bottom: 1px solid #e5e7eb;
+}
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-input-wrp { background: #fff; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-repeater-item {
+    background: #fafafa;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    box-shadow: none;
+}
+.viar-order-edit-form .viar-order-sales-fields { padding: 14px; background: #fafafa; border: 1px solid #d9d9d9; border-radius: 8px; }
+.dark :is(.viar-order-edit-form, .viar-order-create-form) :is(.viar-order-panel-muted, .fi-fo-repeater-item, .viar-order-sales-fields) { background: #202024; border-color: #42424a; }
+.dark :is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-section-header { border-color: #42424a; }
+.dark :is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-input-wrp { background: #18181b; }

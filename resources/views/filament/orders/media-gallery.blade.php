@@ -1,4 +1,4 @@
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 20px;">
+<div class="viar-order-media-gallery" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 20px;">
     @foreach($groups as $title => $images)
         <section>
             <h3 style="font-weight: 600; margin-bottom: 10px;">{{ $title }}</h3>

@@ -22,7 +22,12 @@ class OrderDetailsForm
 
     public static function parameters(): Section
     {
-        return Section::make('Параметры заказа')->columnSpanFull()->columns(2)->schema([
+        return Section::make('Параметры заказа')->columnSpanFull()->columns(2)->schema(self::parameterFields());
+    }
+
+    public static function parameterFields(): array
+    {
+        return [
             Select::make('a_order_from')->label('Канал продаж')
                 ->options(fn (): array => AOrderFrom::query()->orderBy('id')->pluck('title', 'id')->all())
                 ->visible(fn ($record): bool => $record?->a_order_from !== null)
@@ -34,7 +39,7 @@ class OrderDetailsForm
             TextInput::make('sale_eur')->label('Скидка в евро')->numeric()->minValue(0),
             TextInput::make('sale_percent')->label('Скидка в %')->numeric()->minValue(0)->maxValue(100),
             TextInput::make('approved_date')->label('Дата заказа')->maxLength(255),
-        ]);
+        ];
     }
 
     public static function company(): Section
