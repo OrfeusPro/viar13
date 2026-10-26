@@ -52,6 +52,7 @@
 .viar-personal-menu.is-compact .viar-menu-settings-button { width: 42px; height: 42px; align-items: center; justify-content: center; padding: 0; border-radius: 8px; }
 @media (min-width: 1024px) {
     .fi-body-has-sidebar-collapsible-on-desktop .fi-main-sidebar:not(.fi-sidebar-open) { width: var(--collapsed-sidebar-width, 4.5rem); flex: 0 0 var(--collapsed-sidebar-width, 4.5rem); }
+    .fi-body-has-sidebar-collapsible-on-desktop .fi-main-ctn-sidebar-open .fi-main { padding-inline-start: 12px; }
 }
 .viar-menu-empty { padding: 12px; color: var(--gray-500); font-size: 14px; }
 .viar-menu-preferences-form { display: grid; gap: 20px; }

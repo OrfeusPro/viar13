@@ -4021,3 +4021,8 @@ DONE: express tab ранее не имела badge вообще; добавле�
 IN PROGRESS: Chrome показал collapsed105.33px при --collapsed-sidebar-width4.5rem/root16, навигация padding24px и нижняя bar81px. Свёрнутая sidebar растягивалась по содержимому. На desktop закреплены width/flexbasis штатного collapsed token72px; compact nav padding12px; компактная gear42x42 без большой рамки, minwidth0 у personal menu. Expanded/mobile ширина не переопределяется. Проверить Chrome collapse/expand и кнопку настроек, tests/menu, commit/export31Viar.
 
 ADM-MENU-03 DONE,2026-10-26: Chrome collapsed72px вместо105.33px, gear42x42 вместонижнейbar81px; expanded320px сохранён. Collapse→expand→collapse и открытие/закрытие настроек шестерёнкой проверены, profile save не выполнялся.8tests60assertionsPASS/diffcheckPASS. Evidence storage/app/audit/menu-compact-72-20261026.png. Исправление commit/export31Viar; мобильная ширина штатная, правило ограничения действует толькоdesktop>=1024.
+
+### ADM-MENU-04 — зазор после раскрытого меню, 2026-10-26
+IN PROGRESS по скриншоту с красной полосой. Chrome: sidebar320px/mainctn x320, .fi-main padding32px, page x352; лишняя полоса — padding основного контента. Уменьшить padding-inline-start до12px только desktop>=1024 при mainctn-sidebar-open. Ширина меню/scrollbar/правая сторона/мобильные отступы прежние. Проверить actual gap, commit/export31Viar.
+
+ADM-MENU-04 DONE,2026-10-26: Chrome expanded sidebar320px, gap12px вместо32px; collapsed72px сохранён. Изменена одна desktop CSS декларация для открытой панели, бизнес-логика/данные прежние. diffcheckPASS; отдельные автотесты на CSS-отступ не добавлялись. Evidence storage/app/audit/menu-expanded-gap12-20261026.png. Commit/export31Viar.
