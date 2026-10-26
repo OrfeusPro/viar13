@@ -29,6 +29,15 @@ class OrderListTabsTest extends TestCase
         $this->assertNull($tabs['sent_today']->getBadge());
     }
 
+    public function test_express_badge_counts_its_non_completed_selection_and_hides_zero(): void
+    {
+        $tabs = (new ListOrders)->getTabs();
+        $this->assertSame('5', $tabs['express']->getBadge());
+        DB::table('orders')->where('status', '!=', 'completed')->delete();
+        $this->assertNull($tabs['express']->getBadge());
+        $this->assertDatabaseCount('orders', 2);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

@@ -84,6 +84,7 @@ class ListOrders extends ListRecords
                     Orders::query()->where('status', '!=', 'completed')->whereHas('printingAssignment'),
                 )),
             'express' => Tab::make($isPrinting ? 'Все текущие заказы' : 'Надо отправить сегодня')
+                ->badge(fn (): ?int => Orders::query()->where('status', '!=', 'completed')->count() ?: null)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $this->applyLegacyRotation(
                     $query->where('status', '!=', 'completed'),
                     Orders::query()->where('status', '!=', 'completed'),
