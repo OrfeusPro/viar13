@@ -4690,3 +4690,6 @@ ListOrders::getHeading выводит order-heading Blade: «Заказы» и �
 
 ### ADM-CHAT-WIDTH-01 — выравнивание кнопок чатов, 2026-10-26
 В resources/views/filament/tables/columns/order-comments.blade.php четыре кнопки клиент/admin/SA/художник приведены к width145px; max-width100% не допускает выхода за колонку. Margin/padding, цвета, счётчики и Livewire actions сохранены. Проверка diff: изменены только четыре style width, git diff --checkPASS. Отдельные тесты для декоративной правки не добавлены; браузерная приёмка не выполнялась. Выгрузка в C:\OSPanel\domains\28 Viar; сегодняшние patch/manifest отдельно от23октября.
+
+### ADM-RECIPIENT-WRAP-01 — длинный адрес и email, 2026-10-26
+В order-recipient Blade корневому205px контейнеру добавлены white-space:normal и overflow-wrap:anywhere, отменяющие унаследованный nowrap таблицы. Обычные фразы переносятся по пробелам, длинные непрерывные email/адреса — внутри слова. Данные, ссылки и действия не менялись. git diff --checkPASS; отдельные тесты для декоративной правки не добавлены, browser QA не выполнялась. Commit/patch/manifest26октября в C:\OSPanel\domains\28 Viar.

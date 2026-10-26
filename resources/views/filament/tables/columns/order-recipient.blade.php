@@ -51,7 +51,7 @@
     }
 @endphp
 
-<div style="width: 205px; min-width: 190px; padding: 5px 7px; background: #f8fafc; text-align: left; font-size: 13px; line-height: 1.35; color: #313942;">
+<div style="width: 205px; min-width: 190px; padding: 5px 7px; background: #f8fafc; text-align: left; font-size: 13px; line-height: 1.35; color: #313942; white-space: normal; overflow-wrap: anywhere;">
     <div style="margin-bottom: 6px;">Даные получателя:</div>
     <div>Email: {{ $delivery['email'] ?? App\Models\Orders::getFieldPortraitCalc($record, 'Email') ?? '-' }}</div>
     <div>Имя: {{ $delivery['first_name'] ?? '-' }}</div>

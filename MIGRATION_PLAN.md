@@ -3971,3 +3971,6 @@ DONE: количество/сумма перенесены к «Заказы», 
 
 ### ADM-CHAT-WIDTH-01 — одинаковая ширина кнопок чатов, 2026-10-26
 DONE: все четыре кнопки в order-comments Blade width145px/max-width100%, одинаковое центрирование. Ранее синие122px, SA min-width145px. Только оформление; diff checkPASS. Browser QA не выполнена.
+
+### ADM-RECIPIENT-WRAP-01 — перенос получателя, 2026-10-26
+DONE: order-recipient wrapper white-space normal/overflow-wrap anywhere; адрес/email не наследуют nowrap таблицы. Только оформление; diff checkPASS, browser QA не выполнена. Выгрузка C:\OSPanel\domains\28 Viar.
