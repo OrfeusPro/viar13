@@ -13,7 +13,7 @@ class VoyagerCatalog extends Page
 {
     protected static ?string $slug = 'voyager-catalog';
 
-    protected static ?string $navigationLabel = 'Все разделы Voyager';
+    protected static ?string $navigationLabel = 'Все разделы';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
 
@@ -28,7 +28,7 @@ class VoyagerCatalog extends Page
 
     public function getTitle(): string | Htmlable
     {
-        return 'Разделы Voyager';
+        return 'Разделы';
     }
 
     public function sections(): array

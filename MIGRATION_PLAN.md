@@ -3980,3 +3980,6 @@ DONE: summary block/fit-content/margin-inline auto; форма сохраняе�
 
 ### ADM-ORDER-SPACING-01 — вертикальные отступы строк, 2026-10-26
 DONE: .viar-orders-table .fi-ta-row>.fi-ta-cell padding-block10px. Все колонки заказов получают одинаковый верхний/нижний отступ, заголовки/другие таблицы прежние. diff checkPASS; browser QA не выполнена. Выгрузка C:\OSPanel\domains\28 Viar.
+
+### ADM-CATALOG-LABEL-01 — убрать Voyager из названий разделов, 2026-10-26
+DONE: пункт «Все разделы», заголовок «Разделы» в VoyagerCatalog; route/class прежние. PHP lint/diff checkPASS. Выгрузка C:\OSPanel\domains\28 Viar.

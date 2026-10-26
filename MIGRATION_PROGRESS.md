@@ -4699,3 +4699,6 @@ ListOrders::getHeading выводит order-heading Blade: «Заказы» и �
 
 ### ADM-ORDER-SPACING-01 — воздух сверху и снизу строки, 2026-10-26
 В filament-admin-workflows.css добавлен padding-block10px ячейкам .viar-orders-table .fi-ta-row>.fi-ta-cell. Содержимое отделено от границ строк сверху/снизу, ширины/действия/данные не менялись. git diff --checkPASS; отдельные тесты для декоративной CSS-правки не добавлялись, браузерная приёмка не выполнена. Commit/patch/manifest26октября выгружаются в C:\OSPanel\domains\28 Viar.
+
+### ADM-CATALOG-LABEL-01 — понятные названия каталога админки, 2026-10-26
+В VoyagerCatalog navigationLabel заменён на «Все разделы», getTitle на «Разделы». URL /filament/voyager-catalog и права доступа сохранены. php-l и git diff --checkPASS; browser QA не выполнялась. Коммит/patch/manifest26октября в C:\OSPanel\domains\28 Viar.
