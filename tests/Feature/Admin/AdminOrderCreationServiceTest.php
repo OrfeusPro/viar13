@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Filament\Resources\Orders\OrdersResource;
 use App\Filament\Resources\Orders\Pages\CreateOrders;
 use App\Models\Orders;
 use App\Models\Permission;
@@ -133,7 +134,8 @@ class AdminOrderCreationServiceTest extends TestCase
             'client_id' => $client->id, 'sale_eur' => 0,
             'items' => [['name' => 'New canvas', 'price' => 60]],
         ]))->assertSee('Новый заказ для клиента заказа №'.$source->id)
-            ->call('create')->assertHasNoFormErrors()->assertRedirect();
+            ->call('create')->assertHasNoFormErrors()
+            ->assertRedirect(OrdersResource::getUrl('create'));
 
         $new = Orders::query()->latest('id')->firstOrFail();
         $this->assertNotSame($source->id, $new->id);

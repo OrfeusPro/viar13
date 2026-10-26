@@ -9,7 +9,6 @@ use App\Services\Admin\OrderDeliveryEditor;
 use App\Services\Admin\OrderItemEditor;
 use App\Services\Admin\UpdateOrderService;
 use Filament\Actions\Action;
-use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 
@@ -47,9 +46,7 @@ class EditOrders extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            ViewAction::make(),
-        ];
+        return [];
     }
 
     protected function handleRecordUpdate(Model $record, array $data): Model

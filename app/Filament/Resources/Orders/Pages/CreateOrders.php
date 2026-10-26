@@ -56,9 +56,8 @@ class CreateOrders extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return auth('filament')->user()?->can('view', $this->getRecord())
-            ? OrdersResource::getUrl('view', ['record' => $this->getRecord()])
-            : OrdersResource::getUrl('index');
+        // Voyager returns to the creation form with the new order number in its success message.
+        return OrdersResource::getUrl('create');
     }
 
     protected function getCreatedNotificationTitle(): ?string
