@@ -45,12 +45,12 @@
         <div style="margin-top: 4px; font-size: 12px;"><span style="color: #64748b;">{{ optional($message->created_at)->format('d.m.Y') }} —</span> {{ $message->comment }}</div>
     @endforeach
 
-    <button type="button" x-on:click.stop="$wire.mountTableAction('viewClientChat', '{{ $record->getKey() }}')" style="display: block; width: 122px; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">
+    <button type="button" x-on:click.stop="$wire.mountTableAction('viewClientChat', '{{ $record->getKey() }}')" style="display: block; width: 145px; max-width: 100%; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">
         Показать чат<br>с клиентом @if($record->client_messages_count)<strong>({{ $record->client_messages_count }})</strong>@endif
         @if($record->unread_client_messages_count)<span style="display: inline-block; margin-left: 3px; padding: 1px 5px; border-radius: 9px; background: #fff; color: #dc2626;">{{ $record->unread_client_messages_count }}</span>@endif
     </button>
 
-    <button type="button" x-on:click.stop="$wire.mountTableAction('manageAdminChat', '{{ $record->getKey() }}')" style="display: block; width: 122px; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">
+    <button type="button" x-on:click.stop="$wire.mountTableAction('manageAdminChat', '{{ $record->getKey() }}')" style="display: block; width: 145px; max-width: 100%; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">
         Показать чат<br>для админов @if($record->admin_messages_count)<strong>({{ $record->admin_messages_count }})</strong>@endif
     </button>
 
@@ -65,12 +65,12 @@
         </div>
     @endif
 
-    <button type="button" x-on:click.stop="$wire.mountTableAction('viewSaChat', '{{ $record->getKey() }}')" style="display: block; min-width: 145px; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #25d366; color: white; cursor: pointer;">
+    <button type="button" x-on:click.stop="$wire.mountTableAction('viewSaChat', '{{ $record->getKey() }}')" style="display: block; width: 145px; max-width: 100%; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #25d366; color: white; cursor: pointer;">
         WhatsApp Чат (SA)
         @if($saUnread)<span title="Непрочитанные сообщения WhatsApp" style="display: inline-block; margin-left: 4px; padding: 1px 5px; border-radius: 9px; background: #fff; color: #111827;">{{ $saUnread }}</span>@endif
     </button>
 
-    <button type="button" x-on:click.stop="$wire.mountTableAction('viewPainterChat', '{{ $record->getKey() }}')" style="display: block; width: 122px; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">
+    <button type="button" x-on:click.stop="$wire.mountTableAction('viewPainterChat', '{{ $record->getKey() }}')" style="display: block; width: 145px; max-width: 100%; margin: 12px auto 0; padding: 7px 9px; border: 0; border-radius: 3px; background: #22a7e8; color: white; cursor: pointer;">
         Показать чат<br>с художником @if($record->painter_messages_count)<strong>({{ $record->painter_messages_count }})</strong>@endif
         @if($record->unread_painter_messages_count)<span style="display: inline-block; margin-left: 3px; padding: 1px 5px; border-radius: 9px; background: #fff; color: #dc2626;">{{ $record->unread_painter_messages_count }}</span>@endif
     </button>

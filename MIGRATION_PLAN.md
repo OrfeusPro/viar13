@@ -3968,3 +3968,6 @@ DONE CSS на ширине>=1024: native toolbar search/columns совмещён
 
 ### ADM-HEADING-TOTALS-01 — итоги возле заголовка, 2026-10-23
 DONE: количество/сумма перенесены к «Заказы», две компактные иконки с доступными подписями. table description убран. Сохранены query/filter/tab scope и role deny printing/lite_manager.16tests330assertionsPASS; Pint/diff checkPASS. Browser QA TODO из-за отключённого управления. Коммит выгрузить в C:\OSPanel\domains\28 Viar.
+
+### ADM-CHAT-WIDTH-01 — одинаковая ширина кнопок чатов, 2026-10-26
+DONE: все четыре кнопки в order-comments Blade width145px/max-width100%, одинаковое центрирование. Ранее синие122px, SA min-width145px. Только оформление; diff checkPASS. Browser QA не выполнена.
