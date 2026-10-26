@@ -48,8 +48,8 @@
 .viar-menu-settings-button:hover { background: var(--gray-100); color: var(--primary-600); }
 .viar-menu-settings-button:focus-visible { outline: 2px solid var(--primary-500); outline-offset: 2px; }
 .viar-personal-menu.is-compact > .fi-sidebar-nav { padding-inline: 12px; }
-.viar-personal-menu.is-compact .viar-menu-preferences-bar { width: 42px; height: 42px; margin: 8px auto 12px; padding: 0; border: 0; border-radius: 8px; }
-.viar-personal-menu.is-compact .viar-menu-settings-button { width: 42px; height: 42px; align-items: center; justify-content: center; padding: 0; border-radius: 8px; }
+.viar-personal-menu.is-compact .viar-menu-preferences-bar { height: 42px; margin: 8px 0 12px; padding: 0 12px; border: 0; border-radius: 8px; overflow-y: hidden; scrollbar-gutter: stable; }
+.viar-personal-menu.is-compact .viar-menu-settings-button { width: 100%; height: 42px; align-items: center; justify-content: center; padding: 0; border-radius: 8px; }
 @media (min-width: 1024px) {
     .fi-body-has-sidebar-collapsible-on-desktop .fi-main-sidebar:not(.fi-sidebar-open) { width: var(--collapsed-sidebar-width, 4.5rem); flex: 0 0 var(--collapsed-sidebar-width, 4.5rem); }
     .fi-body-has-sidebar-collapsible-on-desktop .fi-main-ctn-sidebar-open .fi-main { padding-inline-start: 12px; }

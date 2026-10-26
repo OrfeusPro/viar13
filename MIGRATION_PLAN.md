@@ -4026,3 +4026,10 @@ ADM-MENU-03 DONE,2026-10-26: Chrome collapsed72px вместо105.33px, gear42x4
 IN PROGRESS по скриншоту с красной полосой. Chrome: sidebar320px/mainctn x320, .fi-main padding32px, page x352; лишняя полоса — padding основного контента. Уменьшить padding-inline-start до12px только desktop>=1024 при mainctn-sidebar-open. Ширина меню/scrollbar/правая сторона/мобильные отступы прежние. Проверить actual gap, commit/export31Viar.
 
 ADM-MENU-04 DONE,2026-10-26: Chrome expanded sidebar320px, gap12px вместо32px; collapsed72px сохранён. Изменена одна desktop CSS декларация для открытой панели, бизнес-логика/данные прежние. diffcheckPASS; отдельные автотесты на CSS-отступ не добавлялись. Evidence storage/app/audit/menu-expanded-gap12-20261026.png. Commit/export31Viar.
+
+
+### ADM-MENU-05 — выравнивание нижней кнопки меню, 2026-10-26
+
+IN PROGRESS: в свёрнутом меню иконки навигации учитывают ширину полосы прокрутки, нижняя кнопка центрируется по всей ширине. Для нижней панели добавлен такой же стабильный резерв полосы прокрутки и боковые отступы. Следующее действие: проверить центры иконок в Chrome.
+
+ADM-MENU-05 DONE: Chrome — центры всех видимых иконок и нижней шестерёнки совпадают (x=28.333px); нижняя кнопка учитывает scrollbar gutter навигации. PNG storage/app/audit/menu-settings-aligned-20261026.png. Визуально проверены верхняя и нижняя части меню; данные/настройки профиля не сохранялись. CSS-only, отдельные автотесты не добавлялись. diffcheck PASS; commit/export C:\OSPanel\domains\31 Viar.
