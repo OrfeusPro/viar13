@@ -169,4 +169,5 @@ return array (
   'error_image_modular' => 'Image is required for upload',
   'category' => 'Category',
   'type' => 'Type',
+  'canvas_photo_required_step1' => 'Add a photo.',
 );

@@ -1,4 +1,4 @@
-<header class="vz-art vz-header header_1">
+<header class="vz-art vz-header header_1 {{ is_array($article_language_urls ?? null) ? 'article-language-header' : '' }}">
 	<div class="vz-art section-frame">
 		<div class="vz-art header-bar">
 			<a href="{{ route('home') }}" class="vz-art logo">
@@ -78,9 +78,10 @@
 
 					<ul class="ver1_langs">
 						@foreach (LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                    @continue(is_array($article_language_urls ?? null) && !isset($article_language_urls[$localeCode]))
 							@php
-                                if (!in_array($localeCode, $allowed_lang)) { continue; }
-                                 $cur_url = $localized_urls[$localeCode] ?? LaravelLocalization::getLocalizedURL($localeCode, null, [], true);
+                                if (!is_array($article_language_urls ?? null) && !in_array($localeCode, $allowed_lang)) { continue; }
+                                 $cur_url = $article_language_urls[$localeCode] ?? ($localized_urls[$localeCode] ?? LaravelLocalization::getLocalizedURL($localeCode, null, [], true));
                                  $cur_url_mod = strtok($cur_url, '?');
 							@endphp
 							<li>

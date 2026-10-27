@@ -245,6 +245,7 @@ class BlogController extends Controller
 
         $this->vars = Arr::add($this->vars, 'content', $content);
         $this->vars = Arr::add($this->vars, 'localized_urls', $localized_urls);
+        $this->vars['article_language_urls'] = $localized_urls;
         $this->vars = Arr::add($this->vars, 'canonical_url', $localized_urls[App::getLocale()] ?? null);
         $this->vars = Arr::add($this->vars, 'og_url', $localized_urls[App::getLocale()] ?? null);
         $this->vars = Arr::add($this->vars, 'title', $blog_item->meta_title );
@@ -260,7 +261,34 @@ class BlogController extends Controller
         $defaultLocale = LaravelLocalization::getDefaultLocale();
 
         foreach (array_keys($supportedLocales) as $localeCode) {
-            $slug = $blogPost->getTranslatedAttribute('slug', $localeCode, false) ?: $blogPost->slug;
+            // /pl/* belongs to the separate Polish site (routes/redirect.php).
+            if ($localeCode === 'pl') {
+                continue;
+            }
+            // Voyager's native EN fields are authoritative for EN; other locales
+            // must have their own title and text. Never use language fallback.
+            $values = [];
+            foreach (['title', 'text'] as $field) {
+                $values[$field] = $localeCode === config('voyager.multilingual.default', 'en')
+                    ? $blogPost->getAttribute($field)
+                    : $blogPost->translations->where('column_name', $field)->firstWhere('locale', $localeCode)?->value;
+            }
+            if (collect($values)->contains(function ($value) {
+                return !is_string($value) || trim(strip_tags($value)) === '';
+            })) {
+                continue;
+            }
+            // Legacy translations may share the existing base slug. This is URL
+            // compatibility only, after the actual translation was established.
+            $slug = $localeCode === config('voyager.multilingual.default', 'en')
+                ? $blogPost->slug
+                : $blogPost->translations->where('column_name', 'slug')->firstWhere('locale', $localeCode)?->value;
+            if (!is_string($slug) || trim($slug) === '') {
+                $slug = $blogPost->slug;
+            }
+            if (!is_string($slug) || trim($slug) === '') {
+                continue;
+            }
             $path = trim(($localeCode === $defaultLocale ? '' : $localeCode . '/') . 'blog/' . ltrim($slug, '/'), '/');
             $localizedUrls[$localeCode] = url($path);
         }

@@ -22,9 +22,9 @@ return array (
   'terms_and_conditions' => 'Privatumo politika, Bendrosios sąlygos',
   'prices' => 'KAINOS',
   'stocks' => 'NUOLAIDOS',
-  'header' => 
+  'header' =>
   array (
-    'top_sale' => 'Vasaros išpardavimas 2026 <span>iki -65%</span>',
+    'top_sale' => '2026 m. rudens išpardavimas <span>iki -65%</span>',
   ),
   'footer_paysera' => 'ViarStudia UAB  suteikia svetainės kūrimo ir reklamavimo funkcionalumą. grafikos kūrimas',
   'footer_phone_new' => '+371 27044470',

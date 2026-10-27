@@ -22,9 +22,9 @@ return array (
   'terms_and_conditions' => 'Privaatsuspoliitika, Üldtingimused',
   'prices' => 'HINNAD',
   'stocks' => 'SOODUSTUS',
-  'header' => 
+  'header' =>
   array (
-    'top_sale' => 'Suve allahindlus 2026 <span>kuni -65%</span>',
+    'top_sale' => '2026. aasta sügismüük <span>kuni -65%</span>',
   ),
   'footer_paysera' => 'ViarStudia OÜ pakub funktsioone saidi arendamiseks ja reklaamimiseks. graafika arendus',
   'footer_phone_new' => '+371 27044470',

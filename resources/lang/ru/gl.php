@@ -169,4 +169,5 @@ return array (
   'error_image_modular' => 'Изображение обязательно для загрузки',
   'category' => 'Категория',
   'type' => 'Тип',
+  'canvas_photo_required_step1' => 'Добавьте фото.',
 );

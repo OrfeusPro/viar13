@@ -16,7 +16,7 @@ return array (
   'hb_main_popup_coupon_t1' => 'Экстра Скидка',
   'hb_main_popup_coupon_t2' => 'Используй купон: 10%',
   'hb_main_popup_coupon_t3' => 'В корзине покупок:',
-  'hb_main_popup_coupon_t4' => 'тепло2026',
+  'hb_main_popup_coupon_t4' => 'ОСЕНЬ10',
   'hb_main_popup_coupon_t5' => 'Активен до:',
   'abandoned_basket' => 'Использован купон: Брошенная корзина',
   'giftcard' => 'Использована подарочная карта',

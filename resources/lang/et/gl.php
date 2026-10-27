@@ -168,4 +168,5 @@ return array (
   'error_image_modular' => 'Pildi üleslaadimine on kohustuslik',
   'category' => 'Kategooria',
   'type' => 'Tüüp',
+  'canvas_photo_required_step1' => 'Lisage foto.',
 );

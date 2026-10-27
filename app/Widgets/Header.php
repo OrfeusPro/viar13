@@ -100,6 +100,7 @@ class Header extends AbstractWidget
         $allowed_lang = array('lv','lt','pl','ru','de','en','ee');
     }
         return view('widgets.header', [
+            'article_language_urls' => $this->config['article_language_urls'] ?? null,
             'allowed_lang' => $allowed_lang,
             'menu_items1' => $menu_items1,
             'menu_items2' => $menu_items2,

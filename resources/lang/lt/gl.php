@@ -169,4 +169,5 @@ return array (
   'error_image_modular' => 'Paveikslėlio įkėlimas yra privalomas',
   'category' => 'Kategorija',
   'type' => 'Tipas',
+  'canvas_photo_required_step1' => 'Pridėkite nuotrauką.',
 );

@@ -169,4 +169,5 @@ return array (
   'error_image_modular' => 'Pildi üleslaadimine on kohustuslik',
   'category' => 'Hatsotso',
   'type' => 'Ƒomevi',
+  'canvas_photo_required_step1' => 'Lisage foto.',
 );

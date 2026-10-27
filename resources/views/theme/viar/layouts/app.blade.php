@@ -45,6 +45,10 @@
         $currentLocale = app()->getLocale();
         $defaultLocale = $LL::getDefaultLocale(); // у тебя это ru
         $localizedUrls = isset($localized_urls) && is_array($localized_urls) ? $localized_urls : [];
+        $isArticle = isset($article_language_urls) && is_array($article_language_urls);
+        if ($isArticle) {
+            $supported = array_intersect_key($supported, $article_language_urls);
+        }
         $normalize = function ($code) { return $code === 'ee' ? 'et' : ($code === 'ua' ? 'uk' : $code); };
 
         $alt = function (string $locale) use ($LL, $defaultLocale, $localizedUrls) {
@@ -67,7 +71,9 @@
     @endforeach
 
     {{-- x-default на дефолтный без префикса --}}
+    @if (!$isArticle || isset($article_language_urls[$defaultLocale]))
     <link rel="alternate" hreflang="x-default" href="{{ $alt($defaultLocale) }}" />
+    @endif
 
     {{-- canonical: тоже без /ru для дефолтной локали --}}
     <link rel="canonical" href="{{ $canonical_url ?? $alt($currentLocale) }}" />
@@ -550,7 +556,7 @@
 
 
     @include((config('theme.resource') ?: 'theme.viar.') . 'pages.socials.fb')
-    @widget('Header', ['is_home' => 1])
+    @widget('Header', ['is_home' => 1, 'article_language_urls' => $article_language_urls ?? null])
 
     <main id="top">
 		@yield('content')

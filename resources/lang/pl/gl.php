@@ -169,4 +169,5 @@ return array (
   'error_image_modular' => 'Obowiązkowe jest przesłanie zdjęcia',
   'category' => 'Kategoria',
   'type' => 'Typ',
+  'canvas_photo_required_step1' => 'Dodaj zdjęcie.',
 );

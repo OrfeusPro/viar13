@@ -388,3 +388,18 @@ Success response uses the same `data.post` shape as `POST /api/blog/posts`.
 Errors:
 - `404 POST_NOT_FOUND` when `post_id` does not exist.
 - `400 VALIDATION_ERROR` when category ids or author id are unknown, or a new slug belongs to another post.
+
+
+## Перенос Blog API из 5fa03e77 на Laravel 13 — 2026-10-27
+
+Статус: DONE локальная реализация и автоматическая проверка; production rollout/browser QA не выполнены. Подробные evidence: MIGRATION_PROGRESS.md, BLOG-5FA03E77.
+
+- GET /api/blog/categories, /api/blog/authors, /api/blog/posts: meta.pilot_contract=3, story_image=true, alt_storage=image_alt_suggestions. Posts возвращают revision/content_revision, external_id/idempotency_key, media_sha256, story_alt_mode, image_user; ALT и present_fields возвращаются по фактически сохранённым локалям. Native поля blog_posts — EN (voyager.multilingual.default); другие локали без fallback.
+- POST /api/blog/posts: image_user и translations.*.{image_alt,image_preview_alt,image_user_alt}; automation_contract=3 требует draft, шесть полных de/ee/en/lt/lv/ru с разными slug, idempotency_key/external_id, пять проверенных локальных файлов media_sha256 и story_alt_mode. Decorative image_user_alt должен быть пустым, descriptive — непустым. ALT сохраняются как applied в существующую image_alt_suggestions, новые таблицы/колонки не добавлены. Ответ201 status=ok; точный повтор200 status=duplicate; изменённый/непроверяемый payload с тем же ключом409 CONFLICT. Fingerprint в api_payload._creation_sha256 переживает PATCH; уникальный индекс защищает гонку.
+- PATCH /api/blog/posts/{id}: обязательны expected_revision (64hex из GET) и expected_status; сравнение внутри DB transaction после lockForUpdate статьи/переводов/категорий/ALT. Отсутствующая revision428 PRECONDITION_REQUIRED; устаревшая revision/status409 CONFLICT. Успех200 с новой revision. Счётчик просмотров не меняет revision. EN обязателен при передаче translations, чужой язык не подставляется в native поля.
+- POST /api/blog/media: прежние MIME/size ограничения сохранены; путь blog/api/<SHA256>.<MIME extension>, повтор файла использует тот же путь.
+- Auth прежний X-Api-Key из .env/config services.sa_integration.api_key. Нет нового CRM/SA webhook/event_id контракта: blog использует idempotency_key; CRM/SA event_id и orders/чаты не менялись.
+- Ошибки: прежний совместимый JSON status=error,error={code,message,details};400 VALIDATION_ERROR для обычной валидации,422 VALIDATION_ERROR для семантики контракта/ALT/хешей,409 CONFLICT,428 PRECONDITION_REQUIRED,503 AUTOMATION_UNAVAILABLE если auto_observer включён;401 auth/404 неизвестная статья прежние. Отклонения логируются без API key/токенов/тела статьи; ошибки обработки остаются в штатном exception logging.
+- БД: migration 2026_10_09_180000_unique_blog_idempotency.php добавляет blog_posts_idempotency_unique. На duplicates останавливается без изменения данных; nullable keys допускаются. Локальная MySQL: duplicate_groups0, применена, индекс подтверждён. На сервере выполнить php artisan migrate --path=database/migrations/2026_10_09_180000_unique_blog_idempotency.php --force после доставки файла.
+- Что осталось статическим: только исходные translation PHP arrays и локализованные контентные строки; ALT API пишет реальные existing records, не вызывает платный генератор. Slider subtitle остаётся в canvas_slider/translations.
+- Проверки:69PHPtests506assertions и3JS PASS, Blade/PHP lint/diffcheck PASS. Следующий шаг: серверная миграция/Blade cache; обновить PATCH-клиентов для revision, затем browser QA статьи и симулятора. Hardcoded Voyager edit для записи82 не нужен в Filament; транзакции/lock BREAD уже реализованы.

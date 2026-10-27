@@ -400,7 +400,7 @@
 									<source srcset="{{ $storyImage['src_webp'] }}" type="image/webp">
 								@endif
 								<source srcset="{{ $storyImage['src'] }}" type="{{ $storyImage['type'] ?? 'image/jpeg' }}">
-								<img src="{{ $storyImage['src'] }}"  @frontendAlt('theme/viar/blog/blog.blade.php', ($storyImage['src']), '', '')>
+								<img src="{{ $storyImage['src'] }}"  @altAttrs(['type' => \App\Models\BlogPost::class, 'id' => $story['id']], 'image_user', $story['image_user'], null, '')>
 							</picture>
 						</div>
 						<div class="h3_old">{{ $story->getTranslatedAttribute('title') }}</div>

@@ -187,6 +187,11 @@
                 </div>
                 <div class="panel-body">
 
+                    <div id="blogRevisionPanel" style="display:none" class="alert alert-info">
+                        <p id="blogRevisionNotice"></p>
+                        <button type="button" id="blogReload" class="btn btn-default">Загрузить актуальную версию статьи</button>
+                        <textarea id="blogPreserved" readonly class="form-control" style="display:none" aria-label="Ваш предыдущий несохранённый текст"></textarea>
+                    </div>
                     <form id="simulatorForm">
                         @csrf
                         <div class="form-group">
@@ -1738,15 +1743,63 @@
         renderValidationDetails([]);
     }
 
+    // Only blog_post_update uses revision-bound editing. Never refresh a revision on submit.
+    var blogEdit = { endpoint: null, revision: null, status: null, blocked: true, loading: false, serial: 0 };
+    function blogNotice(text) { document.getElementById('blogRevisionNotice').textContent = text; }
+    async function loadBlogVersion() {
+        if (currentPresetKey !== 'blog_post_update' || blogEdit.loading) return;
+        var endpoint = document.getElementById('endpoint').value.trim();
+        var match = endpoint.match(/^\/api\/blog\/posts\/(\d+)$/);
+        if (!match) { blogNotice('Укажите /api/blog/posts/ID.'); return; }
+        var previous = document.getElementById('payload').value;
+        if (blogEdit.revision && !window.confirm('Загрузить текущую версию? Ваш введённый JSON останется в отдельном поле для сравнения. После загрузки проверьте изменения перед отправкой.')) return;
+        if (blogEdit.revision) {
+            var copy = document.getElementById('blogPreserved'); copy.value = previous; copy.style.display = 'block';
+        }
+        var serial = ++blogEdit.serial;
+        blogEdit.loading = true; blogEdit.blocked = true;
+        blogNotice('Загрузка статьи и её ревизии…');
+        try {
+            var page = 1, post = null;
+            do {
+                var result = await $wire.executeSimulator('/api/blog/posts?include_text=true&include_drafts=true&per_page=100&page='+page, '{}');
+                if (result.http_code !== 200 || !result.api_response || !result.api_response.data) throw new Error('Не удалось прочитать статью. Введённый текст сохранён.');
+                var api = result.api_response;
+                post = api.data.posts.find(function(p){return String(p.id) === match[1];});
+                if (post || page >= api.meta.pagination.last_page) break;
+                page++;
+            } while (page <= 1000);
+            if (serial !== blogEdit.serial || currentPresetKey !== 'blog_post_update' || document.getElementById('endpoint').value.trim() !== endpoint) return;
+            if (!post || !/^[a-f0-9]{64}$/.test(post.revision || '')) throw new Error('Статья или поддерживаемая ревизия не найдена.');
+            var translations = {};
+            Object.keys(post.translations || {}).forEach(function(locale){
+                var t=post.translations[locale], v={};
+                if (!t.title || !t.text) return;
+                ['title','slug','excerpt','meta_title','meta_desc'].forEach(function(k){if(t[k] != null) v[k]=t[k];});
+                v.content=t.text; translations[locale]=v;
+            });
+            if (!translations.en) throw new Error('Нет явных базовых EN-полей. Сохранение остановлено.');
+            blogEdit.endpoint=endpoint; blogEdit.revision=post.revision; blogEdit.status=post.status;
+            document.getElementById('payload').value=JSON.stringify({status:post.status,expected_revision:post.revision,expected_status:post.status,translations:translations},null,4);
+            blogEdit.blocked=false;
+            blogNotice('Версия загружена. Просмотрите текст перед сохранением. Статус: '+post.status);
+        } catch(e) { if(serial===blogEdit.serial) blogNotice(e.message); }
+        finally { if(serial===blogEdit.serial) blogEdit.loading=false; }
+    }
+    document.getElementById('blogReload').addEventListener('click',loadBlogVersion);
+
     function loadPreset(key) {
         var p = buildPresets()[key];
         if (p) {
             resetApiResponse();
             currentPresetKey = key;
+            blogEdit.serial++; blogEdit.loading=false; blogEdit.blocked=true; blogEdit.revision=null;
+            document.getElementById('blogRevisionPanel').style.display=key==='blog_post_update'?'block':'none';
             document.getElementById('endpoint').value = p.endpoint;
             document.getElementById('payload').value = JSON.stringify(p.payload, null, 4);
             updateMethodBadge(p.endpoint);
             renderPresetDoc(key);
+            if(key==='blog_post_update') loadBlogVersion();
         }
     }
 
@@ -1755,6 +1808,7 @@
     renderPresetDoc(currentPresetKey);
 
     document.getElementById('endpoint').addEventListener('input', function(e) {
+        if(currentPresetKey==='blog_post_update'){blogEdit.serial++;blogEdit.loading=false;blogEdit.blocked=true;blogNotice('Адрес изменён. Загрузите версию выбранной статьи.');}
         updateMethodBadge(e.target.value || '');
         renderPresetDoc(currentPresetKey);
     });
@@ -1815,6 +1869,14 @@
             btn.disabled = false;
             return;
         }
+
+        var isBlogUpdate = currentPresetKey === 'blog_post_update';
+        if (isBlogUpdate && (blogEdit.blocked || blogEdit.loading || blogEdit.endpoint !== endpoint.trim() ||
+            payloadObj.expected_revision !== blogEdit.revision || payloadObj.expected_status !== blogEdit.status)) {
+            blogNotice('Сохранение заблокировано. Загрузите и просмотрите актуальную версию; текст не изменён.');
+            btn.innerHTML=originalText;btn.disabled=false;return;
+        }
+        if(isBlogUpdate) blogEdit.blocked=true;
 
         function getByPath(obj, path) {
             if (!obj || typeof obj !== 'object') {
@@ -1937,6 +1999,11 @@
             document.getElementById('responseBlock').style.display = 'block';
             renderValidationDetails([]);
             var renderedData = data;
+            if(isBlogUpdate){
+                if(data.http_code===409) blogNotice('Конфликт: статья изменена другим редактором. Ваш текст сохранён. Загрузите актуальную версию и сравните изменения; повторного сохранения не было.');
+                else if(data.http_code>=200 && data.http_code<300) blogNotice('Сохранено. Для следующего изменения загрузите и просмотрите новую версию.');
+                else blogNotice('Сохранение не подтверждено. Ваш текст сохранён. Перечитайте статью перед новой попыткой.');
+            }
 
             if (data.status === 'ok' && data.http_code >= 200 && data.http_code < 300) {
                  var apiResp = (data.api_response && typeof data.api_response === 'object') ? data.api_response : null;
@@ -1971,6 +2038,7 @@
             }
         })
         .catch(err => {
+            if(isBlogUpdate) blogNotice('Ответ не получен. Ваш текст сохранён. Сначала загрузите фактическую версию; запрос автоматически не повторяется.');
             document.getElementById('responseBlock').style.display = 'block';
             responseOutput.innerText = err.toString();
             responseOutput.style.color = 'red';

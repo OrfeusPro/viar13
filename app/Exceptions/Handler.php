@@ -85,6 +85,21 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
+        if ($request->is('api/blog/*') && $this->isHttpException($e)) {
+            $status = $e->getStatusCode();
+            $code = match ($status) {
+                409 => 'CONFLICT', 428 => 'PRECONDITION_REQUIRED',
+                503 => 'AUTOMATION_UNAVAILABLE', default => 'VALIDATION_ERROR',
+            };
+            \Illuminate\Support\Facades\Log::warning('Blog API request rejected', [
+                'path' => $request->path(), 'status' => $status, 'code' => $code,
+                'event_id' => $request->input('event_id'),
+            ]);
+            return response()->json(['status' => 'error', 'error' => [
+                'code' => $code, 'message' => $e->getMessage(), 'details' => [],
+            ]], $status);
+        }
+
         if ($this->isHttpException($e)) {
             $statusCode = $e->getStatusCode();
 

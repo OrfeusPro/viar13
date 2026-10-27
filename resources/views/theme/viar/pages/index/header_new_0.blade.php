@@ -243,8 +243,9 @@
 
                 <ul class="ver1_langs">
                     @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                    @continue(is_array($article_language_urls ?? null) && !isset($article_language_urls[$localeCode]))
                         @php
-                            $cur_url = isset($localized_urls[$localeCode]) ? $localized_urls[$localeCode] : LaravelLocalization::getLocalizedURL($localeCode, null, [], true);
+                            $cur_url = $article_language_urls[$localeCode] ?? (isset($localized_urls[$localeCode]) ? $localized_urls[$localeCode] : LaravelLocalization::getLocalizedURL($localeCode, null, [], true));
                             $cur_url_mod = strtok($cur_url, '?');
                         @endphp
                         <li>

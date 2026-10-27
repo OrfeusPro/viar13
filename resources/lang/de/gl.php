@@ -169,4 +169,5 @@ return array (
   'error_image_modular' => 'Ein Bild ist zum Hochladen erforderlich',
   'category' => 'Kategorie',
   'type' => 'Typ',
+  'canvas_photo_required_step1' => 'Fügen Sie ein Foto hinzu.',
 );

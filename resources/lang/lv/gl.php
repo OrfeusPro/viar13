@@ -168,4 +168,5 @@ return array (
   'error_image_modular' => 'Attēla augšupielāde ir obligāta',
   'category' => 'Kategorija',
   'type' => 'Tips',
+  'canvas_photo_required_step1' => 'Pievienojiet fotoattēlu.',
 );

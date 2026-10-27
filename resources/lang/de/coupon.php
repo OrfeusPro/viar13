@@ -16,7 +16,7 @@ return array (
   'hb_main_popup_coupon_t1' => 'Super Rabatt',
   'hb_main_popup_coupon_t2' => 'Benutze den Gutschein: 10%',
   'hb_main_popup_coupon_t3' => 'Im Einkaufswagen:',
-  'hb_main_popup_coupon_t4' => 'heat2026',
+  'hb_main_popup_coupon_t4' => 'HERBST10',
   'hb_main_popup_coupon_t5' => 'Aktiv bis:',
   'abandoned_basket' => 'Verwendeter Coupon: Verlassener Einkaufswagen',
   'giftcard' => 'Geschenkkarte verwendet',

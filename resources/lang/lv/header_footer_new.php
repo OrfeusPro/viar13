@@ -22,9 +22,9 @@ return array (
   'terms_and_conditions' => 'Privātuma politika, vispārīgie noteikumi un nosacījumi',
   'prices' => 'CENAS',
   'stocks' => 'ATLAIDES',
-  'header' => 
+  'header' =>
   array (
-    'top_sale' => 'Vasaras izpārdošana 2026 <span>līdz -65%</span>',
+    'top_sale' => 'Rudens izpārdošana 2026 <span>līdz -65%</span>',
   ),
   'footer_paysera' => 'SIA ViarStudia nodrošina funkcionalitāti vietnes attīstībai un popularizēšanai. grafikas izstrāde',
   'footer_phone_new' => '+37127044470',
