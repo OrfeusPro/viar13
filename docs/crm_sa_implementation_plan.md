@@ -10000,3 +10000,30 @@ SHA256 совпал; Markdown исключён, посторонние файл�
 предыдущий ответ инструмента сообщил отключение browser use в Work settings.
 Общий13G/ADM13 IN PROGRESS; следующий точный шаг — visual full edit desktop/mobile
 при доступном браузере. Не считать эти автоматические проверки заменой visual UAT.
+## ADM-AUD-13G — Визуальная сверка полной карточки заказа, 2026-10-28
+
+Browser access восстановлен, read-only subset DONE. Actual EditOrders42 на
+isolated8790/SQLite, lite_manager и printing; Mail/HTTP fake, без submit/изменений.
+Desktop две колонки с данными слева и gallery/items справа; manager footer
+Обновить/Отмена доступен. Mobile390x844 одна колонка, document375px, общего
+горизонтального overflow нет. Manager payment footer открывает modal с пустыми
+amount/purpose; поля/кнопки в пределах экрана, окно закрыто без создания заявки.
+Printing payment button count0, ordinary save enabled; картинки901/903 загружены,
+mobile gallery/товарные поля/footer просмотрены. Viewport восстановлен.
+
+Найден отдельный визуальный дефект: плавающий SA badge частично перекрывает
+кнопку Отмена в нижнем mobile footer. Не считаем всю visual UAT закрытой.
+Задача TODO ADM-AUD-13G — Мобильный индикатор SA и кнопки формы добавлена в план;
+следующее действие — исправить размещение/свободное место и повторить390px footer.
+Оригинальный full edit в этом прогоне не открывался, исходные role guards
+подтверждены ранее кодом; полного pixel parity не заявляем.
+
+Snapshot verifier всех9business tables PASS unchanged. Стенд остановлен.
+Evidence storage/app/audit/roles-20261028/edit-manager-desktop.png,
+edit-manager-footer.png,edit-manager-mobile.png,edit-manager-payment-mobile.png,
+edit-printing-desktop.png,edit-printing-mobile-media.png,edit-printing-mobile-footer.png.
+Скриншоты сохранены/просмотрены. Новых автоматических тестов не добавлялось,
+предыдущие57tests916assertions/42tests789assertions остаются baseline;
+current gate browser read-only+snapshot PASS, git diff --check PASS.
+Production code/API/auth/schema/static mappings не менялись. ТолькоMarkdown,
+non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Коммит без push.

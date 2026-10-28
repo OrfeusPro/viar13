@@ -1,5 +1,21 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13G — Визуальная сверка полной карточки заказа, 2026-10-28
+
+- DONE для read-only визуального поднабора: browser access восстановлен. Actual EditOrders fixture42,
+  lite_manager/printing desktop и390px, sections/media/footer controls;
+  просмотр без сохранения, затем snapshot9tables. Предыдущие тесты не повторять.
+- Original full edit имеет общий доступ по edit_orders; payment request action
+  дополнительно ограничен updateFinances. Все изменения только документации,
+  если визуальная проверка не выявит дефектов. Коммит без push.
+- Desktop2columns/mobile390singlecolumn, document375 без overflow; manager payment
+  modal blank fields/close PASS, printing payment button0; gallery/footer просмотрены.
+  Все9business tables неизменны, fixture остановлен. Скриншоты edit-* в roles-20261028.
+- TODO ADM-AUD-13G — Мобильный индикатор SA и кнопки формы: плавающий badge
+  частично перекрывает «Отмена» на edit footer390px. Следующее точное действие:
+  обеспечить свободное место/размещение индикатора и повторить footer mobile.
+  Общий13G IN PROGRESS, pixel parity всех states не заявляется.
+
 ## ADM-AUD-13G — Полная карточка: смена роли в открытой форме, 2026-10-28
 
 - DONE автоматический поднабор: actual EditOrders printing↔lite_manager с сохранённым edit_orders:
