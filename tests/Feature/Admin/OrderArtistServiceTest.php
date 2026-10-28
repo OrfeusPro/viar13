@@ -16,6 +16,7 @@ use App\Services\Admin\OrderLegacyMediaStatusService;
 use App\Services\Admin\OrderMediaRemovalService;
 use App\Services\Admin\UpdateOrderService;
 use App\Services\BestEffortMailService;
+use App\Services\Payment\OrderPaymentRequestService;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Actions\Testing\TestAction;
@@ -183,6 +184,51 @@ class OrderArtistServiceTest extends TestCase
     public static function fullEditRoles(): array
     {
         return ['printing' => ['printing'], 'lite_manager' => ['lite_manager']];
+    }
+
+    #[DataProvider('fullEditRoles')]
+    public function test_open_full_edit_keeps_permitted_draft_when_role_changes(string $initialRole): void
+    {
+        [$editor, $items] = $this->prepareFullEditFixture();
+        DB::table('roles')->where('id', $editor->role_id)->update(['name' => $initialRole]);
+        $this->actingAs(User::findOrFail($editor->id), 'filament');
+        $page = Livewire::test(EditOrders::class, ['record' => $this->order->getRouteKey()])
+            ->set('data.admin_comment', 'Draft across role change');
+        $targetRole = $initialRole === 'printing' ? 'lite_manager' : 'printing';
+        DB::table('roles')->where('id', $editor->role_id)->update(['name' => $targetRole]);
+        $this->actingAs(User::findOrFail($editor->id), 'filament');
+        $this->assertTrue(auth('filament')->user()->can('update', $this->order));
+        $page->call('save')->assertHasNoErrors();
+        $this->assertSame('Draft across role change', $this->order->fresh()->admin_comment);
+        $this->assertSame($items, $this->order->fresh()->items);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public function test_open_full_edit_payment_footer_rechecks_printing_role_before_calling_service(): void
+    {
+        [$editor] = $this->prepareFullEditFixture();
+        DB::table('roles')->where('id', $editor->role_id)->update(['name' => 'lite_manager']);
+        $this->actingAs(User::findOrFail($editor->id), 'filament');
+        $this->mock(OrderPaymentRequestService::class, fn (MockInterface $mock) => $mock->shouldNotReceive('createForOrder'));
+        $action = TestAction::make('createPaymentRequest')->schemaComponent('paymentRequests', 'form');
+        $page = Livewire::test(EditOrders::class, ['record' => $this->order->getRouteKey()])
+            ->set('data.admin_comment', 'Unsaved manager draft')
+            ->mountAction($action)->assertActionMounted($action)
+            ->fillForm(['amount' => 15, 'purpose' => 'Must not be created']);
+        $before = $this->order->fresh()->getAttributes();
+        DB::table('roles')->where('id', $editor->role_id)->update(['name' => 'printing']);
+        $this->actingAs(User::findOrFail($editor->id), 'filament');
+        $this->assertTrue(auth('filament')->user()->can('update', $this->order));
+        $this->assertFalse(auth('filament')->user()->can('updateFinances', $this->order));
+        $page->callMountedAction()->assertSet('data.admin_comment', 'Unsaved manager draft');
+        $printingPage = Livewire::test(EditOrders::class, ['record' => $this->order->getRouteKey()])
+            ->assertDontSee('Создать платёж');
+        $printingPage->mountAction($action)->assertActionNotMounted();
+        $this->assertDatabaseCount('order_payment_requests', 0);
+        $this->assertSame($before, $this->order->fresh()->getAttributes());
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
     }
 
     private function prepareFullEditFixture(): array

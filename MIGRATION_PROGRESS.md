@@ -5191,3 +5191,31 @@ in Work settings»; визуальные desktop/mobile результаты н�
 Стенд остановлен, обход отключённого инструмента не предпринимался.
 Следующее точное действие: визуально сверить full edit под обеими fixture ролями
 после восстановления browser access. Общий13G/ADM13 остаётсяINPROGRESS.
+## ADM-AUD-13G — Полная карточка: смена роли в открытой форме, 2026-10-28
+
+DONE автоматический поднабор actual EditOrders. Добавлены два role-transition
+сценария printing→lite_manager и lite_manager→printing при сохранённом edit_orders:
+page открыт до смены роли, draft комментария сохраняется после смены, items прежние.
+Это сохраняет исходный контракт full edit, не переносит список role guards
+на всю карточку. Отдельный shared footer payment request gate остаётся строже.
+
+Actual schema action createPaymentRequest/paymentRequests: manager открывает
+форму/вводит сумму, затем роль становитсяprinting при сохранённомedit_orders.
+callMountedAction не вызывает замоканный createForOrder, не создаёт requests,
+не пишет order/комментарий, draft формы сохранён. Fresh printing page не показывает
+«Создать платёж», direct mount оставляет mountedActions пустым. Filament при этом
+может молча не открыть action; HTTP403 для этого footer не заявляем.
+Начальные assertions hidden/action resolution не соответствовали Filament schema
+API, скорректированы на фактический контракт неоткрытия/отсутствия side effects.
+Production исправлений не потребовалось, существующий updateFinances работает.
+
+42tests789assertions PASS: OrderArtistServiceTest + OrderRecordActionPermissionsTest.
+JUnit storage/logs/adm-aud-13g-open-edit-role-change-20261028.xml.
+SQLite :memory:, Mail fake/HTTP preventStrayRequests, клиентам ничего не отправлено.
+Pint testPHP и git diff --check PASS. API/auth/schema/idempotency/static mappings
+не менялись. Один testPHP скопирован в C:\OSPanel\domains\viar\viar13,
+SHA256 совпал; Markdown исключён, посторонние файлы сохранены.
+Коммит текущей ветки без push. Браузер в этом шаге не использовался:
+предыдущий ответ инструмента сообщил отключение browser use в Work settings.
+Общий13G/ADM13 IN PROGRESS; следующий точный шаг — visual full edit desktop/mobile
+при доступном браузере. Не считать эти автоматические проверки заменой visual UAT.

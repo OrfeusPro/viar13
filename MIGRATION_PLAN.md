@@ -1,5 +1,20 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13G — Полная карточка: смена роли в открытой форме, 2026-10-28
+
+- DONE автоматический поднабор: actual EditOrders printing↔lite_manager с сохранённым edit_orders:
+  обычный save должен сохранить разрешённый draft и не повредить items/media.
+- Shared payment request footer: после manager→printing открытое действие не
+  должно вызвать сервис; прямое открытие под printing запрещено.
+- Только SQLite :memory:/fake внешних интеграций. Документы, non-md export
+  SHA256, commit текущей ветки без push. Browser visual остаётся незавершённой.
+- Оба ordinary-save перехода сохраняют draft/items; открытый payment footer
+  после manager→printing не вызывает сервис/не пишет order/request, новый mount
+  не открывает action. 42tests789assertions PASS, Pint/diffcheck PASS.
+  Только testPHP изменён, экспортирован с SHA256; production код прежний.
+- Общий13G IN PROGRESS: следующий шаг — visual full edit desktop/mobile при
+  доступном браузере; не заменять визуальную приёмку новыми повторными microgates.
+
 ## ADM-AUD-13G — Редактирование заказа под ролями печатника и менеджера, 2026-10-28
 
 - IN PROGRESS: original order.blade.php/edit_admin_order/update_admin_order
