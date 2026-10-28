@@ -4955,3 +4955,35 @@ API/auth/idempotency/БД-схема и статические mappings не м�
 Коммит текущей ветки без push. Общая ADM-AUD-13 остаётся IN PROGRESS.
 Следующее точное действие: оставшиеся browser upload/drag сценарии на изолированном
 стенде. Эта проверка не закрывает все роли, форматы/ошибки загрузок и внешний delivery.
+## ADM-AUD-13D — Ошибка загрузки и восстановление формы вложений, 2026-10-28
+
+DONE для chooser recovery. Первоначально в commentary указан13G; по активной
+матрице исправлено на13D (13G — роли). Отдельный loopback8789, SQLite-копия
+синтетического attach стенда; actual OrderItemsForm/OrderItemActions/Livewire,
+локальные disks, Mail fake/Http preventStrayRequests, invoice mock.
+Browser: synthetic rejected.exe44bytes отклонён «Файл неверного типа»; файл
+удалён только из очереди. Затем recovery.png177bytes выбран в том же окне,
+загрузка завершилась, submit «Добавить фото» показал «Фото добавлены» и превью
+во второй позиции. Рабочие DB/файлы/клиенты не затронуты. Стенд остановлен.
+
+Verifier: SHA256 persisted PNG совпал с input; первая позиция, остальные поля
+второй позиции, все прочие orders полностью сохранены; changed order columns
+только items/updated_at. orig_images сохраняет URL согласно действующему сервису.
+Evidence storage/app/audit/upload-recovery-20261028/{before.json,verified.json,requests.jsonl,saved.png}.
+Screenshot сохранён и просмотрен; browser submit подтверждён UI и БД.
+
+Открытый вопрос: заметная пауза до _startUpload на этом стенде, потом
+_startUpload/upload-file/_finishUpload и submit200. Причина не установлена;
+не считать нормой/исправлением и не приписывать без доказательств production.
+Предыдущие audit записи также отмечали паузы очереди. Следующий точный шаг:
+воспроизвести/локализовать задержку до начала транспорта на isolated стенде.
+OS file drag/drop не подтверждён: documented extension API предоставляет chooser,
+но не file-drag API; подмена DOM событиями не выполнялась. Порядок файлов/drag
+этим запуском не проверен.
+
+Проверки:28tests340assertions PASS — OrderItemEditorTest + OrderMediaFormTest,
+JUnit storage/logs/adm-aud-13d-recovery-20261028.xml; git diff --check PASS.
+Production код/API/auth/idempotency/DB schema не менялись, статические замены
+не добавлялись. Изменена только Markdown-документация; non-md файлов для выгрузки
+в C:\OSPanel\domains\viar\viar13 нет, копирование/SHA256 выгрузки не применяются.
+Коммит текущей ветки без push. ОбщийADM-AUD-13/13D остаётсяINPROGRESS.

@@ -1,5 +1,25 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13D — Ошибка загрузки и восстановление формы вложений, 2026-10-28
+
+- DONE для отказа/recovery через chooser: уточнение ID — upload/drag относятся к13D,13G остаётся матрицей ролей.
+  Отдельная SQLite/локальные disks, fake Mail/HTTP. Проверить browser reject
+  неподдерживаемого файла и следующую успешную загрузку/сохранение PNG в нужную
+  позицию; соседняя позиция и остальные заказы должны сохраниться.
+- Реальный OS file drag/drop пока не подтверждён: extension API даёт chooser,
+  read-only evaluate, без file-drag API. Не подменять этот сценарий DOM events.
+- После выполнения: evidence, планы, копирование изменённых non-md с SHA256,
+  коммит текущей ветки без push.
+- Chrome: rejected.exe отклонён «Файл неверного типа», удалён из очереди;
+  PNG177bytes загружен/сохранён во вторую позицию без reload. SHA256 совпал,
+  первая позиция/остальные поля/прочие orders неизменны; changed columns items,
+  updated_at. 28tests340assertions PASS. Код не менялся, non-md export нет.
+- TODO — задержка старта загрузки на isolated стенде: перед _startUpload была
+  пауза; причина не установлена. Не объявлять исправленной/не переносить вывод
+  на production. Evidence storage/app/audit/upload-recovery-20261028/requests.jsonl.
+- Общий13D IN PROGRESS: следующий точный шаг — воспроизведение паузы старта
+  загрузки; OS drag/drop остаётся без browser evidence.
+
 ## ADM-AUD-13F — Заполненные чаты с изображениями: визуальная проверка на компьютере и телефоне, 2026-10-28
 
 - DONE для browser read-only поднабора: отдельная SQLite-копия синтетического стенда, fake HTTP/Mail,
