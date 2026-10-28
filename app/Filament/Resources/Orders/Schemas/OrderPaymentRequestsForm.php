@@ -22,9 +22,9 @@ class OrderPaymentRequestsForm
                 TextInput::make('purpose')->label('Назначение платежа')->maxLength(255),
             ])
             ->fillForm(fn (): array => ['amount' => null, 'purpose' => null])
-            ->authorize(fn (Orders $record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+            ->authorize(fn (Orders $record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
             ->action(function (Orders $record, array $data): void {
-                abort_unless(auth('filament')->user()?->can('update', $record), 403);
+                abort_unless(auth('filament')->user()?->can('updateFinances', $record), 403);
                 app(OrderPaymentRequestService::class)->createForOrder($record, $data, auth('filament')->user());
                 $record->unsetRelation('order_payment_requests');
                 Notification::make()->success()->title('Заявка на оплату создана')->send();

@@ -978,3 +978,42 @@ Tracked diff толькоMarkdown; non-md для выгрузки C:\OSPanel\dom
 нет, SHA256 выгрузки не применяется. Коммит текущей ветки без push.
 Общий13G/ADM13 IN PROGRESS. Следующее: оставшиеся комбинации вкладок/фильтров
 под этими ролями и edit/action состояния на fixtures с fake интеграций.
+## ADM-AUD-13G — Фильтры и действия под ролями печатника и менеджера, 2026-10-28
+
+DONE для указанного поднабора. Найден и исправлен пропуск авторизации:
+часть hidden financial Livewire actions проверяла только update/edit_orders,
+хотя original printing UI не разрешает финансовые операции. Добавлена ability
+OrdersPolicy::updateFinances = edit_orders AND role.name!=printing. Подключены
+record actions create/manage VR, payment status/prepayment, invoice firm/generate/
+approve, shared payment request form и дубли financial column actions.
+Обычный update gate для производственных операций не менялся; lite_manager
+с edit_orders сохраняет финансовые возможности. Данные/роли/permissions не мигрировались.
+
+Regression расширен provider двумя случаями: отзыв edit_orders и смена роли
+на printing после открытия формы при сохранённом edit_orders. Для8действий
+mount/fill→access change→callMountedAction/direct mount: финансовые сервисы
+не вызываются, action недоступен, orders/VR прежние, Mail/HTTP ничего не отправляют.
+Первый red test выявил пропуск, после полного подключения gate проверки зелёные.
+Это проверка Filament authorization/отсутствия side effects; не утверждаем,
+что каждый отказ при mount возвращает HTTP403 (Filament может не открыть action).
+Inline printing forbidden403 остаётся в существующем regression.
+
+Browser8790/isolatedSQLite: printing «У печатника»→42; ID43 без оплаты→43,
+поскольку original OrdersController order_filter заменяет ветку вкладки,
+это не баг/не дополнительное пересечение. ID43+not_payed→No results,
+ID42+not_payed→42; sent tab→43 и applied/deferred filters очищены.
+Lite_manager completed→44; ID42+price999→No results; price100→42;
+click completed→44/reset. Рабочие orders/roles не менялись.
+Snapshot verifier: все9business tables неизменны. Стенд остановлен.
+Evidence storage/app/audit/roles-20261028/printing-filter-empty.png,
+manager-filter-42.png, verified.json, requests.jsonl. Снимки сохранены.
+
+Gate73tests1242assertions PASS: record action permissions, list role presentation,
+tabs, payment/invoice/VR services; JUnit storage/logs/adm-aud-13g-finance-gate-20261028.xml.
+Pint4изменённыхPHP PASS; git diff --check PASS. Новых routes/API/DB schema нет,
+auth существующий Filament/Voyager permissions; static mappings не менялись.
+Четыре изменённыхPHP (policy/table/payment request form/regression test)
+скопированы в C:\OSPanel\domains\viar\viar13, все SHA256 совпали;
+Markdown исключён, посторонние файлы не удалялись. Коммит текущей ветки без push.
+Общий13G/ADM13 IN PROGRESS. Следующее точное действие: оставшиеся edit/action
+состояния под printing/lite_manager, затем полная итоговая матрица незакрытых сценариев.

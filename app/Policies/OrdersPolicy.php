@@ -27,6 +27,11 @@ class OrdersPolicy
         return $user->hasPermission('edit_orders');
     }
 
+    public function updateFinances(User $user, Orders $order): bool
+    {
+        return $this->update($user, $order) && $user->role?->name !== 'printing';
+    }
+
     public function delete(User $user, Orders $order): bool
     {
         return $user->hasPermission('delete_orders');

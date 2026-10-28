@@ -1,5 +1,25 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13G — Фильтры и действия под ролями печатника и менеджера, 2026-10-28
+
+- DONE для указанного поднабора: isolated browser сочетания tab+order filter для printing и
+  lite_manager, несовместимые значения/сброс/смена вкладки; рабочие данные не менялись.
+- Дополнить regression stale financial forms: роль изменена на printing после
+  открытия, edit_orders сохранён, финансовые сервисы всё равно не вызываются.
+- После проверки: журналы, экспорт только изменённых non-md с SHA256, коммит
+  текущей ветки без push. Не закрывать всю матрицу13G несколькими комбинациями.
+- Обнаружено: hidden financial actions имели общий update gate и не учитывали
+  printing. Добавлен OrdersPolicy::updateFinances (edit_orders AND !printing),
+  подключён к VR/payment/prepayment/invoice/payment request actions и их дублям.
+  Production операции печатника сохраняют прежний update gate.
+- Regression8open forms × permission revoked/role→printing с сохранённым
+  edit_orders PASS: сервисы не вызываются, данные прежние. Gate73tests1242assertions,
+  Pint/diffcheck PASS. ЧетыреPHP экспортированы, SHA256 совпали, md исключены.
+- Browser printing ID43 заменяет tab scope по original order_filter; ID43+unpaid→0,
+  ID42+unpaid→42, tab sent→43/reset. Manager completed→44, ID42+price999→0,
+  ID42+price100→42, tab completed→44/reset. Все9business tables неизменны.
+  Общий13G/ADM13 IN PROGRESS: остальная матрица/редактирование ещё не полностью приняты.
+
 ## ADM-AUD-13G — Заказы под ролями печатника и менеджера, 2026-10-28
 
 - DONE для read-only ListOrders поднабора: отдельный full ListOrders стенд SQLite, actual printing/lite_manager

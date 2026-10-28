@@ -176,7 +176,7 @@ class OrdersTable
 
                                 Notification::make()->success()->title('Номер накладной обновлён')->send();
                             })
-                            ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false),
+                            ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false),
                     )
                     ->searchable()
                     ->sortable()
@@ -207,7 +207,7 @@ class OrdersTable
 
                                 Notification::make()->success()->title('Заявка на оплату создана')->send();
                             })
-                            ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false),
+                            ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false),
                     )
                     ->visible(false),
                 TextColumn::make('vr_number')
@@ -524,12 +524,12 @@ class OrdersTable
                     ])
                     ->fillForm(fn (array $arguments): array => ['prefix' => $arguments['prefix'] ?? null])
                     ->action(function ($record, array $data): void {
-                        abort_unless(auth('filament')->user()?->can('update', $record), 403);
+                        abort_unless(auth('filament')->user()?->can('updateFinances', $record), 403);
                         app(UpdateOrderVrNumberService::class)->generate($record, $data['prefix']);
                         $record->unsetRelation('vrNumber');
                         Notification::make()->success()->title('Накладная создана')->send();
                     })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
 
                 Action::make('manageVrNumber')
@@ -551,7 +551,7 @@ class OrdersTable
                         $record->unsetRelation('vrNumber');
                         Notification::make()->success()->title('Номер накладной обновлён')->send();
                     })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
                 OrderPaymentRequestsForm::createAction()->extraAttributes(['class' => 'hidden']),
                 Action::make('updatePaymentStatus')
@@ -575,7 +575,7 @@ class OrdersTable
                         }
                         $notification->send();
                     })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
                 Action::make('updatePrepayment')
                     ->label('Сумма предоплаты')
@@ -596,7 +596,7 @@ class OrdersTable
                         app(OrderPaymentService::class)->updatePrepayment($record, $data['prepayment_price']);
                         Notification::make()->success()->title('Сумма предоплаты обновлена')->send();
                     })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
                 OrderVenipakActions::create()->extraAttributes(['class' => 'hidden']),
                 OrderVenipakActions::print()->extraAttributes(['class' => 'hidden']),
@@ -748,7 +748,7 @@ class OrdersTable
                         app(OrderInvoiceService::class)->generate($record, $data);
                         Notification::make()->success()->title('Данные фирмы сохранены в PDF-счёте')->send();
                     })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
                 Action::make('generateInvoice')
                     ->label('Сформировать счёт')
@@ -760,7 +760,7 @@ class OrdersTable
                         app(OrderInvoiceService::class)->generate($record);
                         Notification::make()->success()->title('PDF-счёт сформирован')->send();
                     })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
                 Action::make('approveInvoice')
                     ->label('Подтвердить счёт')
@@ -785,7 +785,7 @@ class OrdersTable
                         );
                         ($result['mail_sent'] ? $notification->success() : $notification->warning())->send();
                     })
-                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('update', $record) ?? false)
+                    ->authorize(fn ($record): bool => auth('filament')->user()?->can('updateFinances', $record) ?? false)
                     ->extraAttributes(['class' => 'hidden']),
                 ViewAction::make()->extraAttributes(['class' => 'hidden']),
             ], position: RecordActionsPosition::AfterContent);

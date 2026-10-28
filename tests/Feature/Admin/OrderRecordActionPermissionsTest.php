@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use Livewire\Livewire;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class OrderRecordActionPermissionsTest extends TestCase
@@ -291,7 +292,8 @@ class OrderRecordActionPermissionsTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function test_open_financial_actions_stop_before_services_after_edit_permission_revocation(): void
+    #[DataProvider('financialAccessChanges')]
+    public function test_open_financial_actions_stop_before_services_after_access_changes(string $change): void
     {
         $this->mock(OrderInvoiceService::class, function (MockInterface $mock): void {
             $mock->shouldReceive('defaultFirmData')->once()->andReturn(['name' => 'Fixture', 'addr' => 'Fixture street']);
@@ -317,6 +319,8 @@ class OrderRecordActionPermissionsTest extends TestCase
             'updatePrepayment' => ['prepayment_price' => 5],
         ];
         foreach ($cases as $name => $data) {
+            DB::table('roles')->where('id', 1)->update(['name' => 'fixture-editor']);
+            DB::table('permission_role')->delete();
             DB::table('permission_role')->insert(['permission_id' => 1, 'role_id' => 1]);
             $this->actingAs(User::findOrFail(1), 'filament');
             $order = Orders::findOrFail(1);
@@ -325,9 +329,14 @@ class OrderRecordActionPermissionsTest extends TestCase
             if ($data !== []) {
                 $component->fillForm($data);
             }
-            DB::table('permission_role')->delete();
+            if ($change === 'printing') {
+                DB::table('roles')->where('id', 1)->update(['name' => 'printing']);
+            } else {
+                DB::table('permission_role')->delete();
+            }
             $this->actingAs(User::findOrFail(1), 'filament');
-            $this->assertFalse(auth('filament')->user()->can('update', $order));
+            // Printing retains edit_orders for production work; finance has a separate restriction.
+            $this->assertSame($change === 'printing', auth('filament')->user()->can('update', $order));
             $component->callMountedAction();
             Livewire::test(OrderRecordPermissionsHarness::class)->assertActionHidden($action)
                 ->call('mountTableAction', $name, '1');
@@ -336,6 +345,11 @@ class OrderRecordActionPermissionsTest extends TestCase
         }
         Http::assertNothingSent();
         Mail::assertNothingSent();
+    }
+
+    public static function financialAccessChanges(): array
+    {
+        return ['edit permission revoked' => ['revoked'], 'changed to printing with edit permission' => ['printing']];
     }
 
     public function test_chat_replies_and_read_commands_stop_before_services_after_permission_revocation(): void
