@@ -5023,3 +5023,29 @@ API/auth/idempotency/DB schema/статические mappings прежние. �
 SHA256 выгрузки не применяется. Коммит текущей ветки без push.
 Общий13D/ADM13 IN PROGRESS: OS drag/drop ещё требует отдельного browser evidence;
 следующее действие — оставшаяся матрица приёмки, без повторения закрытой паузы.
+## ADM-AUD-13D — Настоящее перетаскивание файла в форму заказа, 2026-10-28
+
+IN PROGRESS, ожидается фактический ручной OS drop. Подготовлены isolated8789,
+fixture904/вторая позиция, drag-before.json и синтетический80x60PNG drag-test.png.
+SHA256 BA11C8BE34B15417B4995C143C8414C6AE84107C7D9FC28D1CDB88B3EA390DBF.
+В открытом пользователем IAB обновлена форма, открыто attach окно второй позиции.
+В ignored probe добавлена видимая метка drop/isTrusted/files; chooser не вызывался,
+DOM drop events не имитировались. Пользователю отправлена инструкция для переноса
+только этого synthetic файла из Проводника; ответ/фактический drop пока не получен.
+Ничего не сохранялось, send/notifications не запускались. Рабочая DB/файлы прежние.
+
+Подготовлен verifier drag-verify-20261028.php: ожидает ровно один новый orig_images,
+сохраняет старые пути и SHA256, проверяет остальные items/поля/прочие orders.
+Verifier не запускался до actual drop/save — утверждать успешный drag нельзя.
+Evidence readiness: storage/app/audit/upload-recovery-20261028/drag-ready.png.
+Стенд оставлен запущенным для ожидаемого действия пользователя, вкладка handoff.
+При продолжении: прочитать drop trace/UI, дождаться finish, submit attach,
+запустить verifier, сохранить screenshot, остановить стенд и обновить статус.
+
+Обновлена очередь в docs/admin_orders_parity_2026-10-16.md: учтены ранее
+закрытые batch30/форматы/отказ-recovery/foreground timing/populated chats,
+они больше не перечисляются в очереди как полностью непроверенные.
+Production изменений нет, новые автотесты не добавлялись; git diff --check PASS.
+Только Markdown в tracked diff, non-md для выгрузки C:\OSPanel\domains\viar\viar13
+нет. Коммит текущей ветки без push. API/auth/schema/static mappings прежние.
+Общий13D/ADM13 IN PROGRESS; ручное действие остаётся обязательным evidence.
