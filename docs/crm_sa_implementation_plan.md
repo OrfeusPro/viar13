@@ -9645,3 +9645,34 @@ Source сверён именно в C:/OSPanel/domains/asoft/viar/resources/view
 - БД: migration 2026_10_09_180000_unique_blog_idempotency.php добавляет blog_posts_idempotency_unique. На duplicates останавливается без изменения данных; nullable keys допускаются. Локальная MySQL: duplicate_groups0, применена, индекс подтверждён. На сервере выполнить php artisan migrate --path=database/migrations/2026_10_09_180000_unique_blog_idempotency.php --force после доставки файла.
 - Что осталось статическим: только исходные translation PHP arrays и локализованные контентные строки; ALT API пишет реальные existing records, не вызывает платный генератор. Slider subtitle остаётся в canvas_slider/translations.
 - Проверки:69PHPtests506assertions и3JS PASS, Blade/PHP lint/diffcheck PASS. Следующий шаг: серверная миграция/Blade cache; обновить PATCH-клиентов для revision, затем browser QA статьи и симулятора. Hardcoded Voyager edit для записи82 не нужен в Filament; транзакции/lock BREAD уже реализованы.
+
+## ADM-AUD-13F — Сверка окон чатов тестового заказа №18451, 2026-10-28
+
+DONE для read-only поднабора; общий ADM-AUD-13F остаётся IN PROGRESS.
+В Chrome парно сверены оригинальная Voyager и новая Filament: client — test/test2,
+автор и обе даты совпадают; internal/painter — пустая история и формы ответа,
+тип переписки художника «Общий»; SA — одно прежнее UAT-сообщение, команды
+Resume/Pause/Handoff, поле ответа и выключенный Handoff после отправки.
+Новая панель показывает понятный статус suppressed и время сообщения.
+На ширине390px визуально проверены все четыре новых окна: заголовки/закрытие,
+поля/кнопки в пределах окна, внутренняя прокрутка SA до формы ответа и checkbox.
+Это проверка браузера с узким viewport, не физического телефона/экранной клавиатуры.
+
+SA original N/A против Filament PAUSED объяснён кодом и read-only данными:
+orders.sa_bot_mode и sa_conversation_id пусты, связанный conversation39
+ADM-FIL-UAT-18451 имеет bot_mode=paused. Original sa_chat/getMessages читает
+зеркало заказа, original conversation page — conversation; Filament читает
+conversation. Данные не переписывались ради совпадения устаревшего зеркала.
+Статические подстановки не добавлены; API/auth/idempotency/схема БД не менялись.
+
+Проверки: PHP8.4/PHPUnit12 — 106tests/992assertions PASS: OrderClientChatTest,
+OrderPainterChatTest, OrderAdminChatServiceTest, OrderSaChatTest, OrderSaCommandTest.
+JUnit: storage/logs/adm-aud-13f-chat-20261028.xml. Browser: сообщения не отправлялись,
+команды бота/ручное прочтение не выполнялись; рабочие заказы не редактировались.
+Исправлений кода не потребовалось. Изменены только Markdown-журналы, поэтому
+по правилу выгрузки non-md файлов для C:\OSPanel\domains\viar\viar13 нет;
+копирование/SHA256 не применяются. Коммит текущей ветки без push.
+
+Следующее точное действие: оставшиеся populated artist/media ветки на
+изолированных fixtures с fake интеграций; полную приёмку всех ролей/вложений
+и всей ADM-AUD-13 этим прогоном не объявляем.

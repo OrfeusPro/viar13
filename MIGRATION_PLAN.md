@@ -1,5 +1,23 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13F — Сверка окон чатов тестового заказа №18451, 2026-10-28
+
+- DONE для read-only сверки №18451: парное открытие client/admin/painter/SA окон, без отправки,
+  изменения bot mode или ручных отметок прочтения. Рабочие другие заказы не трогать.
+- Client оба test/test2 с одинаковыми датами; admin/painter пустые. Mobile390:
+  все четыре окна, закрытие/reopen и доступность controls проверены. SA composer
+  доступен через внутреннюю прокрутку, Handoff выключен. Пустые ветки не закрывают populated UAT.
+- SA история/кнопки/Handoff совпадают по данным, mode original N/A против new
+  PAUSED объяснён source audit: original читает orders.sa_bot_mode=NULL,
+  новая панель читает связанный sa_conversations.bot_mode=paused. Original
+  conversation page также читает conversation. Корректное состояние не менять.
+- Проверки: 106 tests / 992 assertions PASS, JUnit storage/logs/adm-aud-13f-chat-20261028.xml.
+- Общий ADM-AUD-13F IN PROGRESS: этот прогон не подтверждает populated artist/media,
+  все роли и реальные отправки. Следующее действие: оставшиеся ветки художника и
+  вложений на изолированных fixtures с fake внешних интеграций.
+- Сдача: документация/коммит без push; non-md файлы только при реальных изменениях
+  экспортировать в C:\OSPanel\domains\viar\viar13 с SHA256.
+
 ## ADM-AUD-13B/E/G — Итоги вкладок и мобильная проверка, 2026-10-28
 
 - IN PROGRESS: browser original express77/839 против new77/4101.56.

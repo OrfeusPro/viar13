@@ -747,3 +747,34 @@ Browser: desktop original/new screenshots открыты и сопоставле
 Ограничения: это исправление структуры/плотности и начальных экранов, не заявление полного pixel parity всех состояний. Новые полезные controls поиска клиента/дополнительных параметров сохранены. Остаётся визуально пройти раскрытие доставки, юрлица и действий добавления позиции/фото; Venipak и drag/drop остаются в общем backlog. Общий ADM-AUD-13 IN PROGRESS.
 
 ADM-AUD-13C фон групп DONE, 2026-10-26: восстановлены original #fafafa/#d9d9d9/radius8 для блоков данных пользователя в create, оплаты/доставки, payment requests и позиций; в edit канал/категория отдельно выделены серой группой. Inputs белые, galleries белые, dark overrides предусмотрены. Chrome выявил белую внутреннюю .fi-section, перекрывавшую фон wrapper; исправлено наследование, computed внутреннего контейнера rgb250/250/250 в обеих формах. Итоговые PNG просмотрены: storage/app/audit/order-{edit,create}-background-20261026.png. Feature subset13tests195assertionsPASS/PintPASS/diffcheckPASS; никаких сохранений рабочих форм/новых DB/API. План и журнал обновлены; общий ADM13INPROGRESS.
+
+## ADM-AUD-13F — Сверка окон чатов тестового заказа №18451, 2026-10-28
+
+DONE для read-only поднабора; общий ADM-AUD-13F остаётся IN PROGRESS.
+В Chrome парно сверены оригинальная Voyager и новая Filament: client — test/test2,
+автор и обе даты совпадают; internal/painter — пустая история и формы ответа,
+тип переписки художника «Общий»; SA — одно прежнее UAT-сообщение, команды
+Resume/Pause/Handoff, поле ответа и выключенный Handoff после отправки.
+Новая панель показывает понятный статус suppressed и время сообщения.
+На ширине390px визуально проверены все четыре новых окна: заголовки/закрытие,
+поля/кнопки в пределах окна, внутренняя прокрутка SA до формы ответа и checkbox.
+Это проверка браузера с узким viewport, не физического телефона/экранной клавиатуры.
+
+SA original N/A против Filament PAUSED объяснён кодом и read-only данными:
+orders.sa_bot_mode и sa_conversation_id пусты, связанный conversation39
+ADM-FIL-UAT-18451 имеет bot_mode=paused. Original sa_chat/getMessages читает
+зеркало заказа, original conversation page — conversation; Filament читает
+conversation. Данные не переписывались ради совпадения устаревшего зеркала.
+Статические подстановки не добавлены; API/auth/idempotency/схема БД не менялись.
+
+Проверки: PHP8.4/PHPUnit12 — 106tests/992assertions PASS: OrderClientChatTest,
+OrderPainterChatTest, OrderAdminChatServiceTest, OrderSaChatTest, OrderSaCommandTest.
+JUnit: storage/logs/adm-aud-13f-chat-20261028.xml. Browser: сообщения не отправлялись,
+команды бота/ручное прочтение не выполнялись; рабочие заказы не редактировались.
+Исправлений кода не потребовалось. Изменены только Markdown-журналы, поэтому
+по правилу выгрузки non-md файлов для C:\OSPanel\domains\viar\viar13 нет;
+копирование/SHA256 не применяются. Коммит текущей ветки без push.
+
+Следующее точное действие: оставшиеся populated artist/media ветки на
+изолированных fixtures с fake интеграций; полную приёмку всех ролей/вложений
+и всей ADM-AUD-13 этим прогоном не объявляем.
