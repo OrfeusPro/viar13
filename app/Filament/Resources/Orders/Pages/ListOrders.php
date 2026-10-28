@@ -22,7 +22,11 @@ class ListOrders extends ListRecords
     {
         return view('filament.components.order-heading', [
             'title' => $this->getTitle(),
-            'totals' => OrderListSummary::totalsForTable($this),
+            'totals' => OrderListSummary::totalsForTable(
+                $this,
+                pageSubtotal: ! $this->hasActiveOrderFilters()
+                    && in_array($this->activeTab, ['express', 'printing', 'sent_today'], true),
+            ),
         ]);
     }
 

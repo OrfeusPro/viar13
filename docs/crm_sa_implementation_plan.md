@@ -2,6 +2,16 @@
 
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
 
+## ADM-AUD-13B/E/G — Итоги вкладок и mobile, 2026-10-28
+
+- Source/browser подтверждён scope суммы страницы express/printing/sent_today,
+  перенесён в heading; count всей выборки. Actual browser page1 77/839,
+  page2 77/764.56 совпали с original. Данные/API/lead_id/SA mappings не менялись.
+- Mobile390:таблица в своём scroll-container; payment modal18451 пустая сумма,
+  Cancel; фирма8полей раскрыта без Save. Viewport reset, временная вкладка закрыта.
+- Regression58/976 PASS, Pint/diff-check PASS;4PHPэкспортированы без.md/SHA256 OK.
+  Далее: остальные role/product/modal сценарии; весь ADM-AUD-13 IN PROGRESS.
+
 ## ADM-AUD-13B/E — Парная сверка заказов и платёжной формы, 2026-10-28
 
 - Original/new browser selection совпала для текущих, production, unpaid, sent,

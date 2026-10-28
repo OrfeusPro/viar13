@@ -9,10 +9,9 @@ class AdminOrderRotationSortTest extends TestCase
 {
     public function test_admin_orders_rotation_prioritizes_express_and_nearest_delivery_or_production_deadline(): void
     {
-        $controller = new class extends OrdersController {
-            public function __construct()
-            {
-            }
+        $controller = new class extends OrdersController
+        {
+            public function __construct() {}
 
             public function sortForTest($orders, ?\DateTimeImmutable $now = null, ?string $orderIdSort = null): array
             {
@@ -55,10 +54,9 @@ class AdminOrderRotationSortTest extends TestCase
 
     public function test_new_orders_stay_on_top_for_working_time_window_and_after_hours_grace(): void
     {
-        $controller = new class extends OrdersController {
-            public function __construct()
-            {
-            }
+        $controller = new class extends OrdersController
+        {
+            public function __construct() {}
 
             public function sortForTest($orders, ?\DateTimeImmutable $now = null, ?string $orderIdSort = null): array
             {
@@ -97,10 +95,9 @@ class AdminOrderRotationSortTest extends TestCase
 
     public function test_order_id_sort_overrides_rotation_in_both_directions(): void
     {
-        $controller = new class extends OrdersController {
-            public function __construct()
-            {
-            }
+        $controller = new class extends OrdersController
+        {
+            public function __construct() {}
 
             public function sortForTest($orders, ?\DateTimeImmutable $now = null, ?string $orderIdSort = null): array
             {
@@ -134,15 +131,45 @@ class AdminOrderRotationSortTest extends TestCase
         $this->assertSame([301, 302, 303], $sortedAsc);
     }
 
+    public function test_express_queue_uses_earliest_deadline_and_keeps_equal_priority_input_order(): void
+    {
+        $controller = new class extends OrdersController
+        {
+            public function __construct() {}
+        };
+        // Same production day, different creation times and delivery dates.
+        // The source query supplies created_at DESC; the original comparator
+        // returns zero for this priority tie rather than imposing an ID order.
+        $orders = [
+            $this->order(702, '2020-07-27 17:00:18', ['when_send' => '08/20/2020'], [
+                ['terms' => 'Standarta - 3 darba dienas 0 €'],
+            ]),
+            $this->order(701, '2020-07-27 13:49:40', [], [
+                ['terms' => 'Standartinis - 3 darbo dienos 0 €'],
+            ]),
+            $this->order(703, '2020-07-28 10:00:00', [], [
+                ['terms' => 'Стандарт - 3 рабочих дня 0 €'],
+            ]),
+            $this->order(704, '2020-08-01 10:00:00', ['is_manual_express' => 1], []),
+        ];
+
+        $sorted = $controller->sortAdminExpressOrders($orders);
+
+        $this->assertSame([704, 702, 701, 703], array_column($sorted, 'id'));
+        $this->assertSame($sorted[1]->admin_express_priority_at, $sorted[2]->admin_express_priority_at);
+        $this->assertSame('2020-07-30', date('Y-m-d', $sorted[1]->admin_express_priority_at));
+        $this->assertSame([701, 702, 703, 704], array_column($controller->sortAdminExpressOrders($orders, 'asc'), 'id'));
+        $this->assertSame([704, 703, 702, 701], array_column($controller->sortAdminExpressOrders($orders, 'desc'), 'id'));
+    }
+
     private function order(
         int $id,
         string $createdAt,
         array $delivery,
         array $items,
         ?string $painterEndtime = null
-    ): \stdClass
-    {
-        $order = new \stdClass();
+    ): \stdClass {
+        $order = new \stdClass;
         $order->id = $id;
         $order->created_at = $createdAt;
         $order->painter_endtime = $painterEndtime;

@@ -82,13 +82,50 @@ class OrderListSummaryTest extends TestCase
         }
     }
 
+    public function test_legacy_page_subtotal_tracks_visible_records_pagination_and_explicit_sort(): void
+    {
+        Livewire::test(OrderListSummaryHarness::class)
+            ->set('legacyPageSubtotal', true)
+            ->assertSee('Заказов: 3 · Сумма: 10.25 €')
+            ->call('gotoPage', 3)->assertSee('Заказов: 3 · Сумма: 20 €')
+            ->sortTable('id', 'desc')->assertSee('Заказов: 3 · Сумма: 20 €')
+            ->call('gotoPage', 2)->assertSee('Заказов: 3 · Сумма: 10.25 €')
+            ->set('legacyPageSubtotal', false)->assertSee('Заказов: 3 · Сумма: 40.5 €');
+        Http::assertNothingSent();
+    }
+
+    public function test_only_unfiltered_legacy_paginator_tabs_use_current_page_sum_in_heading(): void
+    {
+        foreach (['express', 'printing', 'sent_today', 'current', 'completed', 'production', 'sent', 'unpaid', 'new_recently'] as $tab) {
+            $page = Mockery::mock(ListOrders::class)->makePartial();
+            $page->activeTab = $tab;
+            $page->tableFilters = [];
+            $page->shouldReceive('getTitle')->andReturn('Заказы');
+            $page->shouldReceive('getFilteredTableQuery')->andReturnUsing(fn () => Orders::query());
+            $legacy = in_array($tab, ['express', 'printing', 'sent_today'], true);
+            if ($legacy) {
+                $page->shouldReceive('getTableRecords')->once()->andReturn(Orders::query()->whereKey(3)->get());
+            } else {
+                $page->shouldNotReceive('getTableRecords');
+            }
+            $html = $page->getHeading()->render();
+            $this->assertStringContainsString('aria-label="Заказов: 3"', $html, $tab);
+            $this->assertStringContainsString('aria-label="Сумма: '.($legacy ? '20' : '40.5').' €"', $html, $tab);
+            $page->tableFilters = ['price' => ['value' => 0]];
+            $this->assertStringContainsString('aria-label="Сумма: 40.5 €"', $page->getHeading()->render(), $tab.' with filter');
+        }
+        Http::assertNothingSent();
+    }
+
     public function test_printing_and_lite_manager_never_request_summary_query(): void
     {
         foreach (['printing', 'lite_manager'] as $role) {
             $this->actingAs($this->user($role), 'filament');
             $table = Mockery::mock(HasTable::class);
             $table->shouldNotReceive('getFilteredTableQuery');
+            $table->shouldNotReceive('getTableRecords');
             $this->assertNull(OrderListSummary::forTable($table));
+            $this->assertNull(OrderListSummary::forTable($table, pageSubtotal: true));
             Livewire::test(OrderListSummaryHarness::class)->assertDontSee('Сумма: 40.5')->assertDontSee('Заказов: 3');
         }
     }
@@ -121,10 +158,12 @@ class OrderListSummaryHarness extends Component implements HasActions, HasSchema
 {
     use InteractsWithActions, InteractsWithSchemas, InteractsWithTable;
 
+    public bool $legacyPageSubtotal = false;
+
     public function table(Table $table): Table
     {
-        return $table->query(Orders::query())->columns([TextColumn::make('id')])
-            ->description(fn ($livewire): ?string => OrderListSummary::forTable($livewire))
+        return $table->query(Orders::query())->columns([TextColumn::make('id')->sortable()])
+            ->description(fn ($livewire): ?string => OrderListSummary::forTable($livewire, $livewire->legacyPageSubtotal))
             ->filters([OrderSearchFilters::price()])->paginated([1])->defaultPaginationPageOption(1);
     }
 

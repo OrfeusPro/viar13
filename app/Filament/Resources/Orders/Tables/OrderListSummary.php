@@ -9,21 +9,29 @@ use Illuminate\Database\Eloquent\Builder;
 
 class OrderListSummary
 {
-    public static function forTable(HasTable $livewire): ?string
+    public static function forTable(HasTable $livewire, bool $pageSubtotal = false): ?string
     {
-        $totals = self::totalsForTable($livewire);
+        $totals = self::totalsForTable($livewire, $pageSubtotal);
 
         return $totals ? self::format($totals) : null;
     }
 
-    public static function totalsForTable(HasTable $livewire): ?array
+    public static function totalsForTable(HasTable $livewire, bool $pageSubtotal = false): ?array
     {
         $user = Filament::auth()->user();
         if (! $user instanceof User || ! self::isVisibleTo($user)) {
             return null;
         }
 
-        return self::totalsForQuery($livewire->getFilteredTableQuery());
+        $totals = self::totalsForQuery($livewire->getFilteredTableQuery());
+        if ($totals !== null && $pageSubtotal) {
+            // Laravel 6 sums only the paginator rows for express/printing/sent_today,
+            // while displaying the count of all matching orders.
+            $sum = $livewire->getTableRecords()->sum(fn ($record): float => (float) $record->price);
+            $totals['sum'] = rtrim(rtrim(number_format($sum, 2, '.', ''), '0'), '.');
+        }
+
+        return $totals;
     }
 
     public static function isVisibleTo(User $user): bool

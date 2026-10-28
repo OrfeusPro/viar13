@@ -23,6 +23,22 @@
 
 ## Условия проверки
 
+### Продолжение 2026-10-28 — итоги express и mobile
+
+- После исходной сверки исправлен scope heading: express/printing/sent_today
+  сумма страницы с общим count без фильтров, как Laravel6. Browser page1 обе77/839,
+  page2 обе77/764.56; page2 наборID совпал, порядок равных приоритетов не идентичен.
+- Completed unique14817/702650.85 против original14863/704630.62 объяснено
+  точным SELECT-only воспроизведением LEFT JOIN vr_numbers. Дубликаты не переносим.
+- Новая mobile tab390×844/doc375/table1663/container343 overflow:auto: screenshot
+  просмотрен. Payment modal18451 после исправления: пустая сумма/назначение,
+  поля/кнопки помещаются, Cancel. Firm disclosure8полей вDOM,width180, без Save.
+  Изображение expanded firm было уменьшенным: полную визуальную приёмку не закрывает.
+- Viewport reset, temporary tab closed; рабочие данные/отправки не затрагивались.
+  Остались роли, товары и остальные окна, общий этап IN PROGRESS.
+- Combined58tests/976assertions PASS, Pint/diff-check PASS;4PHPэкспортированы
+  в согласованную папку без.md, SHA256 совпали. Обе user tabs возвращены current.
+
 ### Парный browser gate 2026-10-28 — ADM-AUD-13B/E
 
 - Авторизованные original/new desktop: Current77/4101.56, Production5/456

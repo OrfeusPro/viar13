@@ -1,5 +1,39 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-AUD-13B/E/G — Итоги вкладок и мобильная проверка, 2026-10-28
+
+- Оригинал Laravel6 OrdersController:471–525,619–623 считает сумму текущей
+  страницы для express/printing/sent_today при общем количестве. Новый heading
+  использует этот scope только без активных фильтров; фильтры суммируют выборку.
+- Browser после fix: express страница1 — обе77/839EUR; страница2 — обе77/764.56EUR,
+  набор13ID совпал. Порядок внутри равных приоритетов отличается, поэтому точное
+  построчное совпадение express не заявляется. Цены/данные заказов не менялись.
+- Comparator и priority helpers совпадают с оригиналом. Read-only проверка
+  18263/18264 подтвердила общий priority2026-07-30, comparator возвращает0.
+  Стабильность PHP8 сохраняет входной created_atDESC; связь старой перестановки
+  с нестабильным PHP7 предположительна, версия старого runtime не проверялась.
+  Production comparator не менялся; добавлен unit test равного приоритета.
+- Completed первые13ID совпали. SELECT-only агрегаты подтвердили расхождение:
+  unique completed14817/702650.85; legacy LEFT JOIN vr_numbers14863/704630.62.
+  Точно46повторных строк/+1979.77EUR обусловлены join, новая панель не дублирует
+  заказы. Это обоснованное отличие от legacy-счётчика, не потеря данных.
+- Временная новая browser tab: viewport390×844, document375px, table1663px внутри
+  контейнера343px overflow:auto. Screenshot просмотрен: шапка, действия, вкладки,
+  фильтры и начало таблицы доступны, горизонтальная прокрутка локальна таблице.
+- После222eb9a actual mobile payment modal18451: сумма пустая, purpose пустой,
+  поля/submit/cancel помещаются; окно отменено без submit. Firm disclosure открыт,
+  все8полей доступны в DOM, width180px, document375px. Screenshot раскрытой формы
+  вернулся уменьшенным; детальную визуальную приёмку всех8полей не заявляем.
+- Disclosure закрыт, viewport reset выполнен, временная вкладка закрыта. Рабочие
+  заказы/права/чатовые read states/отправки не менялись. Новая role matrix и все
+  product/modal ветки остаются открытыми; весь ADM-AUD-13 IN PROGRESS.
+- Итог целевой регрессии:58tests/976assertions PASS, PHP8.4.1, без failures/skips;
+  storage/logs/adm-aud-13-summary-20261028.xml. Pint/diff-check PASS. Full suite
+  в этом шаге не запускался. Пользовательские tabs возвращены к current77/4101.56.
+- Экспортированы4PHPв C:\OSPanel\domains\viar\viar13:ListOrders,OrderListSummary,
+  OrderListSummaryTest,AdminOrderRotationSortTest. SHA256 совпали, .md исключены,
+  посторонние файлы сохранены. Коммит в текущей ветке, без push.
+
 ## ADM-AUD-13B/E — Парная браузерная сверка с оригинальной логикой, 2026-10-28
 
 - Обе реальные страницы открыты через Chrome extension. Desktop screenshots

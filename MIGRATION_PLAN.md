@@ -1,5 +1,27 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13B/E/G — Итоги вкладок и мобильная проверка, 2026-10-28
+
+- IN PROGRESS: browser original express77/839 против new77/4101.56.
+  Source OrdersController Laravel6:471–525,619–623 суммирует страницу для
+  express/printing/sent_today, остальные вкладки — всю выборку. Перенести этот
+  scope сводки, проверить pagination/sort/filter override, не менять цены заказов.
+- Completed first13IDs совпали, счётчики original14863/new14817. Source original
+  LEFT JOIN vr_numbers допускает дубликаты; точные46повторов требуют SELECT-аудита.
+  Уникальные заказы новой панели сохранять, не размножать ради старого счётчика.
+- Express последние2строки имеют одинаковый бизнес-приоритет; comparator original
+  возвращает0. Не имитировать нестабильный usort PHP7 без бизнес-основания.
+- Новая mobile вкладка реально390px/doc375px/table1663px/container343px overflow:auto.
+  Проверить payment cancel/reopen и firm disclosure без сохранения. Role matrix
+  и все товарные типы этим шагом не закрываются. Viewport сбросить после проверки.
+- DONE для scope итогов и указанной mobile проверки: combined58tests/976assertions
+  PASS, Pint/diff-check PASS; JUnit adm-aud-13-summary-20261028.xml. Пустая сумма
+  payment modal18451 подтверждена screenshot, Cancel; firm disclosure открыт/закрыт
+  без Save. Viewport reset и возврат обоих пользовательских tabs к current77/4101.56.
+- Точные completed duplicates подтверждены SELECT:14817/702650.85 unique против
+  14863/704630.62 legacy join.4PHPфайла экспортированы без.md, SHA256 совпали.
+  Commit без push; общий ADM-AUD-13 IN PROGRESS (остальные роли/товары/окна).
+
 ## ADM-AUD-13B/E — Парная браузерная сверка с оригинальной логикой, 2026-10-28
 
 - IN PROGRESS: обе авторизованные админки доступны. Current 77/4101.56 EUR,
