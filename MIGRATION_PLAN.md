@@ -1,5 +1,19 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13F — Заполненные чаты с изображениями: визуальная проверка на компьютере и телефоне, 2026-10-28
+
+- DONE для browser read-only поднабора: отдельная SQLite-копия синтетического стенда, fake HTTP/Mail,
+  локальные изображения. Проверить настоящие Filament client/painter окна:
+  разные потоки, превью/ссылки, chronology, composer desktop/mobile390.
+- Рабочая БД и внешние отправки исключены. Зафиксировать ограничения/evidence,
+  обновить журналы, коммит текущей ветки без push; non-md экспорт при изменениях.
+- Chrome desktop/390px: client general+painting903+sketch901, отдельные history
+  и composer, оба локальных PNG loaded; painter3messages/type labels/General.
+  Закрытие окон PASS; orders3/media2/clientmessages5/paintermessages3 неизменны,
+  SHA256 двух PNG совпадают. Evidence storage/app/audit/chat-media-20261028/verified.json.
+- Код не менялся, non-md для выгрузки нет. Общий ADM-AUD-13 IN PROGRESS:
+  следующий шаг — оставшиеся browser upload/drag сценарии на isolated fixtures.
+
 ## ADM-AUD-13F — Чаты художника и вложения: проверка оставшихся сценариев, 2026-10-28
 
 - DONE для автоматического поднабора: сверены заполненная история художника и поведение привязанных

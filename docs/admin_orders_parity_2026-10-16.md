@@ -806,3 +806,35 @@ JUnit: storage/logs/adm-aud-13f-media-20261028.xml.
 не выполнялся: автоматические проверки не считаем его заменой.
 Следующее точное действие: изолированный browser просмотр заполненных media
 threads desktop/mobile и оставшиеся upload/drag ветки. Полная ADM-AUD-13 не закрыта.
+## ADM-AUD-13F — Заполненные чаты с изображениями: визуальная проверка на компьютере и телефоне, 2026-10-28
+
+DONE для browser read-only поднабора. Chrome, настоящий ListOrders/Livewire,
+синтетический заказ42 на отдельной SQLite-копии, loopback127.0.0.1:8788.
+Client: общий чат, картина903 и набросок901 с раздельной историей клиента/ответа
+администратора, своими composer и read targets; оба PNG loaded (naturalWidth>0),
+ссылки ведут на локальный стенд. Desktop окно просмотрено; на390x844 проверена
+доступность обеих image reply форм, кнопок и внутренней прокрутки.
+Painter: три сообщения (общий/набросок/картина), метки и даты в порядке истории;
+desktop и390x844 просмотрены, доступен единственный активный тип «Общий», как
+original order_chat.blade.php. Ответы и кнопки прочтения не нажимались.
+Это узкий browser viewport, не проверка физического телефона/его клавиатуры.
+
+Изоляция: отдельные DB/disks/sessions/views, Http preventStrayRequests, Mail/Notification
+fake. Runtime стенд обновлён для актуального invoice partial mock и CSS/JS копий;
+первые500 из-за устаревшей подмены/отсутствия CSS устранены только в стенде,
+production code не менялся. Media base стенда переключён на loopback;
+рабочая настройка production media URL сохранена. Панель успешно отвечала200.
+Read-only verifier: orders3, order_painter_images2, order_user_comments5,
+orders_chats3 полностью совпали с before.json; SHA256 обоих PNG совпали.
+Evidence: storage/app/audit/chat-media-20261028/{before.json,verified.json,requests.jsonl}.
+Скриншоты просмотрены в tool output, отдельные PNG evidence не сохранялись.
+Стенд остановлен после проверки. Рабочая БД/клиенты не затронуты.
+
+Исправлений production кода не потребовалось; новые автотесты не добавлялись,
+предыдущий gate63tests636assertions остаётся evidence автоматической проверки.
+API/auth/idempotency/БД-схема и статические mappings не менялись.
+Изменена только Markdown-документация; non-md файлов для обязательной выгрузки
+в C:\OSPanel\domains\viar\viar13 нет, export/SHA256 выгрузки не применяются.
+Коммит текущей ветки без push. Общая ADM-AUD-13 остаётся IN PROGRESS.
+Следующее точное действие: оставшиеся browser upload/drag сценарии на изолированном
+стенде. Эта проверка не закрывает все роли, форматы/ошибки загрузок и внешний delivery.
