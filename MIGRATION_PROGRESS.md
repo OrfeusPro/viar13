@@ -5079,3 +5079,44 @@ git diff --check PASS. Только Markdown в tracked diff, non-md для вы
 C:\OSPanel\domains\viar\viar13 нет; копирование/SHA256 выгрузки не применяются.
 Коммит текущей ветки без push. Общий13D/ADM13 IN PROGRESS: singleJPEG не закрывает
 все drag форматы/create/batch; следующий шаг — оставшаяся browser role матрица13G.
+## ADM-AUD-13G — Заказы под ролями печатника и менеджера, 2026-10-28
+
+DONE для read-only full ListOrders поднабора printing/lite_manager.
+Original orders.blade.php guards: printing исключён из totals/header create,
+основных current/completed/unpaid вкладок, express подписан «Все текущие заказы»;
+lite_manager исключён только из heading totals. Original orders/payment/items
+скрывают финансовое редактирование/цены у printing. Не вводили дополнительных
+ограничений, которых в оригинале нет; бизнес-код не менялся.
+
+Отдельный8790/SQLite/disks/sessions, synthetic users1/10/11, fake Mail/HTTP,
+partial invoice mock; настоящие ListOrders/Livewire components.
+Printing:8колонок,6видимых вкладок; нет heading count/sum/header create/courier,
+payment edit/prepayment amount/product prices/assign-remove controls скрыты.
+Payment status/Venipak labels/printing/picture status доступны. Root выборка
+сохраняет current как в оригинале; переход «У печатника1» дал только order42.
+Lite_manager:8колонок/9вкладок, header create/courier, payment/prepayment,
+product prices и штатные row actions доступны при fixture permissions;
+heading count/sum скрыты. Рабочие роли не переключались/не редактировались.
+
+Desktop и390x844 визуально просмотрены; printing mobile «У печатника» и
+manager payment controls. Document375px приviewport390, tabs/table имеют
+собственную горизонтальную прокрутку, сужения всей страницы не обнаружено.
+Это не поколоночная mobile приёмка всех скрытых за scroll controls.
+В fixture painter image частично отображён placeholder; доказательство загрузки
+всех artist thumbnails этим прогоном не заявляем. Original browser под реальными
+ролями не переключался — ограничения сверены с read-only исходным Blade.
+
+Gate33tests829assertions PASS: OrderListRolePresentationTest,
+OrderRecordActionPermissionsTest, OrderListTabsTest. JUnit
+storage/logs/adm-aud-13g-roles-20261028.xml. Verifier9tables unchanged:
+orders/users/roles/permission_role/painter_orders/printing_orders/
+order_painter_images/order_user_comments/orders_chats. Стенд остановлен.
+Evidence storage/app/audit/roles-20261028/{before.json,verified.json,
+printing-desktop.png,printing-mobile.png,manager-desktop.png,
+manager-right-desktop.png,manager-mobile.png,manager-mobile-start.png}.
+Скриншоты сохранены/просмотрены. Все действия read-only, API/auth/idempotency/
+schema/static mappings не менялись; git diff --check PASS.
+Tracked diff толькоMarkdown; non-md для выгрузки C:\OSPanel\domains\viar\viar13
+нет, SHA256 выгрузки не применяется. Коммит текущей ветки без push.
+Общий13G/ADM13 IN PROGRESS. Следующее: оставшиеся комбинации вкладок/фильтров
+под этими ролями и edit/action состояния на fixtures с fake интеграций.

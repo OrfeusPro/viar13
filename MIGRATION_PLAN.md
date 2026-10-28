@@ -1,5 +1,20 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13G — Заказы под ролями печатника и менеджера, 2026-10-28
+
+- DONE для read-only ListOrders поднабора: отдельный full ListOrders стенд SQLite, actual printing/lite_manager
+  role fixtures. Сверить original guards колонок/вкладок/финансов/действий,
+  desktop/mobile390 и отсутствие writes. Рабочие роли не менять.
+- После проверки: релевантный role/permission gate, evidence/журналы/коммит
+  текущей ветки без push, экспорт изменённых non-md при необходимости.
+- Printing:8колонок/6вкладок, без totals/цен/редактирования оплаты/назначений;
+  labels/payment status/production controls сохранены. У печатника→только42.
+  Lite_manager:8колонок/9вкладок/финансовые controls, без heading totals.
+  Desktop/390px screenshot, document375 при viewport390, table/tabs scroll.
+- 33tests829assertions PASS; все9fixture business tables неизменны.
+  Production код не менялся, non-md export нет. Общий13G/ADM13 IN PROGRESS:
+  ещё не все combinations/edit/actions/реальные роли приняты.
+
 ## ADM-AUD-13D — Настоящее перетаскивание файла в форму заказа, 2026-10-28
 
 - DONE для single JPEG drag/attach: подготовлены синтетический PNG и отдельный snapshot SQLite/orders;
