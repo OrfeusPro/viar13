@@ -4987,3 +4987,39 @@ Production код/API/auth/idempotency/DB schema не менялись, стат
 не добавлялись. Изменена только Markdown-документация; non-md файлов для выгрузки
 в C:\OSPanel\domains\viar\viar13 нет, копирование/SHA256 выгрузки не применяются.
 Коммит текущей ветки без push. ОбщийADM-AUD-13/13D остаётсяINPROGRESS.
+## ADM-AUD-13D — Задержка перед началом загрузки файлов, 2026-10-28
+
+DONE для диагностики паузы на isolated стенде. Временный probe добавлен только
+в ignored router: видимые input/FilePond event timestamps и rAF heartbeat;
+никаких production изменений, скрытых browser API/изменений Chrome flags.
+Без предварительной ошибки файла PNG: addfile12:27:00.924→process12:28:26.981
+=86.057s, processfile12:28:32.996 (=6.015s передачи/завершения). Во втором
+замере rAF было5кадров/5s, document.hidden=false; process также завершился,
+серверные _startUpload/upload-file/_finishUpload200, без сохранения в order.
+
+После ручного вывода Chrome пользователем на передний план (ответ «Вкладка видна,
+можно проверять»): rAF обычно270–299кадров/5s, тот же PNG/input177bytes.
+input12:36:59.321, addfile12:36:59.774, process12:37:01.458 (=1.684s),
+finish12:37:08.414 (=6.956s). Это подтверждает влияние фонового замедления
+rendering браузера на наблюдавшуюся очередь FilePond. Сервис orders не добавляет
+такой таймер; нормальная отправка на этом PHP CLI стенде занимает~7s с bootstrap.
+Не обобщать время на production/все форматы/большие файлы. Фоновый режим Chrome
+не меняли, vendor FilePond не патчили. Обход в production не требуется по этому тесту.
+
+Окно отменено после временной загрузки, submit добавления фото не выполнялся.
+Verifier подтвердил прежний один сохранённый PNG, SHA256 и неизменность первой
+позиции/остальных полей/прочих orders; этот запуск новых вложений в order не создал.
+Mail/HTTP fake, рабочая БД/диски/клиенты не затронуты. Стенд остановлен.
+Evidence storage/app/audit/upload-recovery-20261028/timing-first.txt,
+timing-foreground.txt, timing-foreground.png, requests.jsonl, verified.json.
+Скриншот успешной временной загрузки сохранён/просмотрен. Предыдущий native-window
+вызов был остановлен защитой определения URL; повторять/обходить его не пытались,
+переключение окна выполнил пользователь. Проверка завершена extension API.
+
+Новые автотесты не добавлялись: бизнес-код не менялся, релевантный предыдущий
+28tests340assertions PASS остаётся baseline, browser timing и verifier PASS.
+API/auth/idempotency/DB schema/статические mappings прежние. Только Markdown
+в tracked diff; non-md для выгрузки C:\OSPanel\domains\viar\viar13 нет,
+SHA256 выгрузки не применяется. Коммит текущей ветки без push.
+Общий13D/ADM13 IN PROGRESS: OS drag/drop ещё требует отдельного browser evidence;
+следующее действие — оставшаяся матрица приёмки, без повторения закрытой паузы.

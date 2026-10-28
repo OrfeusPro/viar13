@@ -1,5 +1,23 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13D — Задержка перед началом загрузки файлов, 2026-10-28
+
+- DONE для диагностики наблюдавшейся паузы: повторный isolated browser chooser PNG с временными видимыми
+  метками input/FilePond/Livewire; сопоставить с серверным requests.jsonl.
+- Production code не менять без воспроизведения/причины. Отдельные SQLite/disks,
+  fake HTTP/Mail; новые файлы не сохранять в рабочие заказы.
+- Следующее действие: измерить этапы addfile/process/startUpload и повторить
+  без preceding invalid file. Уточнить, влияет ли ошибка очереди на паузу.
+- Измерено: без preceding invalid file addfile→processfilestart86.057s,
+  process→finish6.015s. При замедлении rAF5кадров/5s. После вывода Chrome
+  пользователем вперёд: rAF~55–60fps, addfile→process1.684s, finish6.956s.
+  Для этого стенда пауза связана с фоновым throttling/browser rendering,
+  не с дополнительной задержкой сервиса orders. Production workaround не нужен.
+- Сохранение в заказ отменено; verifier подтвердил прежнее состояние и SHA256.
+  Evidence timing-first.txt/timing-foreground.txt/timing-foreground.png в
+  storage/app/audit/upload-recovery-20261028. Общий13D IN PROGRESS:
+  OS drag/drop ещё без evidence; следующие проверки только на isolated fixtures.
+
 ## ADM-AUD-13D — Ошибка загрузки и восстановление формы вложений, 2026-10-28
 
 - DONE для отказа/recovery через chooser: уточнение ID — upload/drag относятся к13D,13G остаётся матрицей ролей.
@@ -14,11 +32,11 @@
   PNG177bytes загружен/сохранён во вторую позицию без reload. SHA256 совпал,
   первая позиция/остальные поля/прочие orders неизменны; changed columns items,
   updated_at. 28tests340assertions PASS. Код не менялся, non-md export нет.
-- TODO — задержка старта загрузки на isolated стенде: перед _startUpload была
+- DONE диагностика, см. запись выше — задержка старта загрузки на isolated стенде: перед _startUpload была
   пауза; причина не установлена. Не объявлять исправленной/не переносить вывод
   на production. Evidence storage/app/audit/upload-recovery-20261028/requests.jsonl.
-- Общий13D IN PROGRESS: следующий точный шаг — воспроизведение паузы старта
-  загрузки; OS drag/drop остаётся без browser evidence.
+- Общий13D IN PROGRESS: пауза старта проверена сравнением foreground/throttling;
+  OS drag/drop остаётся без browser evidence.
 
 ## ADM-AUD-13F — Заполненные чаты с изображениями: визуальная проверка на компьютере и телефоне, 2026-10-28
 
