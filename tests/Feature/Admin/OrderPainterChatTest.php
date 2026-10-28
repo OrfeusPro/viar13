@@ -318,6 +318,34 @@ class OrderPainterChatTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function test_populated_history_orders_messages_and_keeps_legacy_types_without_marking_read(): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        $later = $this->incoming(['comment' => 'LATER-PAINTING', 'is_img_painter' => 1, 'created_at' => '2026-01-02 12:00:00']);
+        $first = $this->incoming(['comment' => 'FIRST-SKETCH', 'is_img_sketch' => 1, 'created_at' => '2026-01-01 12:00:00']);
+        $reply = $this->incoming(['comment' => 'SECOND-ADMIN', 'is_admin' => 1, 'is_img_painter' => 1, 'created_at' => '2026-01-01 12:00:00']);
+        $before = DB::table('orders_chats')->orderBy('id')->get()->toJson();
+        $this->actingAs($this->editor, 'filament');
+        $table = Livewire::test(PainterChatTestTable::class)
+            ->mountAction(TestAction::make('viewPainterChat')->table($this->order));
+        $html = $table->instance()->getMountedAction()->getModalContent()->render();
+
+        $this->assertStringContainsString('Художник (набросок)', $html);
+        $this->assertStringContainsString('Художник (картина)', $html);
+        $this->assertStringContainsString('Администратор (картина)', $html);
+        foreach (['FIRST-SKETCH', 'SECOND-ADMIN', 'LATER-PAINTING'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
+        $this->assertLessThan(strpos($html, 'SECOND-ADMIN'), strpos($html, 'FIRST-SKETCH'));
+        $this->assertLessThan(strpos($html, 'LATER-PAINTING'), strpos($html, 'SECOND-ADMIN'));
+        foreach ([$first, $later] as $message) {
+            $this->assertStringContainsString('aria-label="Прочитать сообщение художника №'.$message->id.'"', $html);
+        }
+        $this->assertStringNotContainsString('aria-label="Прочитать сообщение художника №'.$reply->id.'"', $html);
+        $this->assertSame($before, DB::table('orders_chats')->orderBy('id')->get()->toJson());
+        Mail::assertNothingSent();
+    }
+
     private function send(array $input = []): array
     {
         return app(OrderPainterChatService::class)->send($this->order, $this->editor, array_merge(['comment' => 'Ответ'], $input));

@@ -1,5 +1,25 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13F — Чаты художника и вложения: проверка оставшихся сценариев, 2026-10-28
+
+- DONE для автоматического поднабора: сверены заполненная история художника и поведение привязанных
+  изображений с original order_chat/client_chat. В original painter composer
+  активен только «Общий», labels наброска/картины сохранены для истории.
+- Проверить isolated Livewire: изображение удалено, перенесено в другой заказ
+  или изменило тип после открытия формы; draft сохраняется, сообщение/уведомления
+  не создаются. История художника: chronology, author/type flags и отсутствие
+  побочных read writes при открытии.
+- Рабочую БД не менять. После проверок обновить evidence, скопировать только
+  изменённые non-md файлы с SHA256 и сделать коммит без push.
+- Результат: шесть stale-image случаев (sketch/painter × deleted/moved/retyped)
+  блокируют запись, сохраняют draft и не отправляют chat-updated; история
+  художника проверена по времени/ID/автору/type и полной неизменности строк.
+  63tests/636assertions PASS, Pint/diffcheck PASS. Два изменённых test PHP
+  скопированы в C:\OSPanel\domains\viar\viar13, SHA256 совпали.
+- Production code не менялся. Browser populated-media прогон в этой задаче
+  не выполнялся; общий ADM-AUD-13F IN PROGRESS. Далее — изолированный browser
+  просмотр заполненных media threads desktop/mobile и оставшиеся upload/drag ветки.
+
 ## ADM-AUD-13F — Сверка окон чатов тестового заказа №18451, 2026-10-28
 
 - DONE для read-only сверки №18451: парное открытие client/admin/painter/SA окон, без отправки,

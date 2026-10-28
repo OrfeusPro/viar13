@@ -9676,3 +9676,31 @@ JUnit: storage/logs/adm-aud-13f-chat-20261028.xml. Browser: сообщения �
 Следующее точное действие: оставшиеся populated artist/media ветки на
 изолированных fixtures с fake интеграций; полную приёмку всех ролей/вложений
 и всей ADM-AUD-13 этим прогоном не объявляем.
+## ADM-AUD-13F — Чаты художника и вложения: проверка оставшихся сценариев, 2026-10-28
+
+DONE для автоматического поднабора; общий ADM-AUD-13F IN PROGRESS.
+Original resources/views/admin/order_chat.blade.php: активен только «Общий»;
+варианты набросок/картина закомментированы, labels старых сообщений отображаются.
+Original VoyagerAdminController::update_order_chat_ajax сохраняет orders_chats,
+адресует уведомление текущему назначенному художнику. Новая логика сохранена,
+бизнес-код не менялся; интерфейс загрузки вложений в общий painter chat не добавлялся.
+
+Добавлены regression проверки в OrderClientChatTest: sketch/painter ×
+удаление/перенос в другой заказ/изменение типа изображения после открытия composer.
+Во всех шести случаях отправка отвергается, draft сохраняется, новые комментарии
+и событие chat-updated отсутствуют. OrderPainterChatTest проверяет заполненную
+историю: хронология и ID при одинаковом времени, авторы/типы, корректные read targets,
+полная неизменность всех orders_chats строк после открытия окна.
+Все изменения данных выполнены PHPUnit/Livewire в SQLite :memory:, Mail fake,
+webhook mock запрещает отправку. Рабочая БД/клиенты не затронуты.
+
+Проверки:63tests/636assertions PASS (OrderClientChatTest + OrderPainterChatTest),
+Pint выбранных двух PHP PASS, git diff --check PASS.
+JUnit: storage/logs/adm-aud-13f-media-20261028.xml.
+Два изменённых test PHP скопированы в C:\OSPanel\domains\viar\viar13 с сохранением
+структуры; оба SHA256 совпали, Markdown не копировался, посторонние файлы сохранены.
+Коммит в текущей ветке без push. API/auth/idempotency/схема БД не менялись;
+статические замены не добавлялись. Browser populated-media прогон в этой задаче
+не выполнялся: автоматические проверки не считаем его заменой.
+Следующее точное действие: изолированный browser просмотр заполненных media
+threads desktop/mobile и оставшиеся upload/drag ветки. Полная ADM-AUD-13 не закрыта.

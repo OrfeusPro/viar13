@@ -419,6 +419,42 @@ class OrderClientChatTest extends TestCase
         $this->assertDatabaseCount('order_user_comments', 0);
     }
 
+    #[DataProvider('changedImageThreads')]
+    public function test_inline_image_composer_rechecks_image_after_opening_and_preserves_draft(string $type, string $change): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        $imageId = $this->image($type);
+        $this->actingAs($this->editor, 'filament');
+        $component = Livewire::test(OrderChatComposer::class, [
+            'orderId' => $this->order->id, 'stream' => 'client', 'threadType' => $type, 'imageId' => $imageId,
+        ])->set('text', 'Draft for the original artwork');
+
+        $image = DB::table('order_painter_images')->where('id', $imageId);
+        match ($change) {
+            'deleted' => $image->delete(),
+            'moved' => $image->update(['order_id' => Orders::query()->create()->id]),
+            'retyped' => $image->update(['is_img_'.$type => 0]),
+        };
+
+        $component->call('send')->assertHasErrors('command')
+            ->assertSet('text', 'Draft for the original artwork')
+            ->assertNotDispatched('order-chat-updated');
+        $this->assertDatabaseCount('order_user_comments', 0);
+        Mail::assertNothingSent();
+    }
+
+    public static function changedImageThreads(): array
+    {
+        $cases = [];
+        foreach (['sketch', 'painter'] as $type) {
+            foreach (['deleted', 'moved', 'retyped'] as $change) {
+                $cases[$type.' '.$change] = [$type, $change];
+            }
+        }
+
+        return $cases;
+    }
+
     public function test_client_history_renders_clickable_links_without_executing_message_html(): void
     {
         $this->incoming(['comment' => '<script>bad</script> https://example.test/file?a=1&b=2']);
