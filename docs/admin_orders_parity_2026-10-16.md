@@ -23,6 +23,24 @@
 
 ## Условия проверки
 
+### Дополнение 2026-10-28 — ADM-AUD-13A/B/G
+
+- Код сверён с оригиналом Laravel 6: production sort исправлен на created_at DESC;
+  gallery source preview и gift marker используют original `== 1` вместо truthiness.
+- Новая isolated матрица 9 tab scopes × 3 роли × 4 режима (default/number ASC/DESC/
+  active filter), включая completed exclusion и duplicate printing assignment.
+  Скрытые вкладки/финансы проверяются отдельными role presentation tests.
+- Товарные ветки: портрет, конструктор, canvas, modular, collage, gallery 0/1/2,
+  manual canvas, oil, gift; дополнительно поля оформления/размеров/сертификата.
+- Регрессия действий/окон Livewire: 141 tests / 1361 assertions, exit 0.
+- Desktop/mobile screenshots и интерактивные окна в этом проходе не проверены:
+  Computer Use остановлен защитой, не определив текущий URL Chrome. Визуальные
+  пункты старой очереди остаются открытыми; полный ADM-AUD-13 не закрыт.
+- Экспорт текущих файлов без .md — C:\OSPanel\domains\viar\viar13; коммит без push.
+- Итог: 75/1089 matrix + 141/1361 actions = 216 tests / 2450 assertions,
+  exit 0 обоих запусков; Pint/diff-check PASS. Четыре файла кода/тестов
+  экспортированы, SHA256 совпали. Markdown не экспортировался.
+
 Рабочие заказы/изображения/права не менять. Запись — только отдельная SQLite/MariaDB fixture и fake storage. Реальные письма, платежи, Venipak и сообщения провайдерам не запускать. Каждый кодовый пропуск подтверждать исходным контрактом; каждый визуальный вывод — снимком реального UI. Возможности, которых в original нет, не добавлять под видом переноса.
 
 ## Текущее действие

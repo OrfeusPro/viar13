@@ -76,7 +76,7 @@ class ListOrders extends ListRecords
                 )),
             'production' => Tab::make('В производстве')
                 ->badge(fn (): ?int => Orders::query()->where('status', 'in_production')->count() ?: null)
-                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'in_production')->orderByDesc('orders.id')),
+                ->modifyQueryUsing(fn (Builder $query): Builder => $query->where('status', 'in_production')->orderByDesc('orders.created_at')),
             'printing' => Tab::make('У печатника')
                 ->badge(fn (): ?int => Orders::query()->where('status', '!=', 'completed')->whereHas('printingAssignment')->count() ?: null)
                 ->modifyQueryUsing(fn (Builder $query): Builder => $this->applyLegacyRotation(

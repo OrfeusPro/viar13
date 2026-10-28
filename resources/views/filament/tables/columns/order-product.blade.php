@@ -113,7 +113,7 @@
                 || isset($product['is_canvas_inter'])
                 || isset($product['is_modular_inter'])
                 || isset($product['is_oil_portrait'])
-                || ! empty($product['is_gall_with_img'])
+                || (isset($product['is_gall_with_img']) && $product['is_gall_with_img'] == 1)
                 || ! empty($product['is_canvas_collage'])
                 || (string) ($product['basketType'] ?? '') === '1';
         @endphp
@@ -154,7 +154,7 @@
                 @include('partials.all_basket_order_items', ['is_admin_data_orders' => 'true', 'role' => $role])
             </ul>
             @if($role !== 'printing' && filled($product['sumFormatedPrice'] ?? null))<div>Цена: {{ $product['sumFormatedPrice'] }}</div>@endif
-            @if(! empty($product['has_gift']))<strong>Подарок</strong>@endif
+            @if(isset($product['has_gift']) && $product['has_gift'] == 1)<strong>Подарок</strong>@endif
         </div>
     @empty
         <div style="margin-top: 8px; color: #6b7280;">Позиции отсутствуют</div>

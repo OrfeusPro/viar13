@@ -172,8 +172,69 @@ class OrderProductPreviewTest extends TestCase
             'collage' => [['is_canvas_collage' => 1], false, false],
             'gallery' => [['is_gall_with_img' => 1], false, false],
             'gallery-disabled' => [['is_gall_with_img' => 0], true, false],
+            'gallery-other-value' => [['is_gall_with_img' => 2], true, false],
+            'manual-canvas-basket' => [['basketType' => '1'], false, false],
+            'oil' => [['is_oil_portrait' => 1], false, false],
             'gift' => [['is_gift_card' => 1, 'pid' => 5, 'price' => 79], true, true],
         ];
+    }
+
+    public function test_gift_marker_uses_original_one_value_instead_of_general_truthiness(): void
+    {
+        foreach ([0 => false, 1 => true, 2 => false] as $flag => $expected) {
+            $html = $this->render(['has_gift' => $flag]);
+            $this->assertSame($expected, str_contains($html, '<strong>Подарок</strong>'));
+        }
+    }
+
+    public function test_portrait_details_sources_and_production_options_render_in_actual_column(): void
+    {
+        $html = $this->render([
+            'is_port_product' => 1, 'name' => 'Portrait fixture', 'forma_id' => 'Horizontal',
+            'users_count' => 3, 'type' => 'Oil technique', 'hud_of' => 'Artist finish',
+            'orig_images' => ['https://example.test/source-one.jpg', 'https://example.test/source-two.jpg'],
+            'photo_ex' => 'https://example.test/reference.jpg', 'count' => 2,
+            'show' => ['size' => '45x65', 'canvas' => 'Cotton canvas', 'box' => ['Gift package'],
+                'decoration' => 'Varnish', 'execution' => 'Hand-painted', 'effect' => 'Sepia'],
+        ]);
+        foreach (['Horizontal', '>3<', 'Oil technique', 'Artist finish', 'source-one.jpg',
+            'source-two.jpg', 'reference.jpg', '45x65', 'Cotton canvas', 'Gift package',
+            'Varnish', 'Hand-painted', 'Sepia'] as $expected) {
+            $this->assertStringContainsString($expected, $html);
+        }
+        Http::assertNothingSent();
+    }
+
+    public function test_canvas_and_modular_dimensions_and_background_links_are_preserved(): void
+    {
+        foreach (['is_canvas_inter', 'is_modular_inter'] as $flag) {
+            $html = $this->render([
+                $flag => 1, 'wall_size' => 'Wall 140x100', 'pic_size' => 'Picture 100x60',
+                'activeImage' => 'https://example.test/missing-image.jpg',
+                'fon_images' => ['https://example.test/background-one.jpg', 'https://example.test/background-two.jpg'],
+            ]);
+            foreach (['Wall 140x100', 'Picture 100x60', 'background-one.jpg', 'background-two.jpg', 'missing-image.jpg'] as $expected) {
+                $this->assertStringContainsString($expected, $html);
+            }
+        }
+        Http::assertNothingSent();
+        $this->assertSame([], Storage::disk('uploads')->allFiles());
+    }
+
+    public function test_gift_card_preserves_recipient_greeting_code_and_nominal_visibility(): void
+    {
+        foreach (['false' => 'gl.nom_show', 'true' => 'gl.nom_hide'] as $hidden => $translation) {
+            $html = $this->render([
+                'is_gift_card' => 1, 'pid' => 5, 'price' => 79, 'sender' => 'Sender fixture',
+                'reseiver' => 'Recipient fixture', 'date' => '2026-11-01',
+                'torjname' => 'Birthday fixture', 'torjtext' => 'Greeting fixture',
+                'card_type' => 'offline', 'gift_code' => 'GIFT-FIXTURE', 'hide_nom' => $hidden,
+            ]);
+            foreach (['Sender fixture', 'Recipient fixture', '2026-11-01', 'Birthday fixture',
+                'Greeting fixture', 'offline', 'GIFT-FIXTURE', trans($translation)] as $expected) {
+                $this->assertStringContainsString($expected, $html);
+            }
+        }
     }
 
     private function render(array $product, string $role = 'printing', array $extraItems = [], array $delivery = []): string

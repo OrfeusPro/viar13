@@ -1,5 +1,38 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-AUD-13 — Оставшаяся матрица заказов, 2026-10-28
+
+- IN PROGRESS: распределены проверки фильтров/вкладок/ролей и товарных веток;
+  оригинал Laravel 6 `C:\OSPanel\domains\asoft\viar` используется read-only.
+- Правило сдачи добавлено в AGENTS.md: экспорт файлов задачи без Markdown в
+  `C:\OSPanel\domains\viar\viar13`, SHA256, коммит текущей ветки без push.
+- Computer Use: Chrome обнаружен, но get_window_state остановлен защитой,
+  поскольку инструмент не смог достоверно определить browser URL. Больше UI
+  действий не выполнялось; desktop/mobile/modal визуальная приёмка не пройдена.
+  Код и isolated tests продолжают проверяться отдельно.
+- ADM-AUD-13B/G: исправлен production sort по оригиналу `created_at DESC`.
+  Проверены непустые tab scopes для admin/lite_manager/printing, явный номер
+  ASC/DESC, filter bypass, исключение completed и дубликаты printing assignment.
+  Проверка scope сама по себе не утверждает доступность скрытых вкладок роли.
+- ADM-AUD-13A: точные флаги `is_gall_with_img == 1`, `has_gift == 1` восстановлены.
+  all_basket_order_items совпадает с оригиналом, не изменялся. Расширены tests
+  portrait/constructor/canvas/modular/collage/gallery/manual/oil/gift, данные
+  оформления и сертификата, сохранение отсутствующего remote URL без скачивания.
+- Lifecycle/artist/client/admin/painter/SA actions regression: PHP 8.4.1,
+  141 tests / 1361 assertions, exit 0; JUnit adm-aud-13-actions-20261028.xml.
+  Это Livewire/service проверки, не новая браузерная визуальная приёмка.
+- Итог filters/tabs/roles/products: 75 tests / 1089 assertions, exit 0;
+  JUnit storage/logs/adm-aud-13-matrix-20261028.xml. Совместно с actions gate:
+  216 tests / 2450 assertions, failures/errors/skips нет. Pint/diff-check PASS.
+  Полный suite в этом шаге не запускался.
+- Экспортированы ровно 4 файла: ListOrders.php, order-product.blade.php,
+  OrderListTabsTest.php, OrderProductPreviewTest.php с сохранением структуры
+  в C:\OSPanel\domains\viar\viar13. SHA256 всех копий совпали с исходными файлами.
+  Destination до копирования был чистым (main, 01e0a00); чужие файлы не удалялись,
+  .md не копировались. Commit только в исходной текущей ветке, push не выполнялся.
+- Осталось: desktop/mobile role/product matrix и интерактивные окна; инструмент
+  Computer Use остановлен при проверке URL. Новую визуальную приёмку не заявляем.
+
 ## 2026-09-30 — Управление папками библиотеки (DONE для подзадачи)
 
 - UI внутри дочерней папки: переименование с новым именем/подтверждением и удаление пустой папки/подтверждение. Кнопки зависят от show_folders, allow_rename/allow_delete, прав BREAD. Корневую папку изменять/удалять нельзя.
@@ -4762,3 +4795,6 @@ Filament simulator использует Livewire executeSimulator для чте�
 БД: добавлен только unique index blog_posts_idempotency_unique. Миграция проверяет duplicates и останавливается без удаления/перезаписи записей; поддерживает повторный up. Локальная MySQL: duplicates=0, миграция применена успешно, индекс подтверждён. Данные orders/чатов/контента не редактировались.
 Проверки: PHP8.4/PHPUnit12 — 62tests/299assertions (API/frontend boot/SEO/ALT/panel/simulator) + BREAD blog7tests/207assertions =69tests/506assertions PASS. JS revision workflow3tests PASS; simulator node --check PASS; PHP lint46 изменённых tracked PHP PASS, новые middleware/migration проверены Pint/исполнением; Blade view:cache PASS; git diff --check PASS. JUnit: storage/logs/blog-5fa03e77-tests.xml; переводы: storage/app/blog-translation-audit/verified.json. Старые19 API tests переведены с неисполняемого @test на PHPUnit12 attributes и реально выполнены.
 Ограничения: browser визуальная проверка этого изменения не выполнялась; сервер не развёртывался. Следующий точный шаг на сервере: применить эту миграцию, php artisan view:cache, проверить статью/переключение языка/симулятор. Все PATCH-клиенты должны передавать expected_revision и expected_status из последнего GET; старые запросы без revision получают428. Внешние платные ALT-запросы не запускались. Общая миграция Laravel13 остаётся IN PROGRESS.
+
+
+BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя из точного коммита 7f990c3e45019f8e04037999c242b3c3304a8bfe выгружены 58 файлов в C:\OSPanel\domains\viar\viar13\ с сохранением структуры. Все SHA256 совпадают с git blobs; 4 Markdown-файла исключены, существующие посторонние файлы назначения не удалялись. Это пакет выгрузки, серверный deploy не выполнялся. Следующий шаг: загрузка пакета пользователем на сервер и применение миграции/Blade cache по инструкции выше.

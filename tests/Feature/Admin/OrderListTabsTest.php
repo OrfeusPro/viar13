@@ -5,6 +5,8 @@ namespace Tests\Feature\Admin;
 use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Tables\OrderSearchFilters;
 use App\Models\Orders;
+use App\Models\Role;
+use App\Models\User;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,7 +126,7 @@ class OrderListTabsTest extends TestCase
     public function test_tab_default_sort_orders_match_original(): void
     {
         $this->assertSame([1, 2], $this->ids('completed'));
-        $this->assertSame([4, 3], $this->ids('production'));
+        $this->assertSame([3, 4], $this->ids('production'));
         $this->assertSame([6, 5], $this->ids('sent'));
         $this->assertSame([5, 6], $this->ids('sent_today'));
     }
@@ -138,14 +140,67 @@ class OrderListTabsTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_nonempty_tab_filter_and_sort_matrix_preserves_legacy_selection_for_each_role(): void
+    {
+        DB::connection()->getPdo()->sqliteCreateFunction('FIELD', static function ($value, ...$values): int {
+            $index = array_search($value, $values);
+
+            return $index === false ? 0 : $index + 1;
+        }, -1);
+        Schema::table('orders', function (Blueprint $table): void {
+            $table->string('payment_status')->default('payed');
+            $table->text('delivery')->default('{}');
+            $table->text('items')->default('[]');
+        });
+        Schema::create('printing_orders', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('order_id');
+        });
+        DB::table('orders')->whereIn('id', [1, 4, 7])->update(['payment_status' => 'not_payed']);
+        DB::table('printing_orders')->insert([
+            ['order_id' => 1], ['order_id' => 3], ['order_id' => 3], ['order_id' => 6],
+        ]);
+        $selection = [
+            'current' => [4, 6, 3, 5, 7],
+            'completed' => [1, 2],
+            'unpaid' => [4, 7],
+            'production' => [3, 4],
+            'printing' => [6, 3],
+            'express' => [4, 6, 3, 5, 7],
+            'sent_today' => [5, 6],
+            'sent' => [6, 5],
+            'new_recently' => [6, 5, 3, 2, 1],
+        ];
+        foreach (['admin', 'lite_manager', 'printing'] as $role) {
+            $user = new User;
+            $user->id = 1;
+            $user->setRelation('role', new Role(['name' => $role]));
+            $this->actingAs($user, 'filament');
+            foreach ($selection as $tab => $expected) {
+                $this->assertSame($expected, $this->ids($tab), $role.': '.$tab);
+                $page = new OrderListTabsProbe;
+                $page->activeTab = $tab;
+                $ascending = $expected;
+                sort($ascending);
+                $this->assertSame($ascending, $page->sorted('number_controls:asc')->pluck('id')->all(), $role.': '.$tab.' asc');
+                $this->assertSame(array_reverse($ascending), $page->sorted('number_controls:desc')->pluck('id')->all(), $role.': '.$tab.' desc');
+                // Applied search replaces the tab branch, while its own predicate survives.
+                $page->tableFilters = ['price' => ['value' => 0]];
+                $query = $page->scope(Orders::query()->whereIn('id', [1, 4, 6]));
+                $this->assertSame([1, 6, 4], $query->pluck('id')->all(), $role.': '.$tab.' filtered');
+            }
+        }
+        Http::assertNothingSent();
+    }
+
     public function test_explicit_number_sort_replaces_tab_order_without_removing_status_predicate(): void
     {
         $page = new OrderListTabsProbe;
         $page->activeTab = 'production';
         $this->assertSame([3, 4], $page->sorted('number_controls:asc')->pluck('id')->all());
         $this->assertSame([4, 3], $page->sorted('number_controls:desc')->pluck('id')->all());
-        $this->assertSame([4, 3], $page->sorted(null)->pluck('id')->all());
-        $this->assertSame([4, 3], $page->sorted('unknown:asc')->pluck('id')->all());
+        $this->assertSame([3, 4], $page->sorted(null)->pluck('id')->all());
+        $this->assertSame([3, 4], $page->sorted('unknown:asc')->pluck('id')->all());
     }
 
     public function test_switching_tabs_clears_applied_and_pending_filters_search_sort_and_page(): void
