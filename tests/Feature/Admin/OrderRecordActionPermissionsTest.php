@@ -251,7 +251,10 @@ class OrderRecordActionPermissionsTest extends TestCase
         $component = Livewire::test(OrderRecordPermissionsHarness::class, ['renderNumber' => true])
             ->assertSee('OPR-000001')->assertSee('OPR-000003')
             ->mountAction($action)->assertActionMounted($action)
-            ->assertFormSet(['amount' => '10.00'], 'mountedActionSchema0')
+            ->assertFormSet(['amount' => null, 'purpose' => null], 'mountedActionSchema0')
+            ->callMountedAction()->assertHasFormErrors(['amount' => 'required']);
+        $this->assertDatabaseCount('order_payment_requests', 3);
+        $component
             ->fillForm(['amount' => 0, 'purpose' => 'Fixture'])
             ->callMountedAction()->assertHasFormErrors(['amount' => 'min']);
         $this->assertDatabaseCount('order_payment_requests', 3);

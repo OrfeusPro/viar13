@@ -1,5 +1,37 @@
 # Миграция на Laravel 13 — текущий статус
 
+## ADM-AUD-13B/E — Парная браузерная сверка с оригинальной логикой, 2026-10-28
+
+- Обе реальные страницы открыты через Chrome extension. Desktop screenshots
+  просмотрены: все8колонок присутствуют. Current77/4101.56, production5/456
+  (18396,18365,18355,18264,18263), unpaid17/1059.8 с совпадением13IDпервой страницы,
+  sent1/65 (18323). После Livewire проверялось актуальное heading/состояние,
+  промежуточные stale snapshots не трактуются как расхождения.
+- Client filter test email дал18451/22. Phone-only дал18451,15057,10307,6748,
+  всего4/106 в обеих версиях. Printing/sent_today/new_recently:0/0, это только
+  empty-state browser gate. Фильтрация не меняла записи заказов.
+- Payment request окна открыты на18451 и отменены без submit. Original amount
+  пустой, new22. Source audit original orders.blade.php/bot_scripts подтверждает
+  ручной ввод; выявлено реальное отличие начального значения формы.
+- Новое окно шире original (Filament layout), оба поля доступны. Desktop screenshot
+  просмотрен. Mobile override390 применился только к активной original вкладке:
+  original document scrollWidth1591, новая вкладка innerWidth2560. Не выдаём новую
+  mobile проверку за выполненную. Viewport reset выполнен перед native selection.
+- Native Computer Use снова остановлен защитой URL confidence. Последующих UI
+  действий нет. Browser role matrix/новая mobile/modal и остальные товары открыты.
+- Письма/платежи/курьер/сообщения/сохранения рабочих заказов не выполнялись.
+- Исправлены обе точки initial state createPaymentRequest: actual общий
+  OrderPaymentRequestsForm (row/edit) и column action в OrdersTable; amount/purpose
+  null как original. Предоплата и payment API не менялись. Regression проверяет
+  required для пустой суммы, min для0 и успешное создание с явной суммой.
+- Targeted PHP8.4.1:36tests/635assertions (record actions + artist) и17/177
+  (payment service), всего53/812 PASS; Pint/diff-check PASS. Full suite не запускался.
+- Экспорт3PHP:OrderPaymentRequestsForm.php,OrdersTable.php,
+  OrderRecordActionPermissionsTest.php в C:\OSPanel\domains\viar\viar13;
+  SHA256 совпали. Markdown исключён,4файла прежней выгрузки/чужие файлы сохранены.
+  Commit в исходной текущей ветке без push; новый browser-render после исправления
+  не выполнялся из-за остановки Computer Use.
+
 ## ADM-AUD-13 — Оставшаяся матрица заказов, 2026-10-28
 
 - IN PROGRESS: распределены проверки фильтров/вкладок/ролей и товарных веток;

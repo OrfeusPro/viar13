@@ -21,7 +21,7 @@ class OrderPaymentRequestsForm
                 TextInput::make('amount')->label('Сумма, EUR')->numeric()->minValue(0.01)->maxValue(999999.99)->required(),
                 TextInput::make('purpose')->label('Назначение платежа')->maxLength(255),
             ])
-            ->fillForm(fn (Orders $record): array => ['amount' => number_format((float) ($record->sale_price ?: $record->price), 2, '.', '')])
+            ->fillForm(fn (): array => ['amount' => null, 'purpose' => null])
             ->authorize(fn (Orders $record): bool => auth('filament')->user()?->can('update', $record) ?? false)
             ->action(function (Orders $record, array $data): void {
                 abort_unless(auth('filament')->user()?->can('update', $record), 403);

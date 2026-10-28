@@ -198,7 +198,8 @@ class OrdersTable
                                     ->maxLength(255),
                             ])
                             ->fillForm(fn ($record): array => [
-                                'amount' => number_format((float) ($record->sale_price ?: $record->price), 2, '.', ''),
+                                'amount' => null,
+                                'purpose' => null,
                             ])
                             ->action(function ($record, array $data): void {
                                 app(OrderPaymentRequestService::class)->createForOrder($record, $data, auth('filament')->user());

@@ -1,5 +1,24 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13B/E — Парная браузерная сверка с оригинальной логикой, 2026-10-28
+
+- IN PROGRESS: обе авторизованные админки доступны. Current 77/4101.56 EUR,
+  production 5/456 с одинаковыми ID/порядком; unpaid 17/1059.8, sent 1/65.
+- Client email test fixture: один заказ18451/22; phone-only: одинаковые
+  18451,15057,10307,6748, всего4/106. Пустые printing/sent_today/new_recently
+  совпали; непустые ветки этими browser-проверками не подтверждены.
+- Найдено отличие payment request: оригинальный quick modal не подставляет сумму
+  заказа, ввод ручной. Привести только createPaymentRequest к пустым amount/purpose,
+  сохранив обязательность и валидируемое создание. Предоплату не менять.
+- Mobile original viewport390 проверен; новая вкладка осталась2560, поэтому
+  мобильную новую страницу не считать проверенной. Viewport reset выполнен.
+  Далее Windows Computer Use остановлен защитой URL confidence; UI прекращён.
+- DONE для указанного browser/source gate и исправления initial state:
+  actual row/edit createAction и column action пустые amount/purpose. Required/min
+  и успешное создание с явной суммой проверены:53tests/812assertions PASS,
+  Pint/diff-check PASS. Три PHP-файла экспортированы без .md с проверкой SHA256.
+  Весь ADM-AUD-13 остаётся IN PROGRESS; push не выполняется.
+
 ## ADM-AUD-13 — Оставшаяся матрица заказов, 2026-10-28
 
 - IN PROGRESS: повторная сверка фильтров/вкладок/ролей и всех товарных веток с

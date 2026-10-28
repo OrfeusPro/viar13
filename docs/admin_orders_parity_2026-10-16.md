@@ -23,6 +23,27 @@
 
 ## Условия проверки
 
+### Парный browser gate 2026-10-28 — ADM-AUD-13B/E
+
+- Авторизованные original/new desktop: Current77/4101.56, Production5/456
+  (18396,18365,18355,18264,18263), Unpaid17/1059.8 (первые13ID совпали),
+  Sent1/65 (18323). Printing/SentToday/NewRecently пусты в обеих версиях;
+  положительные сценарии этих вкладок browser-gate не закрывает.
+- Client test email:18451/22; phone-only:18451,15057,10307,6748, всего4/106.
+  После завершения Livewire использовалась актуальная heading/selection.
+- Payment quick modal original пустой amount, new22: подтверждённое расхождение
+  оригинального ручного ввода. Оба окна открыты/отменены без submit. Исправление
+  затрагивает общий createAction и дублированное column action, не prepayment.
+- Desktop screenshots таблиц/окон просмотрены. Mobile390 original: документ1591px
+  с горизонтальным overflow; override новой вкладки не применился (осталась2560).
+  Viewport reset выполнен. Последующая попытка выбора окна остановлена защитой
+  Computer Use URL confidence; дальнейшие UI действия прекращены.
+- Роли, все товарные типы и новая mobile/modal матрица остаются открытыми.
+  Рабочие заказы/платежи/письма не создавались и не сохранялись.
+- Payment initial state исправлен в shared row/edit action и column action.
+ 53tests/812assertions PASS, Pint/diff-check PASS;3PHPэкспортированы с SHA256,
+ .md исключены. Повтор browser-render после fix не выполнен, общий этап открыт.
+
 ### Дополнение 2026-10-28 — ADM-AUD-13A/B/G
 
 - Код сверён с оригиналом Laravel 6: production sort исправлен на created_at DESC;
