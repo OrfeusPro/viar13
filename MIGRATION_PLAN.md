@@ -2,12 +2,20 @@
 
 ## ADM-AUD-13D — Настоящее перетаскивание файла в форму заказа, 2026-10-28
 
-- IN PROGRESS: подготовить синтетический PNG и отдельный snapshot SQLite/orders;
+- DONE для single JPEG drag/attach: подготовлены синтетический PNG и отдельный snapshot SQLite/orders;
   ручной OS drag из Проводника выполняет пользователь (нет file-drag API).
 - После фактического drop проверить FilePond/Livewire, сохранить во вторую
   позицию fixture904 и сравнить SHA256/соседние данные. Не заменять drop chooser.
 - Fake HTTP/Mail, рабочие заказы не менять. Evidence/планы/коммит без push;
   копирование только изменённых tracked non-md с SHA256 при наличии.
+- Пользователь перенёс свой JPEG11029bytes вместо PNG: trusted drop подтверждён,
+  загрузка200/сохранениеfixture904 position2/немедленное превью PASS. SHA256
+  сохранённого файла совпал с принятой temporary Livewire копией, исходный файл
+  на диске пользователя отдельно не хешировался. Предыдущие пути, соседняя
+  позиция, остальные поля/прочие orders неизменны; drag-verified.json PASS.
+- Production код не менялся, tracked non-md для выгрузки нет. Общий13D/ADM13
+  IN PROGRESS: этот JPEG attach не закрывает drag всех форматов/create/batch.
+  Следующий шаг — оставшаяся browser матрица ролей13G.
 
 ## ADM-AUD-13D — Задержка перед началом загрузки файлов, 2026-10-28
 

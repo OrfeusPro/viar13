@@ -9830,3 +9830,33 @@ Production изменений нет, новые автотесты не доб�
 Только Markdown в tracked diff, non-md для выгрузки C:\OSPanel\domains\viar\viar13
 нет. Коммит текущей ветки без push. API/auth/schema/static mappings прежние.
 Общий13D/ADM13 IN PROGRESS; ручное действие остаётся обязательным evidence.
+## ADM-AUD-13D — Настоящее перетаскивание файла в форму заказа, 2026-10-28
+
+DONE для single JPEG attach сценария. Пользователь подтвердил ручной перенос,
+в DOM probe trusted drop=true, 11029bytes. Фактически выбран JPEG вместо
+подготовленного synthetic PNG; не заявляем проверку drag-test.png.
+Drop12:55:55.356→FilePond addfile12:55:55.447→process12:55:57.298→finish12:56:04.741.
+Старт обработки1.851s, завершение7.443s; upload-file/_finishUpload HTTP200.
+Полученный temporary JPEG сохранён как local audit reference до submit,
+затем настоящий attach action добавил его во вторую позицию fixture904.
+Без chooser/имитации drop событий. В UI два превью появились без reload.
+
+Verifier PASS: ровно одно новое вложение; SHA256 temporary→stored
+fa8e0ee5cdde8e08fda3b763426c71024f37610b1f5cb5c57681a16dec4758dd.
+Исходный файл на компьютере пользователя отдельно не хешировался — это не
+end-to-end disk→transport hash. Прежний PNG/порядок его пути сохранён, первая
+позиция/остальные поля второй/все прочие orders неизменны. Order metadata
+меняет только items/updated_at. Рабочая DB/disks/клиенты не затронуты,
+Mail/HTTP fake. Стенд остановлен после проверки.
+
+Evidence storage/app/audit/upload-recovery-20261028/drag-events.txt,
+drag-before.json, drag-verified.json, drag-saved.png и requests.jsonl.
+Скриншот сохранён/просмотрен. После browser.user unavailable восстановление
+cua runtime reset вернуло доступ к той же IAB вкладке без reload/потери формы.
+Production code/API/auth/idempotency/schema/static mappings не менялись.
+Новые автотесты не добавлялись: предыдущий28tests340assertions остаётся
+baseline; текущий gate — actual manual drop + browser submit + verifier PASS.
+git diff --check PASS. Только Markdown в tracked diff, non-md для выгрузки
+C:\OSPanel\domains\viar\viar13 нет; копирование/SHA256 выгрузки не применяются.
+Коммит текущей ветки без push. Общий13D/ADM13 IN PROGRESS: singleJPEG не закрывает
+все drag форматы/create/batch; следующий шаг — оставшаяся browser role матрица13G.
