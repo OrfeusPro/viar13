@@ -1,5 +1,23 @@
 # План миграции viar13 на Laravel 13
 
+## ADM-AUD-13G — Редактирование заказа под ролями печатника и менеджера, 2026-10-28
+
+- IN PROGRESS: original order.blade.php/edit_admin_order/update_admin_order
+  не содержат printing/lite_manager field guards. Не распространять ограничения
+  финансовых inline actions списка на отдельную full edit форму без основания.
+- Проверить actual EditOrders под обеими fixture ролями desktop/mobile, сохранение
+  разрешённого комментария и отсутствие изменений соседних бизнес-данных;
+  отзыв edit_orders после открытия должен блокировать save.
+- Только isolated DB/disks + fake интеграций. Результаты/риски в журналы,
+  non-md export с SHA256 при изменениях, commit текущей ветки без push.
+- DONE автоматический поднабор: actual EditOrders printing/lite_manager save
+  комментария, цены/оплата/items/media/messages прежние; revoked save/reopen403.
+  57tests916assertions PASS, Pint/diffcheck PASS. Один testPHP экспортирован,
+  SHA256 совпал. Production код не менялся.
+- Browser визуальный прогон НЕ выполнен: инструмент сообщил Local browser use
+  is disabled in Work settings. Стенд остановлен. Общий13G IN PROGRESS;
+  следующий шаг — desktop/mobile EditOrders после восстановления browser access.
+
 ## ADM-AUD-13G — Фильтры и действия под ролями печатника и менеджера, 2026-10-28
 
 - DONE для указанного поднабора: isolated browser сочетания tab+order filter для printing и

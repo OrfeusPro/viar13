@@ -38,6 +38,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Livewire;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class OrderArtistServiceTest extends TestCase
@@ -145,7 +146,46 @@ class OrderArtistServiceTest extends TestCase
         view()->addNamespace('admin-tests', base_path('tests/Fixtures/views'));
     }
 
-    public function test_full_edit_page_saves_draft_after_live_media_status_without_overwriting_media_or_items(): void
+    #[DataProvider('fullEditRoles')]
+    public function test_full_edit_role_roundtrip_and_revoked_save_preserve_other_data(string $role): void
+    {
+        [$editor, $items] = $this->prepareFullEditFixture();
+        DB::table('roles')->where('id', $editor->role_id)->update(['name' => $role]);
+        $this->actingAs(User::findOrFail($editor->id), 'filament');
+        $before = $this->order->fresh();
+        $images = DB::table('order_painter_images')->get()->toJson();
+        $comments = DB::table('order_user_comments')->get()->toJson();
+        $page = Livewire::test(EditOrders::class, ['record' => $this->order->getRouteKey()])
+            ->assertSuccessful()->assertSee('Оплата')->assertSee('Товары в заказе')
+            ->set('data.admin_comment', 'Saved by '.$role)
+            ->call('save')->assertHasNoErrors();
+        $fresh = $this->order->fresh();
+        $this->assertSame('Saved by '.$role, $fresh->admin_comment);
+        $this->assertSame($items, $fresh->items);
+        foreach (['price', 'sale_price', 'payment_status', 'payment', 'client_images', 'painter_sketch_images', 'painter_sketch_images_status'] as $field) {
+            $this->assertEquals($before->{$field}, $fresh->{$field}, $field);
+        }
+        $this->assertSame('Fixture street', json_decode($fresh->delivery, true)['address']);
+        $this->assertSame($images, DB::table('order_painter_images')->get()->toJson());
+        $this->assertSame($comments, DB::table('order_user_comments')->get()->toJson());
+        $page->set('data.admin_comment', 'Denied after revocation');
+        DB::table('permission_role')->where('role_id', $editor->role_id)
+            ->where('permission_id', Permission::where('key', 'edit_orders')->value('id'))->delete();
+        $this->actingAs(User::findOrFail($editor->id), 'filament');
+        $savedAttributes = $fresh->getAttributes();
+        $page->call('save')->assertForbidden();
+        $this->assertSame($savedAttributes, $this->order->fresh()->getAttributes());
+        Livewire::test(EditOrders::class, ['record' => $this->order->getRouteKey()])->assertForbidden();
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
+    public static function fullEditRoles(): array
+    {
+        return ['printing' => ['printing'], 'lite_manager' => ['lite_manager']];
+    }
+
+    private function prepareFullEditFixture(): array
     {
         $this->assertSame(':memory:', DB::connection()->getDatabaseName());
         Http::preventStrayRequests();
@@ -223,6 +263,13 @@ class OrderArtistServiceTest extends TestCase
             'order_id' => $this->order->id, 'comment' => 'Client image <script>escaped</script>',
             'created_at' => '2026-09-01 12:00:00', 'updated_at' => '2026-09-01 12:00:00',
         ]);
+
+        return [$editor, $items];
+    }
+
+    public function test_full_edit_page_saves_draft_after_live_media_status_without_overwriting_media_or_items(): void
+    {
+        [$editor, $items] = $this->prepareFullEditFixture();
         $page = Livewire::test(EditOrders::class, ['record' => $this->order->getRouteKey()])
             ->assertSuccessful()->assertSee('Изображения заказа')->assertSee('Товары в заказе')
             ->assertSee('Заявки на оплату')->assertSee('Client image &lt;script&gt;escaped&lt;/script&gt;', false)

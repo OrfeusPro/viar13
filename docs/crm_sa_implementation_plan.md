@@ -9940,3 +9940,35 @@ auth существующий Filament/Voyager permissions; static mappings не
 Markdown исключён, посторонние файлы не удалялись. Коммит текущей ветки без push.
 Общий13G/ADM13 IN PROGRESS. Следующее точное действие: оставшиеся edit/action
 состояния под printing/lite_manager, затем полная итоговая матрица незакрытых сценариев.
+## ADM-AUD-13G — Редактирование заказа под ролями печатника и менеджера, 2026-10-28
+
+DONE автоматический поднабор, browser часть IN PROGRESS. Original отдельная
+order.blade.php и edit_admin_order/update_admin_order не имеют printing/
+lite_manager field guards; ограничения финансов в строке списка не перенесены
+самовольно на full edit. Полная новая форма использует прежний edit_orders.
+Это уточняет границу предыдущего финансового gate: updateFinances ограничивает
+перечисленные actions, не означает общего запрета любого финансового поля full edit.
+
+Добавлены provider tests printing/lite_manager на настоящей EditOrders с полной
+fixture schema; общий setup вынесен из существующего full-edit regression в helper.
+Для каждой роли с edit_orders: mount успешен, комментарий сохранён; price,
+sale_price/payment status/method/items/client images/painter images/status прежние,
+адрес сохранён, таблицы media/comments неизменны. После удаления edit_orders
+уже открытый page save403 и fresh mount403; весь saved order snapshot прежний.
+Mail fake/Http preventStrayRequests, SQLite :memory:, реальные клиенты не затронуты.
+Production логика не менялась. Это проверка одного разрешённого save/revocation,
+не всех полей/всех смен ролей и не визуальной идентичности.
+
+57tests916assertions PASS: OrderArtistServiceTest, OrderDetailsFormTest,
+UpdateOrderServiceTest, OrderRecordActionPermissionsTest. JUnit
+storage/logs/adm-aud-13g-full-edit-gate-20261028.xml. Pint testPHP PASS после
+одного исправления пустой строки; git diff --check PASS. Один изменённый testPHP
+скопирован в C:\OSPanel\domains\viar\viar13, SHA256 совпал; Markdown исключён,
+посторонние файлы не менялись. Коммит текущей ветки без push.
+API/auth/idempotency/schema/static mappings не менялись.
+
+Browser попытка full edit8790 остановлена ответом «Local browser use is disabled
+in Work settings»; визуальные desktop/mobile результаты не заявляем.
+Стенд остановлен, обход отключённого инструмента не предпринимался.
+Следующее точное действие: визуально сверить full edit под обеими fixture ролями
+после восстановления browser access. Общий13G/ADM13 остаётсяINPROGRESS.
