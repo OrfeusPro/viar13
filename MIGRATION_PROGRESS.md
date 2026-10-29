@@ -5262,3 +5262,23 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Общий ADM-AUD-13 остаётся IN PROGRESS: это закрытие мобильного дефекта,
   полная приёмка всех окон/типов товаров/комбинаций ролей не заявляется.
   Следующий шаг — продолжить сверку оставшихся окон и действий с оригиналом.
+## ADM-AUD-13G — Окна email и запроса отзыва под ролями, 2026-10-29
+
+- DONE для read-only browser поднабора: original user_data.blade.php показывает
+  «Написать email» без printing guard; items.blade.php скрывает «Запрос отзыва»
+  при printing. Actual ListOrders fixture42 повторяет эту видимость.
+- Printing email desktop/390px и manager email390px: пользователь заказа
+  fixture2@example.test, четыре поля, исходные заполненные тема/приветствие/прощание,
+  пустой основной текст. Manager review confirmation desktop/390px показывает
+  номер42 и email того же пользователя. Окна помещаются, Cancel закрывает:
+  remainingDialogs=0/remainingConfirmations=0. Ни одна отправка не нажималась.
+- 13tests307assertions PASS (role presentation + customer action permission
+  revocation); все9business tables fixture unchanged. HTTP/Mail fakes, рабочие
+  заказы и роли не менялись. Сервер остановлен, viewport reset.
+- Evidence: storage/app/audit/roles-20261028/email-printing-{desktop,mobile}.png,
+  email-manager-mobile.png, review-manager-{desktop,mobile}.png.
+- Production code не менялся: для экспорта non-md файлов нет. Только документы,
+  коммит текущей ветки без push. Общий ADM-AUD-13/13G остаётся IN PROGRESS.
+- Следующее точное действие: ADM-AUD-13G — форма этикетки Venipak под printing
+  и lite_manager: сверить доступ и поля с original, открыть/отменить desktop/mobile
+  на isolated fixture без вызова перевозчика и без изменения labels.
