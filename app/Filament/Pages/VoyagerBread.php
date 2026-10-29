@@ -1668,6 +1668,11 @@ class VoyagerBread extends Page
             }
         }
 
+        if ($bread->name === 'users') {
+            // The original users/read template appends the profile locale after BREAD fields.
+            $fields[] = ['label' => 'Язык', 'type' => 'text', 'value' => $record->locale];
+        }
+
         return $fields;
     }
 

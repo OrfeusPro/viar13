@@ -4475,3 +4475,40 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
   четыре chat окна (клиент/внутренний/SA/художник) × printing/lite_manager,
   visible controls/read-only desktop/mobile на isolated fixture. После него
   обновить оставшуюся матрицу13A–13F; не объявлять все роли/типы принятыми автоматически.
+## ADM-AUD-13G — Карточка клиента: переход и данные как в оригинале, 2026-10-29
+
+- IN PROGRESS: предыдущий DONE относится только к доступности полного read,
+  полную parity карточки тогда не проверяли. Уточнение по users/read.blade.php:
+  отдельные блоки readRows, custom «Язык», header edit/delete/list по permissions.
+- SELECT-only общая DB:35 readRows пользователей; источник данных остаётся
+  data_rows, статический список полей не вводить. Восстановить прямой переход
+  «Просмотр клиента» при read permission, исходный язык/структуру/действия.
+- Проверить на isolated fixtures, без реального удаления/изменения клиентов.
+  Commit в G: и C:/OSPanel/domains/viar/viar13, export non-md SHA256, без push.
+## ADM-AUD-13G — Карточка клиента: переход и данные как в оригинале, 2026-10-29 — DONE для указанного поднабора
+
+- Original users/read.blade.php и SELECT-only data_types/data_rows сверены:
+ 35configured readRows в исходном порядке + custom «Язык» из user.locale.
+  Никаких пользовательских данных из общей БД в fixture не копировали.
+- При разрешённом users read «Просмотр клиента» теперь непосредственно ведёт
+  на полную страницу; промежуточная modal убрана из этого разрешённого сценария.
+  При отсутствии полного доступа прежний краткий просмотр сохранён без расширения прав.
+- Все35полей продолжают браться из data_rows; добавлен оригинальный нижний
+  «Язык» (settings.locale), сохранены отношения/опции/изображения. Пользовательские
+  read-блоки разделены отступами/линиями. Header edit/delete/list возвращены по
+  существующим permissions; delete использует существующий BREAD обработчик.
+- Browser fixture с35реальными определениями полей, но синтетическим user2:
+  rendered36labels EXACT ordered match metadata35+Язык. Printing desktop/390,
+  lite_manager direct link/390: dialogs0, нижняя кнопка и язык доступны.
+  Это подтверждение структуры/данных средствами Filament, не pixel-копия Voyager.
+- 16tests168assertions PASS: BREAD7/89 + lifecycle9/79. Read-only header hides,
+  allowed header visible, stale delete after revoke does not delete client;
+  direct-link HTML regression и locale regression PASS. Pint/diffcheck PASS.
+- Все9fixture business tables unchanged после подготовки schema/metadata;
+  реальные клиенты/статусы/файлы не менялись, внешних отправок нет.
+  Viewport reset; fixture server stopped. Evidence client-original-*.png и
+  client-read-metadata-20261029.json в storage/app/audit (только local ignored).
+- 6non-md файлов скопированы в C:/OSPanel/domains/viar/viar13, SHA256 совпали.
+  Target commit7ff88a0 в main без push. Основной commit включает эти журналы.
+- Общий ADM-AUD-13 открыт. Далее13G: четыре chat окна × printing/lite_manager,
+  затем оставшаяся матрица13A–13F по согласованному списку.

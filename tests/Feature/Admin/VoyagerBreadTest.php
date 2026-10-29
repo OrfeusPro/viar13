@@ -2776,7 +2776,7 @@ class VoyagerBreadTest extends TestCase
         $this->admin(['browse_admin', 'read_users']);
         $typeId = DB::table('data_types')->insertGetId(['name' => 'users', 'slug' => 'users', 'model_name' => User::class]);
         DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => 'email', 'type' => 'text', 'display_name' => 'Email', 'read' => true, 'details' => '{}']);
-        $target = User::forceCreate(['email' => 'full-client@example.test', 'password' => Hash::make('password')]);
+        $target = User::forceCreate(['email' => 'full-client@example.test', 'password' => Hash::make('password'), 'settings' => ['locale' => 'uk']]);
         $record = new \App\Models\Orders;
         $record->setRelation('user', $target);
         $url = \App\Filament\Pages\VoyagerBreadRead::getUrl(['type' => 'users', 'record' => $target->id]);
@@ -2785,7 +2785,9 @@ class VoyagerBreadTest extends TestCase
             $this->app->forgetInstance(BreadRegistry::class);
             $this->assertSame($url, \App\Filament\Resources\Orders\Tables\OrderLifecycleActions::clientProfileUrl($record));
             $viewer = Livewire::test(\App\Filament\Pages\VoyagerBreadRead::class, ['type' => 'users', 'record' => $target->id])
-                ->assertSet('viewId', $target->id)->assertSee('full-client@example.test');
+                ->assertSet('viewId', $target->id)->assertSee('full-client@example.test')
+                ->assertSee('Язык')->assertSee('uk')
+                ->assertActionHidden('editClient')->assertActionHidden('deleteClient')->assertActionHidden('listClients');
             $viewer->call('openEdit', $target->id)->assertForbidden();
         }
         $this->get($url)->assertOk();
@@ -2809,6 +2811,25 @@ class VoyagerBreadTest extends TestCase
         $this->get($url)->assertForbidden();
         $openViewer->call('changeLocale', 'ru')->assertForbidden();
         $this->assertDatabaseHas('users', ['id' => $target->id, 'email' => 'full-client@example.test']);
+    }
+
+    public function test_direct_client_read_header_actions_obey_permissions_and_stale_delete_is_denied(): void
+    {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
+        $this->admin(['browse_admin', 'read_users', 'edit_users', 'delete_users', 'browse_users']);
+        $typeId = DB::table('data_types')->insertGetId(['name' => 'users', 'slug' => 'users', 'model_name' => User::class]);
+        DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => 'email', 'type' => 'text', 'display_name' => 'Email', 'read' => true, 'details' => '{}']);
+        $target = User::forceCreate(['email' => 'header-client@example.test', 'password' => Hash::make('password')]);
+        $page = Livewire::test(\App\Filament\Pages\VoyagerBreadRead::class, ['type' => 'users', 'record' => $target->id])
+            ->assertActionVisible('editClient')->assertActionVisible('deleteClient')->assertActionVisible('listClients')
+            ->mountAction('deleteClient')->assertActionMounted('deleteClient');
+        DB::table('permission_role')->whereIn('permission_id', DB::table('permissions')->where('key', 'delete_users')->pluck('id'))->delete();
+        $this->actingAs(User::findOrFail(auth('filament')->id()), 'filament');
+        $this->app->forgetInstance(BreadRegistry::class);
+        $page->callMountedAction();
+        $this->assertDatabaseHas('users', ['id' => $target->id, 'email' => 'header-client@example.test']);
+        Livewire::test(\App\Filament\Pages\VoyagerBreadRead::class, ['type' => 'users', 'record' => $target->id])
+            ->assertActionHidden('deleteClient');
     }
 
     protected function setUp(): void

@@ -69,9 +69,9 @@
                 @endforeach
             </div>
             @endif
-            <dl class="space-y-4">
+            <dl class="space-y-4" @if($bread->name === 'users') style="margin:0;" @endif>
                 @foreach ($this->viewedFields() as $field)
-                    <div><dt class="text-sm font-semibold">{{ $field['label'] }}</dt><dd class="whitespace-pre-wrap">
+                    <div @if($bread->name === 'users') style="margin:0;padding:16px 0;border-bottom:1px solid #e5e7eb;" @endif><dt class="text-sm font-semibold" @if($bread->name === 'users') style="font-size:16px;font-weight:600;margin-bottom:8px;" @endif>{{ $field['label'] }}</dt><dd class="whitespace-pre-wrap" @if($bread->name === 'users') style="margin:0;overflow-wrap:anywhere;" @endif>
                         @if (in_array($field['type'] ?? '', ['image', 'multiple_images', 'media_picker', 'adv_media_files'], true) || (($field['type'] ?? '') === 'file' && \App\Filament\Bread\BreadImage::urls($field['value']) !== []))
                             @php($images = ($field['type'] ?? '') === 'adv_media_files' ? $field['value'] : \App\Filament\Bread\BreadImage::urls($field['value']))
                             @foreach ($images as $url)<a href="{{ $url }}" target="_blank" rel="noopener noreferrer"><img src="{{ $url }}" alt="{{ $field['label'] }}" loading="lazy" class="viar-bread-media-preview"></a>@endforeach

@@ -7,6 +7,7 @@
     $isPrinting = auth('filament')->user()?->role?->name === 'printing';
     $canEdit = auth('filament')->user()?->can('update', $record) ?? false;
     $canDelete = auth('filament')->user()?->can('delete', $record) ?? false;
+    $clientProfileUrl = OrderLifecycleActions::clientProfileUrl($record);
     $delivery = json_decode((string) $record->delivery, true) ?: [];
     $whenSend = $delivery['when_send'] ?? null;
     $whenSendTimestamp = $whenSend ? strtotime((string) $whenSend) : false;
@@ -103,7 +104,11 @@
         @if($canEdit)
             <a href="{{ OrdersResource::getUrl('edit', ['record' => $record]) }}" style="{{ $button }}background:#f59e0b;">Редактировать заказ</a>
         @endif
-        <button type="button" x-on:click.stop="$wire.mountTableAction('viewOrderClient', '{{ $record->getKey() }}')" style="{{ $button }}background:#16a34a;">Просмотр клиента</button>
+        @if($clientProfileUrl)
+            <a href="{{ $clientProfileUrl }}" style="{{ $button }}background:#16a34a;">Просмотр клиента</a>
+        @else
+            <button type="button" x-on:click.stop="$wire.mountTableAction('viewOrderClient', '{{ $record->getKey() }}')" style="{{ $button }}background:#16a34a;">Просмотр клиента</button>
+        @endif
         @if($record->user_id)
             <a href="{{ OrdersResource::getUrl('index', ['tab' => 'all', 'filters' => ['user_id' => ['value' => $record->user_id]]]) }}" style="{{ $button }}background:#16a34a;">Все заказы ранее</a>
         @endif

@@ -278,6 +278,24 @@ class OrderLifecycleServiceTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function test_client_button_links_directly_to_full_read_when_user_read_is_allowed(): void
+    {
+        $this->actingAs($this->admin(['edit_orders', 'read_orders']), 'filament');
+        $client = new User(['email' => 'client@example.test']);
+        $client->id = 51;
+        $order = Orders::query()->forceCreate(['status' => 'watching', 'delivery' => '{}']);
+        $order->setRelation('user', $client);
+        $registry = \Mockery::mock(\App\Filament\Bread\BreadRegistry::class);
+        $type = (object) ['name' => 'users', 'slug' => 'users'];
+        $registry->shouldReceive('type')->with('users')->andReturn($type);
+        $registry->shouldReceive('model')->with($type)->andReturn(new User);
+        $registry->shouldReceive('permitted')->with($type, 'read', 51)->andReturn(true);
+        $this->app->instance(\App\Filament\Bread\BreadRegistry::class, $registry);
+        $html = view('filament.tables.columns.order-lifecycle', ['getRecord' => fn () => $order])->render();
+        $this->assertStringContainsString('/filament/bread/users/51/view', $html);
+        $this->assertStringNotContainsString("mountTableAction('viewOrderClient'", $html);
+    }
+
     private function admin(array $permissions): User
     {
         $role = Role::query()->create(['name' => 'lifecycle-admin-'.Role::query()->count()]);
