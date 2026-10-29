@@ -269,6 +269,37 @@ class AdminOrderCreationServiceTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_full_create_page_recovers_after_invalid_upload_and_keeps_multiple_sources_in_their_items(): void
+    {
+        $this->prepareCreatePage(['add_orders', 'read_orders']);
+        $data = $this->validData();
+        $data['items'][0]['images'] = [UploadedFile::fake()->create('unsupported.exe', 1, 'application/octet-stream')];
+        $data['items'][1] = array_replace($data['items'][0], ['name' => 'Second position', 'price' => 35, 'size' => '30x40', 'images' => []]);
+        $page = Livewire::test(CreateOrders::class)->fillForm($data)->call('create')
+            ->assertHasFormErrors()->assertSet('data.first_name', 'Client')->assertSet('data.sale_eur', 10);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('users', 1);
+        $this->assertSame([], Storage::disk('uploads')->allFiles());
+        $sources = [UploadedFile::fake()->image('first.png', 10, 10), UploadedFile::fake()->image('second.jpg', 20, 20), UploadedFile::fake()->image('third.png', 30, 30)];
+        $hashes = array_map(fn ($file) => hash_file('sha256', $file->getRealPath()), $sources);
+        $data['items'][0]['images'] = [$sources[0], $sources[1]];
+        $data['items'][1]['images'] = [$sources[2]];
+        $page->fillForm($data)->call('create')->assertHasNoFormErrors()->assertRedirect();
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertDatabaseCount('users', 2);
+        $items = json_decode(Orders::query()->firstOrFail()->items, true);
+        $this->assertSame('Portrait', $items[0]['name']);
+        $this->assertSame('Second position', $items[1]['name']);
+        foreach ([[0, 0, 0], [0, 1, 1], [1, 0, 2]] as [$item, $image, $source]) {
+            $path = ltrim(parse_url($items[$item]['orig_images'][$image], PHP_URL_PATH), '/');
+            $this->assertSame($hashes[$source], hash('sha256', Storage::disk('uploads')->get($path)));
+        }
+        $this->assertCount(2, $items[0]['orig_images']);
+        $this->assertCount(1, $items[1]['orig_images']);
+        Mail::assertNothingSent();
+        Http::assertNothingSent();
+    }
+
     public function test_full_create_page_missing_source_returns_not_found_without_writes(): void
     {
         $this->prepareCreatePage(['add_orders', 'read_orders']);

@@ -5454,3 +5454,28 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Общий ADM-AUD-13 IN PROGRESS. Следующий пункт согласованного списка:
   ADM-AUD-13C/D — создание заказа с несколькими файлами и восстановление
   формы после отказа загрузки; различать full create/save и уже проверенный attach.
+## ADM-AUD-13C/D — Полное создание с пакетной загрузкой после отказа, 2026-10-29 — DONE для PNG/JPEG сценария
+
+- Actual CreateOrders browser: unsupported.exe отклонён FilePond; заполненные
+  данные сохранены, после удаления invalid файла без reload загрузились2PNG/JPEG
+  первой позиции и1PNG второй. Первую временную вкладку потеряли между turns,
+  повторили весь reject→recovery→create в новой форме, не выдавая старый draft за save.
+- Создан только isolated order107 для fixture client2:2позиции25+35=60EUR,
+  watching/not_payed. JSON orig_images:2файла первой/1второй, все3SHA256 совпали
+  с input. Повторное открытие EditOrders107: все фото loaded.
+- Verifier подтверждает190таблиц: все прежние записи неизменны, добавлен ровно
+  один orders row; users прежние.7старых media SHA прежние, ровно3новых файла.
+  Legacy имя N107-2 содержит count товара, не номер позиции; соответствие позиции
+  проверялось JSON orig_images/размером/хешами, не ошибочной трактовкой filename.
+- Добавлен actual CreateOrders regression: invalid upload no orders/users/media,
+  тот же Livewire component recovery с2позициями/3файлами, byte SHA и isolation.
+  29tests344assertions PASS (creation service/full page + create form).
+- Рабочие заказы/клиенты не затронуты, Mail/HTTP fake; fixture server stopped.
+  Evidence create-rejected-exe.png/create-recovery-saved-order.png и
+  create-recovery-verified.json в storage/app/audit/client-read-20261029.
+- Изменён только testPHP, скопирован без.md в C:/OSPanel/domains/viar/viar13,
+  SHA256 совпал. Target main commit9d5f2b8 без push; production код прежний.
+- Общий ADM-AUD-13 открыт. Этот gate не закрывает OS drag всех форматов,
+  HEIC decoding или полный100MiB Filament save под Apache. Далее ADM-AUD-13E:
+  финальный browser generate/download документов на isolated fixture, внешние
+  email/payment/Venipak calls не выполнять.
