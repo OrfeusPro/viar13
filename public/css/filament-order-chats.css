@@ -82,3 +82,8 @@
   .adm-chat-composer--sa .adm-chat-response { grid-area:5/1/6/2; padding:0 10px 10px; }
   .adm-chat-composer--sa textarea { min-width:0; }
 }
+/* A dismissed chat keeps its overlay during Alpine's leave transition. */
+.fi-modal:not(.fi-modal-open):has(.adm-chat-modal),
+.fi-modal:not(.fi-modal-open):has(.adm-chat-modal) * {
+    pointer-events: none !important;
+}

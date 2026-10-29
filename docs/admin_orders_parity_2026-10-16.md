@@ -94,7 +94,7 @@
 
 | Порядок / задача | Статус | Точное действие и критерий закрытия |
 | --- | --- | --- |
-| 1. ADM-AUD-13F — Быстрое переключение окон чатов | TODO, наблюдение 29 октября | На fixture воспроизвести закрытие одного и немедленное открытие другого из client/admin/SA/painter; desktop и390px, printing/lite_manager. Следующее окно открывается по одному клику, нет потерянного draft/самопроизвольной отправки. При воспроизведении выяснить причину и добавить регрессию; не менять core вслепую |
+| 1. ADM-AUD-13F — Быстрое переключение окон чатов | DONE 29 октября | Закрывающийся прозрачный overlay больше не перехватывает клик.16переходов client→admin→SA→painter→client: printing/lite_manager × desktop/390px;88tests844assertions,190tables unchanged. Подробности и evidence в результате ниже |
 | 2. ADM-AUD-13C/D — Загрузки в целевом серверном окружении | TODO, зависит от окружения | Полный Filament save в изолированной Apache/OpenServer конфигурации: граничный размер и отказ превышения с recovery, SHA и отсутствие частичных order/files. Сверить допустимость и preview HEIC/HEIF/PSD/FIG с оригиналом: требовать декодирование только там, где оно есть в оригинале. Transport100MiB и сохранение файла уже доказаны отдельно |
 | 3. ADM-AUD-13E — Вставка платёжной ссылки | TODO | На тестовой платёжной ссылке проверить штатную кнопку копирования и вставку в обычное поле браузера/системный редактор. JS tests5PASS и виртуальный clipboard не заменяют этот сценарий; платёж не выполнять |
 | 4. ADM-AUD-13E — Успешный Venipak без перевозчика | TODO | Заполнить synthetic sender и pickup catalog; browser выбрать город/пункт, создать этикетку через fake HTTP, открыть/скачать печать, проверить labels. Отдельно courier success/error через fake. Роли/валидация/open/cancel уже проверены, реальный provider не вызывать |
@@ -117,7 +117,7 @@ baseline:831tests10143assertions,1skipped,0errors/failures. Он не счита
 общим прогоном после изменений28–29октября. Последние targeted runs: create29/344,
 gift/payment32/352, artist/lifecycle/permissions51/868; итоговый общий прогон — пункт6.
 
-Следующая задача: **ADM-AUD-13F — Быстрое переключение окон чатов**.
+Следующая задача: **ADM-AUD-13C/D — Загрузки в целевом серверном окружении**.
 Проверки записи только на isolated fixtures, Mail/HTTP fake; production media
 допускаются только для read-only. Общий ADM-AUD-13 остаётся **IN PROGRESS**.
 
@@ -1592,3 +1592,39 @@ regression после необходимых исправлений. Полно�
   тесты приложения заново не запускались: задача документальная. Diff-check PASS.
 - Документы коммитятся в текущей source ветке без push; non-md для копирования
   в C:/OSPanel/domains/viar/viar13 нет, target commit не требуется.
+
+## ADM-AUD-13F — Быстрое переключение окон чатов, 2026-10-29: DONE
+
+- Воспроизведён lost click: client close→admin click, admin close→SA click;
+  новый mountTableAction не отправлялся. Test-only event log показал закрытое
+  окно без fi-modal-open, но display:block/pointer-events:auto во время Alpine
+  leave transition. Следующий клик попадал в прозрачный закрывающийся overlay.
+- Исправлен public/css/filament-order-chats.css: только modal с adm-chat-modal
+  без fi-modal-open и его потомки получают pointer-events:none. Открытое окно
+  по-прежнему pointer-events:auto. Vendor/Livewire/action handlers не менялись.
+  Правило охватывает client/admin/SA/painter, не остальные модальные окна.
+- Actual Chrome ListOrders42 fixture: цепочка client→admin→SA→painter→client
+  проверена lite_manager и printing на desktop и390x844 (16переходов).
+  Между close и click не добавляли sleep; открытие каждой цели по одному клику,
+  подтверждено заголовками окон и logs. Медленный server может ждать завершения
+  последовательных запросов close/open, повторное нажатие больше не требуется.
+- Запуск draft send/read/bot отсутствовал; сохранение черновиков после закрытия
+  не обещаем и не меняем. Обычная логика закрытия Filament сохранена.
+- 88tests844assertions PASS: OrderClientChatTest/OrderPainterChatTest/
+  OrderSaChatTest/OrderAdminChatServiceTest, PHP8.4.1,31.21s. Отдельный тест CSS,
+  зеркалящий правило, не добавлялся: defect→fix подтверждён actual browser.
+- check-chat-switch.py PASS: все190таблиц совпали с before.sqlite, включая
+  messages/read-state/bot/orders/permissions. Mail assertNothingSent/HTTP blocked,
+  все notification flagsfalse. Реальных клиентов/данных не касались.
+- Evidence ignored: storage/app/audit/chat-switch-20261029/verified.json,
+  manager-desktop-events.json,manager-all-events.json,printing-all-events.json,
+  manager-{desktop,mobile}.png,printing-{desktop,mobile}.png,requests.jsonl.
+  Debug event listeners существовали только в ignored local router.
+  Viewport reset выполнен, тестовый сервер остановлен после проверки.
+- Только1CSS скопирован с сохранением структуры в C:/OSPanel/domains/viar/viar13;
+  SHA256 F44DA52ACDBF389747985AF3D74DE6006F8DF0E478A0FAE86C4AB8132200353B совпал.
+  Target main commit b184fe8 без push, Markdown не копировался.
+- Пункт1 актуальной очереди закрыт. Далее ADM-AUD-13C/D — Загрузки в целевом
+  серверном окружении: проверить возможность безопасного isolated Apache save,
+  лимиты/отказ/recovery и preview только в рамках original behavior.
+  ОбщийADM-AUD-13 остаётся IN PROGRESS.
