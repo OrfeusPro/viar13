@@ -10087,3 +10087,24 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Общий ADM-AUD-13/13G IN PROGRESS. Следующий точный шаг:
   ADM-AUD-13G — История статусов и просмотр клиента под обеими ролями:
   открыть/закрыть на fixture desktop/mobile, сверить original, без смены статусов.
+## ADM-AUD-13G — История статусов и просмотр клиента под ролями, 2026-10-29
+
+- DONE browser read-only поднабор: actual ListOrders42 printing/lite_manager
+  desktop/390px. История раскрывает одинаковые watching/pegging/send dates:
+  19.10.2026 18:19 /17:55 /17:48. Источник — те же legacy status date columns;
+  порядок стадий сохраняется, даты форматируются, блок сворачивается details.
+- Клиентская modal обеих ролей показывает user2, имя, email/телефон и3заказа;
+  просмотрена desktop/mobile, закрыта без сохранения. Это только краткая карточка.
+- FOUND/TODO ADM-AUD-13G — Полная карточка клиента из заказа:
+  original orders.blade.php:865 ведёт /admin/users/{user_id}, новая кнопка
+  viewOrderClient показывает5полей без перехода к полному BREAD read. Поэтому
+  соответствие «Просмотр клиента» НЕ принято. Следующий точный шаг: восстановить
+  переход к существующему users BREAD read с его permissions, сверить доступ
+  read_users/browse_users и поведение отсутствующего клиента; не расширять права.
+- 8tests77assertions PASS (OrderLifecycleServiceTest). Все9fixture business tables
+  unchanged. Статусы/клиенты/письма не менялись. Viewport reset, сервер остановлен.
+- Evidence: storage/app/audit/roles-20261028/history-{printing,manager}-{desktop,mobile}.png,
+  client-{printing,manager}-{desktop,mobile}.png. Production code не менялся;
+  non-md файлов для копирования нет. Документы коммитить без push.
+- Общий ADM-AUD-13/13G IN PROGRESS; новая найденная разница остаётся в этом блоке,
+  к другому модулю не переходить до решения.
