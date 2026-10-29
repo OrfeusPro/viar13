@@ -14,7 +14,7 @@
 | Подзадача | Original | New / результат | Следующий шаг |
 | --- | --- | --- | --- |
 | ADM-AUD-13A — список | Восемь колонок и original partials | Сверены Blade данные и role visibility; 18Oct исправлены HTML описания, legacy coupon flags и SVG composition (sandbox document). Реальные portrait/gift открыты в Chrome; SVG проверен на isolated fixture | 29Oct: 11веток/5SVG и mobile235px actual ListOrders проверены по original source,39tests502assertions PASS. Остаётся доступность реальных media; live pixel compare не заявляется |
-| ADM-AUD-13B — фильтры/вкладки | Верхняя панель, predicates и порядок заказов | Chrome: период/страница2/цикл сортировки, художник/менеджер/страна, production/completed/unpaid, точный и частичный номер заявки. Исправлены подписи справочников и сброс applied/deferred поиска при смене вкладки. Уникальные заказы совпадают; завышение старых итогов из-за повторов vr_numbers объяснено SQL | Остальные вкладки и поиск клиента/телефона в браузере; роли и комбинации не считать полностью принятыми |
+| ADM-AUD-13B — фильтры/вкладки | Верхняя панель, predicates и порядок заказов | Chrome: период/страница2/цикл сортировки, художник/менеджер/страна, production/completed/unpaid, точный и частичный номер заявки. Исправлены подписи справочников и сброс applied/deferred поиска при смене вкладки. Уникальные заказы совпадают; завышение старых итогов из-за повторов vr_numbers объяснено SQL | 29Oct: nonempty sent_today/recent/printing/completed,5AND filters/date boundary/admin-country/reset/number cycle PASS;20tests273assertions. Предыдущие pair client/phone и role gates записаны ниже; не подразумевать все возможные комбинации данных |
 | ADM-AUD-13C — редактирование | Получатель, доставка, скидки, фирма, позиции/медиа/художник | Full EditOrders SQLite сценарий прошёл; payment requests/comments/manager, media/PDF rollback проверены. Chrome desktop/mobile: окна оплаты/художника/добавления и зависимая доставка; FIG MIME alias исправлен | EditRecord desktop/mobile и payment/artist/add cancel проверены 18Oct. Осталось live original после исправления входа, file chooser/drop/HEIC/PSD/FIG и PHP upload limits; рабочие пути картинок не менять |
 | ADM-AUD-13D — создание | Ручной состав, доставка, клиент/бонусы/скидки | Actual CreateOrders tests; identity/phones/defaults/header исправлены. Порядок полей и две колонки сверены, отступы уменьшены; desktop и mobile просмотрены. Isolated Chrome PNG/JPEG, новый клиент, 100MiB/+1byte и HEIC/HEIF: сохранение JSON/имён/SHA проверено | Drag/drop и остальные типы; HEIC decoding/allcodecs и effective OpenServer upload limits не доказаны. Кнопки после всей формы — отличие от original |
 | ADM-AUD-13E — финансы/PDF/Venipak | Накладная, счёт/подтверждение, оплата, заявки, gift cards, courier | Service/action gates и fake Venipak; isolated label UI. Chrome: UI копирования и скачивание существующего PDF18451 из обеих админок; текст совпал, страницы просмотрены. 19Oct invoice gate35tests334assertions, JS5PASS | Обычная вставка системного clipboard не подтверждена (виртуальный буфер инструмента пуст); новая browser-генерация PDF, gift PDF/email visual и long invoices остаются. Внешние отправки не выполнять |
@@ -1289,3 +1289,26 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Общий ADM-AUD-13 открыт. Далее ADM-AUD-13B — финальные непустые комбинации
   фильтров/вкладок в браузере. Недоступные реальные media остаются в общей
   приёмке, не считать существование полного набора production файлов доказанным.
+## ADM-AUD-13B — Непустые вкладки и комбинации фильтров, 2026-10-29 — DONE для указанной матрицы
+
+- Actual ListOrders synthetic101–106: sent_today=[103], production=[102,101],
+  recent=[106,105,103,102,101] (включая completed105), completed=[105,44].
+  Source original app/Http/Controllers/OrdersController.php подтверждает predicates/sort.
+- СтранаLV+художник3+менеджер11+размер40x60+период29Oct→30Oct=[101].
+  until29Oct→0: original upper boundary00:00 сохранена. Смена на completed
+  сбрасывает size/from/until и остальные applied/deferred фильтры.
+- С completed фильтрprice101→[101]: original order_filter заменяет tab branch.
+  Printing tab безфильтров=[101,42]; number cycle desc[101,42]→asc[42,101]
+  →default[101,42]. Admin+LT→0; Admin+LV→[106]; Reset→printing[101,42].
+- Mobile390: форма и нижний apply доступны, просмотрены screenshots
+  filters-{combined-desktop,combined-mobile,footer-mobile}.png в
+  storage/app/audit/client-read-20261029. Browser write только фильтров/session.
+- 20tests273assertions PASS (OrderListTabsTest/OrderListSummaryTest), включая
+  nonempty tab/sort matrix3roles и сброс pending/applied. Все190fixture tables
+  unchanged после подготовки6synthetic заказов. Рабочие заказы не менялись,
+  provider calls не выполнялись. Viewport reset, fixture server stopped.
+- Production code без изменений: target main чистая, non-md для выгрузки и
+  commit в C: нет. Журналы в G: commit без push; diff-check PASS.
+- Общий ADM-AUD-13 IN PROGRESS. Следующий пункт согласованного списка:
+  ADM-AUD-13C/D — создание заказа с несколькими файлами и восстановление
+  формы после отказа загрузки; различать full create/save и уже проверенный attach.

@@ -10212,3 +10212,26 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Общий ADM-AUD-13 открыт. Далее ADM-AUD-13B — финальные непустые комбинации
   фильтров/вкладок в браузере. Недоступные реальные media остаются в общей
   приёмке, не считать существование полного набора production файлов доказанным.
+## ADM-AUD-13B — Непустые вкладки и комбинации фильтров, 2026-10-29 — DONE для указанной матрицы
+
+- Actual ListOrders synthetic101–106: sent_today=[103], production=[102,101],
+  recent=[106,105,103,102,101] (включая completed105), completed=[105,44].
+  Source original app/Http/Controllers/OrdersController.php подтверждает predicates/sort.
+- СтранаLV+художник3+менеджер11+размер40x60+период29Oct→30Oct=[101].
+  until29Oct→0: original upper boundary00:00 сохранена. Смена на completed
+  сбрасывает size/from/until и остальные applied/deferred фильтры.
+- С completed фильтрprice101→[101]: original order_filter заменяет tab branch.
+  Printing tab безфильтров=[101,42]; number cycle desc[101,42]→asc[42,101]
+  →default[101,42]. Admin+LT→0; Admin+LV→[106]; Reset→printing[101,42].
+- Mobile390: форма и нижний apply доступны, просмотрены screenshots
+  filters-{combined-desktop,combined-mobile,footer-mobile}.png в
+  storage/app/audit/client-read-20261029. Browser write только фильтров/session.
+- 20tests273assertions PASS (OrderListTabsTest/OrderListSummaryTest), включая
+  nonempty tab/sort matrix3roles и сброс pending/applied. Все190fixture tables
+  unchanged после подготовки6synthetic заказов. Рабочие заказы не менялись,
+  provider calls не выполнялись. Viewport reset, fixture server stopped.
+- Production code без изменений: target main чистая, non-md для выгрузки и
+  commit в C: нет. Журналы в G: commit без push; diff-check PASS.
+- Общий ADM-AUD-13 IN PROGRESS. Следующий пункт согласованного списка:
+  ADM-AUD-13C/D — создание заказа с несколькими файлами и восстановление
+  формы после отказа загрузки; различать full create/save и уже проверенный attach.
