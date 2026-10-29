@@ -5615,3 +5615,44 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
   товаров оставляем, ручное создание10сфото работает.
 - Следующая задача: ADM-AUD-13F — оставшиеся браузерные сценарии назначения
   исполнителя и смены статусов на тестовых данных, с original business logic.
+
+## ADM-AUD-13F — Замена исполнителей и цикл статусов, 2026-10-29: результат
+
+- DONE для browser subset: Chrome actual ListOrders isolated order111.
+  UI путь художника: нет→3→снять→12→снять; печатника нет→10→снять→13→снять.
+  Замена выполняется через снятие и новое назначение, как в original row UI;
+  отдельный popup/новая функция замены не добавлялись.
+- Промежуточные snapshots подтверждают сохранность соседнего назначения:
+  3/10→нет/10→12/10→12/нет→12/13→нет/13→нет/нет.
+  Во всех snapshots неизменны painter_endtime2026-11-15, painter_payed1,
+  is_show_painter_images1; чужие order/assignments не менялись.
+- Через select статуса111 выполнены pegging→in_production→sended→send_lubanas→
+  completed. Все5дат выставлены, status_date/updated_at сохранены.
+  После completed строка исчезла из текущих; вкладка Завершённые показала111,
+  история в раскрытой строке содержит все даты. Переключение вкладки сбрасывает
+  поиск и показывает все3завершённых fixture, поэтому история открыта именно111.
+- Printing browser111: нет controls назначения художника/печатника и оплаты;
+  статус completed виден. Роль получена в test-only router, production auth
+  не менялась. Запреты прямых actions проверены автоматическими permission tests,
+  браузерного поддельного запроса не было.
+- Original OrdersController:update_order_painter/update_printing_order,
+  status handler1845+: те же источники painter_orders/printing_orders,
+  orders.status и отдельные даты; внешние письма на assignment/sended/lubanas
+  соответствуют существующим notification branches. Legacy баги update result
+  вместо model и возможные дубли assignment не воспроизводились заново:
+  уже существующий service сохраняет одиночное назначение и транзакцию.
+- OrderArtistServiceTest+OrderLifecycleServiceTest+OrderRecordActionPermissionsTest:
+  51tests868assertions PASS, PHP8.4.1,48.38s. Production код не менялся.
+  check-lifecycle-browser.py final PASS:190tables, разрешены только111 status/date
+  и его assignment rows; остальное точно совпало со before.sqlite.
+  Mail assertNothingSent, HTTPpreventStrayRequests, все notification flagsfalse.
+  Реальных клиентов/исполнителей/провайдеров не затрагивали; server stopped.
+- Evidence ignored: storage/app/audit/lifecycle-browser-20261029/
+  before.sqlite,snapshots.jsonl,verified.json,chrome-replaced.png,
+  chrome-completed.png,chrome-printing.png; check-lifecycle-browser.py.
+- Сдача:4журнала source commit без push; нет runtime/non-md файлов текущей задачи
+  для C:копирования и target commit. Target working tree чистое.
+- Следующий шаг ADM-AUD-13G — актуализировать итоговую матрицу приёмки Orders:
+  объединить фактические проверки28–29октября, убрать устаревшие pending для
+  уже проверенных сценариев и выделить конкретные оставшиеся browser gates.
+  ОбщийADM13 не объявлен DONE этим частичным проходом.
