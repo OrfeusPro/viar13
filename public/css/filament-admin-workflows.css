@@ -7,6 +7,8 @@
 .viar-sa-global-count { display:inline-flex; align-items:center; justify-content:center; min-width:27px; height:27px; padding-inline:6px; border-radius:999px; background:#ed7268; color:white; font-size:14px; font-weight:600; }
 .viar-sa-global-sound { padding:5px; color:#64748b; }
 @media(max-width:640px) {
+    /* Keep the final page actions above the floating SA controls when scrolled to the bottom. */
+    body:has(.viar-sa-global-link) .fi-main { padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px)); }
     .viar-sa-global { top:auto; bottom:20px; right:10px; gap:2px; }
     .viar-sa-global-link { gap:6px; padding:8px 10px; font-size:14px; line-height:22px; }
     .viar-sa-global-sound { padding:2px; }

@@ -5246,3 +5246,19 @@ edit-printing-desktop.png,edit-printing-mobile-media.png,edit-printing-mobile-fo
 current gate browser read-only+snapshot PASS, git diff --check PASS.
 Production code/API/auth/schema/static mappings не менялись. ТолькоMarkdown,
 non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Коммит без push.
+## ADM-AUD-13G — Мобильный индикатор SA и кнопки формы, 2026-10-29
+
+- DONE для дефекта перекрытия footer: на экранах до 640px добавлен нижний
+  отступ 96px + safe-area только при наличии доступной ссылки SA.
+- Проверено в actual EditOrders на изолированном SQLite fixture42:
+  printing 390x844, lite_manager 320x700 и desktop. В конце страницы кнопки
+  «Обновить»/«Отмена» выше индикатора (зазор >65px); на 320px scrollWidth=clientWidth=305.
+  На desktop padding-bottom=0, badge top=70. Перетаскивание/звук/переход и бизнес-логика не менялись.
+- Read-only browser, все девять business tables неизменны; внешние вызовы
+  заблокированы fixture, сервер остановлен. Скриншоты sa-footer-*-fixed.png:
+  storage/app/audit/roles-20261028. git diff --check PASS.
+- Изменён только public/css/filament-admin-workflows.css; non-md экспорт
+  в C:/OSPanel/domains/viar/viar13 с совпадением SHA256. Коммит без push.
+- Общий ADM-AUD-13 остаётся IN PROGRESS: это закрытие мобильного дефекта,
+  полная приёмка всех окон/типов товаров/комбинаций ролей не заявляется.
+  Следующий шаг — продолжить сверку оставшихся окон и действий с оригиналом.
