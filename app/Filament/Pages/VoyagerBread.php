@@ -413,6 +413,8 @@ class VoyagerBread extends Page
     private function canAccessBreadPage(stdClass $bread): bool
     {
         return $this->registry()->permitted($bread, 'browse')
+            || ($this instanceof VoyagerBreadRead && $this->viewId !== null
+                && $this->registry()->permitted($bread, 'read', $this->viewId))
             || ($this instanceof VoyagerBreadEdit && $bread->name === 'users'
                 && $this->recordId === (int) auth('filament')->id()
                 && $this->registry()->permitted($bread, 'edit', $this->recordId));

@@ -2769,6 +2769,48 @@ class VoyagerBreadTest extends TestCase
         $this->assertNull($field->getUploadedFile('gallery-items/missing.jpg', null));
     }
 
+    public function test_direct_client_read_preserves_permissions_and_order_profile_link(): void
+    {
+        $this->assertSame(':memory:', DB::connection()->getDatabaseName());
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
+        $this->admin(['browse_admin', 'read_users']);
+        $typeId = DB::table('data_types')->insertGetId(['name' => 'users', 'slug' => 'users', 'model_name' => User::class]);
+        DB::table('data_rows')->insert(['data_type_id' => $typeId, 'field' => 'email', 'type' => 'text', 'display_name' => 'Email', 'read' => true, 'details' => '{}']);
+        $target = User::forceCreate(['email' => 'full-client@example.test', 'password' => Hash::make('password')]);
+        $record = new \App\Models\Orders;
+        $record->setRelation('user', $target);
+        $url = \App\Filament\Pages\VoyagerBreadRead::getUrl(['type' => 'users', 'record' => $target->id]);
+        foreach (['printing', 'lite_manager'] as $role) {
+            auth('filament')->user()->role->forceFill(['name' => $role])->save();
+            $this->app->forgetInstance(BreadRegistry::class);
+            $this->assertSame($url, \App\Filament\Resources\Orders\Tables\OrderLifecycleActions::clientProfileUrl($record));
+            $viewer = Livewire::test(\App\Filament\Pages\VoyagerBreadRead::class, ['type' => 'users', 'record' => $target->id])
+                ->assertSet('viewId', $target->id)->assertSee('full-client@example.test');
+            $viewer->call('openEdit', $target->id)->assertForbidden();
+        }
+        $this->get($url)->assertOk();
+        $this->withoutExceptionHandling();
+        try {
+            Livewire::test(\App\Filament\Pages\VoyagerBreadRead::class, ['type' => 'users', 'record' => 99999]);
+            $this->fail('Missing client must return 404');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $exception) {
+            $this->assertSame(404, $exception->getStatusCode());
+        } finally {
+            $this->withExceptionHandling();
+        }
+        $record->setRelation('user', null);
+        $this->assertNull(\App\Filament\Resources\Orders\Tables\OrderLifecycleActions::clientProfileUrl($record));
+        $record->setRelation('user', $target);
+        $openViewer = Livewire::test(\App\Filament\Pages\VoyagerBreadRead::class, ['type' => 'users', 'record' => $target->id]);
+        DB::table('permission_role')->whereIn('permission_id', DB::table('permissions')->where('key', 'read_users')->pluck('id'))->delete();
+        $this->actingAs(User::findOrFail(auth('filament')->id()), 'filament');
+        $this->app->forgetInstance(BreadRegistry::class);
+        $this->assertNull(\App\Filament\Resources\Orders\Tables\OrderLifecycleActions::clientProfileUrl($record));
+        $this->get($url)->assertForbidden();
+        $openViewer->call('changeLocale', 'ru')->assertForbidden();
+        $this->assertDatabaseHas('users', ['id' => $target->id, 'email' => 'full-client@example.test']);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -5306,6 +5348,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_seo_read_only_user_cannot_scan_generate_or_apply(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->seoFixture(false);
         \Illuminate\Support\Facades\Queue::fake();
         $record = \App\Models\SeoMetaSuggestion::create(['status' => 'approved', 'approved_meta_title' => 'Protected']);
@@ -7817,6 +7860,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_cache_tools_authorized_http_get_is_read_only(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_compass']);
         \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
         $this->get('/filament/cache-tools')->assertOk()->assertSee('Очистить кеш приложения')->assertSee('Собрать кеш конфигурации и маршрутов');

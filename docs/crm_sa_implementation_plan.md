@@ -10108,3 +10108,29 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
   non-md файлов для копирования нет. Документы коммитить без push.
 - Общий ADM-AUD-13/13G IN PROGRESS; новая найденная разница остаётся в этом блоке,
   к другому модулю не переходить до решения.
+## ADM-AUD-13G — Полная карточка клиента из заказа, 2026-10-29 — DONE
+
+- Закрыто найденное расхождение навигации: краткое окно сохраняется и содержит
+  «Полная карточка клиента» при разрешённом BREAD read. Новый прямой маршрут
+  GET /filament/bread/{type}/{record}/view использует существующие BREAD read
+  поля, модель и permissions, включая Voyager UserPolicy для собственного профиля.
+- Read-доступ не требует browse: нельзя искусственно закрывать оригинальный
+  read_users пользователю без browse_users. Read проверяется при mount/hydrate
+  и чтении полей; без read ссылка отсутствует/route403; missing record404.
+  Без edit_users openEdit запрещён; рабочие права/таблицы не менялись.
+- Browser actual ListOrders42→краткая карточка→полная users2 под printing и
+  lite_manager PASS; desktop/390px просмотрены. Fixture использует8настроенных
+  read-полей; production состав определяется существующей data_rows, не этим fixture.
+  Все9business tables после подготовки изолированного снимка unchanged.
+- 13tests129assertions PASS: BREAD read/policy/read-only5tests52assertions,
+  lifecycle8tests77assertions. Дополнены settings только в3HTTP test fixtures:
+  прежний неполный SQLite users ломал sidebar, production schema не менялась.
+  Pint2PHP/diff-check PASS. Browser viewport reset, fixture server stopped.
+- Evidence: storage/app/audit/client-read-20261029/client-full-*.png и verified.json.
+- Скопировано5non-md файлов в C:/OSPanel/domains/viar/viar13, все SHA256 совпали.
+  Target commit48d1c00 в текущей main, без push. Основной коммит включает
+  документацию и правило двойного commit в AGENTS.md; Markdown не копировался.
+- Общий ADM-AUD-13 ещё IN PROGRESS. Следующий конкретный поднабор13G:
+  четыре chat окна (клиент/внутренний/SA/художник) × printing/lite_manager,
+  visible controls/read-only desktop/mobile на isolated fixture. После него
+  обновить оставшуюся матрицу13A–13F; не объявлять все роли/типы принятыми автоматически.

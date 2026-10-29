@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Filament\Bread\BreadRegistry;
+use App\Filament\Pages\VoyagerBreadRead;
 use App\Services\Admin\OrderLifecycleService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -62,10 +64,26 @@ class OrderLifecycleActions
             ->modalContent(fn ($record) => view('filament.tables.modals.order-client-card', [
                 'record' => $record,
                 'user' => $record->user,
+                'profileUrl' => self::clientProfileUrl($record),
             ]))
             ->modalSubmitAction(false)
             ->modalCancelActionLabel('Закрыть')
             ->authorize(fn ($record): bool => auth('filament')->user()?->can('view', $record) ?? false);
+    }
+
+    public static function clientProfileUrl($record): ?string
+    {
+        if (! $record->user) {
+            return null;
+        }
+        $registry = app(BreadRegistry::class);
+        $type = $registry->type('users');
+        if (! $type || $type->name !== 'users' || ! $registry->model($type)
+            || ! $registry->permitted($type, 'read', (int) $record->user->getKey())) {
+            return null;
+        }
+
+        return VoyagerBreadRead::getUrl(['type' => $type->slug, 'record' => $record->user->getKey()]);
     }
 
     public static function delete(): Action
