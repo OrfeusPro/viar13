@@ -1684,3 +1684,43 @@ regression после необходимых исправлений. Полно�
 - Следующее точное действие: завершить парную mobile сверку чатов с original,
   затем вернуться к пункту2 очереди ADM-AUD-13C/D — effective server upload
   limits/recovery. Визуальные отличия не объявлять исправленными.
+
+## ADM-AUD-13F — Парная мобильная сверка четырёх чатов, 2026-10-29
+
+- DONE для парной visual проверки original/new order18451 при390x844.
+  Actual Chrome, https://viarcanvas.loc/admin/orders и
+  https://viar13.loc/filament/orders; innerWidth390 подтверждён отдельно
+  в обеих вкладках. Pillow подтвердил размеры всех9 screenshots390x844;
+  фактический формат JPEG, несмотря на расширение .png от audit helper.
+- Клиент: те же test/test2, авторы/даты сохранены. В original composer
+  сжат горизонтальным layout до узкого поля, есть горизонтальная прокрутка.
+  Новый composer вертикальный, textarea и Add comment помещаются.
+- Internal: обе истории пусты; textarea/Отправить/close доступны.
+  Filament добавляет order title и обязательную подпись поля.
+- Painter: обе истории пусты, dropdown только «Общий»; форма/отправка/close
+  помещаются. Новый popup выше из-за заголовка/подписей/UAT explanation.
+- SA: тот же UAT message; Resume/Pause/Handoff присутствуют в обеих версиях.
+  Original reply/checkbox/send сжаты в строку, send уходит вправо; new controls
+  помещаются по ширине, нижняя форма достигается прокруткой. Actual click
+  пустого textarea и Tab переводит focus на send, без отправки/ввода текста.
+  Screenshot нижней формы подтверждает textarea/button/handoff checkbox.
+- Обнаруженное различие индикатора SA объясняется источником в Blade:
+  original sa_chat.blade.php берёт orders.sa_bot_mode с fallback n/a;
+  new resources/views/filament/tables/modals/order-sa-chat.blade.php берёт
+  conversation.bot_mode. Для18451 видим N/A vs PAUSED. Это не evidence смены
+  режима при просмотре: bot commands не вызывались. Принудительную синхронизацию
+  или подмену источника ради визуального совпадения не добавляли.
+- Оформление не1в1; различия зафиксированы. Этот проход закрывает прежний TODO
+  парного mobile сравнения этих четырёх popup, не всю приёмку orders и не
+  проверку физической клавиатуры телефона/реального мобильного устройства.
+- Только read-only UI: открытие/закрытие, focus/Tab. Send/read/bot actions
+  не нажимались; тестовые сообщения/данные не создавались. Runtime не менялся,
+  повтор тестов не требовался: ближайший gate e05b2cf —117tests1101assertions PASS.
+- Evidence ignored storage/app/audit/chat-switch-20261029/
+  pair-{old,new}-{client,admin,painter,sa}-390.png и
+  pair-new-sa-composer-390.png; все9 изображений просмотрены. Временные вкладки
+  закрыты, viewport reset. Markdown в C:/OSPanel/domains/viar/viar13 не копируется;
+  non-md изменений и target commit в этом проходе нет, push не выполняется.
+- Далее ADM-AUD-13C/D — effective server upload limits/recovery:
+  определить безопасный isolated full Filament save на Apache и проверить
+  реальную границу размера, отказ и восстановление. ОбщийADM-AUD-13 IN PROGRESS.
