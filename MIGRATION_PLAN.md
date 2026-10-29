@@ -4648,3 +4648,35 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
   HEIC decoding или полный100MiB Filament save под Apache. Далее ADM-AUD-13E:
   финальный browser generate/download документов на isolated fixture, внешние
   email/payment/Venipak calls не выполнять.
+## ADM-AUD-13E — Browser генерация и скачивание настоящего PDF, 2026-10-29
+
+- IN PROGRESS: отдельная копия SQLite/disks из fixture, настоящий InvoiceService/
+  DynamicPDFController, без partial mock; browser confirm generate и PDF link.
+- Source original invoice logic/действия остаются эталоном. Проверить новый PDF,
+  download SHA, текст/рендер, допустимые has_pdf/pdf_link/updated_at изменения
+  только fixture42; остальные записи неизменны. Без approve/email/реальных интеграций.
+- После evidence tests/журналы, commits/export при изменениях кода; no push.
+## ADM-AUD-13E — Browser генерация и скачивание настоящего PDF, 2026-10-29 — DONE для одностраничного счёта
+
+- Actual ListOrders fixture42 generateInvoice→confirm→настоящий InvoiceService/
+  DynamicPDFController/Dompdf, без mock. ИсходногоPDFне было, появился42.pdf931192bytes.
+  Ссылка «Счет» скачана browser downloadMedia; generated/download SHA256 совпали.
+- PDF1page просмотрена через pdftoppm: номерVR001, synthetic seller/customer,
+  товарUAT filter canvas, немецкая локаль из users.pdf_locale, итог94.00EUR.
+  pypdf text/page assertions PASS. Текст сохранён invoice-text.txt.
+- Snapshot190tables: только orders42.has_pdf/pdf_link/updated_at изменились;
+  pdf_approved0, остальные order/user/chat/SA/role данные прежние. Approve/email,
+  payment/Venipak не вызывались; Mail/HTTP fake. Fixture server stopped.
+- Две ошибки подготовки fixture: отсутствовали CSS для filemtime и order_strings1.
+  После первой generator failure состояние не сохранилось; добавлены assets и
+  прежние synthetic invoice texts из firm-pdf fixture, повторный generate успешен.
+  Production код не менялся; ошибки стенда не выдаются за дефекты приложения.
+- 25tests357assertions PASS (InvoiceDocumentTest/OrderInvoiceServiceTest).
+  Evidence storage/app/audit/invoice-browser-20261029/{verified.json,invoice-page1.png,
+  invoice-text.txt,public/storage/pdf/42.pdf}. Download local Downloads/42.pdf.
+- Только журналы: export non-md/commit C: не требуется, target main чистая;
+  основной commit без push. Diff-check PASS.
+- Общий ADM-AUD-13E/ADM13 IN PROGRESS: browser длинный/подарочный документ
+  этим сценарием не закрыт (их controller/render gates записаны ранее).
+  Следующий точный шаг — actual browser генерация длинного счёта с60позициями,
+  скачать/проверить обе страницы без реальных отправок, затем gift documents.
