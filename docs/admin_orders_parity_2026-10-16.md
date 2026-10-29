@@ -1361,3 +1361,23 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
   этим сценарием не закрыт (их controller/render gates записаны ранее).
   Следующий точный шаг — actual browser генерация длинного счёта с60позициями,
   скачать/проверить обе страницы без реальных отправок, затем gift documents.
+## ADM-AUD-13E — Длинный счёт через Chrome, 2026-10-29 — DONE для60позиций
+
+- По просьбе пользователя Chrome extension: actual ListOrders fixture42,
+  Generate→confirm→real InvoiceService/Dompdf→download «Счет». Никаких
+  invoice mocks/реальных заказов. PDF935967bytes, Chrome Downloads/42 (1).pdf
+  SHA25611372aeeb81492d75a5358729b2251533b63a2f5a13af2b06b6d0679a0e85864
+  совпал с generated файлом.
+- pypdf:2pages, LONG-ITEM001..060 каждый ровно1раз, итог730.00EUR=726+4delivery.
+  Обе страницы отрендерены/просмотрены: page1items1–34,page2items35–60,
+  итог/НДС/сумма прописью вмещаются, строки не теряются на разрыве.
+- 1targeted long invoice test68assertions PASS; предыдущий invoice suite25/357
+  уже прошёл без production изменений. Snapshot190tables: только order42
+  has_pdf/pdf_link/updated_at изменились, pdf_approved0/прочие данные прежние.
+  Approve/email/payment/Venipak не запускались, HTTP/Mail fake; server stopped.
+- Evidence storage/app/audit/invoice-browser-20261029/long-page-{1,2}.png,
+  long-text.txt,chrome-long-generated.png,verified.json. Текущий42.pdf overwritten
+  только в ignored fixture public; production storage не затронут.
+- Код не менялся: только4журнала, non-md для копирования/commit в C: нет.
+  Основной commit без push. Далее ADM-AUD-13E — подарочные документы через
+  Chrome (реальный download/render, без отправки клиентам). ОбщийADM13 открыт.
