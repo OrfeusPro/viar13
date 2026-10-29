@@ -4953,3 +4953,63 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
   серверном окружении: проверить возможность безопасного isolated Apache save,
   лимиты/отказ/recovery и preview только в рамках original behavior.
   ОбщийADM-AUD-13 остаётся IN PROGRESS.
+
+## ADM-AUD-13F — Сверка чатов с оригиналом, 2026-10-29
+- Текущая desktop/функциональная сверка выполнена; полная парная mobile приёмка остаётся TODO. Подробные evidence ниже.
+
+
+## ADM-AUD-13F — Визуальная и функциональная сверка окон чатов с оригиналом, 2026-10-29
+
+- DONE для текущей сверки; общий ADM-AUD-13 остаётся IN PROGRESS.
+- Original reference: C:/OSPanel/domains/asoft/viar/resources/views/admin/
+  client_chat.blade.php, admin_chat.blade.php, order_chat.blade.php,
+  sa_chat.blade.php; actual Chrome https://viarcanvas.loc/admin/orders и
+  https://viar13.loc/filament/orders, один тестовый заказ18451. На общей БД
+  только просмотр/открытие/закрытие, без send/read/bot commands.
+- В браузере сопоставлены истории и controls всех четырёх чатов:
+  client test/test2, пустые internal/painter, одно UAT SA сообщение.
+  Клиентский и SA popup имеют ширину1100, внутренний600; оформление не pixel-perfect.
+  Filament добавляет заголовок с order id, подписи полей, read/status metadata;
+  изменены отступы и положение handoff checkbox/кнопок. Фиксированная высота
+  истории и пустое пространство перед composer существуют и в original.
+- В исходном painter select реально активен только «Общий»: варианты sketch/
+  painting закомментированы. Новый general-only reply соответствует оригиналу;
+  legacy typed history продолжает отображаться. Read в original вызывается
+  отдельным кликом сообщения, открытие само по себе не означает прочтение.
+- Новые четыре окна проверены визуально desktop и390px в isolated fixture42:
+  composer/кнопки доступны, client/SA требуют scroll; при прокрутке длинного
+  окна заголовок/close могут уходить выше viewport. Это наблюдение удобства,
+  не подтверждённая новая регрессия относительно original mobile.
+- Важно: original-painter-mobile.png и original-sa-mobile.png фактически имеют
+  desktop dimensions (override применился к другой вкладке). Не использовать
+  имена файлов как evidence мобильной parity. Полная парная mobile сверка
+  original/new всех четырёх окон остаётся TODO перед общей приёмкой.
+- Actual browser positive write только isolated order42: одно внутреннее
+  сообщение «ADM-FIL-UAT визуальная и функциональная сверка 2026-10-29» отuser11;
+  после send видно в колонке и при повторном открытии popup. Остальные
+  изменяющие сценарии подтверждены автоматическими feature/Livewire тестами,
+  а не новой ручной отправкой во все четыре чата.
+- Fresh PHP8.4.1: OrderClientChatTest + OrderPainterChatTest + OrderSaChatTest +
+  OrderAdminChatServiceTest: 88 passed/844 assertions,24.85s.
+  OrderSaCommandTest + SaConversationBotControlTest:29 passed/257 assertions,9.16s.
+  Итого117tests1101assertions PASS. Проверяются thread binding, explicit/idempotent
+  read, permissions/403, revocation, stale snapshot, general painter reply,
+  SA send/handoff, bot modes, uncertain outcome и отсутствие повторной отправки.
+  Внешние операции fake/mock, фактическая доставка WhatsApp не проверялась.
+- Isolated router: Mail::fake/Notification::fake/Http::preventStrayRequests,
+  после каждого ответа Mail::assertNothingSent и Http::assertNothingSent.
+  check-chat-visual.py:190 таблиц проверено,189 без изменений; только одна
+  ожидаемая новая строка order_admin_comments(orders_id42,user_id11).
+  Read state/bot/orders/client/painter messages без изменений.
+- Evidence ignored storage/app/audit/chat-switch-20261029:
+  visual-{client,admin,painter,sa}-desktop.png, visual-*-mobile*.png,
+  original-*-desktop.png, new-live-client-desktop.png,
+  new-live-admin-desktop.png, new-live-sa-desktop.png,
+  new-live-painter-mobile.png, functional-admin-saved.png,
+  visual-functional-verified.json. Viewport reset выполнен.
+- Runtime код в этой сверке не изменялся. Выгрузка в C:/OSPanel/domains/viar/viar13
+  и target commit не нужны: изменяются только Markdown, исключённый правилом
+  пользователя. Предыдущий CSS уже доставлен commit b184fe8; push не выполняется.
+- Следующее точное действие: завершить парную mobile сверку чатов с original,
+  затем вернуться к пункту2 очереди ADM-AUD-13C/D — effective server upload
+  limits/recovery. Визуальные отличия не объявлять исправленными.
