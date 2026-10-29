@@ -4707,3 +4707,31 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
 - Код не менялся: только4журнала, non-md для копирования/commit в C: нет.
   Основной commit без push. Далее ADM-AUD-13E — подарочные документы через
   Chrome (реальный download/render, без отправки клиентам). ОбщийADM13 открыт.
+## ADM-AUD-13C/D — Заказ60позиций с фотографиями, 2026-10-29
+
+- IN PROGRESS: уточнение пользователя — сам заказ с фото, счёт без фото.
+  Создать отдельный synthetic order штатным AdminOrderCreationService с60позициями,
+  каждой отдельный локальный PNG UploadedFile. Не выдавать это за60browser uploads.
+- Проверить60разных сохранённых путей/SHA и browser EditOrders Chrome previews,
+  неизменность прежних190tables; Mail/HTTP fake. Только isolated fixture.
+  Код не менять без дефекта, журналы/коммит без push.
+## ADM-AUD-13C/D — Заказ с фотографиями: проверка 2026-10-29
+
+- Проверенный сценарий DONE: отдельный synthetic order №108 создан штатным
+  AdminOrderCreationService: 60 позиций PHOTO-ITEM-001..060, у каждой один PNG.
+  Это service-level UploadedFile, а не 60 загрузок через browser file chooser.
+- Одна синтетическая синяя картинка сохранена в 60 отдельных файлах; уникальность
+  путей и SHA256 каждого файла проверены. В Chrome EditOrders показаны все
+  60 позиций; загружены все 60 уникальных URL, ошибок изображений нет.
+  120 img включают дубликаты галереи/позиций; 4 offscreen lazy-дубликата pending.
+- После браузера повторно проверены 190 таблиц: все существовавшие строки прежние,
+  добавлен только order108. Счёт без фотографий оставлен без изменений.
+  SQLite/storage изолированы; Mail/HTTP fake, никаких отправок клиентам.
+- Evidence (ignored): storage/app/audit/invoice-browser-20261029/
+  sixty-photos-created.json, sixty-photos-before.json,
+  chrome-sixty-photos-gallery.png, chrome-sixty-photos-last.png;
+  storage/app/audit/sixty-photos-final-check.php: PASS. Сервер остановлен.
+- Runtime-код не менялся; текущая сдача — документация в основном репозитории.
+  Non-md файлов для копирования/коммита в C: нет; target working tree чистое.
+  ADM-AUD-13 в целом остаётся открытым. Следующий шаг: ADM-AUD-13E —
+  браузерная приёмка подарочных документов без отправок клиентам.
