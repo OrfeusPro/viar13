@@ -4512,3 +4512,36 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
   Target commit7ff88a0 в main без push. Основной commit включает эти журналы.
 - Общий ADM-AUD-13 открыт. Далее13G: четыре chat окна × printing/lite_manager,
   затем оставшаяся матрица13A–13F по согласованному списку.
+## ADM-AUD-13G — Чаты под печатником и менеджером, 2026-10-29
+
+- IN PROGRESS: actual ListOrders42,4окна(client/admin/SA/painter)×2роли,
+  desktop/390px. Проверить историю, доступные reply/read/bot controls и закрытие;
+  без отправки/прочтения/смены bot mode. Сравнить original role guards.
+- Только isolated SQLite fixture/fake HTTP/Mail. Snapshot должен включать также
+  SA/admin tables, не ограничиваться прежними9таблицами. Evidence/журналы,
+  commit обеих рабочих копий при code changes, export non-md SHA256, no push.
+## ADM-AUD-13G — Чаты под печатником и менеджером, 2026-10-29 — DONE для матрицы 4окон×2роли
+
+- Original admin/{client_chat,admin_chat,order_chat,sa_chat}.blade.php:
+  дополнительных printing/lite_manager guards нет. Новые окна обеих ролей
+  сохраняют общие read_orders/edit_orders gates для просмотра/reply/read/bot.
+- Actual ListOrders42: client general+painting903+sketch901 (5messages/3forms,
+  оба PNG loaded), painter3typed messages/general composer, internal empty
+  и2synthetic author messages, SA PAUSED/history/bot controls/reply/handoff.
+  Desktop/mobile390 просмотрены; клиентское окно343px без overflow, остальные
+  поля/кнопки доступны. Все8окон открыты/закрыты без send/read/bot commands.
+- Для positive internal history отдельно добавлены2synthetic fixture comments,
+  затем новый baseline. После browser прохода все190SQLite tables unchanged,
+  включая order_admin_comments/sa_messages/sa_conversations/sa_events.
+- 88tests844assertions PASS: client/painter/SA/admin chat suites. Рабочая БД,
+  реальные клиенты/исполнители/внешние провайдеры не менялись. Viewport reset,
+  fixture server stopped. Evidence chats-*.png/chat-roles-verified.json в
+  storage/app/audit/client-read-20261029; подготовка и снимки только ignored.
+- Два быстрых переключения сразу после закрытия не открыли следующее окно;
+  после завершения запроса закрытия оба открылись. Причину этим проходом
+  не доказали; не заявлять приёмку быстрого переключения/не менять core вслепую.
+- Production code не менялся, копировать/коммитить non-md в C: нечего;
+  целевая main чистая. В G: только журналы, commit без push.
+- Общий ADM-AUD-13 IN PROGRESS. Следующий блок согласованного списка:
+  ADM-AUD-13A — браузерная сверка типов товаров и превью (портрет, конструктор,
+  canvas/modular/collage/gallery/manual/oil/gift), с original source и isolated данными.
