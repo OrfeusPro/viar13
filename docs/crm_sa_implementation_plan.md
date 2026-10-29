@@ -10355,3 +10355,44 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
   verifier storage/app/audit/manual-ten-check.py. Сервер остановлен после проверки.
 - Runtime изменений нет: только4журнала в source commit без push; non-md файлов
   для выгрузки/коммита в C: нет. ADM-AUD-13 целиком остаётся открытым.
+
+## ADM-AUD-13E — Подарочные документы через Chrome, 2026-10-29: результат
+
+- DONE для browser-generation/download subset: isolated SQLite copy,
+  synthetic order110:2offline50+1online25. Через реальный ListOrders inline select
+  «Статус оплаты заказа №110» выбран payed; штатный OrderPaymentService создал
+  3купона/3настоящих PDF. В браузере после reload статус payed.
+- Coupon values50/50/25, offline1/1/0, три разных кода. pypdf: каждый1page,
+  код/номинал совпадают с coupon. Render Poppler50/25 просмотрен: оформление,
+  поворот, номинал и код читаются. Для второго50 отдельная visual не заявляется.
+- Mail fake перехватил GiftCard и Payment_successful; gift render содержит3ссылки
+  только order110. Chrome открыл локальный render реального письма; по всем3
+  ссылкам скачаны Downloads/110_2_{1,2,3}.pdf, SHA256 каждого совпал с generated.
+  download-event для target=_blank иногда timeout, но обычные клики скачали
+  файлы; проверены реальные Downloads. ПервыйPDF также downloadMedia.
+- Шаблон mail.giftcard и фонgiftcard.png SHA256 идентичны originalLaravel6;
+  метод getGiftCardHtml от private до конца файла совпадает после normalizeLF.
+  Это проверка business/render/download, не приёмка Outlook/Gmail.
+- В локальном browser preview заменены только src origin на localhost; отсутствуют
+  mail декоративные/промо картинки, поэтому полную визуальную приёмку письма
+  не заявляем. Промо2синтетические строки+RUtranslations для original template.
+- Первый export hook упал на пустых promo данных fixture после успешного action.
+  Данные fixture дополнены, SQLite восстановлена из before и browser action
+  повторён: в финальной fixture ровно3купона. Invoice-only assertSentCount
+  в ignored router убран: gift workflow перехватывает2типа письма, это не
+  production exception. Runtime-код не менялся.
+- check-gift-browser.py PASS:190tables сверены с snapshot; разрешённые изменения
+  order110 payment_status/use_bonus/updated_at, user2 bonuses/updated_at и3новых
+  coupons. Прочие строки/поля прежние. Внешние уведомления выключены, Mail fake,
+  HTTPpreventStrayRequests, Location fake. Производственные данные не затронуты.
+- GiftCardDocumentTest+OrderPaymentServiceTest:32tests352assertions PASS,
+  PHP8.4.1,77.97s. Код после тестов не менялся; diffcheck PASS.
+- Evidence ignored: storage/app/audit/gift-browser-20261029/verified.json,
+  before.sqlite, gift-mail-raw.html, gift-mail-preview.html, gift-{50,25}.png,
+  chrome-paid.png, chrome-gift-mail.png, public/storage/pdf-gift-card/110_2_*.pdf.
+  Сервер остановлен. Только4журнала source commit без push; non-md для C:нет,
+  target working tree чистое. Общий ADM13/13E открыт.
+- Уточнение пользователя: ADM-AUD-13D удобство формы отложено; текущую форму
+  товаров оставляем, ручное создание10сфото работает.
+- Следующая задача: ADM-AUD-13F — оставшиеся браузерные сценарии назначения
+  исполнителя и смены статусов на тестовых данных, с original business logic.
