@@ -13,7 +13,7 @@
 
 | Подзадача | Original | New / результат | Следующий шаг |
 | --- | --- | --- | --- |
-| ADM-AUD-13A — список | Восемь колонок и original partials | Сверены Blade данные и role visibility; 18Oct исправлены HTML описания, legacy coupon flags и SVG composition (sandbox document). Реальные portrait/gift открыты в Chrome; SVG проверен на isolated fixture | Сравнить все типы товаров и SVG с original в браузере; проверить мобильную таблицу и недоступные изображения |
+| ADM-AUD-13A — список | Восемь колонок и original partials | Сверены Blade данные и role visibility; 18Oct исправлены HTML описания, legacy coupon flags и SVG composition (sandbox document). Реальные portrait/gift открыты в Chrome; SVG проверен на isolated fixture | 29Oct: 11веток/5SVG и mobile235px actual ListOrders проверены по original source,39tests502assertions PASS. Остаётся доступность реальных media; live pixel compare не заявляется |
 | ADM-AUD-13B — фильтры/вкладки | Верхняя панель, predicates и порядок заказов | Chrome: период/страница2/цикл сортировки, художник/менеджер/страна, production/completed/unpaid, точный и частичный номер заявки. Исправлены подписи справочников и сброс applied/deferred поиска при смене вкладки. Уникальные заказы совпадают; завышение старых итогов из-за повторов vr_numbers объяснено SQL | Остальные вкладки и поиск клиента/телефона в браузере; роли и комбинации не считать полностью принятыми |
 | ADM-AUD-13C — редактирование | Получатель, доставка, скидки, фирма, позиции/медиа/художник | Full EditOrders SQLite сценарий прошёл; payment requests/comments/manager, media/PDF rollback проверены. Chrome desktop/mobile: окна оплаты/художника/добавления и зависимая доставка; FIG MIME alias исправлен | EditRecord desktop/mobile и payment/artist/add cancel проверены 18Oct. Осталось live original после исправления входа, file chooser/drop/HEIC/PSD/FIG и PHP upload limits; рабочие пути картинок не менять |
 | ADM-AUD-13D — создание | Ручной состав, доставка, клиент/бонусы/скидки | Actual CreateOrders tests; identity/phones/defaults/header исправлены. Порядок полей и две колонки сверены, отступы уменьшены; desktop и mobile просмотрены. Isolated Chrome PNG/JPEG, новый клиент, 100MiB/+1byte и HEIC/HEIF: сохранение JSON/имён/SHA проверено | Drag/drop и остальные типы; HEIC decoding/allcodecs и effective OpenServer upload limits не доказаны. Кнопки после всей формы — отличие от original |
@@ -1263,3 +1263,29 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Общий ADM-AUD-13 IN PROGRESS. Следующий блок согласованного списка:
   ADM-AUD-13A — браузерная сверка типов товаров и превью (портрет, конструктор,
   canvas/modular/collage/gallery/manual/oil/gift), с original source и isolated данными.
+## ADM-AUD-13A — Типы товаров и превью, 2026-10-29 — DONE для 11веток
+
+- Source original voyager/orders/items.blade.php и shared all_basket_order_items
+  сверены. Actual ListOrders42 fixture: portrait/constructor/canvas/modular/
+  collage/gallery0/1/2/manual/oil/gift; исходные условия preview сохранены.
+- Browser branch matrix:5SVG (constructor,canvas,modular,gallery1,oil),
+  secondary portrait/gallery0/gallery2/gift; collage/manual secondary скрыт.
+  SVG композиция из2локальных PNG видна в sandbox iframe. Oil promo отдельно
+  загружается из oil_header; gift icon и все raster images loaded.
+- Подтверждены portrait count/shape/type/originals/reference, modular wall/picture
+  dimensions, finishing/canvas/package и gift sender/recipient/date/greeting/code/
+  hide_nom/gift marker. Printing11веток/5SVG без «Цена:», подробности/код сохранены.
+- Desktop и390px: column235=scrollWidth235, document375=scrollWidth375;
+  картинки/данные/ссылки помещаются в горизонтально прокручиваемой таблице.
+  Это source+synthetic actual-browser проверка; live парный pixel compare
+  и доступность каждого реального production файла этим проходом не заявляются.
+- 39tests502assertions PASS (OrderProductPreviewTest/OrderListRolePresentationTest).
+  Все190fixture tables unchanged после подготовки11items+oil promo;3media SHA256
+  unchanged. Рабочая DB/storage/реальные файлы не менялись. Viewport reset,
+  server stopped. Evidence products-*.png,product-visual-evidence.json,
+  product-types-expectations.json в storage/app/audit/client-read-20261029.
+- Production code без изменений: копировать/коммитить non-md в C: нечего,
+  target main чистая. Документы коммитить в G: без push.
+- Общий ADM-AUD-13 открыт. Далее ADM-AUD-13B — финальные непустые комбинации
+  фильтров/вкладок в браузере. Недоступные реальные media остаются в общей
+  приёмке, не считать существование полного набора production файлов доказанным.

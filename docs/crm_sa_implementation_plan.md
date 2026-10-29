@@ -10186,3 +10186,29 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Общий ADM-AUD-13 IN PROGRESS. Следующий блок согласованного списка:
   ADM-AUD-13A — браузерная сверка типов товаров и превью (портрет, конструктор,
   canvas/modular/collage/gallery/manual/oil/gift), с original source и isolated данными.
+## ADM-AUD-13A — Типы товаров и превью, 2026-10-29 — DONE для 11веток
+
+- Source original voyager/orders/items.blade.php и shared all_basket_order_items
+  сверены. Actual ListOrders42 fixture: portrait/constructor/canvas/modular/
+  collage/gallery0/1/2/manual/oil/gift; исходные условия preview сохранены.
+- Browser branch matrix:5SVG (constructor,canvas,modular,gallery1,oil),
+  secondary portrait/gallery0/gallery2/gift; collage/manual secondary скрыт.
+  SVG композиция из2локальных PNG видна в sandbox iframe. Oil promo отдельно
+  загружается из oil_header; gift icon и все raster images loaded.
+- Подтверждены portrait count/shape/type/originals/reference, modular wall/picture
+  dimensions, finishing/canvas/package и gift sender/recipient/date/greeting/code/
+  hide_nom/gift marker. Printing11веток/5SVG без «Цена:», подробности/код сохранены.
+- Desktop и390px: column235=scrollWidth235, document375=scrollWidth375;
+  картинки/данные/ссылки помещаются в горизонтально прокручиваемой таблице.
+  Это source+synthetic actual-browser проверка; live парный pixel compare
+  и доступность каждого реального production файла этим проходом не заявляются.
+- 39tests502assertions PASS (OrderProductPreviewTest/OrderListRolePresentationTest).
+  Все190fixture tables unchanged после подготовки11items+oil promo;3media SHA256
+  unchanged. Рабочая DB/storage/реальные файлы не менялись. Viewport reset,
+  server stopped. Evidence products-*.png,product-visual-evidence.json,
+  product-types-expectations.json в storage/app/audit/client-read-20261029.
+- Production code без изменений: копировать/коммитить non-md в C: нечего,
+  target main чистая. Документы коммитить в G: без push.
+- Общий ADM-AUD-13 открыт. Далее ADM-AUD-13B — финальные непустые комбинации
+  фильтров/вкладок в браузере. Недоступные реальные media остаются в общей
+  приёмке, не считать существование полного набора production файлов доказанным.
