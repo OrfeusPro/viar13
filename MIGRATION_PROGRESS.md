@@ -5282,3 +5282,27 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Следующее точное действие: ADM-AUD-13G — форма этикетки Venipak под printing
   и lite_manager: сверить доступ и поля с original, открыть/отменить desktop/mobile
   на isolated fixture без вызова перевозчика и без изменения labels.
+## ADM-AUD-13G — Форма этикетки Venipak под ролями, 2026-10-29
+
+- DONE для browser opening/cancel поднабора: original payment.blade.php
+  create/print вне printing guard; actual ListOrders42 printing/lite_manager
+  открывают форму. Сверены source form__label.blade.php и новые основные блоки:
+  документ, получатель/отправитель, комментарии, сроки, указания, страховка, упаковки.
+- Desktop paired sections и mobile390 single column просмотрены; footer
+  «Отменить»/«Внести данные» доступен. Printing: address→pickup показывает
+  город/пункт вместо address fields; обратное переключение восстанавливает улицу.
+- Fixture без активных данных отправителя/справочника: поля отправителя пусты,
+  pickup явно сообщает о недоступном/пустом списке. Выбор реального пункта
+  и positive provider path этим browser прогоном не подтверждены.
+- Временный draft printing: вес1.25 → добавленная посылка тоже1.25;
+  страховая стоимость1000 → расчёт3 EUR. После Cancel и открытия manager:
+  одна упаковка, вес пустой. Это form state, не создание отправления.
+- 24tests186assertions PASS: OrderVenipakActionsTest, OrderVenipakLabelServiceTest,
+  VenipakPickupCatalogTest. Все9business tables неизменны (включая orders.labels).
+  Submit/create/print не запускались, HTTP/Mail заблокированы, рабочие данные
+  не менялись. Dialog0, viewport reset, тестовый сервер остановлен.
+- Evidence storage/app/audit/roles-20261028/venipak-*.png. Production code
+  не менялся; non-md файлов для экспорта нет. Документы коммитить без push.
+- Общий ADM-AUD-13/13G IN PROGRESS. Следующий точный шаг:
+  ADM-AUD-13G — История статусов и просмотр клиента под обеими ролями:
+  открыть/закрыть на fixture desktop/mobile, сверить original, без смены статусов.
