@@ -9,6 +9,7 @@
     $legacyPaintings = collect(explode(',', trim((string) $record->painter_images, ',')))->map(fn ($path) => trim($path))->filter();
     $clientImages = collect(explode(',', trim((string) $record->client_images, ',')))->map(fn ($path) => trim($path))->filter();
     $canEdit = auth('filament')->user()?->can('update', $record) ?? false;
+    $mediaUrl = static fn (?string $path): string => \App\Support\Admin\OrderMediaUrl::resolve($path) ?: order_image_placeholder();
     $mediaStatuses = $sketches->isNotEmpty() || $paintings->isNotEmpty()
         ? \App\Models\APainterImagesStatus::query()->orderBy('id')->pluck('title', 'id') : collect();
     $galleries = $isPrinting
@@ -41,8 +42,8 @@
                 <div style="margin-top: 10px; font-weight: 600;">{{ $title }}:</div>
                 @forelse($images as $image)
                     <div style="margin-top: 6px; padding-bottom: 12px; border-bottom: 1px solid #eee;" wire:key="order-media-status-{{ $record->id }}-{{ $mediaType }}-{{ $image->id }}">
-                        <a href="{{ order_image_url($image->image) }}" target="_blank" rel="noopener" title="{{ $image->statusDefinition?->title ?: 'Статус не указан' }}">
-                            <img class="adm-fil-order-artist__image" src="{{ order_image_url($image->small_image ?: $image->image) }}" alt="{{ $title }} заказа №{{ $record->id }}">
+                        <a href="{{ $mediaUrl($image->image) }}" target="_blank" rel="noopener" title="{{ $image->statusDefinition?->title ?: 'Статус не указан' }}">
+                            <img class="adm-fil-order-artist__image" src="{{ $mediaUrl($image->small_image ?: $image->image) }}" alt="{{ $title }} заказа №{{ $record->id }}">
                         </a>
                         @if($canEdit)
                             <select aria-label="Статус {{ $mediaLabel }} №{{ $image->id }} заказа №{{ $record->id }}" x-on:change.stop="saveMedia('{{ $mediaType }}', {{ $image->id }}, $el.value)" wire:loading.attr="disabled" style="display: block; margin: 4px auto 0; width: auto; max-width: 100%; padding: 1px 3px;">
@@ -59,7 +60,7 @@
                 @empty
                     <div class="adm-fil-order-artist__gallery">
                         @foreach($legacyImages as $path)
-                            <a href="{{ order_image_url($path) }}" target="_blank" rel="noopener"><img class="adm-fil-order-artist__image" src="{{ order_image_url($path) }}" alt="{{ $title }} заказа №{{ $record->id }}"></a>
+                            <a href="{{ $mediaUrl($path) }}" target="_blank" rel="noopener"><img class="adm-fil-order-artist__image" src="{{ $mediaUrl($path) }}" alt="{{ $title }} заказа №{{ $record->id }}"></a>
                         @endforeach
                     </div>
                 @endforelse
@@ -70,7 +71,7 @@
             <div style="margin-top: 10px; font-weight: 600;">Картины клиента:</div>
             <div class="adm-fil-order-artist__gallery">
                 @foreach($clientImages as $path)
-                    <a href="{{ order_image_url($path) }}" target="_blank" rel="noopener"><img class="adm-fil-order-artist__image" src="{{ order_image_url($path) }}" alt="Файл клиента заказа №{{ $record->id }}"></a>
+                    <a href="{{ $mediaUrl($path) }}" target="_blank" rel="noopener"><img class="adm-fil-order-artist__image" src="{{ $mediaUrl($path) }}" alt="Файл клиента заказа №{{ $record->id }}"></a>
                 @endforeach
             </div>
         @endif
