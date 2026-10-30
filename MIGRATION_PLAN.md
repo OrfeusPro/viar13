@@ -5083,3 +5083,43 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
   включая конфликт глобального filament-form-controls.css с локальными textarea
   (border/radius); не заявлять pixel-perfect или завершение всего дизайна.
   Read-state/UAT/подтверждения команд сохранять. До этого к uploads не переходить.
+
+## ADM-AUD-13F — Разные сообщения на общем тестовом заказе18451, 2026-10-30
+- IN PROGRESS по явному запросу пользователя: отправить тестовые тексты в общую рабочую БД только18451, сравнить original/new на одном заказе. Проверены client/painter/SA flags=false; SA ADM-FIL-UAT-18451. Не отправлять внешние уведомления. Следующий шаг: UI send и повторное открытие в обеих админках.
+
+## ADM-AUD-13F — Разные сообщения на общем заказе18451: результат, 2026-10-30
+- DONE для тестового наполнения/desktop сравнения, visual parity IN PROGRESS.
+  Явное разрешение пользователя на рабочую общую БД только тестового18451.
+- Через actual Filament Chrome отправлены8сообщений: short+long в каждый из
+  client/internal/painter/SA. Маркер [UAT-18451-3010], текст синтетический:
+  RU/UK/EN, emoji, абзацы,144символа без пробелов, example.test ссылка.
+  Сообщения оставлены в базе для дальнейшей парной приёмки.
+- Перед send прочитана runtime config G: и C:: client/painter notifications=false,
+  sa_commands=false. UI help подтверждает suppression. SA external id
+  ADM-FIL-UAT-18451 имеет дополнительный hard transport lock в сервисе.
+  Отправки сделаны только из Filament; legacy send endpoints не вызывались.
+- Read-only before/after snapshot18451: orders и saConversations полностью
+  совпали, все прежние строки четырёх потоков совпали. Ровно2новых в каждом:
+  order_user_comments3994/3995; order_admin_comments187/188;
+  orders_chats2857/2858; sa_messages141/142 (uat_suppressed).
+  Это сверка данного заказа, не snapshot всей общей БД. SA events создаются
+  штатным сервисом; бот/Handoff/read actions не вызывались.
+- Actual Chrome original/new одного18451: все4истории открыты и просмотрены,
+  счётчики client4/internal2/painter2, SA3; оба новых маркера доступны в DOM.
+  Для быстрой загрузки при задержках Chrome временные вкладки отфильтрованы
+  original ?order_filter=1&order_id=18451, new filters[order_id][value]=18451.
+- На наполнении видны remaining differences: new сохраняет абзацы/переносит
+  строки и добавляет read/UAT metadata; original internal/painter схлопывает
+  пробелы/переносы, дата internal стоит иначе. Ширина600/1100 и схема
+  history→composer сохранены. Полное визуальное совпадение не заявляется.
+- TODO в ADM-AUD-13F: на наполненных чатах довести отступы/поля/подписи и
+  провести mobile сверку длинных сообщений. Длинные комментарии делают строку
+  списка высокой в обеих версиях; проверить превью отдельно, без потери текста.
+- Evidence ignored storage/app/audit/working-chat-20261030-{before,after,verified}.json;
+  storage/app/audit/chat-layout-20261030/populated-{old,new}-{admin,client,painter,sa}.jpg,
+  populated-new-client-bottom.jpg. Все screenshots просмотрены. CSS/runtime
+  в этом проходе не менялись, поэтому повтор regression suite не запускался;
+  функциональное evidence — actual8UI sends + DB assertions, предыдущий gate88/844.
+- Только Markdown коммитится в source; кодовых файлов для копирования и
+  отдельного коммита в C:/OSPanel/domains/viar/viar13 нет. Без push.
+  Следующее действие остаётся ADM-AUD-13F: довести оформление на этом наполнении.
