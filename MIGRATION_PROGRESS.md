@@ -34,7 +34,7 @@ regression после необходимых исправлений. Полно�
 **ADM-AUD-13F — Быстрое переключение окон чатов: DONE 29 октября.**
 Исправлен перехват клика закрывающимся overlay, проверены16переходов по двум
 ролям/ширинам; подробности в результате ниже. Следующая задача:
-**ADM-AUD-13C/D — Загрузки в целевом серверном окружении.**
+**ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика.** (Актуализация30октября: целевые серверные загрузки отложены; browser clipboard проверен, native Windows paste отдельно не подтверждён.)
 
 По решению пользователя улучшения удобства создания товаров **DEFERRED**:
 текущую форму оставляем. Outlook/Gmail и реальные вызовы перевозчика не входят
@@ -5984,3 +5984,18 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Следующий незакрытый поднабор заказов: ADM-AUD-13C/D effective server upload
   limits/recovery; прежде чем объявлять весь visual DONE, учитывать перечисленные
   отличия. Новых дефектов, требующих изменения кода, в этом проходе не найдено.
+
+## ADM-AUD-13E — Платёжная ссылка: копирование и вставка из буфера, 2026-10-30
+- IN PROGRESS: проверить существующую OPR-000043 тестового заказа18451 через Chrome: copy → Ctrl+V в отдельное локальное поле, точное совпадение URL; без создания заявки, открытия оплаты и отправок.
+- Уточнение очереди: создание/редактирование и PNG/JPEG recovery уже проверены; повтор всего ADM-AUD-13C/D не требуется. Проверку загрузок целевого сервера отложили по уточнению пользователя; локальный Apache не считается production acceptance.
+
+## ADM-AUD-13E — Платёжная ссылка: копирование и вставка из буфера, результат 2026-10-30
+- DONE только для автоматизированного browser clipboard сценария; весь ADM-AUD-13E/13 остаётся IN PROGRESS. Системный буфер Windows отдельно НЕ подтверждён и не подменяется этим результатом.
+- Chrome, существующая OPR-000043 заказа18451: повторный штатный click дал «Ссылка скопирована»; clipboard.readText78символов точно совпал с URL кнопки. Ctrl+V в отдельную local textarea без формы/JS обработчиков вставил те же78символов. Буфер инструмента не заполнялся вручную через writeText/fill.
+- Первое фоновое копирование вернуло ручной fallback; повтор после восстановления browser binding успешен. Ошибка предыдущего native Windows URL detection не считается дефектом приложения. Причина задержки первого clipboard Promise не доказана, исправлений по предположению нет.
+- Read-only DOM original Laravel6: для той же заявки совпадают /lv/payment-request/ и токен; отличается только origin viarcanvas.loc/viar13.loc. Original bot_scripts.blade.php1922+ копирует data-copy-link через execCommand; новый helper поддерживает Clipboard API, legacy fallback и ручное поле. Попытка нажатия original через browser tool завершилась timeout, original paste не подтверждён.
+- node --test tests/js/payment-request-copy.test.cjs:5tests PASS,0fail/skip,219.923ms. Проверены modern success, missing API, permission rejection, false/throw legacy failure. Новые тесты и runtime правки не требовались.
+- Evidence ignored storage/app/audit/payment-copy-20261030/{verified.json,pasted.jpg}; снимок просмотрен. URL оплаты не открывался, заявки/заказы/сообщения не создавались, отправки не запускались. Изолированный localhost Apache11332 остановлен после проверки; рабочий Apache не затронут. Временная textarea tab закрыта.
+- SHA256 helper JS и двух Blade совпадают между G: и C:/OSPanel/domains/viar/viar13. Изменены только4Markdown журнала; non-md для копирования/нового target commit нет, target working tree чистое. Source docs commit в текущей ветке без push.
+- CRM/SA API, auth, идемпотентность, БД и статические mappings этим шагом не менялись; lead_id=orders.id. Серверные загрузки отложены до целевого окружения по уточнению пользователя, уже пройденные create/edit не повторять.
+- Следующая задача: ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика, на изолированных данных без реального вызова API/писем. Native Windows paste остаётся отдельным неподтверждённым пунктом, общий модуль не объявлять DONE.
