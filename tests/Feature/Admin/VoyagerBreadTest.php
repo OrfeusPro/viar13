@@ -785,6 +785,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_database_edit_page_requires_current_preview_and_rechecks_schema_permissions_and_drop_name(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_database']);
         Schema::create('page_edit_fixture', fn (Blueprint $table) => $table->id());
         $this->get('/filament/database-tables/edit?table=page_edit_fixture')->assertOk()->assertSee('Редактирование таблицы');
@@ -968,6 +969,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_database_creation_previews_then_creates_columns_indexes_and_defaults_only_after_submit(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_database']);
         $columns = [
             ['name' => 'id', 'type' => 'integer', 'length' => '', 'nullable' => false, 'unsigned' => true, 'auto_increment' => true, 'index' => 'PRIMARY', 'default' => null],
@@ -1043,6 +1045,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_database_catalog_inspects_schema_without_modifying_records_or_bread(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_database']);
         Schema::create('database_fixture', function (Blueprint $table): void {
             $table->id();
@@ -2969,6 +2972,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_edit_route_groups_metadata_tabs_and_saves_all_fields(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
         DB::table('data_rows')->where('field', 'meta_description')
             ->update(['details' => json_encode(['tab_title' => 'SEO'])]);
@@ -3042,6 +3046,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_saves_base_and_ru_translation_separately(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
         $id = DB::table('pages')->insertGetId(['title' => 'English', 'meta_description' => 'Base']);
         $this->get('/filament/bread/pages')->assertOk();
@@ -4763,6 +4768,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_voyager_setting_requires_permission_and_saves_value(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         Schema::create('settings', function (Blueprint $table): void {
             $table->id(); $table->string('key'); $table->string('display_name');
             $table->text('value')->nullable(); $table->text('details')->nullable();
@@ -7924,6 +7930,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_compass_resources_preserve_original_icon_catalogue_and_filter_without_writes(): void
     {
+        Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         config(['voyager.compass_in_production' => true]);
         $this->admin(['browse_admin', 'browse_compass']);
         $this->get('/filament/compass')->assertOk()->assertSee('Иконки Voyager')->assertSee('Документация Voyager');

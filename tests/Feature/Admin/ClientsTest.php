@@ -52,8 +52,14 @@ class ClientsTest extends TestCase
         $this->assertSame('all', $query['tab']);
         $ordersPage = new \App\Filament\Resources\Orders\Pages\ListOrders();
         $this->assertSame('current', $ordersPage->getDefaultActiveTab());
-        $builder = $ordersPage->getTabs()['all']->modifyQuery(\App\Models\Orders::query());
-        $this->assertSame(3, $builder->count());
+        $this->assertArrayNotHasKey('all', $ordersPage->getTabs());
+        // Client links use the filter branch, which includes completed orders
+        // independently of the visible tab selection.
+        $ordersPage->tableFilters = $query['filters'];
+        $scope = new \ReflectionMethod($ordersPage, 'modifyQueryWithActiveTab');
+        $builder = $scope->invoke($ordersPage, \App\Models\Orders::query());
+        $this->assertStringNotContainsString('status', $builder->toSql());
+        $this->assertSame(2, $builder->where('user_id', $query['filters']['user_id']['value'])->count());
         $header = new \ReflectionMethod($ordersPage, 'getHeaderActions');
         foreach ($header->invoke($ordersPage) as $action) {
             $this->assertInstanceOf(\Filament\Actions\Action::class, $action);
