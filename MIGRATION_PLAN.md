@@ -5162,3 +5162,37 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
   сверка отступов/метаданных; не переходить к uploads до закрытия этого блока.
   Сохранение абзацев и статусов прочтения — действующая новая функциональность,
   не удалять ради сокращения истории до размеров original.
+
+## ADM-AUD-13F — Парная mobile приёмка наполненных чатов, 2026-10-30
+- IN PROGRESS: original/new18451 на390x844, actual wheel scroll до конца длинной истории; сверить4потока, проверить поля/close/actions без send/read/bot. Runtime пока не меняется.
+
+## ADM-AUD-13F — Парная mobile приёмка наполненных чатов: результат, 2026-10-30
+- DONE для проверяемого поднабора: original/new18451, четыре popup,390x844.
+  Общий ADM-AUD-13 не закрыт; pixel-perfect не заявляется.
+- Original/new внутренний и painter: history300px, composer отдельно, close/send
+  доступны. New actual wheel bottom: internal top356.67+300~657; painter396+300=696.
+  client bottom1021.33+188~1210, width283==scrollWidth283.
+- Original client/SA при длинной строке scrollWidth1312 приclientWidth288;
+  original client composer сжимается до75px, SA textarea до20px. Эти дефекты
+  не переносились. New сохраняет абзацы/переносы, read-state и UAT help.
+- New SA actual scroll по AX region: top1229.33+219~1449, ширина288==scrollWidth288.
+  final-new-sa-mobile-bottom.jpg захвачен до стабильной перерисовки (пустая область),
+  не использовать как evidence текста; final-new-sa-mobile-composer.jpg показывает
+  последнюю строку TEST18451, example.test ссылку, uat_suppressed label и textarea/
+  send/handoff. Focus/Tab без ввода, send/read/bot не вызывались.
+- Reference screenshots final-old-{admin,client,painter,sa}-mobile.jpg и
+  final-old-{admin,client,sa}-mobile-bottom.jpg; new соответствующие start/bottom
+  и SA composer в storage/app/audit/chat-layout-20261030 (ignored).
+- Read-only snapshot сверка18451 с before-fields PASS: поля заказа, прежние и
+  восемь тестовых сообщений четырёх потоков, saConversations без изменений.
+  Runtime не менялся, новый regression прогон не нужен; последний88/844 PASS.
+- Временная новая вкладка закрыта, её viewport reset. Этот проход docs-only:
+  non-md для копирования в C:/OSPanel/domains/viar/viar13 нет, target commit
+  не создаётся; source docs commit без push.
+- Оставшиеся известные отличия visual: RU labels против original user locale,
+  дополнительные read/UAT/SA metadata, дата/имя internal и отступы с учётом
+  этих данных. Не удалять сведения или нарушать business logic ради совпадения.
+  Проверка реального телефона с системной клавиатурой не выполнялась.
+- Следующий незакрытый поднабор заказов: ADM-AUD-13C/D effective server upload
+  limits/recovery; прежде чем объявлять весь visual DONE, учитывать перечисленные
+  отличия. Новых дефектов, требующих изменения кода, в этом проходе не найдено.
