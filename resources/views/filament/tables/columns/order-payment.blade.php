@@ -67,7 +67,7 @@
                 <span style="display: block;">{{ $label }}</span>
                 <button
                     type="button"
-                    wire:click.stop="callTableAction('printVenipakLabel', '{{ $record->getKey() }}', [], { label: @js($label) })"
+                    wire:click.stop="mountTableAction('printVenipakLabel', '{{ $record->getKey() }}', { label: @js($label) })"
                     style="margin-top: 3px; padding: 3px 8px; border: 1px solid #8d99a6; border-radius: 3px; background: #f8f9fa; color: #333; font-size: 11px; cursor: pointer;"
                 >
                     На печать

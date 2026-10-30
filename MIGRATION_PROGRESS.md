@@ -34,7 +34,7 @@ regression после необходимых исправлений. Полно�
 **ADM-AUD-13F — Быстрое переключение окон чатов: DONE 29 октября.**
 Исправлен перехват клика закрывающимся overlay, проверены16переходов по двум
 ролям/ширинам; подробности в результате ниже. Следующая задача:
-**ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика.** (Актуализация30октября: целевые серверные загрузки отложены; browser clipboard проверен, native Windows paste отдельно не подтверждён.)
+**ADM-AUD-13G — Поля фирмы и медиа: финальная проверка доступности.** (Venipak address create/print/download закрыт30октября с исправлением кнопки.) (Актуализация30октября: целевые серверные загрузки отложены; browser clipboard проверен, native Windows paste отдельно не подтверждён.)
 
 По решению пользователя улучшения удобства создания товаров **DEFERRED**:
 текущую форму оставляем. Outlook/Gmail и реальные вызовы перевозчика не входят
@@ -5999,3 +5999,21 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - SHA256 helper JS и двух Blade совпадают между G: и C:/OSPanel/domains/viar/viar13. Изменены только4Markdown журнала; non-md для копирования/нового target commit нет, target working tree чистое. Source docs commit в текущей ветке без push.
 - CRM/SA API, auth, идемпотентность, БД и статические mappings этим шагом не менялись; lead_id=orders.id. Серверные загрузки отложены до целевого окружения по уточнению пользователя, уже пройденные create/edit не повторять.
 - Следующая задача: ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика, на изолированных данных без реального вызова API/писем. Native Windows paste остаётся отдельным неподтверждённым пунктом, общий модуль не объявлять DONE.
+
+## ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика, 2026-10-30
+- IN PROGRESS: полный ListOrders isolated SQLite42 → actual create action → сохранённый номер → print/download. Ранее успешный submit проверялся в отдельном action harness; сейчас закрываем интеграцию с настоящим списком. Реальные HTTP/уведомления запрещены fake/stray guard, original code read-only.
+
+## ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика: результат, 2026-10-30
+- DONE для address create→номер в настоящем ListOrders→print/download; общий ADM-AUD-13E/13 остаётся IN PROGRESS. Проверка выполнялась только на isolated SQLite42, fake HTTP, Mail/Notification fake; рабочая страница viar13.loc и production API не изменялись.
+- Найден реальный дефект колонки «Оплата»: wire click вызывал callTableAction, отсутствующий в Filament5 (500 до provider call). Исправлена только привязка на существующий mountTableAction с record key и label. Проверки права update, принадлежности label заказу и бизнес-сервис сохранены.
+- Actual Chrome: открыли форму из строки42, doc UAT42-3010, вес2.5кг/объём0.1; штатные sender/recipient defaults. Submit закрыл окно, success «Этикетка Venipak создана», в колонке появился FIXTURE-LABEL/«На печать». После fix кнопка отправила print с этим номером и скачала PDF619bytes.
+- Browser download event инструмента timeout/kernel reset; скачивание подтверждено новым C:/Users/Валентин/Downloads/FIXTURE-LABEL (1).pdf от30октября15:45, не старым FIXTURE-LABEL.pdf от17октября. SHA256 5fcfce4d121a03bef72249ab8ce6d6413e2404364b2c4df68d8d0e243db23276 совпал с fake provider-label.pdf. Это специально синтетический PDF, не приёмка дизайна настоящей этикетки перевозчика.
+- Сверка190таблиц с before.sqlite PASS: только orders42.labels/updated_at изменены; платежи, позиции, клиенты, чаты, роли/permissions прежние. Provider journal ровно create+print, failurefalse; payload содержит вес/объём/doc и pack_no FIXTURE-LABEL. preventStrayRequests не допускает иной HTTP, Mail::assertNothingSent выполняется после каждого запроса.
+- Original read-only VinepakApiController.create_label349+ сохраняет номера ответа в orders.labels; print_label726+ передаёт выбранный label_code как pack_no и отдаёт attachment PDF с no-cache. Новый поток сохраняет эту бизнес-логику; реальный provider не вызывался.
+- Добавлен regression test: настоящая ViewColumn payment в Livewire table harness, метод/label извлекаются из отрендеренного wire handler; callback получает выбранный заказ/номер, assertFileDownloaded подтверждает PDF. Прежний action-only harness не ловил сломанную кнопку таблицы. Полный ListOrders дополнительно проверен actual browser.
+- OrderVenipakActionsTest+OrderVenipakLabelServiceTest+OrderListRolePresentationTest:28tests408assertions PASS,13.84s PHP8.4.1; Pint/diff-check PASS. Первый новый тест упал из-за XPath namespace в парсере теста; заменён обходом DOM buttons, после этого весь targeted gate PASS.
+- Ошибки подготовки стенда: исходный router сначала сохранил путь к прежней isolated client-read SQLite (GET500 из-за отсутствующего gallery_boxes для прежнего тестового товара); исправлен путь на venipak-list, собственная копия ограничена42 до baseline. Рабочая DB не использовалась. CLI preconnections/долгие запросы мешали browser navigation; для изоляции выбран отдельный local-only Apache/PHP8.3 на8797 без изменения production vhost/ini/лимитов. Это подготовка UAT, не приёмка prod сервера.
+- Evidence ignored storage/app/audit/venipak-list-20261030/{before.sqlite,verified.json,provider.jsonl,provider-label.pdf,created.jpg,requests.jsonl}; screenshot просмотрен. Изолированные CLI35604 и Apache38724 остановлены. Временные routers/fakes/config остаются только ignored, не поставляются.
+- Скопированы только2non-md текущей задачи: order-payment.blade.php и OrderVenipakActionsTest.php; SHA256 совпали в G: и C:/OSPanel/domains/viar/viar13. Target main commit3ea9b4f без push, Markdown не копировался. Source code+4журнала коммитятся в текущей ветке без push.
+- CRM/SA API/БД/статические mappings не менялись, lead_id=orders.id. Серверные upload проверки остаются отложенными до целевого окружения, native Windows payment-link paste отдельно не подтверждён.
+- Следующая задача: ADM-AUD-13G — Поля фирмы и медиа: финальная проверка доступности на desktop/mobile по original; общий список приёмки не закрывать этим шагом.

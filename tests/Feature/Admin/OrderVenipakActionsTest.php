@@ -12,6 +12,10 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Tables\Columns\ViewColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -116,6 +120,31 @@ class OrderVenipakActionsTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_payment_column_print_button_calls_the_table_action_and_downloads_the_selected_label(): void
+    {
+        $this->service()->shouldReceive('print')->once()
+            ->with(Mockery::on(fn ($record) => $record instanceof Orders && $record->id === 1), 'OLD-LABEL')
+            ->andReturn(['filename' => 'OLD-LABEL.pdf', 'content' => '%PDF-1.4 table fixture']);
+
+        $page = Livewire::test(VenipakTableHarness::class);
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$page->html());
+        $buttons = $dom->getElementsByTagName('button');
+        $handler = null;
+        foreach ($buttons as $button) {
+            if (str_contains($button->getAttribute('wire:click.stop'), "'printVenipakLabel'")) {
+                $handler = $button->getAttribute('wire:click.stop');
+                break;
+            }
+        }
+        $this->assertNotNull($handler, 'The rendered payment column must expose its print button.');
+        $this->assertSame(1, preg_match('/^(\w+)\(/', $handler, $method));
+        $this->assertSame(1, preg_match("/label:\s*'([^']+)'/", $handler, $label));
+        $page->call($method[1], 'printVenipakLabel', '1', ['label' => $label[1]])
+            ->assertFileDownloaded('OLD-LABEL.pdf', '%PDF-1.4 table fixture');
+        Http::assertNothingSent();
+    }
+
     public function test_revoked_permission_blocks_create_and_print_before_service_call(): void
     {
         $service = $this->service();
@@ -129,6 +158,23 @@ class OrderVenipakActionsTest extends TestCase
             ->call('mountAction', 'printVenipakLabel', ['label' => 'OLD-LABEL']);
         $this->assertSame('OLD-LABEL', Orders::find(1)->labels);
         Http::assertNothingSent();
+    }
+}
+
+class VenipakTableHarness extends Component implements HasActions, HasSchemas, HasTable
+{
+    use InteractsWithActions, InteractsWithSchemas, InteractsWithTable;
+
+    public function table(Table $table): Table
+    {
+        return $table->query(Orders::query())
+            ->columns([ViewColumn::make('payment_status')->view('filament.tables.columns.order-payment')])
+            ->recordActions([OrderVenipakActions::print()]);
+    }
+
+    public function render(): string
+    {
+        return '<div>{{ $this->table }}</div>';
     }
 }
 
