@@ -23,9 +23,9 @@
     <label for="{{ $fieldId }}" class="adm-chat-response-label">{{ $stream === 'client' ? 'Вы:' : $label }}</label>
     <textarea id="{{ $fieldId }}" aria-label="{{ $label }}" wire:model="text" rows="3" maxlength="10000" aria-describedby="{{ $fieldId }}-help {{ $fieldId }}-errors" aria-invalid="{{ $errors->has('text') ? 'true' : 'false' }}" placeholder="{{ $stream === 'painter' ? 'Комментарий' : 'Введите сообщение...' }}"></textarea>
     @if($stream === 'painter')
-        <label class="adm-chat-thread">Тип переписки <select aria-label="Тип переписки художника"><option value="general">Общий</option></select></label>
+        <label class="adm-chat-thread"><span class="adm-chat-thread-label">Тип переписки</span> <select aria-label="Тип переписки художника"><option value="general">Общий</option></select></label>
     @endif
-    <x-filament::button class="adm-chat-send" type="button" size="sm" wire:click="send" wire:loading.attr="disabled" :disabled="$requiresReview">{{ $stream === 'sa' ? 'Отправить в WhatsApp' : ($stream === 'client' ? 'Добавить комментарий' : 'Отправить сообщение') }}</x-filament::button>
+    <x-filament::button class="adm-chat-send" type="button" size="sm" wire:click="send" wire:loading.attr="disabled" :disabled="$requiresReview">{{ $stream === 'sa' ? 'Отправить в WhatsApp' : ($stream === 'client' ? 'Добавить комментарий' : 'Отправить') }}</x-filament::button>
     @if($stream === 'sa')
         <label class="adm-chat-handoff">
             <input type="checkbox" wire:model="handoff">

@@ -5123,3 +5123,42 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
 - Только Markdown коммитится в source; кодовых файлов для копирования и
   отдельного коммита в C:/OSPanel/domains/viar/viar13 нет. Без push.
   Следующее действие остаётся ADM-AUD-13F: довести оформление на этом наполнении.
+
+## ADM-AUD-13F — Поля ответа и длинные сообщения, 2026-10-30
+- IN PROGRESS: исключить custom chat controls из общего скругления, вернуть компактный painter select/Отправить по original; проверить desktop/390px на сохранённом18451 без новых send/read/bot действий.
+
+## ADM-AUD-13F — Поля ответа и длинные сообщения: результат, 2026-10-30
+- DONE для текущих полей/подписей, общий visual parity остаётся IN PROGRESS.
+- filament-form-controls.css: исключение .adm-chat-modal из общего !important
+  border/radius правила custom controls; остальные BREAD/формы прежние.
+  Локальные стили теперь работают: client/SA textarea transparent border0/radius0,
+  painter textarea/select прямоугольные; admin Filament wrapper radius0.
+- Painter dropdown «Общий» компактный и слева, подпись «Тип переписки» визуально
+  скрыта, aria-label сохранён. Кнопка «Отправить», как в original order_chat.
+  wire:model/send, maxlength, error/help, permissions и business services прежние.
+- Reference: source original admin/client/order/sa_chat Blade и наполненные
+  original desktop screenshots populated-old-*.jpg текущего18451.
+  Actual new Chrome все4окна desktop и390x844, 8сохранённых тестовых сообщений.
+  Поля/close/send помещаются. Read-state/UAT и keyboard focus outline сохранены.
+- DOM widths mobile (clientWidth==scrollWidth): client history283/textarea299,
+  painter/internal history313, SA history288/textarea253; длинный текст не
+  создаёт горизонтальную прокрутку. Desktop client history1005/1005.
+  Mobile End не довёл историю к нижней строке, screenshots history показывают
+  начало/середину; не объявляем их evidence чтения последней строки. Доступность
+  SA composer отдельно проверена focus/Tab, без отправки.
+- PHP8.4.1 OrderClientChatTest/OrderPainterChatTest/OrderSaChatTest/
+  OrderAdminChatServiceTest:88tests844assertions PASS,50.70s; diffcheck PASS.
+  Новых зеркалящих CSS тестов нет, проверка оформлений actual browser+computed styles.
+- Read-only DB compare с snapshot после предыдущих8send: orders18451, все строки
+  client/internal/painter/SA и saConversations полностью без изменений.
+  client/painter/SA notification flagsfalse. Новых send/read/bot действий нет.
+- Evidence ignored chat-layout-20261030/fields-{client,painter,admin,sa}-desktop.jpg,
+  fields-{client,painter,admin}-mobile.jpg, fields-sa-mobile-{history,composer}.jpg;
+  все просмотрены. Viewport reset, временная вкладка закрыта.
+- Скопированы только3файла текущей задачи в C:/OSPanel/domains/viar/viar13,
+  SHA256 всех трёх совпали; Markdown не копировался. Target commit см. итог.
+  Код и документация source коммитятся отдельно от target, без push.
+- Осталось: парная mobile приёмка наполненных original/new и окончательная
+  сверка отступов/метаданных; не переходить к uploads до закрытия этого блока.
+  Сохранение абзацев и статусов прочтения — действующая новая функциональность,
+  не удалять ради сокращения истории до размеров original.

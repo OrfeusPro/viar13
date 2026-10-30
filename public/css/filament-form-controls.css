@@ -19,7 +19,7 @@
 .fi-body .fi-input-wrp textarea { border-radius: inherit; }
 
 /* Legacy controls outside Filament wrappers retain their sizes and status colors. */
-.fi-body :is(input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="search"], input[type="url"], input[type="password"], input[type="date"], input[type="datetime-local"], select, textarea):not(.fi-input-wrp *):not([hidden]):not([aria-hidden="true"]) {
+.fi-body :is(input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="search"], input[type="url"], input[type="password"], input[type="date"], input[type="datetime-local"], select, textarea):not(.fi-input-wrp *):not(.adm-chat-modal *):not([hidden]):not([aria-hidden="true"]) {
     border: 1px solid #d0d5dd !important;
     border-radius: 8px !important;
     box-shadow: none !important;
