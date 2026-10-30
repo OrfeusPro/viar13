@@ -5841,3 +5841,33 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Далее ADM-AUD-13C/D — effective server upload limits/recovery:
   определить безопасный isolated full Filament save на Apache и проверить
   реальную границу размера, отказ и восстановление. ОбщийADM-AUD-13 IN PROGRESS.
+
+## ADM-AUD-13F — Компактное оформление чатов по оригиналу, 2026-10-30
+- IN PROGRESS: убрать видимые повторные заголовки/подписи, выровнять формы и отступы средствами scoped CSS; сохранить ARIA names, read-state, UAT и actions. Сравнить original/new Chrome desktop/390px без отправок. Общую визуальную приёмку не объявлять закрытой до проверки.
+
+## ADM-AUD-13F — Компактное оформление чатов по оригиналу: результат, 2026-10-30
+- DONE для текущей CSS правки; общий ADM-AUD-13F visual parity IN PROGRESS.
+- public/css/filament-order-chats.css: повторные заголовки Filament, подпись
+  внутреннего textarea и painter reply визуально скрыты через clipping; label/id
+  и accessible dialog heading сохранены. Close вынесен в верхний угол, content
+  padding15px, внутренние textarea wrapper/button компактнее. CSS scoped chats.
+- Actual Chrome original/new order18451 desktop: четыре пары screenshots,
+  внутренний popup600x266.33 против original600x271. Истории/action labels прежние;
+  только open/close/focus/Tab, send/read/bot commands не вызывались.
+- New390x844: client/admin/painter screenshots проверены; SA composer доступен
+  через focus+Tab, send/checkbox помещаются, close видим после scroll.
+  new-sa-mobile.jpg снят во время перехода, НЕ evidence финального внешнего вида;
+  использовать new-sa-mobile-composer.jpg. Первый отдельный tab зависал и закрыт;
+  проверки продолжены в рабочей вкладке. Viewport reset, оба user popup закрыты.
+- Evidence ignored storage/app/audit/chat-layout-20261030: old/new-*-desktop.jpg,
+  new-{client,admin,painter}-mobile.jpg, new-sa-mobile-composer.jpg.
+- Fresh PHP8.4.1: OrderClientChatTest/OrderPainterChatTest/OrderSaChatTest/
+  OrderAdminChatServiceTest:88tests844assertions PASS,125.21s. API/services/schema
+  и настройки отправок не менялись; новые зеркалящие CSS тесты не добавлялись.
+- Скопирован только CSS в C:/OSPanel/domains/viar/viar13 с сохранением структуры;
+  SHA256 обеих копий845EE5D3C66118C8601C173CBEEAF8CE7F58AA8CEDB4976BD7354AA03B404A5B.
+  Markdown не копировался; target commit указан в итоговом ответе. Без push.
+- Осталось в этой задаче: детализация полей/подписей/отступов composer и SA,
+  включая конфликт глобального filament-form-controls.css с локальными textarea
+  (border/radius); не заявлять pixel-perfect или завершение всего дизайна.
+  Read-state/UAT/подтверждения команд сохранять. До этого к uploads не переходить.
