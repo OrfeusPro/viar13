@@ -3368,6 +3368,51 @@ class VoyagerBreadTest extends TestCase
         }
     }
 
+    public function test_legacy_pivot_table_with_spaces_supports_forms_sync_and_read(): void
+    {
+        $this->admin(['browse_admin', 'browse_pages', 'read_pages', 'edit_pages']);
+        Schema::create('categories', function (Blueprint $table): void {
+            $table->id(); $table->string('name');
+        });
+        Schema::create('page_ category', function (Blueprint $table): void {
+            $table->id(); $table->unsignedBigInteger('page_id'); $table->unsignedBigInteger('category_id');
+        });
+        $pageId = DB::table('pages')->insertGetId(['title' => 'Legacy pivot']);
+        $otherId = DB::table('pages')->insertGetId(['title' => 'Other owner']);
+        $first = DB::table('categories')->insertGetId(['name' => 'First']);
+        $second = DB::table('categories')->insertGetId(['name' => 'Second']);
+        DB::table('page_ category')->insert([
+            ['page_id' => $pageId, 'category_id' => $first],
+            ['page_id' => $otherId, 'category_id' => $second],
+        ]);
+        $details = ['type' => 'belongsToMany', 'table' => 'categories', 'pivot_table' => 'page_ category',
+            'model' => BreadTagFixture::class, 'key' => 'id', 'label' => 'name'];
+        $rowId = DB::table('data_rows')->insertGetId([
+            'data_type_id' => DB::table('data_types')->where('slug', 'pages')->value('id'),
+            'field' => 'legacy_categories', 'type' => 'relationship', 'display_name' => 'Legacy categories',
+            'details' => json_encode($details), 'order' => 3,
+        ]);
+        $type = app(BreadRegistry::class)->type('pages');
+        app(\App\Services\Admin\BreadMetadataService::class)->validateRelationship($type, $details);
+        $editor = Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $pageId]);
+        $this->assertSame([$first], array_map('intval', $editor->get('data.__pivot_'.$rowId)));
+        $editor->set('data.__pivot_'.$rowId, [$second])->call('save')->assertHasNoErrors();
+        $this->assertDatabaseMissing('page_ category', ['page_id' => $pageId, 'category_id' => $first]);
+        $this->assertDatabaseHas('page_ category', ['page_id' => $pageId, 'category_id' => $second]);
+        Livewire::test(VoyagerBread::class, ['type' => 'pages'])->call('openView', $pageId)->assertSee('Second');
+        Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $pageId])
+            ->set('data.__pivot_'.$rowId, [])->call('save')->assertHasNoErrors();
+        $this->assertDatabaseMissing('page_ category', ['page_id' => $pageId]);
+        $this->assertDatabaseHas('page_ category', ['page_id' => $otherId, 'category_id' => $second]);
+        foreach (['page_ category; DROP TABLE pages', 'page_` category', 'page_.category', ' page_ category', "page_\tcategory"] as $invalid) {
+            try {
+                app(\App\Filament\Bread\BreadPivotKeys::class)->resolve($type, array_replace($details, ['pivot_table' => $invalid]));
+                $this->fail('Unsafe pivot table accepted');
+            } catch (\Illuminate\Validation\ValidationException) { $this->assertTrue(true); }
+        }
+        $this->assertDatabaseCount('pages', 2);
+    }
+
     public function test_validated_many_to_many_relation_syncs_pivot(): void
     {
         Schema::create('categories', function (Blueprint $table): void {

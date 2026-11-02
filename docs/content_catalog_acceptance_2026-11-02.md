@@ -42,6 +42,14 @@ bread:audit теперь учитывает валидированные hasOne/
 
 ## Границы
 
-Это inventory/model/schema и targeted read/form проверка, не сохранение всех135types и не визуальная проверка каждой формы. Общий первоначальный read-only audit ещё выполняется на версии command, загруженной доисправления; его результат будет разобран отдельно. Медиа/ссылки остаются следующим подэтапом.
+Это inventory/model/schema и targeted read/form проверка, не сохранение всех135types и не визуальная проверка каждой формы. Общий первоначальный read-only audit завершён:135types,6issues на версии command доисправлений. Targetedpostfixзакрылкатегориитестовогоцикла/галерею/коллажи. Остались3историческихограничения:canvas/a-collag-faq безтаблиц иpayment-info безполей/записей. Это комбинированные evidence, не единыйpostfix135PASS. Медиа/ссылки остаются следующим подэтапом.
 
 Evidence: ignored storage/app/audit/content-inventory-20261102/{inventory.json,restored-report.md,restored-verified.json,export-verified.json}; JUnit storage/logs/content-audit-20261102.xml.
+
+## Исправлены реальные pivot-связи галереи
+
+Четыре существующие таблицы имеют ASCII-пробел в имени. Прежний BreadPivotKeys отвергал их до чтения схемы. Теперь допускается безопасный формат такого имени с обязательным существованием ключевых колонок; SQL-пунктуация по-прежнему запрещена. Имена таблиц, записи и определения BREAD не менялись.
+
+После исправления:8tests/145assertionsPASS; actual read-only gallery-items/collage-header audit2types/0issues. SHA десяти таблиц до/после совпали. Обе формы галереи и edit коллажа рендерятся; это не сохранение всех рабочих записей.
+
+Коммиты копии C::327a994 (модели/аудит),150e859 (pivot). Изменённые PHP проверены SHA256, Markdown не выгружался, push не выполнялся. Следующий пункт — остаточные media/link URL.

@@ -16,7 +16,13 @@ class BreadPivotKeys
             'parentKey' => $details['parent_key'] ?? 'id',
             'relatedKey' => $details['key'] ?? 'id',
         ];
-        foreach ([$details['table'] ?? null, $details['pivot_table'] ?? null, $details['label'] ?? null, ...array_values($keys)] as $name) {
+        // Existing Voyager pivot tables include names such as "gallery_items_ gallery_boxes".
+        // Query builder quotes the whole identifier; SQL punctuation remains forbidden.
+        $pivotTable = $details['pivot_table'] ?? null;
+        if (! is_string($pivotTable) || ! preg_match('/\A[a-zA-Z_][a-zA-Z0-9_]*(?: [a-zA-Z_][a-zA-Z0-9_]*)*\z/', $pivotTable)) {
+            throw ValidationException::withMessages(['details' => 'Проверьте ключи связи и промежуточной таблицы.']);
+        }
+        foreach ([$details['table'] ?? null, $details['label'] ?? null, ...array_values($keys)] as $name) {
             if (! is_string($name) || ! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)
                 || in_array($name, ['password', 'remember_token'], true)) {
                 throw ValidationException::withMessages(['details' => 'Проверьте ключи связи и промежуточной таблицы.']);
