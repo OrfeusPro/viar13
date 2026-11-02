@@ -1,6 +1,6 @@
 # ADM-AUD-10 — операции меню и настроек
 
-Дата начала: 2026-10-15. Общий статус: **IN PROGRESS**.
+Дата начала:2026-10-15. Локальная desktop приёмка: **DONE 2026-11-02**. Сенсорные проверки нацелевомустройствепрежнемунепройдены; историческиеINPROGRESSнижеотносятсяксвоимдатам.
 
 ## Источники
 
@@ -36,13 +36,13 @@ Chrome: новая форма создания открывается с пус�
 - **ADM-AUD-10A:** create/rename меню browser DONE16октября.
 - **ADM-AUD-10B:** delete меню с пунктами/переводами browser DONE2ноября.
 - **ADM-AUD-10C:** desktop nested/reorder DnD browser DONE16октября; сенсорные жесты без целевого устройства не проверялись. Ранее доказанные desktop переносы не возвращаются вTODO.
-- **ADM-AUD-10D:** код и SQLite tests DONE; остаётся browser create/clear/order/delete настройки на одноразовых данных. Это следующий шаг.
+- **ADM-AUD-10D:** browser create/edit/up/down/boundary/clear/cancel/delete/reload DONE2ноября, exactDB/filesdiff PASS.
 - **ADM-AUD-10E:** девять типов/joint save ранее проверены; single/joint image/file replacement browser DONE2ноября.
 - **ADM-AUD-10F/G:** URL/route/JSON/target/parent и EN/RU drafts/save/reload browser DONE16октября.
 - **ADM-AUD-10H:** parent delete/cancel/child preservation/reload browser DONE2ноября.
 - **ADM-AUD-10I:** rich attachment rollback/retry проверены автоматически; не выдаются за browser SQL fault injection. Runtime после общего900test gate не менялся.
 
-ОбщийADM-AUD-10 остаётся **IN PROGRESS** до оставшегося10D. Исторические next steps ниже описывают состояние своих дат, а не возвращают закрытые ветки вTODO.
+ЛокальнаяdesktopприёмкаADM-AUD-10 **DONE2ноября**. Сенсорныепроверкинепройденыиотносятсякцелевомуустройству. СледующийблокADM-FIL-022/029. ИсторическиеnextstepsниженевозвращаютзакрытыеветкивTODO.
 
 Рабочие БД/меню/изображения не менялись. Все проверки записи — SQLite. Коммит не создан. Общий ADM-AUD-10 не завершён.
 
@@ -244,3 +244,24 @@ Server session55901 остановлен Ctrl-C,exit1 штатной остан�
 - Evidence ignored storage/app/audit/menu-parent-20261102/{before.sqlite,before.json,cancel-verified.json,verified.json,before-menu-delete.json,menu-delete-verified.json,parent-confirm.jpg,parent-deleted.jpg,menu-confirm.jpg,menu-deleted.jpg}. Снимкиподтверждения/дерева/оставшегосяменюпросмотрены. Testtabзакрыта, server85988штатноостановленCtrl-C.
 - Runtime/testsне менялись. Полныйbaseline2ноября900tests/11272assertions/0errors/0failures/1legacy skip иJS15PASS сохранён; повторныхпроверокбезновогокоданет. Permissions/stale/rollback остаютсявсуществовавшихfeaturetests. ТолькоMarkdownжурналы: mirrorclean, non-mdexport/targetcommitнет; sourcedocscommitбезpush. CRM/SA API/auth/DB/mappingsбезизменений,lead_id=orders.id.
 - Следующаязадача: **ADM-AUD-10D — Настройки: browser создание, очистка значения, порядок и удаление** наотдельнойsyntheticкопии. ОбщийADM-AUD-10ещёINPROGRESS; новыеuserfields/roles/productionoperationsэтимнепринимались.
+
+
+## ADM-AUD-10D — Настройки: browser управление записями, 2026-11-02
+
+- IN PROGRESS. Отдельная settings-control-20261102 SQLite/public fixture наlocalhost8801; добавлены add/delete_settings тольковsyntheticrole1 доsnapshot, неправарабочихпользователей.15tables/17files/before.sqliteсохранены; Http::preventStrayRequests/Mail::fake/DBguard.
+- Browser create text setting→edit value→up/down/boundarynoop→clear/cancel/confirm→delete/cancel/confirm. Дополнительно clear существующихsyntheticimage/file: image pathудаляется,ordinaryfileостаётсякакoriginal delete_value. СверитьexactDB/filesdiff, UIreload иoldvalues/metadataнеизменность.
+- Original VoyagerSettingsController.store/move_up/move_down/delete_value сверены: group slug prefix, empty value, lastorder+1, swapвнутригруппы, image-onlyphysicaldelete. Нереализованныепроизвольныеновыесценариине добавлять. ПослеэтогоактуализироватьостатокобщегоADM-AUD-10.
+
+
+## ADM-AUD-10D — Browser управление настройками: результат 2026-11-02
+
+- **DONE для оставшейся desktop browser UAT.** Через actual VoyagerSettings на отдельной settings-control-20261102 fixture создана UAT Disposable setting:text/groupSite/keyaudit_control_uat. Backend сохранил id10/keysite.audit_control_uat/valueempty/order10 (исходныйmaxorder9), как original store. Затем через edit/save сохранено Browser control value.
+- Кнопка «Выше» поменяла order10:10→9 иorder1:9→10; «Ниже» вернула точный snapshot всех10строк. Повторный «Ниже» накраю не изменилDB; actual toast «Настройка уже на краю списка» наблюдался. При одинаковыхисходныхorder9 выбрандетерминированный соседid1, существующийtiebreak сохранён.
+- Очистка text: modal/cancel сохранили все строки; confirm изменил толькоvalue наempty, записьосталась. Удаление text: modal/cancel сохранили10строк; confirm удалил толькоid10. Послеэтого все9исходныхsettings совпали сbaseline до последующихclearimage/file. Это создание/удаление толькоодноразовойtestrow, нерабочихнастроек.
+- Image clear: modal явно предупредил «Файл изображения также будет удалён». После confirm settings9.valueempty иточныйPNGпутьудалён. File clear: settings8.valueempty, ordinaryTXTфизическисохранён. СопутствующийWebPизображениятакжеоставлен: original delete_value удаляеттолькоуказанныйimagepath, новуюмассовуюочисткуневыдумывали.
+- Послеreload «Файл не задан»/«Изображение не задано» видимы, удалённойUATsettingнет. ExactDBdiff15tables PASS: толькоsettings8/9.valueempty итехническийsqlite_sequence.settings9→10послеtestinsert; остальныестроки/metadata/order/праваснимка неизменны. Счётчикавтоинкрементанеоткатывалирадификтивнойнеизменности.
+- Exactfilediff: из17исходныхtestpublicфайловудалёнтолькоPNGsettings9;16остальныхSHAсовпали, новыхфайловнет. РабочиеDB/storage/permissionsнеподключались. Add/delete_settingsданытолькоsyntheticroleдоbaseline, Http::preventStrayRequests/Mail::fake/DBguardсохранены.
+- Evidence ignored storage/app/audit/settings-control-20261102/{before.sqlite,before.json,before-hashes.json,created.json,value-saved.json,up.json,text-cleared.json,verified.json,delete-setting-confirm.jpg,image-clear-confirm.jpg,final-cleared.jpg}. Итоговыйснимокпросмотрен. Testtabзакрыта; server29822штатноостановленCtrl-C.
+- Код/testsпродуктанеменялись; нетновогоendpoint/схемы/permissionrules. Общий900/11272/0errors/0failures/1legacy skip иJS15PASSbaseline2ноябрясохранёнбезненужногоповторногопрогона. SourceMarkdowncommitбезpush; non-mdдляC:/OSPanel/domains/viar/viar13нет, mirrorclean/targetcommitнет. CRM/SA API/auth/idempotency/staticmappingsбезизменений,lead_id=orders.id.
+- **ADM-AUD-10 — локальнаяприёмкасогласованныхdesktopоперацийDONE.** A/B/F/G/Cdesktop провереныпредыдущимишагами, H/E/D browserостаткизакрыты2ноября. Сенсорныежестынацелевомустройствеостаютсянепроверенными; физическийdropпользовательпопросилпропустить, userdeferredtouchневыдаётсязаPASS. SQLfailure/rollback/permissionbranchesподтверждаютсяавтотестами, неbrowserfaultinjection.
+- Следующаязадача: **ADM-FIL-022/029 — Контент и каталог: специальные BREAD-поля, используемые metadata и остаточные media/links.** Сначала актуальныйinventory/исходныеконтракты; неоткрыватьзановопроизвольныеисторическиеTODO, неиспользоватьархивupgrade-laravel13-filament5какactiveplan. ОстальныеSEO/ALT/tools/DEVauth/dashboard/cutoverзадачисохраняются, цельвсегочатанеобъявляетсязавершённой.
