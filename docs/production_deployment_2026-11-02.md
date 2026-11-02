@@ -94,3 +94,9 @@ Evidence находится в private/deploy-20261102 на сервере: asse
 ## Проверка владельцев после выкладки
 
 Пользователь подтвердил тестовый заказ и вход в админку. Все 27498 записей release принадлежат admin:admin. Исправлены 26 новых каталогов public assets, созданных от root: после исправления все assets из manifest и их каталоги принадлежат admin:admin и доступны admin для записи. Содержимое и chmod не менялись. System configs и административные backup/rollback/evidence файлы оставлены под root. Git и Composer выполнять от admin.
+
+## PROD-CUTOVER-20261102 — GitLab fetch подтверждён
+
+- После выполнения пользователем git fetch origin проверены FETCH_HEAD и origin/main от admin: оба указывают на 150e8593f4fff144236a8c082fd6963ea7c1bf09, совпадающий с активным HEAD. HEAD...origin/main=0/0; новых коммитов для выкладки нет, pull не требуется.
+- Release, .git и FETCH_HEAD принадлежат admin:admin. Worktree содержит только ожидаемый untracked public/vendor/livewire/ после публикации assets; это не новое изменение исходников, каталог не удалялся. Worker active/running, NRestarts=0.
+- Ручная GitLab HTTPS authentication пользователя подтверждена успешным fetch; постоянное noninteractive хранение credentials не проверялось и не настраивалось. Это закрывает вопрос совпадения активного кода с main, полученным данным fetch, но не гарантирует автоматическую авторизацию будущих fetch.
