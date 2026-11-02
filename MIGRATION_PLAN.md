@@ -5580,3 +5580,9 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
 - Runbook/evidence/rollback:docs/production_deployment_2026-11-02.md.Откатподготовлен,невыдаётсязапроверенныйrehearsal. RuntimePHPbootstrap/deployconfigsнаходятсявprivateнаserver;секретывGitнепопали.
 - TODO:GitLabread-access(ниadmin,ниrootfetchнеавторизованы);legacyusersmigrationfilename/ledger;authenticatedUAT/checkout/payment/chat/upload;scheduler/selfHTTPauditеслииспользуются.Серверныйhostsрезолвитдоменв127.0.1.1;origincheck--resolvePASS,внешнийDNSWindowsPASS;hostsнеизменялся.
 - ОбщаямиграцияостаётсяINPROGRESS,техническийcutoverготов. ТолькоMarkdownизменениявsource,non-mdэкспортвC:нет;sourcecommitбезpush.CRM/SAAPI/auth/idempotencyнеизменялись.
+## PROD-CUTOVER-20261102 — Владельцы ресурсов и пользовательский smoke
+
+- Пользователь подтвердил: тестовый заказ оформился успешно, авторизация в новой админке выполнена. Это пользовательская проверка заказа и входа, не отдельная проверка оплаты/чатов.
+- Проверка владельцев: все 27498 записей release принадлежат admin:admin. Обнаружены 26 каталогов static assets, созданных root при overlay; исправлены только root-owned пути из assets-plan.json и их родители внутри production public. Все проверенные assets и каталоги теперь admin:admin, каталоги доступны admin для записи. Release повторно проверен: non-admin entries=0. Evidence: private/deploy-20261102/asset-ownership-fixed.json.
+- Файлы public/storage не удалялись, права доступа chmod не расширялись, посторонние каталоги не обходились для chown. Root-owned system configs, backup .env и административные rollback/evidence файлы оставлены под root намеренно. Git/Composer и дальнейшие операции с кодом выполнять от admin.
+- Следующее действие: пользователь выполняет fetch от admin с HTTPS GitLab authentication; работающий код не обновлять через pull до проверки полученного коммита. Общая GitLab авторизация пока не настроена; токены в чат/URL/.gitconfig не помещать.

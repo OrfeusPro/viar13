@@ -90,3 +90,7 @@ python3 /home/admin/web/viarcanvas.com/private/deploy-20261102/rollback.py
 Evidence находится в private/deploy-20261102 на сервере: assets-plan.json/assets-before, migration-result.txt, activation-state.json, production.env.before, origin-results.json, login-assets-results.json, final-verification.txt, deployment-manifest.json и runtime/deployment scripts. Manifest фиксирует SHA файлов конфигурации. Backup `.env` имеет режим root0600; его содержимое не переносить в Git или чат.
 
 Осталось настроить GitLab read-access для будущих fetch, согласовать legacy migration filename/ledger, выполнить authenticated UAT админки/чатов/checkout и при фактическом использовании проверить scheduler/self-HTTP. Общая миграция не объявляется DONE на основании технического переключения.
+
+## Проверка владельцев после выкладки
+
+Пользователь подтвердил тестовый заказ и вход в админку. Все 27498 записей release принадлежат admin:admin. Исправлены 26 новых каталогов public assets, созданных от root: после исправления все assets из manifest и их каталоги принадлежат admin:admin и доступны admin для записи. Содержимое и chmod не менялись. System configs и административные backup/rollback/evidence файлы оставлены под root. Git и Composer выполнять от admin.
