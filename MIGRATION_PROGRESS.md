@@ -6208,3 +6208,28 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Source contract сохранён: replacement создаёт новый путь и оставляет прежний файл, как original ContentTypes/File/Image. SQL failure/rollback/retry ранее проверены feature tests; этот browser success subset не выдаётся за новое browser SQL fault injection. Общий baseline2ноября900tests/11272assertions/0errors/0failures/1legacy skip иJS15PASS остаётся актуальным: runtime/tests не менялись.
 - Только Markdown: non-md дляC:/OSPanel/domains/viar/viar13 нет, mirror working tree чистое, повторное копирование/target commit не требуются. Source docs commit в текущей ветке безpush. CRM/SA API/auth/DB/static mappings без изменений, lead_id=orders.id.
 - Следующая задача: **ADM-AUD-10H — Родительский пункт меню: browser подтверждение удаления и сохранность детей** на отдельной synthetic DB. Общий ADM-AUD-10 пока IN PROGRESS; другие модули админки не закрываются этим шагом.
+
+
+## ADM-AUD-10H — Удаление родителя меню: browser UAT, 2026-11-02
+
+- IN PROGRESS. Отдельная disposable fixture menu-parent-20261102 наlocalhost8801: parent1→child2→grandchild3, переводы иothermenu2/item4. ИсходнаяSQLite иsnapshot15tables сохранены длявосстановления; publicкопииизображенийтолькотестовые. Http::preventStrayRequests/Mail::fake иDBguard; рабочихmenu/permissionsнет.
+- Original VoyagerMenuController.delete_menu удаляет переводы title выбранного пункта ивыбраннуюстроку, некаскаддетей. Новаяверсия должна сохранитьchild.parent_id=1/grandchild.parent_id=2 ипереводыдетей; orphanchild становитсявидимымнаверхнемуровне ссообщениемосвязи.
+- Browser: открытьподтверждение→отмена/snapshotunchanged; повторнооткрыть→удалитьтолькотестовыйparent→проверитьsuccess/tree/reload иexactSQLdiff. Не выполнятьdeleteрабочихменю. Полномочия/rollback/stale casesранееfeaturetested; новыйсценарийзакрываетоставшийсяbrowserbranch.
+
+
+## ADM-AUD-10B — Удаление целого меню: browser UAT, 2026-11-02
+
+- IN PROGRESS. После успешного parent-delete10H на тойжеdisposablefixture проверить меню1 сorphanchild2/grandchild3: открытьmodal→отмена/snapshotunchanged, затемconfirm «Удалить меню и пункты». Ожидаетсяудалениеmenu1/items2,3/ихпереводов; menu2/item4/переводы/settings/остальныетаблицысохраняются. Snapshot before-menu-delete.json записан; before.sqliteдлявосстановления остаётся.
+- Это удаление толькоодноразовыхsyntheticкопий; реальныеменю/права/productionDBнеподключены. Runtimeбезизменений, локальныйbrowserCRUDдополняетпрежниеSQLite rollback/permissiontests.
+
+
+## ADM-AUD-10H / ADM-AUD-10B — Browser приёмка удаления меню: результат 2026-11-02
+
+- **ADM-AUD-10H DONE.** На одноразовой menu-parent-20261102 fixture открыт modal выбранного parent1; явно показано предупреждение, что дочерние пункты сохранятся. Cancel не изменил ни одну из15tables. После повторного открытия штатно подтверждено удаление только parent1: удалены одна строка menu_items и два её title translations.
+- Child2 и grandchild3, их поля/parent_id/переводы полностью прежние; menu2/item4 и остальные13tables неизменны. После reload actual DOM:child2 наверхнемуровне ссообщением оботсутствующем parent1; grandchild3 вложенвchild2. Это fallback представления безобнуленияparent_id: сохранение данных совпадает с original VoyagerMenuController.delete_menu22–30. Старый Voyager могнепоказыватьorphans; это ранееописанноеотличиеUI, не изменение дочернихзаписей.
+- **ADM-AUD-10B DONE для оставшейся browser ветки удаления целого меню.** Modal назвалaudit_disposable_menu/пункты/переводы; cancel сохранил все15tables. Затем «Удалить меню и пункты» удалило menu1 иоставшиесяitems2,3/дваихперевода, включая orphanchild. В меню2/item4/его переводах иостальныхтаблицах измененийнет. Exact snapshotdiff PASS.
+- После deleteMenu панельавтоматическивыбралаaudit_other_menu; reload подтвердилoldMenu=false/otherItem=true. Короткие success toast небылипойманы наблюдением: успехподтверждёндеревом/modalclosed/SQL, неприписываемtoast скриншотам. Таблицы/действияпродукта не подменялись, rawDELETEчерезshellвместоbrowserнеиспользовался.
+-17/17 publicфайловfixture SHA совпали сисходнойкопией. РабочиеDB/menu/permissions/media не подключались; auth/senderданытолькоfixture, Http::preventStrayRequests/Mail::fake. before.sqlite иsnapshots сохраняютвосстановимуюкопию одноразовыхданных.
+- Evidence ignored storage/app/audit/menu-parent-20261102/{before.sqlite,before.json,cancel-verified.json,verified.json,before-menu-delete.json,menu-delete-verified.json,parent-confirm.jpg,parent-deleted.jpg,menu-confirm.jpg,menu-deleted.jpg}. Снимкиподтверждения/дерева/оставшегосяменюпросмотрены. Testtabзакрыта, server85988штатноостановленCtrl-C.
+- Runtime/testsне менялись. Полныйbaseline2ноября900tests/11272assertions/0errors/0failures/1legacy skip иJS15PASS сохранён; повторныхпроверокбезновогокоданет. Permissions/stale/rollback остаютсявсуществовавшихfeaturetests. ТолькоMarkdownжурналы: mirrorclean, non-mdexport/targetcommitнет; sourcedocscommitбезpush. CRM/SA API/auth/DB/mappingsбезизменений,lead_id=orders.id.
+- Следующаязадача: **ADM-AUD-10D — Настройки: browser создание, очистка значения, порядок и удаление** наотдельнойsyntheticкопии. ОбщийADM-AUD-10ещёINPROGRESS; новыеuserfields/roles/productionoperationsэтимнепринимались.
