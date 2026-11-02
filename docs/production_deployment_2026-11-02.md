@@ -34,9 +34,11 @@ Git и Composer выполнять от admin. Токены не помещат�
 
 ## Runtime и worker
 
-Nginx custom includes `/home/admin/conf/web/viarcanvas.com/nginx.conf_viar13` и `nginx.ssl.conf_viar13` теперь направляют exact `/index.php` непосредственно в `/home/admin/web/viarcanvas.com/public_html/public/index.php` через `/run/php/php8.3-fpm-viarcanvas13.sock`.
+Общий PHP backend домена переключён штатной командой Hestia `v-change-web-domain-backend-tpl admin viarcanvas.com PHP-8_3 no`, затем выполнены syntax tests и graceful reload. В Hestia сохранено BACKEND=PHP-8_3. Основной template laravel направляет все PHP-запросы в `/run/php/php8.3-fpm-viarcanvas.com.sock`; pool `/etc/php/8.3/fpm/pool.d/viarcanvas.com.conf` работает как admin. Это исправило прежнюю неполную схему, где только index.php использовал8.3, а phpinfo.php оставался7.4.
 
-Основные Hestia generated configs не переписывались. Wildcard custom includes уже были подключены в обоих server blocks. PHP-FPM pool `/etc/php/8.3/fpm/pool.d/viarcanvas13.conf` работает как admin; open_basedir включает каталог production-домена. Прежний public `.user.ini` снова используется из исходного расположения: upload/post300M, max_input_vars10000, memory512M, input/execution180s.
+Custom exact index includes nginx.conf_viar13/nginx.ssl.conf_viar13 и ненужный pool viarcanvas13 выведены из активной конфигурации перемещением в private/domain-php83-20261102. Активный nginx не ссылается на custom socket. Штатная конфигурация теперь поддерживается Hestia; прежнего статического X-Viar-Release header больше нет.
+
+Public `.user.ini` используется из исходного расположения: upload/post300M, max_input_vars10000, memory512M, input/execution180s. Исходные public/storage файлы при исправлении PHP backend не менялись.
 
 Worker drop-in `/etc/systemd/system/viar-alt-worker.service.d/50-viar13.conf` использует:
 
@@ -95,3 +97,10 @@ Ledger и наличие schema проверены SELECT в read-only transacti
 Текущий перенос: private/publichtml-cutover-20261102/{before.json,installed.json,code-before,config-before,public-index.before.php,http-results.json,final-state.json,git-status-summary.json,manifest.json} и install/restore/rollback scripts. Первый deployment evidence сохранён в private/deploy-20261102; backup.env не переносить в Git или чат.
 
 Осталось согласовать legacy migration filename/ledger, будущую стратегию tracked production media и runtime ignore rules в основном репозитории; выполнить отдельные проверки оплаты/чатов/загрузок/scheduler/self-HTTP по фактическому использованию. Автоматическая GitLab авторизация без интерактивного ввода отдельно не настроена. Общая миграция не объявляется DONE на основании этого переноса.
+## Уточнение Git status и PHP backend после замечания пользователя
+
+Из74modified entries73 отличаются от Git blob только окончаниямиCRLF/LF; единственное содержательное отличие — public/.htaccess. Это уточнено прямым побайтовым сравнением с HEAD, а не предположением по расширениям. Git diff и status показывают эти случаи по-разному из-за нормализации text=auto. Index refresh не очистил status. Restore/renormalize/add/skip-worktree не выполнялись; в том числе WebP не переписывались ради чистого статуса. Четыре orders-файла отсутствовали до переноса, untracked registration-captcha.js сохранён.
+
+После штатного переключения Hestia внешний HTTPS phpinfo.php показывает8.3.30. Главная, /filament/login, /en/cart и существующее изображение storage ответили200. Nginx/FPM syntax tests прошли, worker active/running/NRestarts0. Backup исходных Hestia/nginx/pool configs и verified.json находятся в private/domain-php83-20261102; user web.conf backup имеет режим0600. PHPInfo output с переменными окружения не сохранялся в Git или чат, выводилась только версияPHP.
+
+TODO: отдельно согласовать нормализацию исторических окончаний строк и источник registration-captcha.js; не менять эти production-файлы автоматически для очистки Git status.
