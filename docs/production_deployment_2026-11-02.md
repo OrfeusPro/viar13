@@ -155,3 +155,10 @@ TODO отдельно: SA_API_KEY отсутствует в обеих .env и �
 SHA.env/publicindex и inodepublic/storage совпали до/после, taskdiffне содержитpublic/storage/.envpaths. Все14изменённыхфайловнаserverпринадлежатadmin. НикакихDB/configflags/migrations/assetscleanupоперацийне было. Global900testbaselineнеповторялся для префиксаURL.
 
 Evidence наserver: private/admin-path-20261102/{admin-path.bundle,before.json,http-results.json,rollback.py}. Rollback подготовлен как Gitrevert ровно1876760 при ожидаемомHEAD/cleanworktree сreloadFPM/worker; rehearsalне выполнялся. Такой rollback меняеттолько14файловзадачи, неpublic/storage/env. Исторические инструкции отката наудалённыйreleasesкаталог остаютсяdisabled.
+## Dev-сайт приостановлен
+
+По запросу пользователя dev.viarcanvas.com отключён через Hestia v-suspend-web-domain; SUSPENDED=yes. Production viarcanvas.com остаётся SUSPENDED=no, его конфигурация не менялась. Dev nginx отдаёт статическую страницу suspend для всех обычных путей; даже /admin/login больше не запускает Laravel. Suspend page имеет HTTP200, это не признак доступности приложения.
+
+Каталог /home/admin/web/dev.viarcanvas.com/public_html, его vendor/.env/public/storage и база сохранены. Shared PHP8.3 service не останавливался. На prod главная и /admin/login200 с обычной проверкой TLS, worker active/running/NRestarts0. Для dev origin проверка TLS далаcurl60; отдельная диагностическая проверка без TLS validation подтвердила bytes стандартной suspend page, но не валидность публичного сертификата.
+
+Evidence: private/dev-site-suspend-20261102. Обратное включение — штатная команда Hestia v-unsuspend-web-domain admin dev.viarcanvas.com yes по отдельному указанию пользователя. Файлы приложения и БД при выключении не удаляются.
