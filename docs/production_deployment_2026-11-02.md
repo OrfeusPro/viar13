@@ -5,11 +5,11 @@
 Основной Laravel 13 checkout, Git и runtime находятся в `/home/admin/web/viarcanvas.com/public_html`. Первоначальная схема с активным кодом в releases заменена по запросу пользователя: обновляться нужно из привычного `~/web/viarcanvas.com/public_html` под пользователем admin.
 
 - Branch: `main`, tracking `origin/main`.
-- Текущий server commit: `eea6ce5e7b4830aebbc273de6f808ad8a5f9132a`; установленный исходный release был `150e8593f4fff144236a8c082fd6963ea7c1bf09`.
+- Текущий server commit: `1876760b864f97c0e108b531e2fbe91faa322dd3` (переход на /admin); production preservation commit был `eea6ce5`, исходный release — `150e859`.
 - Origin: `https://gitlab.com/OrfeusPro/viar13.git`.
 - После локального production-коммита HEAD опережает полученную origin/main на один коммит: ahead/behind — 1/0. Push не выполнялся.
 - Пользователь выполнил успешный HTTPS fetch от admin до переноса; полученные refs/FETCH_HEAD перенесены с новым Git. Постоянное хранение credentials отдельно не настраивалось и не проверялось.
-- Админка остаётся https://viarcanvas.com/filament. Отдельный legacy `/admin` handler не подключён.
+- Новая админка теперь https://viarcanvas.com/admin. Старые GET-ссылки /filament/{path?} перенаправляются302 на /admin/{path} с сохранением query. Legacy Voyager runtime не включался.
 
 Рабочий каталог:
 
@@ -142,3 +142,16 @@ TODO отдельно: SA_API_KEY отсутствует в обеих .env и �
 - Effective config admin_migration.bulk_email_enabled и sa_commands_enabled проверен: оба true. Config cache отсутствует. Worker перезапущен; active/running/exit0/NRestarts0. Backup.env сохранён только на сервере private/enable-bulk-sa-20261102/production.env.before, режим0600; secrets в Git/чат не выводились.
 - Агент не запускал рассылку и не отправлял тестовые или рабочие команды во внешнюю SA. Включена доступность существующих действий в приложении, внешняя доставка этим шагом не проверена. API/схема/ключи интеграции не менялись. Открытый вопрос согласования SA_API_KEY из предыдущего аудита сохраняется отдельно и не используется как основание оставить явно разрешённые флаги false.
 - Source Markdown журналы актуализированы; source commit безpush, non-md export вC:нет. Новые runtime files/tests не требуются для двух envflags; проверены фактический config и worker.
+## Переход существующей Filament-панели на /admin
+
+По явному запросу пользователя panel path изменён с filament на admin. Guard filament, panel id admin, permissions и бизнес-логика не менялись. Обновлены hardcoded client links, menu mapping/root selection, breadcrumbs и prefix translation-manager admin/translations. Имена static assets с filament в пути сохранены. Старые GET /filament links перенаправляются302 на соответствующие /admin links с сохранением query; POST-перенаправление не добавлялось.
+
+Работа выполнена в source G:/OSPanel/home/viar13, код и тесты закоммичены как8599a4d. Только14non-mdфайлов скопированы вC:/OSPanel/domains/viar/viar13; SHA25614/14совпал до коммита и после проверок. В C создан отдельный main commit1876760b864f97c0e108b531e2fbe91faa322dd3, Markdown туда не переносился.
+
+На prod не копировались PHP/Blade файлы: создан Git bundle только с1876760 и prerequisiteeea6ce5, проверен и fetched отadmin. Затем выполнен merge--ff-only известного коммита. HEADprodиCсовпадают1876760, Gitstatusобеихкопийчистый. GitLabpush не выполнялся; productionmain опережает текущуюorigin/main на один коммит. PHP-FPM graceful reload и worker restart выполнены.
+
+Проверки: source54tests/885assertions (boot/menu/clients/menu-preferences/authorization/order-lifecycle), C3tests/34assertions (standalone translations/read-only cache/guest compass). Итого57/919PASS. ProductionHTTPS: /admin302login, /admin/login200, protectedorders/clients/translations302на/admin/login; oldGETfilamentroot/login/ordersquery302направильныйновыйURL; frontend/login/cart/CSS200. ВнешнийWindowsDNSHTTPS/admin/login,/,/en/cart200. Workeractive/running/NRestarts0. Real authenticated login после этого изменения не имитировался; страница и guest/authzконтракты проверены.
+
+SHA.env/publicindex и inodepublic/storage совпали до/после, taskdiffне содержитpublic/storage/.envpaths. Все14изменённыхфайловнаserverпринадлежатadmin. НикакихDB/configflags/migrations/assetscleanupоперацийне было. Global900testbaselineнеповторялся для префиксаURL.
+
+Evidence наserver: private/admin-path-20261102/{admin-path.bundle,before.json,http-results.json,rollback.py}. Rollback подготовлен как Gitrevert ровно1876760 при ожидаемомHEAD/cleanworktree сreloadFPM/worker; rehearsalне выполнялся. Такой rollback меняеттолько14файловзадачи, неpublic/storage/env. Исторические инструкции отката наудалённыйreleasesкаталог остаютсяdisabled.
