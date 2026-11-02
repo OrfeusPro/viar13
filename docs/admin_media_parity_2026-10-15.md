@@ -58,7 +58,7 @@
 
 1. Двухпальцевый жест остаётся открытым. EXIF-превью1–8 проверены во встроенном браузере2ноября; колесо и перемещение —16октября на изолированном PNG.
 2. Реальное декодирование аудио/видео в Chrome при наличии подходящих образцов.
-3. Полная browser upload/drop/progress/cancel цепочка на отдельном тестовом storage, без рабочих изображений.
+3. Физический OSdrop остаётся открытым. Browser chooser upload/size reject/backend reject/recovery/progress/response-wait cancel/retry проверены2ноября наизолированнойfixture; partial-wire cancelне заявляется.
 Мобильная сверка inline-name/upload/preview завершена 15 октября; временный viewport сброшен. Снимки: media-mobile-upload-final-20261015.png, media-mobile-preview-final-20261015.png, media-mobile-inline-name-20261015.png в storage/app/audit.
 
 До подтверждения этих пунктов ADM-AUD-09 не объявлять полностью DONE. Следующий этап разработки из основного плана — ADM-AUD-10 (операции меню/настроек и drag-and-drop): сначала проверить уже существующий код и сопоставить с оригиналом.
@@ -98,3 +98,22 @@ Chrome createBrowserTab отклонён сообщением Local browser use 
 - Evidence: ignored storage/app/audit/media-exif-20261102/{preview-results.json,verified.json,db-before.json,before-hashes.json,exif-1.jpg...exif-8.jpg,closed-final.jpg}. Несколько locator waits получили stale-element на смене Livewire DOM; повторная read-only observation подтвердила нужный файл, submit не повторялся. Это не трактуется как доказанный дефект приложения.
 - Вкладка закрыта, server session49840 штатно остановлен Ctrl-C. Изменений runtime/tests нет, нового regression ради read-only визуальной проверки не добавляли. В C:/OSPanel/domains/viar/viar13 non-md для копирования нет; target commit не требуется. Source документы коммитятся без push. CRM/SA API/auth/DB/mappings без изменений, lead_id=orders.id.
 - **ADM-AUD-09 остаётся IN PROGRESS:** физический pinch/touch, audio/video decoding и browser upload/drop/progress/cancel ещё открыты. Следующее точное действие09 — полный upload/recovery на этой изолированной медиатеке; проверенные EXIF preview повторно в TODO не возвращать. ADM-AUD-13G общий900test gate продолжает выполняться, по последнему наблюдению819/900 безfail markers; final report ещё ожидается.
+
+
+## ADM-AUD-09 — Медиатека: browser upload/reject/recovery, 2026-11-02
+- IN PROGRESS. Отдельная media-upload-20261102 fixture: собственные SQLite/public/tmp/views/sessions, baseline11files/15tables, Http::preventStrayRequests иMail::fake. Проверить chooser oversized отказ→server forbidden-extension отказ→valid PNG/PDF recovery/save/SHA; затем отмену передачи с fixture-only8s response delay, безподмены JSкомпонента.
+- Production DB/media не использовать.8EXIF preview/cancel ужеDONE, ихнеповторять. Настоящий OS drag/drop иphysicalpinch остаются отдельными пунктами; chooser заdragневыдавать. Runtime пока без изменений; после результата обновить планы/коммитбезpush, non-md exportтолькоприproduct/testизменениях.
+
+
+## ADM-AUD-09 — Browser upload/reject/cancel/recovery: результат 2026-11-02
+
+- **DONE для chooser upload/recovery/cancel desktop.** Actual mediaLibraryUpload/WithFileUploads/uploadFiles на изолированном localhost8800, SQLite/public/tmp. Runtime JS/PHP не подменялись; рабочие БД/файлы/SMTP/HTTP integrations не затрагивались.
+- File chooser открывался штатным input; multiple=true. Oversize PNG11536540bytes (>10MiB) немедленно показал «До20файлов,до10МБкаждый», public остался11files. Synthetic blocked.php содержит только безвредный текст: реальный backend запретил расширение сообщением «Недопустимое имя или тип файла», UI не сообщил успех/public11.
+- Первый transport failure оказался дефектом fixture: APP_ENVtesting переключает Livewire disk наtmp-for-tests, он не был настроен. Исправлен только ignored router — local disk сroot fixture/tmp. После повторного выбора actual forbidden extension достиг server validation. Этот500 не объявляется исправлением production upload; продуктовый код не менялся.
+- После отказа в той же форме выбраны valid uat-upload.png + uat-upload.pdf. Actual transfer→save→«Загрузка завершена», alerts пусты, count13. PDF45bytes byte-for-byte совпал сinput. PNG640×480 штатно перекодирован: rawSHA отличается, RGBA pixels/dimensions совпадают полностью. Это не потеря фото; исходное image processing поведение сохраняется.
+- Cancel: только fixture router задержал ответ upload-file на8секунд. Видимые progress100 и «Отменить передачу» подтверждены; штатный click дал «Передача отменена». При этом public13 иcancel-upload.png отсутствовал: uploadFiles не создал постоянный файл. Это response-wait cancellation после передачи bytes, не physical slow-wire partial-byte сценарий.
+- Задержка снята. Тот же cancel-upload.png выбран повторно черезchooser: «Загрузка завершена», alerts[], public14. Размер/пиксели второго PNG совпали сinput; SHA обоих сохранённыхPNG одинаковыйd4f097229bd00e64b259f6858191f15d926b2fd4f81ee269b3bd758848fba93e. Отмена не повредила следующий upload.
+- Проверка15tables unchanged;11/11 исходных publicSHA неизменны. Только3ожидаемых новых постоянных файла:uat-upload.png/uat-upload.pdf/cancel-upload.png. Oversize/blocked вpublicотсутствуют; проверкаassert прошла. Temporary upload files остаются вisolated tmp, не врабочемstorage; этот шагнепроверяетTTLcleanup.
+- Evidence ignored media-upload-20261102/{verified.json,requests.jsonl,before-hashes.json,db-before.json,oversize-rejected.jpg,forbidden-rejected.jpg,recovery-success.jpg,cancel-progress.jpg,cancelled.jpg,retry-after-cancel.jpg}. Снимки отказов/успеха/отмены просмотрены. Форма штатно закрыта, вкладка закрыта, server49062 остановлен Ctrl-C.
+- Код/tests продукта не менялись; новых implementation-mirroring tests не добавляли. Общий900/11272/1legacy skip gate иJS15PASS завершены вэтотдень, runtimeпослених прежний. Source docs commit безpush; non-md дляC:/OSPanel/domains/viar/viar13 нет, mirrorclean, targetcommitне требуется. CRM/SA API/auth/DB/static mappings безизменений,lead_id=orders.id.
+- **ADM-AUD-09 всё ещё IN PROGRESS:** физическийOSdrop, pinch/touch иactualaudio/video decode остаются открыты. Chooser иcancel-response не выдаются зафизическийdrop/partial-wire cancellation. Следующее09 — browser audio/video preview накоротких synthetic files, затемоставшиеся device gestures; остальные задачи админки/DEVauth/cutoverне закрыты этим шагом.
