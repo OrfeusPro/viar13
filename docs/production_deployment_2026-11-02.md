@@ -110,3 +110,29 @@ TODO: отдельно согласовать нормализацию исто�
 От admin в текущей main создан eea6ce5e7b4830aebbc273de6f808ad8a5f9132a (автор коммита Codex, command-only identity codex@local.invalid). Git identity глобально не менялась. Зафиксированы шесть путей: .htaccess, registration-captcha.js и четыре уже отсутствовавших tracked orders-файла. Физические файлы не удалялись. Для всех 79 исходных status paths проверены SHA256 либо факт отсутствия до и после: рабочие bytes не менялись. При git add нормализация/обновление index устранили73пометкиCRLF/LF без отдельных content changes в коммите.
 
 Git status чистый, staged changes отсутствуют, main опережает origin/main на один локальный коммит. Push не выполнялся. Когда remote main продвинется независимо, перед обновлением нужно согласовать локальный production-коммит с upstream; не использовать reset/force push или бездумный restore данных. Evidence: private/production-commit-20261102/{before.json,commit.txt}; .env, backup secrets и прочие runtime data в коммит не включены. Runtime-тесты не повторялись для операции Git: содержимое сайта побайтово сохранилось.
+
+## Дополнение production .env после сравнения с dev
+
+Сравнение показало четыре dev-only keys: MAIL_MAILER и три PAYSERA_* ключа. На prod добавлено 15 переменных, сохранив все предыдущие bytes файла и владельца admin. Dev .env не копировался. Secret backup находится только в private/env-update-20261102, режим0600.
+
+- `MAIL_MAILER=smtp`. Existing production MAIL_DRIVER=SMTP остаётся, но новый mail manager использует явный lowercase smtp. SMTP credentials/port25/encryptionnull сохранены. Transport создаётся без отправки письма.
+- `PAYSERA_PROJECT_ID` и `PAYSERA_SIGN_PASSWORD` взяты из backup старого production controller, без вывода значений. `PAYSERA_TEST=false` сохраняет прежний live mode. Настройки загружены, пробный платёж не выполнялся.
+- По явному подтверждению пользователя добавлены следующие флаги:
+
+```dotenv
+ADMIN_INVOICE_EMAIL_ENABLED=true
+ADMIN_PAYMENT_NOTIFICATIONS_ENABLED=true
+ADMIN_RECIPIENT_EMAIL_ENABLED=true
+ADMIN_REVIEW_REQUEST_ENABLED=true
+ADMIN_CLIENT_CHAT_NOTIFICATIONS_ENABLED=true
+ADMIN_PAINTER_CHAT_NOTIFICATIONS_ENABLED=true
+ADMIN_ARTIST_NOTIFICATIONS_ENABLED=true
+ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED=true
+ADMIN_ORDER_CREATION_NOTIFICATIONS_ENABLED=true
+ADMIN_BULK_EMAIL_ENABLED=false
+ADMIN_SA_COMMANDS_ENABLED=false
+```
+
+Флаги включают обычные email/CRM side effects будущих действий пользователей, но тестовые сообщения при изменении env не отправлялись. Worker перезапущен, active/running/NRestarts0. Config cache отсутствовал, общая очистка cache/storage не запускалась. Production Git status остаётся чистым, `.env` не отслеживается. Реальную доставку письма и оплату нужно проверить отдельным согласованным сценарием.
+
+TODO отдельно: SA_API_KEY отсутствует в обеих .env и имеет тестовый default в config/services.php. Его замену нужно согласовать с внешней стороной SA; односторонняя ротация в этом шаге не выполнялась.
