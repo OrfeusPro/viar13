@@ -56,7 +56,7 @@
 
 ## Открытая приёмка
 
-1. Двухпальцевый жест остаётся открытым. EXIF-превью1–8 проверены во встроенном браузере2ноября; колесо и перемещение —16октября на изолированном PNG.
+1. Двухпальцевый жест DEFERRED до целевого устройства по явному решению пользователя2ноября. EXIF-превью1–8 проверены2ноября; wheel/pan —16октября.
 2. DONE2ноября: actualbrowser playback3секундныхPCM WAV/VP8 WebM во встроенномбраузере. Другиеcodecs/physicalaudiooutputнепроверялись.
 3. Физический OSdrop остаётся открытым. Browser chooser upload/size reject/backend reject/recovery/progress/response-wait cancel/retry проверены2ноября наизолированнойfixture; partial-wire cancelне заявляется.
 Мобильная сверка inline-name/upload/preview завершена 15 октября; временный viewport сброшен. Снимки: media-mobile-upload-final-20261015.png, media-mobile-preview-final-20261015.png, media-mobile-inline-name-20261015.png в storage/app/audit.
@@ -132,3 +132,9 @@ Chrome createBrowserTab отклонён сообщением Local browser use 
 - Штатное закрытиесведенийудаляетобаmediaelements:audioCount0/videoCount0. Доступкplay/load черезevaluateнеиспользовался, толькокнопка/Space/выбор/закрытие. Original manager.blade.php154–168/519–522такжеnativecontrols сloadпривыборе; новыйsourceиспользуетactualMIMEвместоисходногоспискавозможныхтипов. Парныйoriginalbrowserplayэтихfixtureневыполнялся.
 -2/2SHApublicфайлов и15tablesunchanged. Evidence ignored media-playback-20261102/{verified.json,playback-results.json,audio-ended.jpg,video-ended.jpg}; снимкипросмотрены. Вкладказакрыта, server46542остановленCtrl-C. Runtime/tests/DBсхема/CRM-SAконтрактыбезизменений,lead_id=orders.id; текущий900/11272/1legacy skip иJS15PASSостаютсяbaselineбезповторногопрогона.
 - ТолькоMarkdown; non-md дляC:/OSPanel/domains/viar/viar13нет, mirrorcommitнет, sourcedocscommitбезpush. **ADM-AUD-09остаетсяINPROGRESS:** физическийOSdrop иpinch/touchещёоткрыты. Подготовленновыйisolatedgestureстенд, дляреальногожестаизПроводниканужнодействиепользователя; chooserнеподменяетdrop.
+
+
+## ADM-AUD-09 — Физические жесты: решение пользователя 2026-11-02
+- Pinch/touch **DEFERRED до целевого устройства** по явному ответу пользователя: «Нет, отложить сенсорную проверку до целевого устройства». Это неPASS и неотказотфункции; desktop wheel/pan уже проверены ранее. Не блокировать текущуюлокальнуюприёмкунаотсутствующемсенсорномоборудовании.
+- Physical OSdrop **IN PROGRESS**: actual isolated медиатека открыта справа http://127.0.0.1:8800/filament/media, областьuploadраскрыта. Дано конкретное ручное действие: изПроводника перетащить media-gestures-20261102/input/drag-test.png. Auto-save только вsynthetic public; browser tab4 markHandoff, server95746 жив.
+- Baselinepublic gesture-crop.png и15tables записаны. После ответапользователя проверить actual newfile/DOMsuccess/PNGpixels/oldSHA/DB; доэтогоdropнеобъявлятьвыполненным. Другиеmedia gates EXIF/chooser/reject/cancel/recovery/WAV/WebM ужеDONE.
