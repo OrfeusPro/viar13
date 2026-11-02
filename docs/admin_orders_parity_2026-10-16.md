@@ -1,6 +1,6 @@
 # ADM-AUD-13 — полная сверка «Заказов»
 
-Статус: **IN PROGRESS**. Сводка обновлена 2026-11-02; ожидается итоговый regression. Отложенный upload gate не объявляется выполненным. Подробные проверки и ограничения приведены ниже по шагам.
+Статус локальной приёмки: **DONE 2026-11-02**. Target upload gate **DEFERRED** пользователем и не объявляется выполненным. Общий финальный regression завершён:900/11272,0errors/0failures/1legacy skip. Подробные проверки и ограничения приведены ниже по шагам.
 
 ## Источники
 
@@ -19,7 +19,7 @@
 | ADM-AUD-13D — создание | Actual reject→recovery→create 2 позиции/3 PNG/JPEG; 29/344. Ручной UI order109:10 позиций/10 фото,145 EUR. Service order108:60 отдельных файлов | Пункт 2. Удобство/дублирование позиции DEFERRED по решению пользователя |
 | ADM-AUD-13E — финансы/PDF/Venipak | Chrome generate/download обычного/60-позиционного PDF; gift50/50/25 и письмо с3ссылками, SHA; gift/payment32/352. Venipak формы/отмена под ролями24/186 | Clipboard, fake address/pickup/courier и gift-mail DONE30октября; public payment desktop/mobile DONE2ноября |
 | ADM-AUD-13F — чаты/исполнители/статусы | 4 окна×2 роли desktop/390px,88/844; browser assign/replace/remove,5статусов/даты,51/868,190tables snapshot | Быстрое переключение DONE29октября, пункт1; новых внешних отправок для этого gate не требуется |
-| ADM-AUD-13G — права/дизайн | Role list/edit/actions и revoke, client read35+язык, desktop/mobile; email/review/Venipak open/cancel; SA footer исправлен | Visual/media DONE30октября; единый regression2ноября запущен, итоговое решение после результата |
+| ADM-AUD-13G — права/дизайн | Role list/edit/actions и revoke, client read35+язык, desktop/mobile; email/review/Venipak open/cancel; SA footer исправлен | Visual/media DONE30октября; общий900test regression DONE2ноября, ограничения зафиксированы |
 
 Числа тестов относятся к отдельным перекрывающимся запускам; их нельзя складывать.
 Документальные подробности и evidence остаются в датированных разделах ниже.
@@ -99,7 +99,7 @@
 | 3. ADM-AUD-13E — Вставка платёжной ссылки | DONE30октября:browser clipboard PASS + пользователь вставил системным Ctrl+V точную ссылку в чат | На тестовой платёжной ссылке проверить штатную кнопку копирования и вставку в обычное поле браузера/системный редактор. JS tests5PASS и виртуальный clipboard не заменяют этот сценарий; платёж не выполнять |
 | 4. ADM-AUD-13E — Успешный Venipak без перевозчика | DONE30октября:address/pickup create+print/download и courier error→recovery→success fake browser PASS | Заполнить synthetic sender и pickup catalog; browser выбрать город/пункт, создать этикетку через fake HTTP, открыть/скачать печать, проверить labels. Отдельно courier success/error через fake. Роли/валидация/open/cancel уже проверены, реальный provider не вызывать |
 | 5. ADM-AUD-13A/G/E — Финальная визуальная проверка и media | DONE30октября для4описанныхvisual gates; gift-mail18images desktop/mobile PASS | Read-only проверить доступные remote media без массового копирования; отличить отсутствующий исходник от неверного URL. Desktop/mobile: правая часть строки/статусы изображений, раскрытые8полей фирмы с доступными кнопками; browser gift-mail с локальными декоративными assets. Записать PASS или конкретный дефект/ограничение для каждого из этих четырёх пунктов; не требовать pixel-копию Voyager |
-| 6. ADM-AUD-13G — Итоговое решение по приёмке заказов | IN PROGRESS2ноября:повторный единый900test gate запущен после исправлений;JS15PASS;окончательный результат ожидается | Актуализировать эту матрицу, выполнить релевантные regression после необходимых изменений; перед итоговой приёмкой записать один общий suite с датой/skip. Для каждого оставшегося ограничения явно зафиксировать решение, не отмечать общий этап DONE заранее |
+| 6. ADM-AUD-13G — Итоговое решение по приёмке заказов | DONE2ноября:900tests/11272assertions,0errors/0failures/1legacy skip;JS15PASS;target upload gate DEFERRED отдельно | Актуализировать эту матрицу, выполнить релевантные regression после необходимых изменений; перед итоговой приёмкой записать один общий suite с датой/skip. Для каждого оставшегося ограничения явно зафиксировать решение, не отмечать общий этап DONE заранее |
 
 Ранее открытые роли,11товарных веток, непустые вкладки, ручной create10сфото,
 browser single/long/gift PDF и assign/status flow повторно в TODO не включаются.
@@ -117,7 +117,7 @@ baseline:831tests10143assertions,1skipped,0errors/failures. Он не счита
 общим прогоном после изменений28–29октября. Последние targeted runs: create29/344,
 gift/payment32/352, artist/lifecycle/permissions51/868; итоговый общий прогон — пункт6.
 
-Следующая задача: **ADM-AUD-13G — Единый regression и итоговая приёмка заказов**. Upload gate DEFERRED по решению пользователя; public payment desktop/mobile DONE 2026-11-02.
+Следующая задача: **ADM-AUD-09 — Медиатека: browser upload/recovery**. ADM-AUD-13G иpublic payment desktop/mobile DONE2026-11-02; target upload gate DEFERRED по решению пользователя.
 Проверки записи только на isolated fixtures, Mail/HTTP fake; production media
 допускаются только для read-only. Общий ADM-AUD-13 остаётся **IN PROGRESS**.
 
@@ -1982,3 +1982,15 @@ regression после необходимых исправлений. Полно�
 - Evidence ignored storage/app/audit/payment-public-20261102/: desktop.jpg, mobile.jpg, original-desktop.jpg, original-mobile.jpg, original-metrics.json, verified.json иmobile-closed-final.jpg(desktop после reset/фокуса). По именам файлов без geometry нельзя заключать viewport.
 - Production runtime/tests не менялись. Использована computer-use skill для browser проверки. Только Markdown результаты; для C:/OSPanel/domains/viar/viar13 non-md нет, mirror проверен чистым, копирование/target commit не требуются. CRM/SA API/auth/DB/mappings без изменений, lead_id=orders.id.
 - ADM-AUD-13G IN PROGRESS: запущен единый900test gate PHP8.4.1 после последней fixture правки, stdout/JUnit storage/logs/adm-aud-13-final-20261102.{txt,xml}; результат пока ожидается. Не объявлять весь ADM-AUD-13DONE до завершения gate. Upload target gate остаётся DEFERRED по решению пользователя.
+
+
+## ADM-AUD-13G — Итоговая регрессия заказов: результат 2026-11-02
+
+- **DONE.** Завершён единый прогон `tests/Feature/Admin tests/Feature/Invoice tests/Feature/Payment/OrderPaymentRequestTest.php`: **900tests,11272assertions,0errors,0failures,1skipped**, exit0, PHP8.4.1,16:58.082,282MB. Top JUnit independently parsed: tests900/assertions11272/errors0/failures0/skipped1/time1017.588321. Не складывается с targeted runs.
+- Единственный skipped: OrderPaymentRequestTest.test_admin_can_create_payment_request_for_order — проверяет отключённый legacy admin.order_payment_requests.store. Guard/причина подтверждены исходником; Filament actions/service/public payment проверяются действующими другими сценариями. Legacy route ради зелёного теста не включался.
+- В этот прогон вошли все исправленные Clients/BREAD fixtures. Между запуском наec79a07 и завершением менялась только Markdown документация; runtime/tests сохранились. Новый контрольный baseline заменяет прежний900/1failure и831test baseline для этой области. Полный public frontend/CRM API suite этим прогоном не заявляется.
+- JS текущий gate2ноября:15testsPASS,0fail/skip,212.4886ms. Артефакты ignored storage/logs/adm-aud-13-final-20261102.{txt,xml}; JUnit304319bytes. Рабочие роли/таблицы/платежи/письма не изменялись.
+- Итог локальной приёмки заказов: пункты1,3,4,5,6 активной очереди DONE; public payment desktop/mobile такжеDONE2ноября. Пункт2 target uploads остаётся **DEFERRED** по решению пользователя; не объявляем выполненным. Повторно открывать уже принятые create10photos/chats/PDF/assignments/media/Venipak ветки без нового дефекта не требуется.
+- Общий ADM-AUD-13: локальная приёмка согласованного объёма завершена; отложенный target upload gate остаётся отдельным обязательством перед соответствующим целевым развёртыванием. Это не закрытие остальных модулей админки, dashboard/cutover/Voyager cleanup и не разрешение реальных provider/SMTP операций.
+- Следующая задача — ADM-AUD-09: browser upload/reject/recovery в isolated медиатеке. EXIF preview1–8 закрыты2ноября; audio/video decoding иphysicaltouch ещё открыты. Остальной согласованный список админки сохраняется, цель всего чата не объявляется завершённой.
+- Изменена только документация. Non-md дляC:/OSPanel/domains/viar/viar13 нет, mirror clean; повторного copy/target commit нет. Source docs commit безpush; CRM/SA API/auth/DB/mappings без изменений, lead_id=orders.id.
