@@ -51,21 +51,21 @@ class BreadMenuNavigationTest extends TestCase
         }
         $item = fn (string $key, string $url) => NavigationItem::make($key)->key($key)->url($url)->icon('heroicon-o-document-text');
         $navigation = [NavigationGroup::make()->items([
-            $item('dashboard', '/filament'), $item('orders', '/filament/orders'),
-            $item('bread-4', '/filament/bread/blog-posts'), $item('bread-5', '/filament/bread/page-faq-desc'),
-            $item('bread-7', '/filament/bread/private')->visible(false), $item('bread-9', '/filament/bread/hidden'),
-            $item('tool', '/filament/voyager-catalog'),
-            $item('email', '/filament/email-sender'),
-            $item('clients', '/filament/clients'),
-            $item('database', '/filament/database-tables'),
+            $item('dashboard', '/admin'), $item('orders', '/admin/orders'),
+            $item('bread-4', '/admin/bread/blog-posts'), $item('bread-5', '/admin/bread/page-faq-desc'),
+            $item('bread-7', '/admin/bread/private')->visible(false), $item('bread-9', '/admin/bread/hidden'),
+            $item('tool', '/admin/voyager-catalog'),
+            $item('email', '/admin/email-sender'),
+            $item('clients', '/admin/clients'),
+            $item('database', '/admin/database-tables'),
         ])];
-        $this->app->instance('originalRequest', Request::create('/filament/bread/page-faq-desc/1/edit'));
+        $this->app->instance('originalRequest', Request::create('/admin/bread/page-faq-desc/1/edit'));
         $tree = BreadMenuTree::make($navigation);
         $this->assertSame(['Dashboard', 'Заказы', 'Общие страницы', 'Email Рассылка', 'База данных', 'Дополнительно'], array_column($tree, 'label'));
-        $this->assertSame('/filament/database-tables', $tree[4]['url']);
-        $this->assertSame('/filament/email-sender', $tree[3]['url']);
+        $this->assertSame('/admin/database-tables', $tree[4]['url']);
+        $this->assertSame('/admin/email-sender', $tree[3]['url']);
         $this->assertSame(['Блог', 'FAQ', 'Клиенты'], array_column($tree[2]['children'], 'label'));
-        $this->assertSame('/filament/clients', $tree[2]['children'][2]['url']);
+        $this->assertSame('/admin/clients', $tree[2]['children'][2]['url']);
         $this->assertSame('Статьи', $tree[2]['children'][0]['children'][0]['label']);
         $this->assertSame(['Общие страницы', 'FAQ'], array_column(BreadMenuTree::activePath($tree), 'label'));
         $this->assertFalse($tree[0]['active']);
@@ -76,22 +76,22 @@ class BreadMenuNavigationTest extends TestCase
         $rendered = view('filament.components.menu-tree', compact('navigation'))->render();
         $this->assertStringContainsString('aria-controls="menu-2-children"', $rendered);
         $this->assertStringContainsString('aria-current="page"', $rendered);
-        $this->assertStringNotContainsString('/filament/bread/private', $rendered);
-        $this->assertStringNotContainsString('/filament/bread/hidden', $rendered);
+        $this->assertStringNotContainsString('/admin/bread/private', $rendered);
+        $this->assertStringNotContainsString('/admin/bread/hidden', $rendered);
     }
 
     public function test_active_matching_distinguishes_filtered_products_and_menu_builders(): void
     {
-        $this->app->instance('originalRequest', Request::create('/filament/bread/gallery-items/974/edit?type=2'));
-        $this->assertTrue(BreadMenuTree::matches('/filament/bread/gallery-items?type=2'));
-        $this->assertFalse(BreadMenuTree::matches('/filament/bread/gallery-items?type=5'));
-        $this->assertFalse(BreadMenuTree::matches('/filament/bread/gallery-items'));
-        $this->assertFalse(BreadMenuTree::matches('/filament'));
-        $this->assertFalse(BreadMenuTree::matches('/filament/bread/gallery-item'));
+        $this->app->instance('originalRequest', Request::create('/admin/bread/gallery-items/974/edit?type=2'));
+        $this->assertTrue(BreadMenuTree::matches('/admin/bread/gallery-items?type=2'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/bread/gallery-items?type=5'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/bread/gallery-items'));
+        $this->assertFalse(BreadMenuTree::matches('/admin'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/bread/gallery-item'));
 
-        $this->app->instance('originalRequest', Request::create('/filament/menu-items?menu=3'));
-        $this->assertTrue(BreadMenuTree::matches('/filament/menu-items?menu=3'));
-        $this->assertFalse(BreadMenuTree::matches('/filament/menu-items?menu=2'));
-        $this->assertFalse(BreadMenuTree::matches('/filament/menu-items'));
+        $this->app->instance('originalRequest', Request::create('/admin/menu-items?menu=3'));
+        $this->assertTrue(BreadMenuTree::matches('/admin/menu-items?menu=3'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/menu-items?menu=2'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/menu-items'));
     }
 }

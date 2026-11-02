@@ -50,9 +50,9 @@ class MenuPreferencesTest extends TestCase
         $panel = Filament::getPanel('admin');
         Filament::setCurrentPanel($panel);
         $panel->navigation(fn (NavigationBuilder $builder) => $builder->items([
-            NavigationItem::make('Заказы')->key('orders')->url('/filament/orders')->icon('heroicon-o-shopping-bag'),
-            NavigationItem::make('Клиенты')->key('clients')->url('/filament/clients')->icon('heroicon-o-users'),
-            NavigationItem::make('Без доступа')->key('private')->url('/filament/private')->visible(false),
+            NavigationItem::make('Заказы')->key('orders')->url('/admin/orders')->icon('heroicon-o-shopping-bag'),
+            NavigationItem::make('Клиенты')->key('clients')->url('/admin/clients')->icon('heroicon-o-users'),
+            NavigationItem::make('Без доступа')->key('private')->url('/admin/private')->visible(false),
         ]));
         $this->actingAs(User::findOrFail(1), 'filament');
     }

@@ -788,7 +788,7 @@ class VoyagerBreadTest extends TestCase
         Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_database']);
         Schema::create('page_edit_fixture', fn (Blueprint $table) => $table->id());
-        $this->get('/filament/database-tables/edit?table=page_edit_fixture')->assertOk()->assertSee('Редактирование таблицы');
+        $this->get('/admin/database-tables/edit?table=page_edit_fixture')->assertOk()->assertSee('Редактирование таблицы');
         $page = Livewire::withQueryParams(['table' => 'page_edit_fixture'])->test(\App\Filament\Pages\DatabaseEdit::class);
         $page->set('data.name', 'renamed_page_fixture')->call('saveStructure')->assertHasErrors(['data.name']);
         $page->call('preview')->assertHasNoErrors()->set('data.name', 'another_name')->call('saveStructure')->assertHasErrors(['data.name']);
@@ -836,13 +836,13 @@ class VoyagerBreadTest extends TestCase
         }
         try { $service->drop('guard_fixture', $hash); $this->fail('Referenced table dropped'); }
         catch (\Illuminate\Validation\ValidationException) { $this->assertDatabaseHas('guard_child', ['parent_id' => 1]); }
-        $this->get('/filament/database-tables/edit?table=missing')->assertRedirect();
+        $this->get('/admin/database-tables/edit?table=missing')->assertRedirect();
         $this->admin(['browse_admin', 'browse_database']);
         $this->withoutExceptionHandling();
-        try { $this->get('/filament/database-tables/edit?table=missing'); $this->fail('Missing table accepted'); }
+        try { $this->get('/admin/database-tables/edit?table=missing'); $this->fail('Missing table accepted'); }
         catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) { $this->assertSame(404, $exception->getStatusCode()); }
         config(['voyager.database.tables.hidden' => ['guard_fixture']]);
-        try { $this->get('/filament/database-tables/edit?table=guard_fixture'); $this->fail('Hidden table accepted'); }
+        try { $this->get('/admin/database-tables/edit?table=guard_fixture'); $this->fail('Hidden table accepted'); }
         catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) { $this->assertSame(404, $exception->getStatusCode()); }
     }
 
@@ -977,7 +977,7 @@ class VoyagerBreadTest extends TestCase
             ['name' => 'amount', 'type' => 'decimal', 'length' => '10,2', 'nullable' => false, 'unsigned' => false, 'auto_increment' => false, 'index' => '', 'default' => '1.25'],
             ['name' => 'note', 'type' => 'text', 'length' => '', 'nullable' => true, 'unsigned' => false, 'auto_increment' => false, 'index' => '', 'default' => null],
         ];
-        $this->get('/filament/database-tables/create')->assertOk()->assertSee('Создание таблицы');
+        $this->get('/admin/database-tables/create')->assertOk()->assertSee('Создание таблицы');
         $page = Livewire::test(\App\Filament\Pages\DatabaseCreate::class)
             ->set('data.name', 'creation_fixture')->set('data.columns', $columns)
             ->call('createTable')->assertHasErrors(['data.name']);
@@ -1019,7 +1019,7 @@ class VoyagerBreadTest extends TestCase
         auth('filament')->user()->role->permissions()->detach(Permission::where('key', 'browse_database')->value('id'));
         auth('filament')->user()->unsetRelation('role');
         $page->call('createTable')->assertStatus(403);
-        $this->get('/filament/database-tables/create')->assertForbidden();
+        $this->get('/admin/database-tables/create')->assertForbidden();
         $this->assertFalse(Schema::hasTable('revoked_fixture'));
         $this->assertTrue(Schema::hasTable('pages'));
     }
@@ -1055,12 +1055,12 @@ class VoyagerBreadTest extends TestCase
         $pageId = DB::table('pages')->insertGetId(['title' => 'Keep']);
         DB::table('database_fixture')->insert(['page_id' => $pageId]);
         $before = Schema::getColumns('database_fixture');
-        $this->get('/filament/database-tables')->assertOk()->assertSee('База данных');
+        $this->get('/admin/database-tables')->assertOk()->assertSee('База данных');
         $page = Livewire::test(\App\Filament\Pages\DatabaseTables::class)
             ->assertDontSee('Редактировать BREAD')->call('inspect', 'database_fixture')
             ->assertSee('Структура:')->assertSee('PRIMARY')->assertSee('UNIQUE')->assertSee('set null');
         $this->assertStringContainsString('?table=database_fixture', $page->html());
-        $this->get('/filament/database-tables?table=database_fixture')->assertOk()->assertSee('Структура: database_fixture');
+        $this->get('/admin/database-tables?table=database_fixture')->assertOk()->assertSee('Структура: database_fixture');
         $structure = $page->instance()->structure();
         $this->assertSame(['id', 'code', 'page_id'], array_column($structure['columns'], 'name'));
         $this->assertSame('pages', $structure['foreign_keys'][0]['foreign_table']);
@@ -1086,7 +1086,7 @@ class VoyagerBreadTest extends TestCase
     public function test_database_catalog_requires_its_own_permission_on_page_and_livewire_requests(): void
     {
         $this->admin(['browse_admin', 'browse_bread']);
-        $this->get('/filament/database-tables')->assertForbidden();
+        $this->get('/admin/database-tables')->assertForbidden();
         $role = auth('filament')->user()->role;
         $permission = Permission::create(['key' => 'browse_database']);
         $role->permissions()->attach($permission);
@@ -2967,7 +2967,7 @@ class VoyagerBreadTest extends TestCase
     public function test_requires_browse_permission(): void
     {
         $this->admin(['browse_admin']);
-        $this->get('/filament/bread/pages')->assertForbidden();
+        $this->get('/admin/bread/pages')->assertForbidden();
     }
 
     public function test_edit_route_groups_metadata_tabs_and_saves_all_fields(): void
@@ -2977,7 +2977,7 @@ class VoyagerBreadTest extends TestCase
         DB::table('data_rows')->where('field', 'meta_description')
             ->update(['details' => json_encode(['tab_title' => 'SEO'])]);
         $id = DB::table('pages')->insertGetId(['title' => 'Before', 'meta_description' => 'Before SEO']);
-        $this->get('/filament/bread/pages/' . $id . '/edit?type=2')->assertOk();
+        $this->get('/admin/bread/pages/' . $id . '/edit?type=2')->assertOk();
 
         Livewire::test(VoyagerBreadEdit::class, ['type' => 'pages', 'record' => $id])
             ->assertSee('Main')->assertSee('SEO')
@@ -2997,10 +2997,10 @@ class VoyagerBreadTest extends TestCase
     {
         $this->admin(['browse_admin', 'browse_pages']);
         $id = DB::table('pages')->insertGetId(['title' => 'Protected']);
-        $this->get('/filament/bread/pages/' . $id . '/edit')->assertForbidden();
+        $this->get('/admin/bread/pages/' . $id . '/edit')->assertForbidden();
         Permission::query()->firstOrCreate(['key' => 'edit_pages'])->roles()->attach(auth('filament')->user()->role_id);
         $this->app->forgetInstance(BreadRegistry::class);
-        $this->getJson('/filament/bread/pages/999/edit')->assertNotFound();
+        $this->getJson('/admin/bread/pages/999/edit')->assertNotFound();
         $this->assertDatabaseHas('pages', ['id' => $id, 'title' => 'Protected']);
     }
 
@@ -3049,7 +3049,7 @@ class VoyagerBreadTest extends TestCase
         Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_pages', 'edit_pages']);
         $id = DB::table('pages')->insertGetId(['title' => 'English', 'meta_description' => 'Base']);
-        $this->get('/filament/bread/pages')->assertOk();
+        $this->get('/admin/bread/pages')->assertOk();
 
         Livewire::test(VoyagerBread::class, ['type' => 'pages'])
             ->call('openEdit', $id)
@@ -4351,7 +4351,7 @@ class VoyagerBreadTest extends TestCase
         $menuId = DB::table('menus')->insertGetId(['name' => 'admin']);
         $id = DB::table('menu_items')->insertGetId(['menu_id' => $menuId, 'title' => 'Pages', 'order' => 1]);
 
-        $this->get('/filament/menu-items')->assertOk();
+        $this->get('/admin/menu-items')->assertOk();
         Livewire::test(VoyagerMenuItems::class)
             ->call('openEdit', $id)
             ->set('data.title', 'Content')
@@ -4399,28 +4399,28 @@ class VoyagerBreadTest extends TestCase
         app()->forgetInstance('translator');
         \Illuminate\Support\Facades\Lang::clearResolvedInstance('translator');
         try {
-            $this->get('/filament/translations')->assertOk()->assertSee('Translation Manager')->assertSee('Import groups');
-            $this->get('/filament/ui-translations')->assertRedirect('/filament/translations');
-            $this->get('/filament/ui-translations?group=homepage_new')->assertRedirect('/filament/translations/view/homepage_new');
-            $this->post('/filament/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'New'])
+            $this->get('/admin/translations')->assertOk()->assertSee('Translation Manager')->assertSee('Import groups');
+            $this->get('/admin/ui-translations')->assertRedirect('/admin/translations');
+            $this->get('/admin/ui-translations?group=homepage_new')->assertRedirect('/admin/translations/view/homepage_new');
+            $this->post('/admin/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'New'])
                 ->assertOk()->assertJson(['status' => 'ok']);
             $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'value' => 'New', 'status' => 1]);
-            $this->post('/filament/translations/import', ['replace' => false])->assertOk()->assertJson(['status' => 'ok']);
+            $this->post('/admin/translations/import', ['replace' => false])->assertOk()->assertJson(['status' => 'ok']);
             $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'value' => 'New']);
             $this->assertDatabaseHas('ltm_translations', ['key' => 'other', 'value' => 'Imported']);
-            $this->post('/filament/translations/publish/homepage_new')->assertOk()->assertJson(['status' => 'ok']);
+            $this->post('/admin/translations/publish/homepage_new')->assertOk()->assertJson(['status' => 'ok']);
             $this->assertSame(['title' => 'New', 'other' => 'Imported'], require $directory . '/ru/homepage_new.php');
             $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'status' => 0]);
-            $this->get('/filament/translations/view/homepage_new')->assertOk()->assertSee('New');
-            $this->post('/filament/translations/add/homepage_new', ['keys' => "new_key\nsecond_key"])->assertRedirect();
+            $this->get('/admin/translations/view/homepage_new')->assertOk()->assertSee('New');
+            $this->post('/admin/translations/add/homepage_new', ['keys' => "new_key\nsecond_key"])->assertRedirect();
             $this->assertDatabaseHas('ltm_translations', ['group' => 'homepage_new', 'key' => 'new_key']);
             auth('filament')->user()->role->permissions()->detach();
             auth('filament')->user()->unsetRelations();
-            $this->get('/filament/translations')->assertForbidden();
-            $this->post('/filament/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'Forbidden'])->assertForbidden();
+            $this->get('/admin/translations')->assertForbidden();
+            $this->post('/admin/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'Forbidden'])->assertForbidden();
             auth('filament')->logout();
-            $this->get('/filament/translations')->assertRedirect(route('filament.admin.auth.login'));
-            $this->postJson('/filament/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'Guest'])->assertUnauthorized();
+            $this->get('/admin/translations')->assertRedirect(route('filament.admin.auth.login'));
+            $this->postJson('/admin/translations/edit/homepage_new', ['name' => 'ru|title', 'value' => 'Guest'])->assertUnauthorized();
             $this->assertDatabaseHas('ltm_translations', ['key' => 'title', 'value' => 'New']);
         } finally {
             app()->useLangPath($oldPath);
@@ -4824,7 +4824,7 @@ class VoyagerBreadTest extends TestCase
             'type' => 'text', 'group' => 'Site',
         ]);
         $this->admin(['browse_admin', 'browse_settings', 'edit_settings']);
-        $this->get('/filament/voyager-settings')->assertOk();
+        $this->get('/admin/voyager-settings')->assertOk();
         Livewire::test(VoyagerSettings::class)
             ->call('openEdit', $id)
             ->set('data.value', 'New title')
@@ -5424,7 +5424,7 @@ class VoyagerBreadTest extends TestCase
         $this->seoFixture(false);
         \Illuminate\Support\Facades\Queue::fake();
         $record = \App\Models\SeoMetaSuggestion::create(['status' => 'approved', 'approved_meta_title' => 'Protected']);
-        $this->get('/filament/seo-meta-suggestions')->assertOk();
+        $this->get('/admin/seo-meta-suggestions')->assertOk();
         Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
             ->assertActionHidden('scan')
             ->assertActionHidden(\Filament\Actions\Testing\TestAction::make('generate')->table($record))
@@ -5442,7 +5442,7 @@ class VoyagerBreadTest extends TestCase
     public function test_seo_legacy_url_redirects_and_invalid_scan_is_rejected(): void
     {
         $this->seoFixture();
-        $this->get('/filament/bread/seo-meta-suggestions')->assertRedirect(
+        $this->get('/admin/bread/seo-meta-suggestions')->assertRedirect(
             \App\Filament\Resources\SeoMetaSuggestions\SeoMetaSuggestionResource::getUrl());
         Livewire::test(\App\Filament\Resources\SeoMetaSuggestions\Pages\ListSeoMetaSuggestions::class)
             ->callAction('scan', data: ['model' => 'InvalidModel', 'locale' => 'xx', 'limit' => 0])
@@ -7926,7 +7926,7 @@ class VoyagerBreadTest extends TestCase
     {
         \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
         $this->admin(['browse_admin']);
-        $this->get('/filament/cache-tools')->assertForbidden();
+        $this->get('/admin/cache-tools')->assertForbidden();
         Livewire::test(\App\Filament\Pages\CacheTools::class)->assertForbidden();
         $this->admin(['browse_admin', 'browse_compass']);
         Livewire::test(\App\Filament\Pages\CacheTools::class)->assertSee('Очистить кеш приложения')->assertSee('Собрать кеш конфигурации и маршрутов')
@@ -7938,7 +7938,7 @@ class VoyagerBreadTest extends TestCase
         Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         $this->admin(['browse_admin', 'browse_compass']);
         \Illuminate\Support\Facades\Artisan::shouldReceive('call')->never();
-        $this->get('/filament/cache-tools')->assertOk()->assertSee('Очистить кеш приложения')->assertSee('Собрать кеш конфигурации и маршрутов');
+        $this->get('/admin/cache-tools')->assertOk()->assertSee('Очистить кеш приложения')->assertSee('Собрать кеш конфигурации и маршрутов');
     }
 
     public function test_cache_tools_execute_only_the_original_commands_in_order(): void
@@ -7981,7 +7981,7 @@ class VoyagerBreadTest extends TestCase
         Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         config(['voyager.compass_in_production' => true]);
         $this->admin(['browse_admin', 'browse_compass']);
-        $this->get('/filament/compass')->assertOk()->assertSee('Иконки Voyager')->assertSee('Документация Voyager');
+        $this->get('/admin/compass')->assertOk()->assertSee('Иконки Voyager')->assertSee('Документация Voyager');
         $page = Livewire::test(\App\Filament\Pages\Compass::class);
         $this->assertCount(206, $page->instance()->icons());
         $this->assertContains('voyager-bread', $page->instance()->icons());
@@ -8002,7 +8002,7 @@ class VoyagerBreadTest extends TestCase
     {
         config(['voyager.compass_in_production' => true]);
         $this->admin(['browse_admin']);
-        $this->get('/filament/compass')->assertForbidden();
+        $this->get('/admin/compass')->assertForbidden();
         $this->admin(['browse_admin', 'browse_compass']);
         $originalEnvironment = $this->app['env'];
         try {
@@ -8026,7 +8026,7 @@ class VoyagerBreadTest extends TestCase
         $this->admin(['browse_admin', 'browse_menus', 'add_menus']);
         Livewire::test(VoyagerMenuItems::class)->call('openCreate')->assertDontSee('Каталог иконок');
         $this->admin(['browse_admin', 'browse_menus', 'add_menus', 'browse_compass']);
-        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->assertSee('Каталог иконок')->assertSee('/filament/compass#fonts');
+        Livewire::test(VoyagerMenuItems::class)->call('openCreate')->assertSee('Каталог иконок')->assertSee('/admin/compass#fonts');
     }
 
     public function test_compass_log_tab_reads_filters_and_pages_artificial_logs_without_writes(): void
@@ -8077,13 +8077,13 @@ class VoyagerBreadTest extends TestCase
         $this->app->instance(\App\Services\Admin\CompassLogReader::class, new \App\Services\Admin\CompassLogReader($disk->path('')));
         config(['voyager.compass_in_production' => true]);
         $this->admin(['browse_admin', 'browse_compass']);
-        $response = $this->get('/filament/compass/download?file=download.log')->assertOk()->assertDownload('download.log');
+        $response = $this->get('/admin/compass/download?file=download.log')->assertOk()->assertDownload('download.log');
         $this->assertInstanceOf(\Symfony\Component\HttpFoundation\BinaryFileResponse::class, $response->baseResponse);
         $this->assertTrue($response->baseResponse->headers->hasCacheControlDirective('no-store'));
         $this->assertSame("Synthetic bytes\r\n", file_get_contents($response->baseResponse->getFile()->getPathname()));
-        $this->getJson('/filament/compass/download?file=..%2Foutside.log')->assertUnprocessable();
-        $this->getJson('/filament/compass/download?file=missing.log')->assertUnprocessable();
-        $this->getJson('/filament/compass/download?file[]=download.log')->assertUnprocessable();
+        $this->getJson('/admin/compass/download?file=..%2Foutside.log')->assertUnprocessable();
+        $this->getJson('/admin/compass/download?file=missing.log')->assertUnprocessable();
+        $this->getJson('/admin/compass/download?file[]=download.log')->assertUnprocessable();
         $this->assertSame("Synthetic bytes\r\n", $disk->get('download.log'));
     }
 
@@ -8096,7 +8096,7 @@ class VoyagerBreadTest extends TestCase
         $this->app->instance(\App\Services\Admin\CompassLogReader::class, new \App\Services\Admin\CompassLogReader($disk->path('')));
         config(['voyager.compass_in_production' => true]);
         $this->admin(['browse_admin', 'browse_compass']);
-        $response = $this->get('/filament/compass/download?file=large.log')->assertOk()->assertDownload('large.log');
+        $response = $this->get('/admin/compass/download?file=large.log')->assertOk()->assertDownload('large.log');
         $this->assertSame(\App\Services\Admin\CompassLogReader::MAX_FILE_SIZE + 1, $response->baseResponse->getFile()->getSize());
     }
 
@@ -8104,7 +8104,7 @@ class VoyagerBreadTest extends TestCase
     {
         config(['voyager.compass_in_production' => true]);
         $this->admin(['browse_admin']);
-        $this->get('/filament/compass/download?file=laravel.log')->assertForbidden();
+        $this->get('/admin/compass/download?file=laravel.log')->assertForbidden();
     }
 
     public function test_compass_log_delete_confirmation_cancels_and_deletes_only_its_snapshot(): void
@@ -8153,7 +8153,7 @@ class VoyagerBreadTest extends TestCase
 
     public function test_compass_log_download_requires_filament_login(): void
     {
-        $this->get('/filament/compass/download?file=laravel.log')->assertRedirect('/filament/login');
+        $this->get('/admin/compass/download?file=laravel.log')->assertRedirect('/admin/login');
     }
 
     public function test_compass_log_delete_partial_failure_retains_failed_names_for_retry(): void

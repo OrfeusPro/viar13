@@ -73,6 +73,16 @@ Route::post('/{locale}/password/reset', [ResetPasswordController::class, 'resetL
 if (config('app.admin_enabled', false)) {
     require_once __DIR__ . '/admin.php';
 }
+
+Route::get('/filament/{path?}', function (\Illuminate\Http\Request $request, ?string $path = null) {
+    $target = '/admin'.($path ? '/'.$path : '');
+    if ($query = $request->getQueryString()) {
+        $target .= '?'.$query;
+    }
+
+    return redirect($target);
+})->where('path', '.*');
+
 require_once __DIR__ . '/redirect.php';
 
 Route::get('/storage/{path}', function ($path) {

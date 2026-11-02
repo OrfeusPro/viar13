@@ -14,19 +14,28 @@ class FilamentPanelBootTest extends TestCase
 {
     public function test_guest_is_redirected_from_filament_panel_to_filament_login(): void
     {
-        $response = $this->get('/filament');
+        $response = $this->get('/admin');
 
-        $response->assertRedirect('/filament/login');
+        $response->assertRedirect('/admin/login');
     }
 
     public function test_filament_login_page_is_available(): void
     {
-        $this->get('/filament/login')->assertOk();
+        $this->get('/admin/login')->assertOk();
+    }
+
+    public function test_old_panel_links_redirect_to_admin_with_the_query_string(): void
+    {
+        $this->get('/filament')->assertRedirect('/admin');
+        $this->get('/filament/login')->assertRedirect('/admin/login');
+        $this->get('/filament/orders?page=2&tab=all')->assertRedirect('/admin/orders?page=2&tab=all');
+        $this->assertSame(url('/admin/login'), route('filament.admin.auth.login'));
+        $this->assertSame('admin/translations', config('translation-manager.route.prefix'));
     }
 
     public function test_login_uses_default_logo_when_settings_are_unavailable(): void
     {
-        $this->get('/filament/login')->assertOk()
+        $this->get('/admin/login')->assertOk()
             ->assertSee('https://viarcanvas.com/storage/settings/March2021/Ey47Eo1q2bpmmxdRrHDv.png', false)
             ->assertSee('ViarCanvas');
     }
@@ -43,7 +52,7 @@ class FilamentPanelBootTest extends TestCase
         ]);
         config(['voyager.storage.disk' => 'public', 'filesystems.disks.public.url' => 'https://example.test/storage']);
 
-        $this->get('/filament/login')->assertOk()
+        $this->get('/admin/login')->assertOk()
             ->assertSee('ViarCanvas Studio')
             ->assertSee('https://example.test/storage/settings/March2021/custom.png', false);
 
@@ -58,7 +67,7 @@ class FilamentPanelBootTest extends TestCase
 
     public function test_password_is_masked_before_javascript_initializes(): void
     {
-        $html = $this->get('/filament/login')->assertOk()->getContent();
+        $html = $this->get('/admin/login')->assertOk()->getContent();
         $dom = new \DOMDocument;
         @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
         $password = (new \DOMXPath($dom))->query('//input[@id="form.password"]')->item(0);
@@ -77,8 +86,8 @@ class FilamentPanelBootTest extends TestCase
             'password' => 'frontend-password-hash',
         ]));
 
-        $this->get('/filament/login')->assertOk();
-        $this->get('/filament')->assertRedirect('/filament/login');
+        $this->get('/admin/login')->assertOk();
+        $this->get('/admin')->assertRedirect('/admin/login');
     }
 
     public function test_legacy_voyager_routes_are_not_registered(): void

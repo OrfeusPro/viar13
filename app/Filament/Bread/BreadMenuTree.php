@@ -89,7 +89,7 @@ class BreadMenuTree
         $path = rtrim(parse_url($url, PHP_URL_PATH) ?? '', '/');
         $request = original_request();
         $current = '/'.trim($request->path(), '/');
-        if ($current !== $path && ($path === '/filament' || ! str_starts_with($current, $path.'/'))) {
+        if ($current !== $path && ($path === '/admin' || ! str_starts_with($current, $path.'/'))) {
             return false;
         }
         parse_str(parse_url($url, PHP_URL_QUERY) ?? '', $query);
@@ -124,20 +124,20 @@ class BreadMenuTree
     private static function dedicatedPath(object $row): ?string
     {
         return match (true) {
-            $row->url === '/admin/user_filter' || $row->route === 'user_filter' => '/filament/clients',
-            $row->url === '/admin/email-sender' || $row->route === 'mail.send' => '/filament/email-sender',
-            $row->route === 'voyager.dashboard' => '/filament',
-            $row->route === 'voyager.bread.index' || $row->url === '/admin/bread' => '/filament/bread-tables',
-            $row->route === 'voyager.database.index' || $row->url === '/admin/database' => '/filament/database-tables',
-            $row->route === 'voyager.orders.index' => '/filament/orders',
-            $row->url === '/admin/sa-conversations' || $row->route === 'admin.sa.conversations.index' => '/filament/sa-conversations',
-            $row->route === 'voyager.canvas-slider.index' => '/filament/canvas-sliders',
-            $row->url === '/admin/alt-suggestions' => '/filament/image-alt-suggestions',
-            $row->url === '/admin/seo-meta-suggestions' || $row->route === 'voyager.seo-meta-suggestions.index' => '/filament/seo-meta-suggestions',
-            $row->url === '/admin/settings' || $row->route === 'voyager.settings.index' => '/filament/voyager-settings',
-            $row->url === '/admin/media' || $row->route === 'voyager.media.index' => '/filament/media',
-            in_array($row->url, ['/admin/cache/clear', '/admin/cache/set'], true) => '/filament/cache-tools',
-            $row->url === '/admin/compass' || $row->route === 'voyager.compass.index' => '/filament/compass',
+            $row->url === '/admin/user_filter' || $row->route === 'user_filter' => '/admin/clients',
+            $row->url === '/admin/email-sender' || $row->route === 'mail.send' => '/admin/email-sender',
+            $row->route === 'voyager.dashboard' => '/admin',
+            $row->route === 'voyager.bread.index' || $row->url === '/admin/bread' => '/admin/bread-tables',
+            $row->route === 'voyager.database.index' || $row->url === '/admin/database' => '/admin/database-tables',
+            $row->route === 'voyager.orders.index' => '/admin/orders',
+            $row->url === '/admin/sa-conversations' || $row->route === 'admin.sa.conversations.index' => '/admin/sa-conversations',
+            $row->route === 'voyager.canvas-slider.index' => '/admin/canvas-sliders',
+            $row->url === '/admin/alt-suggestions' => '/admin/image-alt-suggestions',
+            $row->url === '/admin/seo-meta-suggestions' || $row->route === 'voyager.seo-meta-suggestions.index' => '/admin/seo-meta-suggestions',
+            $row->url === '/admin/settings' || $row->route === 'voyager.settings.index' => '/admin/voyager-settings',
+            $row->url === '/admin/media' || $row->route === 'voyager.media.index' => '/admin/media',
+            in_array($row->url, ['/admin/cache/clear', '/admin/cache/set'], true) => '/admin/cache-tools',
+            $row->url === '/admin/compass' || $row->route === 'voyager.compass.index' => '/admin/compass',
             $row->url === '/admin/translations' => '/'.config('translation-manager.route.prefix'),
             default => null,
         };

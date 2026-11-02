@@ -67,7 +67,7 @@ class FilamentAuthorizationTest extends TestCase
         $user = $this->user(['role_id' => $role->id]);
 
         $this->assertTrue($user->canAccessPanel(Filament::getPanel('admin')));
-        $this->actingAs($user, 'filament')->get('/filament')->assertOk();
+        $this->actingAs($user, 'filament')->get('/admin')->assertOk();
     }
 
     public function test_additional_voyager_role_can_grant_panel_access(): void
@@ -86,7 +86,7 @@ class FilamentAuthorizationTest extends TestCase
         $user = $this->user(['role_id' => $role->id]);
 
         $this->assertFalse($user->canAccessPanel(Filament::getPanel('admin')));
-        $this->actingAs($user, 'filament')->get('/filament')->assertForbidden();
+        $this->actingAs($user, 'filament')->get('/admin')->assertForbidden();
     }
 
     public function test_alt_suggestions_require_their_own_browse_permission(): void
@@ -117,7 +117,7 @@ class FilamentAuthorizationTest extends TestCase
         $user = $this->user(['role_id' => $role->id]);
 
         $this->actingAs($user, 'filament')
-            ->get('/filament/image-alt-suggestions')
+            ->get('/admin/image-alt-suggestions')
             ->assertOk()
             ->assertSee('ALT');
     }
@@ -140,7 +140,7 @@ class FilamentAuthorizationTest extends TestCase
         $user->unsetRelation('role');
 
         $this->assertTrue(CanvasSliderResource::canViewAny());
-        $this->get('/filament/canvas-sliders')->assertOk();
+        $this->get('/admin/canvas-sliders')->assertOk();
     }
 
     public function test_canvas_slider_subtitle_action_saves_default_and_translation(): void

@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('filament')
+            ->path('admin')
             ->brandName(fn (): string => trim((string) setting('admin.title')) ?: 'ViarCanvas')
             ->brandLogo(fn () => view('filament.components.brand', [
                 'name' => trim((string) setting('admin.title')) ?: 'ViarCanvas',

@@ -180,7 +180,7 @@ class OrderLifecycleServiceTest extends TestCase
         foreach (['Статус заказа:', 'В процессе', 'История статусов', 'номер заказа:', 'желаемая дата доставки:', 'Создать заказ', 'Просмотр клиента', 'Все заказы ранее', 'Исходящая накладная', 'Скачать'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
-        $this->assertStringContainsString('/filament/orders/create?from_order_id='.$order->id, $html);
+        $this->assertStringContainsString('/admin/orders/create?from_order_id='.$order->id, $html);
         $this->assertStringContainsString('Другие активные заказы:', $html);
         $this->assertSame(2, substr_count($html, 'background:#16a34a;'));
     }
@@ -213,7 +213,7 @@ class OrderLifecycleServiceTest extends TestCase
     {
         $this->actingAs($this->admin(['browse_orders', 'read_orders']), 'filament');
 
-        $this->get('/filament/orders/create')->assertForbidden();
+        $this->get('/admin/orders/create')->assertForbidden();
     }
 
     public function test_open_lifecycle_forms_do_not_call_services_after_permission_revocation(): void
@@ -292,7 +292,7 @@ class OrderLifecycleServiceTest extends TestCase
         $registry->shouldReceive('permitted')->with($type, 'read', 51)->andReturn(true);
         $this->app->instance(\App\Filament\Bread\BreadRegistry::class, $registry);
         $html = view('filament.tables.columns.order-lifecycle', ['getRecord' => fn () => $order])->render();
-        $this->assertStringContainsString('/filament/bread/users/51/view', $html);
+        $this->assertStringContainsString('/admin/bread/users/51/view', $html);
         $this->assertStringNotContainsString("mountTableAction('viewOrderClient'", $html);
     }
 

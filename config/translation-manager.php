@@ -11,7 +11,7 @@ return [
     |
     */
     'route' => [
-        'prefix'     => 'filament/translations',
+        'prefix'     => 'admin/translations',
         'middleware' => [
             'web',
             \App\Http\Middleware\TranslationManagerAccess::class,

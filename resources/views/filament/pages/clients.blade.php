@@ -29,7 +29,7 @@
                 <tbody>
                     @forelse($clients as $client)
                         <tr wire:key="client-{{ $client->id }}">
-                            <td>@if(auth('filament')->user()->hasPermission('edit_users'))<a href="/filament/bread/users/{{ $client->id }}/edit">{{ $client->id }}</a>@else{{ $client->id }}@endif</td>
+                            <td>@if(auth('filament')->user()->hasPermission('edit_users'))<a href="/admin/bread/users/{{ $client->id }}/edit">{{ $client->id }}</a>@else{{ $client->id }}@endif</td>
                             <td style="overflow-wrap:anywhere">{{ $client->email }}</td><td>{{ $client->first_name }}</td><td>{{ $client->last_name }}</td>
                             <td>{{ $client->phone ?: '—' }}</td><td style="overflow-wrap:anywhere">{{ $client->address ?: '—' }}</td><td>{{ $client->postal_index ?: '—' }}</td><td>{{ $client->country ?: '—' }}</td>
                             <td><span @class(['viar-management-badge','is-enabled'=>$client->news === 'YES'])>{{ $client->news === 'YES' ? 'Да' : ($client->news === 'NO' ? 'Нет' : '—') }}</span></td>
@@ -37,7 +37,7 @@
                                 <div style="display:grid;gap:8px">
                                     @if($client->orders_count && auth('filament')->user()->hasPermission('browse_orders'))<a href="{{ $this->ordersUrl($client->id) }}">Список ({{ $client->orders_count }})</a>@elseif($client->orders_count){{ $client->orders_count }}@else<span class="viar-management-muted">Нет заказов</span>@endif
                                     @if(auth('filament')->user()->hasPermission('edit_users'))
-                                        <x-filament::icon-button tag="a" href="/filament/bread/users/{{ $client->id }}/edit" icon="heroicon-o-pencil-square" label="Редактировать клиента #{{ $client->id }}" />
+                                        <x-filament::icon-button tag="a" href="/admin/bread/users/{{ $client->id }}/edit" icon="heroicon-o-pencil-square" label="Редактировать клиента #{{ $client->id }}" />
                                     @endif
                                 </div>
                             </td>

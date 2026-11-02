@@ -89,8 +89,8 @@ class ClientsTest extends TestCase
     public function test_links_require_permissions_and_revocation_blocks_read(): void
     {
         $this->actingAs($this->actor(false,false), 'filament');
-        $page = Livewire::test(Clients::class)->assertDontSee('/filament/bread/users/1/edit',false)
-            ->assertDontSee('/filament/orders?',false)->assertSee('alpha@example.invalid');
+        $page = Livewire::test(Clients::class)->assertDontSee('/admin/bread/users/1/edit',false)
+            ->assertDontSee('/admin/orders?',false)->assertSee('alpha@example.invalid');
         $this->actingAs($this->actor(false,false,false),'filament');
         $page->set('search','alpha')->assertForbidden();
         $this->assertFalse(Clients::canAccess());

@@ -74,6 +74,6 @@ class Clients extends Page
 
     public function ordersUrl(int $userId): string
     {
-        return '/filament/orders?'.http_build_query(['tab' => 'all', 'filters' => ['user_id' => ['value' => $userId]]]);
+        return '/admin/orders?'.http_build_query(['tab' => 'all', 'filters' => ['user_id' => ['value' => $userId]]]);
     }
 }
