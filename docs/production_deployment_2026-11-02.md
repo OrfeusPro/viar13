@@ -45,7 +45,7 @@ Worker drop-in `/etc/systemd/system/viar-alt-worker.service.d/50-viar13.conf` и
 - Redis queues alt-gen/default, tries2, backoff60, timeout180, sleep3, memory256, TimeoutStopSec240.
 - Process-only disable_functions override разрешает pcntl_signal и pcntl_alarm, отключённые в глобальном PHP8.3 CLI. Остальные исходные запреты сохранены, включая shell_exec. Глобальные PHP/FPM ограничения не менялись.
 
-Private launcher первой выкладки и старый release больше не используются действующим web runtime/worker. Прямые `php artisan --version` и `php artisan route:list --path=filament/login --json` от admin прошли в public_html. Base path приложения подтверждён как public_html. Laravel Framework — 13.29.0.
+Private launcher первой выкладки не используется действующим web runtime/worker; старый release удалён по разрешению пользователя. Прямые `php artisan --version` и `php artisan route:list --path=filament/login --json` от admin прошли в public_html. Base path приложения подтверждён как public_html. Laravel Framework — 13.29.0.
 
 Новые scheduler entries не добавлялись. В проверенных /etc/cron.d и root/admin crontab совпадений artisan/viarcanvas не найдено. Другие способы запуска scheduler отдельно не проверялись.
 
@@ -82,17 +82,13 @@ Ledger и наличие schema проверены SELECT в read-only transacti
 - На сервере hostname viarcanvas.com резолвится в127.0.1.1, где nginx не слушает443. Server-origin проверки используют --resolve; внешний DNS из Windows работает. /etc/hosts не менялся. Self-HTTP интеграции при наличии требуют отдельной проверки.
 - Полный baseline900 tests не повторялся: исходники runtime не менялись, проверялся перенос уже установленного кода. Проверка реальной оплаты, отправки чата и крупных загрузок остаётся за пользовательским smoke.
 
-## Откат текущего переноса
+## Резерв releases удалён по разрешению пользователя
 
-Подготовлен, но не выполнялся как rehearsal:
+После переноса основного checkout/runtime в public_html пользователь разрешил удалить `/home/admin/web/viarcanvas.com/releases`. Каталог с единственным release 20261102-150e859 удалён; перед удалением занимал около843MiB. Основной vendor в public_html сохранён.
 
-```bash
-python3 /home/admin/web/viarcanvas.com/private/publichtml-cutover-20261102/rollback.py
-```
+Перед удалением подтверждено: nginx и worker используют public_html, симлинков из public_html/private в releases нет. Production .env и public/index.php сохранили SHA256, каталоги public/storage — inode. После удаления главная и /filament/login ответили200 по внешнему HTTPS; worker active/running/NRestarts0.
 
-Скрипт возвращает предшествующую работающую схему Laravel13 из releases, восстанавливает custom includes и worker drop-in из config-before, сохраняет текущий public_html code в private/code-after и возвращает code-before. Production `.env`, public и storage не удаляет; возвращает только прежний public/index.php из отдельной копии. Schema и данные БД не откатывает. Повторный завершённый rollback безопасно завершается; частичное восстановление требует проверки до изменения сервисов.
-
-Старый `private/deploy-20261102/rollback.py` теперь делегирует этому скрипту: прежний rollback на Laravel6/PHP7.4 нельзя применять напрямую поверх нового public_html checkout. Его исходник сохранён в config-before/previous-rollback.py только для истории.
+Автоматический откат на предшествующую release-схему больше недоступен. В private/publichtml-cutover-20261102/rollback.py добавлен и проверен guard: при отсутствии release он завершается до изменения конфигурации или сервисов. Старый delegate rollback тоже защищён этим guard. Остальные private backups/evidence не удалялись. Предварительный полный backup пользователь подтвердил ранее; его восстановление не проверялось.
 
 ## Evidence и остаток
 
