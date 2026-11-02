@@ -58,6 +58,7 @@ class AuditVoyagerBreadCommand extends Command
                         $validRelations[$operation] = array_merge(
                             array_map(static fn ($row): int => (int) $row->id, $registry->belongsToRows($type, $operation)),
                             array_map(static fn (array $relation): int => (int) $relation['row']->id, $registry->manyToManyRows($type, $operation)),
+                            array_map(static fn (array $relation): int => (int) $relation['row']->id, $registry->childrenRows($type, $operation)),
                         );
                     }
                 }

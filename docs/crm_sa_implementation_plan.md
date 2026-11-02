@@ -11023,3 +11023,34 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Код/testsпродуктанеменялись; нетновогоendpoint/схемы/permissionrules. Общий900/11272/0errors/0failures/1legacy skip иJS15PASSbaseline2ноябрясохранёнбезненужногоповторногопрогона. SourceMarkdowncommitбезpush; non-mdдляC:/OSPanel/domains/viar/viar13нет, mirrorclean/targetcommitнет. CRM/SA API/auth/idempotency/staticmappingsбезизменений,lead_id=orders.id.
 - **ADM-AUD-10 — локальнаяприёмкасогласованныхdesktopоперацийDONE.** A/B/F/G/Cdesktop провереныпредыдущимишагами, H/E/D browserостаткизакрыты2ноября. Сенсорныежестынацелевомустройствеостаютсянепроверенными; физическийdropпользовательпопросилпропустить, userdeferredtouchневыдаётсязаPASS. SQLfailure/rollback/permissionbranchesподтверждаютсяавтотестами, неbrowserfaultinjection.
 - Следующаязадача: **ADM-FIL-022/029 — Контент и каталог: специальные BREAD-поля, используемые metadata и остаточные media/links.** Сначала актуальныйinventory/исходныеконтракты; неоткрыватьзановопроизвольныеисторическиеTODO, неиспользоватьархивupgrade-laravel13-filament5какactiveplan. ОстальныеSEO/ALT/tools/DEVauth/dashboard/cutoverзадачисохраняются, цельвсегочатанеобъявляетсязавершённой.
+
+
+## ADM-FIL-022/029 — Актуальные metadata и специальные поля, 2026-11-02
+
+- IN PROGRESS. Обновить реальный read-only inventory data_types/data_rows/model/schema, выделить фактическивключённыеspecialtypes/options/customhandlers иmissing-modelentries. УсловныестарыеPARTIALнепревращатьвновыезависимостибезmetadata/sourceподтверждения.
+- SQLтольковreadonlytransaction/rollback, HTTP/mailfake; никакихstore/update/delete/BREADmetadatawrites. СохранитьignoredJSONsnapshot исводкубезсекретов/персональныхданных. Затемвыбратьточныйподтверждённыйпробелилиоставшийсяbrowsergate.
+
+
+## ADM-FIL-029 — Найдены отсутствующие модели тестового BREAD, 2026-11-02
+
+- Inventory текущей MySQL:135 data_types/2014 data_rows,19 field types, malformed details0; metadata hash до/после совпал. Включённых custom views/inline/List/tinymceOptions/coordinates/callable defaults не найдено; controller/policy adapters поддерживают текущие значения.
+-4model/schema exceptions: legacy canvas/Canva иa_collag_faq/ACollagFaq безтаблиц; правильный a_collage_faq/ACollageFaq существует, самовольный rename metadata недопустим. Ещё2 — adm_browser_cycle_items/categories: таблицыесть, App Models отсутствуют. Журнал12октября подтверждает ихсоздание черезUI иинструкциюоставитьтестовыеданные; это неповодудалятьтаблицы.
+- IN PROGRESS: восстановить2пустыеEloquentмодели ровнопоштатномушаблону DatabaseModelGenerationService. Не менятьтаблицы/записи/metadata/permissions. Затемповторитьread-onlyregistry/list/read/formsдляэтих2types, lint; export2PHP сSHA/commitsource+mirrorбезpush. Fullread-onlybread:auditужеидёт, дождатьсяегорезультатабезперезапуска.
+
+
+## ADM-FIL-029 — Исправление ложных ошибок дочерних связей в аудите, 2026-11-02
+
+- IN PROGRESS. После восстановления моделей targeted read-only audit открыл list/read/add/edit двух test BREAD, но ошибочно пометил hasOne/hasMany недоступными. Registry.childrenRows поддерживает эти связи; AuditVoyagerBreadCommand не включал их в validRelations.
+- Расширен существующий child relationship integration test вызовом actual bread:audit и проверкой сохранности дочерних записей. До исправления FAIL: exit1 вместо0. В command добавлены валидированные childrenRows для каждого browse/read/add/edit; не ослабляется validation или разрешение записи связей.
+- Проверяются существующие invalid relationship tests, child scopes/readonly forms и generator no-overwrite. Повтор targeted real read-only audit должен вернуть0; полный первоначальный135type audit ещё выполняется на загруженной до исправления версии command, не считать его финальным отчётом новой версии.
+
+
+## ADM-FIL-029 — Модели тестовых разделов и точность аудита: результат 2026-11-02
+
+- DONE для двух найденных отсутствующих моделей и исправления audit child relations. Восстановлены App Models AdmBrowserCycleItem/AdmBrowserCycleCategory, точный минимальный шаблон DatabaseModelGenerationService; таблицы/записи/metadata/права не менялись. Source generator no-overwrite test1/16PASS; общий targeted5tests/51assertionsPASS13.324s110MB.
+- AuditVoyagerBreadCommand добавляет childrenRows квалидированнымrelationships дляbrowse/read/add/edit. Новая проверка в существующем child scopes/readonly test воспроизвела exit1 доисправления; послеисправления auditPASS и child rowsunchanged. Невалидная связьпо-прежнемудаётexit1.
+- Реальный targetedread-onlyaudit:items2records/list10/read9/add6/edit6 иcategories3records/list5/read4/add1/edit1, обеadd/editformsOK,2types/0issues. SHA семитаблицдо/послесовпали; новыйsave/создание/удаление врабочейDBневыполнялись.
+- Общийinventory повторёнпослевосстановления:135types/2014rows,19fieldtypes, malformedJSON0, metadataunchanged. Остаются2историческихmissingtable/modeldefinitions canvas/Canva иa-collag-faq/ACollagFaq; правильныйa_collage_faq/ACollageFaqнеподменялся. Всеcontroller/policyvaluesподдержаны, callable defaults/customviews/coordinatesвsnapshotнеобнаружены.
+- Проверки4PHP lint/diffcheckPASS. Полный900testgateнеповторялся: текущийchangeузкоaudit+2пустыемодели, targetedcoversalteredpaths. Старый900/11272baselineневыдаётсязановыйпрогонпослеизменения. Первоначальный135typecommandостаётсяживsession13367; завершающийreportбудетразобранотдельно, недублироватьегоиз-затишиныstdout.
+-4non-mdфайласкопированывC:/OSPanel/domains/viar/viar13; SHA256совпали, списоквignoredexport-verified.json. Targetmaincommit327a994безpush; Markdownневыгружался. Sourcecode/tests/docsкоммитвтекущейветкебезpush. CRM/SA API/auth/DB/staticmappingsбезизменений,lead_id=orders.id.
+- Подробнаяактуальнаяматрица:docs/content_catalog_acceptance_2026-11-02.md. ОбщийADM-FIL-022/029INPROGRESS: дождатьсяfullreadonlyaudit, затемоставшиесяиспользуемыеспецполя/медиассылки. Цельвсегоэтапанезавершена.

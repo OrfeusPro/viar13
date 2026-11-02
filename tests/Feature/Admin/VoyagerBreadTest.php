@@ -6498,6 +6498,9 @@ class VoyagerBreadTest extends TestCase
         $page->set('data.child_hasMany', [3])->set('data.__child_'.$rows['hasMany'], [3])->call('save')->assertHasNoErrors();
         $this->assertSame($before, DB::table('page_notes')->orderBy('id')->get()->toJson());
         $page->call('openCreate')->assertSee('Связанные записи будут доступны после создания записи.')->assertDontSee('Unassigned child');
+        $this->assertSame(0, \Illuminate\Support\Facades\Artisan::call('bread:audit'));
+        $this->assertStringContainsString('pages: OK', \Illuminate\Support\Facades\Artisan::output());
+        $this->assertSame($before, DB::table('page_notes')->orderBy('id')->get()->toJson());
         DB::table('data_rows')->whereIn('id', array_values($rows))->update(['edit' => false, 'browse' => false, 'read' => false]);
         $this->assertSame([], app(BreadRegistry::class)->childrenRows(app(BreadRegistry::class)->type('pages'), 'edit'));
     }
