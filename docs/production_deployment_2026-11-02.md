@@ -1,102 +1,101 @@
 # Production deployment — 2026-11-02
 
-Техническое переключение выполнено. Админка остаётся по адресу https://viarcanvas.com/filament. Отдельный обработчик старого `/admin` не подключался по уточнению пользователя.
+## Текущая схема после уточнения пользователя
 
-## Активный код и Git
+Основной Laravel 13 checkout, Git и runtime находятся в `/home/admin/web/viarcanvas.com/public_html`. Первоначальная схема с активным кодом в releases заменена по запросу пользователя: обновляться нужно из привычного `~/web/viarcanvas.com/public_html` под пользователем admin.
 
-- Release: `/home/admin/web/viarcanvas.com/releases/20261102-150e859`.
-- Commit: `150e8593f4fff144236a8c082fd6963ea7c1bf09`, branch `main`.
+- Branch: `main`, tracking `origin/main`.
+- Commit: `150e8593f4fff144236a8c082fd6963ea7c1bf09`.
 - Origin: `https://gitlab.com/OrfeusPro/viar13.git`.
-- Release создан как shallow clone из проверенной Git-копии dev на сервере. Доступ к GitLab для fetch не настроен ни у admin, ни у root. Совпадение с remote HEAD не проверено; подтверждено совпадение с установленным dev commit.
+- HEAD и origin/main совпадают, ahead/behind — 0/0.
+- Пользователь выполнил успешный HTTPS fetch от admin до переноса; полученные refs/FETCH_HEAD перенесены с новым Git. Постоянное хранение credentials отдельно не настраивалось и не проверялось.
+- Админка остаётся https://viarcanvas.com/filament. Отдельный legacy `/admin` handler не подключён.
 
-Старый `/home/admin/web/viarcanvas.com/public_html` сохранён вместе со старым Git checkout для отката. Не выполнять там обновление Laravel 13 или Artisan под PHP 8.3: новый код находится в releases.
-
-## Production runtime
-
-Production `.env` используется из прежнего public_html. Изменена только строка `DB_DATABASE=admin_main`: остальные bytes совпали с private backup. Username уже был `admin_main`. Dev `.env` не копировался, APP_KEY не менялся.
-
-Существующие public и storage остаются в public_html. Исходный `public/index.php` не менялся, его SHA256 до и после совпал. Ссылка `public/storage` продолжает указывать на прежний `storage/app/public`.
-
-Private runtime находится в `/home/admin/web/viarcanvas.com/private/deploy-20261102`:
-
-- `production-app.php` подключает autoload/bootstrap нового release, задаёт environment/public/storage paths на прежние production-каталоги и подтверждённую DB_DATABASE=admin_main. Compiled views и file cache изолированы в storage нового release. Секретов в этом PHP-файле нет.
-- `http.php` — новый front controller.
-- `artisan.php` — CLI launcher для того же приложения.
-- Прежний public `.user.ini` скопирован без изменения содержимого рядом с private front controller. Исходный файл сохранён. Лимиты upload/post — 300M, max_input_vars — 10000, memory_limit — 512M, input/execution — 180s. После копирования PHP-FPM перезагружен.
-
-PHP 8.3 pool: `/etc/php/8.3/fpm/pool.d/viarcanvas13.conf`; socket `/run/php/php8.3-fpm-viarcanvas13.sock`; пользователь и группа admin. Open_basedir включает каталог production-домена для доступа к releases/private/shared data. Старый pool PHP 7.4 сохранён для отката.
-
-Hestia custom includes `nginx.conf_viar13` и `nginx.ssl.conf_viar13` в `/home/admin/conf/web/viarcanvas.com` добавляют exact location `/index.php` с private front controller и PHP 8.3 socket. Основные generated nginx.conf/nginx.ssl.conf не переписывались. Wildcard custom includes уже были подключены в обоих generated configs.
-
-Рабочие CLI-команды:
+Рабочий каталог:
 
 ```bash
-sudo -u admin php8.3 /home/admin/web/viarcanvas.com/private/deploy-20261102/artisan.php COMMAND
+sudo -iu admin
+cd ~/web/viarcanvas.com/public_html
+whoami
+git status
 ```
 
-Простой `php artisan` в старом public_html запускает legacy приложение.
+Git и Composer выполнять от admin. Токены не помещать в URL, исходники или чат. Для будущего обновления сначала получить и проверить diff; `git pull --ff-only` выполнять после проверки конфликтов с сохранёнными production-файлами. Git сам по себе не устанавливает новые vendor-зависимости и не применяет миграции.
 
-## Assets и зависимости
+## Перенос кода и сохранение данных
 
-Скопированы 93 assets: 74 новых, 19 обновлённых; всего 13,108,084 bytes. SHA256 совпал для 93 из 93 файлов. Оригиналы 19 обновлённых файлов сохранены в private `assets-before`.
+Новый checkout/vendor подготовлен через rsync от admin без public, storage и production `.env`. Заменяемые каталоги кода, root files и старый `.git` перемещены в `private/publichtml-cutover-20261102/code-before`, а новый код установлен в public_html. Посторонние root files сохранены.
 
-Обновлялись только существующие файлы кода и статических ресурсов; 2792 существующих non-code entries и symlinks сохранены. Каталоги storage/uploads/orders/audio/img-max/letters исключены, как и PHP/index/hidden config/robots/web.config. Команды удаления public/storage не выполнялись.
+- `.env` не менялся при этом переносе: SHA256 до и после совпал. Ранее при первой выкладке исправлена только `DB_DATABASE=admin_main`; DB_USERNAME уже был admin_main. APP_KEY сохранён, dev `.env` не копировался.
+- Каталоги public и storage остались на прежнем месте, их inode до и после совпал. Ничего из них не удалялось.
+- Обновлён только `public/index.php` на версию нового Git; предыдущая версия сохранена в private `public-index.before.php`.
+- В storage добавлен только отсутствовавший tracked `framework/cache/.gitignore`; существующие файлы не заменялись.
+- Все установленные записи кода/vendor/Git принадлежат admin:admin. Проверка владельцев установленных top-level entries и их содержимого не нашла non-admin записей. System configs и административные rollback/evidence файлы остаются под root.
 
-Vendor установлен из composer.lock: 148 пакетов, `composer install --no-dev --no-scripts --prefer-dist --optimize-autoloader`. Platform requirements прошли на PHP 8.3.30. Package discovery, Filament assets и Livewire assets затем подготовлены отдельно в release/public с READ ONLY DB и изолированными session/cache. Принудительный publish в production public не выполнялся; подготовленные файлы перенесены по проверенному manifest.
+## Runtime и worker
 
-## База данных
+Nginx custom includes `/home/admin/conf/web/viarcanvas.com/nginx.conf_viar13` и `nginx.ssl.conf_viar13` теперь направляют exact `/index.php` непосредственно в `/home/admin/web/viarcanvas.com/public_html/public/index.php` через `/run/php/php8.3-fpm-viarcanvas13.sock`.
 
-Применены только две миграции, указанные через explicit `--path`:
+Основные Hestia generated configs не переписывались. Wildcard custom includes уже были подключены в обоих server blocks. PHP-FPM pool `/etc/php/8.3/fpm/pool.d/viarcanvas13.conf` работает как admin; open_basedir включает каталог production-домена. Прежний public `.user.ini` снова используется из исходного расположения: upload/post300M, max_input_vars10000, memory512M, input/execution180s.
+
+Worker drop-in `/etc/systemd/system/viar-alt-worker.service.d/50-viar13.conf` использует:
+
+- WorkingDirectory: `/home/admin/web/viarcanvas.com/public_html`.
+- PHP8.3 и `/home/admin/web/viarcanvas.com/public_html/artisan`.
+- Redis queues alt-gen/default, tries2, backoff60, timeout180, sleep3, memory256, TimeoutStopSec240.
+- Process-only disable_functions override разрешает pcntl_signal и pcntl_alarm, отключённые в глобальном PHP8.3 CLI. Остальные исходные запреты сохранены, включая shell_exec. Глобальные PHP/FPM ограничения не менялись.
+
+Private launcher первой выкладки и старый release больше не используются действующим web runtime/worker. Прямые `php artisan --version` и `php artisan route:list --path=filament/login --json` от admin прошли в public_html. Base path приложения подтверждён как public_html. Laravel Framework — 13.29.0.
+
+Новые scheduler entries не добавлялись. В проверенных /etc/cron.d и root/admin crontab совпадений artisan/viarcanvas не найдено. Другие способы запуска scheduler отдельно не проверялись.
+
+## Git status и production-файлы
+
+Новый репозиторий не полностью чистый, поскольку production public/storage сохранены без принудительного приведения к Git. Итоговая проверка: 74 modified entries, четыре отсутствовавших ранее tracked файла public/orders и один untracked `public/theme/viar/js/registration-captcha.js`. Единственное tracked отличие вне public — `storage/framework/sessions/.gitignore`. Это не удаления, выполненные при переносе: четыре orders-файла отсутствовали до операции и не копировались с dev.
+
+Не применять git clean, reset --hard или массовый restore к production public/storage. Не скрывать эти tracked отличия через skip-worktree/assume-unchanged. При входящих изменениях тех же путей сначала согласовать их с production-копией.
+
+В `.git/info/exclude` от admin добавлены только локальные исключения существующих production-данных: public/orders, generated public/vendor/livewire, runtime cache/data и cache2, `.env.save` и сохранённые старые служебные root files. Это сохраняет файлы и не меняет upstream `.gitignore`. Core.filemode=false установлен локально. Отслеживаемые различия остаются видны.
+
+## Первая выкладка: зависимости, assets и schema
+
+До переноса в public_html новый vendor установлен из composer.lock:148 пакетов, `composer install --no-dev --no-scripts --prefer-dist --optimize-autoloader`. Platform requirements прошли на PHP8.3.30. Затем package discovery, Filament и Livewire assets были подготовлены отдельно в release/public с READ ONLY DB и изолированными session/cache.
+
+Первоначально в production public скопированы 93 assets:74 новых и19 обновлённых,13,108,084 bytes. SHA256 совпал для93/93. Оригиналы19 файлов сохранены в `private/deploy-20261102/assets-before`. Существующие media/config entries сохранялись; команды удаления public/storage не выполнялись. Созданные тогда от root26 каталогов assets впоследствии исправлены на admin:admin. При текущем переносе эти assets не переписывались.
+
+Применены только две additive migrations через explicit path:
 
 1. `2026_09_25_120000_add_generated_conversions_to_media_table`: nullable JSON `media.generated_conversions`.
 2. `2026_10_08_230000_create_admin_email_campaigns_table`: новая таблица `admin_email_campaigns`.
 
-Ledger и наличие schema проверены SELECT в read-only transaction. Эти миграции не меняли orders/chat таблицы.
+Ledger и наличие schema проверены SELECT в read-only transaction. Orders/chat таблицы эти миграции не меняли. При переносе в public_html миграции и Composer повторно не запускались.
 
-Общий migrate не запускался. Legacy filename `2025_05_24_102221_add_registration_fields_to_users.php.php` не совпадает с ledger без дополнительного `.php`, хотя все пять полей users уже существуют. Повторно выполнять эту миграцию нельзя. Исправление имени/ledger остаётся отдельной задачей.
-
-## Queue и scheduler
-
-Service `viar-alt-worker.service` переведён на новый release через `/etc/systemd/system/viar-alt-worker.service.d/50-viar13.conf`: PHP 8.3 и private Artisan; Redis queues alt-gen/default; tries=2, backoff=60, timeout=180, sleep=3, memory=256, TimeoutStopSec=240.
-
-Первый запуск падал из-за отключённых в PHP 8.3 `pcntl_signal` и `pcntl_alarm`. В ExecStart добавлен process-only override disable_functions, разрешающий ровно эти две функции. Остальные исходные запреты сохранены, включая shell_exec. Глобальные ограничения PHP/FPM не менялись.
-
-После исправления несколько раз проверено: ActiveState=active, SubState=running, ExecMainStatus=0, NRestarts=0. Выполнение конкретного business job не имитировалось.
-
-Новые задания scheduler не добавлялись. В проверенных /etc/cron.d и root/admin crontab совпадений artisan/viarcanvas не найдено. Другие способы запуска scheduler отдельно не проверялись.
+Общий migrate не запускать до reconciliation: filename `2025_05_24_102221_add_registration_fields_to_users.php.php` не совпадает с ledger без дополнительного `.php`, хотя все пять полей users уже существуют. Повторно выполнять эту миграцию нельзя.
 
 ## Проверки и границы
 
-- `nginx -t` и `php-fpm8.3 -t` прошли; graceful reload выполнен.
-- CLI smoke и candidate на 127.0.0.1:18083 использовали MySQL session READ ONLY, session/cache=array, Http preventStrayRequests и Mail/Queue fake. Ошибки UrlGenerator/contry_mult были вызваны неполной имитацией request/REQUEST_URI в тестовом скрипте и исправлены там; runtime-код не менялся.
-- Candidate pages и все 16 актуальных asset URLs страницы входа Filament прошли проверку. Candidate listener после проверки отключён перемещением конфигурации в private. Публичного debug endpoint нет.
-- Production origin HTTPS с `--resolve`: `/`, `/en`, `/lv`, `/login`, `/en/cart`, `/filament/login` — 200 и X-Viar-Release=150e859. `/filament` — 302 на страницу входа. Проверенные CSS/JS и существующее изображение storage — 200.
-- Внешняя проверка из Windows по обычному DNS: главная, `/filament/login`, `/en/cart` — 200 и тот же release header.
-- На сервере hostname viarcanvas.com резолвится в 127.0.1.1, где nginx не слушает 443. Поэтому server-origin проверки используют `--resolve`; внешний DNS из Windows работает. /etc/hosts не менялся. При наличии self-HTTP интеграций их нужно проверить отдельно.
-- Полный baseline из 900 тестов не повторялся и не выдаётся за production acceptance. Реальная авторизация, создание/оплата заказа, загрузка крупных файлов и отправка чата требуют пользовательского smoke. Production заказы и оплаты для теста не создавались.
+- До первой выкладки CLI/candidate smoke использовал MySQL session READ ONLY, session/cache=array, Http preventStrayRequests и Mail/Queue fake. Candidate listener127.0.0.1:18083 после проверки отключён.
+- После текущего переноса origin HTTPS проверил `/`, `/en`, `/lv`, `/login`, `/en/cart`, `/filament/login`, Filament CSS, Livewire JS и существующее изображение storage:200. `/filament` вернул302 на login.
+- Внешняя проверка из Windows по обычному DNS: главная, `/filament/login`, `/en/cart` —200.
+- Worker повторно проверен: ActiveState=active, SubState=running, ExecMainStatus=0, NRestarts=0, WorkingDirectory=public_html.
+- Пользователь до текущего переноса подтвердил тестовый заказ и вход в админку. Новые production заказы, оплаты и сообщения для автоматической проверки переноса не создавались.
+- На сервере hostname viarcanvas.com резолвится в127.0.1.1, где nginx не слушает443. Server-origin проверки используют --resolve; внешний DNS из Windows работает. /etc/hosts не менялся. Self-HTTP интеграции при наличии требуют отдельной проверки.
+- Полный baseline900 tests не повторялся: исходники runtime не менялись, проверялся перенос уже установленного кода. Проверка реальной оплаты, отправки чата и крупных загрузок остаётся за пользовательским smoke.
 
-## Откат
+## Откат текущего переноса
 
 Подготовлен, но не выполнялся как rehearsal:
 
 ```bash
-python3 /home/admin/web/viarcanvas.com/private/deploy-20261102/rollback.py
+python3 /home/admin/web/viarcanvas.com/private/publichtml-cutover-20261102/rollback.py
 ```
 
-Скрипт перемещает только собственные custom includes и worker drop-in в private, проверяет nginx и возвращает старый обработчик и worker PHP 7.4. Восстанавливает 19 assets только при совпадении их SHA с выгруженной версией: конкурентные изменения не перезаписывает. Новые добавленные файлы, исправленный DB_DATABASE и additive DB schema сохраняет. Down/drop и удаление public/storage не выполняет.
+Скрипт возвращает предшествующую работающую схему Laravel13 из releases, восстанавливает custom includes и worker drop-in из config-before, сохраняет текущий public_html code в private/code-after и возвращает code-before. Production `.env`, public и storage не удаляет; возвращает только прежний public/index.php из отдельной копии. Schema и данные БД не откатывает. Повторный завершённый rollback безопасно завершается; частичное восстановление требует проверки до изменения сервисов.
 
-## Evidence и оставшиеся задачи
+Старый `private/deploy-20261102/rollback.py` теперь делегирует этому скрипту: прежний rollback на Laravel6/PHP7.4 нельзя применять напрямую поверх нового public_html checkout. Его исходник сохранён в config-before/previous-rollback.py только для истории.
 
-Evidence находится в private/deploy-20261102 на сервере: assets-plan.json/assets-before, migration-result.txt, activation-state.json, production.env.before, origin-results.json, login-assets-results.json, final-verification.txt, deployment-manifest.json и runtime/deployment scripts. Manifest фиксирует SHA файлов конфигурации. Backup `.env` имеет режим root0600; его содержимое не переносить в Git или чат.
+## Evidence и остаток
 
-Осталось настроить GitLab read-access для будущих fetch, согласовать legacy migration filename/ledger, выполнить authenticated UAT админки/чатов/checkout и при фактическом использовании проверить scheduler/self-HTTP. Общая миграция не объявляется DONE на основании технического переключения.
+Текущий перенос: private/publichtml-cutover-20261102/{before.json,installed.json,code-before,config-before,public-index.before.php,http-results.json,final-state.json,git-status-summary.json,manifest.json} и install/restore/rollback scripts. Первый deployment evidence сохранён в private/deploy-20261102; backup.env не переносить в Git или чат.
 
-## Проверка владельцев после выкладки
-
-Пользователь подтвердил тестовый заказ и вход в админку. Все 27498 записей release принадлежат admin:admin. Исправлены 26 новых каталогов public assets, созданных от root: после исправления все assets из manifest и их каталоги принадлежат admin:admin и доступны admin для записи. Содержимое и chmod не менялись. System configs и административные backup/rollback/evidence файлы оставлены под root. Git и Composer выполнять от admin.
-
-## PROD-CUTOVER-20261102 — GitLab fetch подтверждён
-
-- После выполнения пользователем git fetch origin проверены FETCH_HEAD и origin/main от admin: оба указывают на 150e8593f4fff144236a8c082fd6963ea7c1bf09, совпадающий с активным HEAD. HEAD...origin/main=0/0; новых коммитов для выкладки нет, pull не требуется.
-- Release, .git и FETCH_HEAD принадлежат admin:admin. Worktree содержит только ожидаемый untracked public/vendor/livewire/ после публикации assets; это не новое изменение исходников, каталог не удалялся. Worker active/running, NRestarts=0.
-- Ручная GitLab HTTPS authentication пользователя подтверждена успешным fetch; постоянное noninteractive хранение credentials не проверялось и не настраивалось. Это закрывает вопрос совпадения активного кода с main, полученным данным fetch, но не гарантирует автоматическую авторизацию будущих fetch.
+Осталось согласовать legacy migration filename/ledger, будущую стратегию tracked production media и runtime ignore rules в основном репозитории; выполнить отдельные проверки оплаты/чатов/загрузок/scheduler/self-HTTP по фактическому использованию. Автоматическая GitLab авторизация без интерактивного ввода отдельно не настроена. Общая миграция не объявляется DONE на основании этого переноса.
