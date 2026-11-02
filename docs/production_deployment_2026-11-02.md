@@ -5,9 +5,9 @@
 Основной Laravel 13 checkout, Git и runtime находятся в `/home/admin/web/viarcanvas.com/public_html`. Первоначальная схема с активным кодом в releases заменена по запросу пользователя: обновляться нужно из привычного `~/web/viarcanvas.com/public_html` под пользователем admin.
 
 - Branch: `main`, tracking `origin/main`.
-- Commit: `150e8593f4fff144236a8c082fd6963ea7c1bf09`.
+- Текущий server commit: `eea6ce5e7b4830aebbc273de6f808ad8a5f9132a`; установленный исходный release был `150e8593f4fff144236a8c082fd6963ea7c1bf09`.
 - Origin: `https://gitlab.com/OrfeusPro/viar13.git`.
-- HEAD и origin/main совпадают, ahead/behind — 0/0.
+- После локального production-коммита HEAD опережает полученную origin/main на один коммит: ahead/behind — 1/0. Push не выполнялся.
 - Пользователь выполнил успешный HTTPS fetch от admin до переноса; полученные refs/FETCH_HEAD перенесены с новым Git. Постоянное хранение credentials отдельно не настраивалось и не проверялось.
 - Админка остаётся https://viarcanvas.com/filament. Отдельный legacy `/admin` handler не подключён.
 
@@ -53,7 +53,7 @@ Private launcher первой выкладки не используется д�
 
 ## Git status и production-файлы
 
-Новый репозиторий не полностью чистый, поскольку production public/storage сохранены без принудительного приведения к Git. Итоговая проверка: 74 modified entries, четыре отсутствовавших ранее tracked файла public/orders и один untracked `public/theme/viar/js/registration-captcha.js`. Единственное tracked отличие вне public — `storage/framework/sessions/.gitignore`. Это не удаления, выполненные при переносе: четыре orders-файла отсутствовали до операции и не копировались с dev.
+До запрошенного пользователем production-коммита репозиторий содержал сохранённые отличия public/storage. Проверка до коммита: 74 modified entries, четыре отсутствовавших ранее tracked файла public/orders и один untracked `public/theme/viar/js/registration-captcha.js`. Единственное tracked отличие вне public — `storage/framework/sessions/.gitignore`. Это не удаления, выполненные при переносе: четыре orders-файла отсутствовали до операции и не копировались с dev.
 
 Не применять git clean, reset --hard или массовый restore к production public/storage. Не скрывать эти tracked отличия через skip-worktree/assume-unchanged. При входящих изменениях тех же путей сначала согласовать их с production-копией.
 
@@ -104,3 +104,9 @@ Ledger и наличие schema проверены SELECT в read-only transacti
 После штатного переключения Hestia внешний HTTPS phpinfo.php показывает8.3.30. Главная, /filament/login, /en/cart и существующее изображение storage ответили200. Nginx/FPM syntax tests прошли, worker active/running/NRestarts0. Backup исходных Hestia/nginx/pool configs и verified.json находятся в private/domain-php83-20261102; user web.conf backup имеет режим0600. PHPInfo output с переменными окружения не сохранялся в Git или чат, выводилась только версияPHP.
 
 TODO: отдельно согласовать нормализацию исторических окончаний строк и источник registration-captcha.js; не менять эти production-файлы автоматически для очистки Git status.
+
+## Production-коммит по запросу пользователя
+
+От admin в текущей main создан eea6ce5e7b4830aebbc273de6f808ad8a5f9132a (автор коммита Codex, command-only identity codex@local.invalid). Git identity глобально не менялась. Зафиксированы шесть путей: .htaccess, registration-captcha.js и четыре уже отсутствовавших tracked orders-файла. Физические файлы не удалялись. Для всех 79 исходных status paths проверены SHA256 либо факт отсутствия до и после: рабочие bytes не менялись. При git add нормализация/обновление index устранили73пометкиCRLF/LF без отдельных content changes в коммите.
+
+Git status чистый, staged changes отсутствуют, main опережает origin/main на один локальный коммит. Push не выполнялся. Когда remote main продвинется независимо, перед обновлением нужно согласовать локальный production-коммит с upstream; не использовать reset/force push или бездумный restore данных. Evidence: private/production-commit-20261102/{before.json,commit.txt}; .env, backup secrets и прочие runtime data в коммит не включены. Runtime-тесты не повторялись для операции Git: содержимое сайта побайтово сохранилось.
