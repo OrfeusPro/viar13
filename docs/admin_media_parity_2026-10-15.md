@@ -1,6 +1,6 @@
 # ADM-AUD-09 — итоговая сверка медиатеки, 2026-10-15
 
-Статус: **IN PROGRESS**. Реализация и изолированные проверки выполнены для перечисленных операций; оставшаяся браузерная UAT не считается пройденной.
+Статус локальной приёмки: **DONE 2026-11-02 в согласованном объёме**. Physical OSdrop SKIPPED пользователем; pinch/touch DEFERRED до целевого устройства. Эти исключения не означают PASS физических жестов. Остальные перечисленные browser checks завершены.
 
 ## Источники
 
@@ -138,3 +138,9 @@ Chrome createBrowserTab отклонён сообщением Local browser use 
 - Pinch/touch **DEFERRED до целевого устройства** по явному ответу пользователя: «Нет, отложить сенсорную проверку до целевого устройства». Это неPASS и неотказотфункции; desktop wheel/pan уже проверены ранее. Не блокировать текущуюлокальнуюприёмкунаотсутствующемсенсорномоборудовании.
 - Physical OSdrop **IN PROGRESS**: actual isolated медиатека открыта справа http://127.0.0.1:8800/filament/media, областьuploadраскрыта. Дано конкретное ручное действие: изПроводника перетащить media-gestures-20261102/input/drag-test.png. Auto-save только вsynthetic public; browser tab4 markHandoff, server95746 жив.
 - Baselinepublic gesture-crop.png и15tables записаны. После ответапользователя проверить actual newfile/DOMsuccess/PNGpixels/oldSHA/DB; доэтогоdropнеобъявлятьвыполненным. Другиеmedia gates EXIF/chooser/reject/cancel/recovery/WAV/WebM ужеDONE.
+
+
+## ADM-AUD-09 / ADM-AUD-10E — Решение и следующий шаг, 2026-11-02
+- Пользователь явно указал: «по перетаскивания пропусти». Physical OSdrop **SKIPPED по решению пользователя**, неPASS. Pinch/touch ранееDEFERRED доцелевогоустройства. Все остальные записанные media checks завершены; локальный ADM-AUD-09 принят воставшемсясогласованномобъёме. Физическиежестынеобъявляютсяпроверенными.
+- Gesture server95746 остановлен, тестовыхdrop/uploadsпередskipнебыло, publicтолькоgesture-crop.png. Вкладказакрывается. Исходникиproductionнеизменны.
+- **ADM-AUD-10E IN PROGRESS**: отдельный settings-media-20261102 localhost8801, synthetic SQLite settings9types/public, tmp-for-testsнастроенвнутриfixture, Http::preventStrayRequests/Mail::fake. Проверитьsingleimageиfile replacement→save→reopen, oldfileskept/paths/contracts; далееjointsaveеслинеобходимодляоставшейсяUAT. Сначалаbaseline15tables/11files; workingDB/storageнеиспользовать.
