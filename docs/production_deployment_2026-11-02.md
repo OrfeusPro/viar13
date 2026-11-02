@@ -129,10 +129,16 @@ ADMIN_PAINTER_CHAT_NOTIFICATIONS_ENABLED=true
 ADMIN_ARTIST_NOTIFICATIONS_ENABLED=true
 ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED=true
 ADMIN_ORDER_CREATION_NOTIFICATIONS_ENABLED=true
-ADMIN_BULK_EMAIL_ENABLED=false
-ADMIN_SA_COMMANDS_ENABLED=false
+ADMIN_BULK_EMAIL_ENABLED=true
+ADMIN_SA_COMMANDS_ENABLED=true
 ```
 
 Флаги включают обычные email/CRM side effects будущих действий пользователей, но тестовые сообщения при изменении env не отправлялись. Worker перезапущен, active/running/NRestarts0. Config cache отсутствовал, общая очистка cache/storage не запускалась. Production Git status остаётся чистым, `.env` не отслеживается. Реальную доставку письма и оплату нужно проверить отдельным согласованным сценарием.
 
 TODO отдельно: SA_API_KEY отсутствует в обеих .env и имеет тестовый default в config/services.php. Его замену нужно согласовать с внешней стороной SA; односторонняя ротация в этом шаге не выполнялась.
+## PROD-BULK-SA-20261102 — Флаги включены по явному запросу
+
+- DONE: пользователь прямо потребовал включить массовую рассылку и команды SA. В production .env от admin изменены только ADMIN_BULK_EMAIL_ENABLED=true и ADMIN_SA_COMMANDS_ENABLED=true. Предыдущий выбор false отменён этим указанием пользователя.
+- Effective config admin_migration.bulk_email_enabled и sa_commands_enabled проверен: оба true. Config cache отсутствует. Worker перезапущен; active/running/exit0/NRestarts0. Backup.env сохранён только на сервере private/enable-bulk-sa-20261102/production.env.before, режим0600; secrets в Git/чат не выводились.
+- Агент не запускал рассылку и не отправлял тестовые или рабочие команды во внешнюю SA. Включена доступность существующих действий в приложении, внешняя доставка этим шагом не проверена. API/схема/ключи интеграции не менялись. Открытый вопрос согласования SA_API_KEY из предыдущего аудита сохраняется отдельно и не используется как основание оставить явно разрешённые флаги false.
+- Source Markdown журналы актуализированы; source commit безpush, non-md export вC:нет. Новые runtime files/tests не требуются для двух envflags; проверены фактический config и worker.
