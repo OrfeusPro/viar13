@@ -1,6 +1,6 @@
 # ADM-AUD-13 — полная сверка «Заказов»
 
-Статус: **IN PROGRESS**. Сводка обновлена 2026-10-29; полная приёмка не выполнена. Подробные проверки и ограничения приведены ниже по шагам.
+Статус: **IN PROGRESS**. Сводка обновлена 2026-11-02; ожидается итоговый regression. Отложенный upload gate не объявляется выполненным. Подробные проверки и ограничения приведены ниже по шагам.
 
 ## Источники
 
@@ -13,13 +13,13 @@
 
 | Подзадача | Подтверждённый результат | Остаток |
 | --- | --- | --- |
-| ADM-AUD-13A — список | 8 колонок; 11 веток/5 SVG, desktop/390px, printing; 39 tests / 502 assertions | Доступность реальных media и итоговая визуальная проверка, пункт 5 очереди |
+| ADM-AUD-13A — список | 8 колонок; 11 веток/5 SVG, desktop/390px, printing; 39 tests / 502 assertions | Visual/media gate DONE30октября в описанной выборке; итоговый общий regression, пункт6 |
 | ADM-AUD-13B — фильтры/вкладки | Парная сверка клиента/телефона/основных вкладок; непустые synthetic ветки, 5 AND фильтров, даты, сортировка/reset; 20/273; role matrix 75/1089 от 28 октября | Указанная матрица принята; новых дефектов нет. Не требуется повторять все сочетания без причины |
-| ADM-AUD-13C — редактирование | Full edit и revoke gates, роли, media rollback; desktop/mobile footer и окна; OS drop JPEG, batch attach PNG/PDF/PSD/FIG с SHA | Полный Apache save/превью форматов, пункт 2; точечная визуальная приёмка, пункт 5 |
+| ADM-AUD-13C — редактирование | Full edit и revoke gates, роли, media rollback; desktop/mobile footer и окна; OS drop JPEG, batch attach PNG/PDF/PSD/FIG с SHA | Целевой upload gate DEFERRED пользователем, пункт2; visual/media gate DONE30октября |
 | ADM-AUD-13D — создание | Actual reject→recovery→create 2 позиции/3 PNG/JPEG; 29/344. Ручной UI order109:10 позиций/10 фото,145 EUR. Service order108:60 отдельных файлов | Пункт 2. Удобство/дублирование позиции DEFERRED по решению пользователя |
-| ADM-AUD-13E — финансы/PDF/Venipak | Chrome generate/download обычного/60-позиционного PDF; gift50/50/25 и письмо с3ссылками, SHA; gift/payment32/352. Venipak формы/отмена под ролями24/186 | Системный clipboard, positive fake Venipak, media письма: пункты 3–5 |
-| ADM-AUD-13F — чаты/исполнители/статусы | 4 окна×2 роли desktop/390px,88/844; browser assign/replace/remove,5статусов/даты,51/868,190tables snapshot | Быстрое переключение close→open, пункт 1. Новые внешние отправки не нужны |
-| ADM-AUD-13G — права/дизайн | Role list/edit/actions и revoke, client read35+язык, desktop/mobile; email/review/Venipak open/cancel; SA footer исправлен | Точечная финальная visual/media приёмка и итоговое решение, пункты 5–6 |
+| ADM-AUD-13E — финансы/PDF/Venipak | Chrome generate/download обычного/60-позиционного PDF; gift50/50/25 и письмо с3ссылками, SHA; gift/payment32/352. Venipak формы/отмена под ролями24/186 | Clipboard, fake address/pickup/courier и gift-mail DONE30октября; public payment desktop/mobile DONE2ноября |
+| ADM-AUD-13F — чаты/исполнители/статусы | 4 окна×2 роли desktop/390px,88/844; browser assign/replace/remove,5статусов/даты,51/868,190tables snapshot | Быстрое переключение DONE29октября, пункт1; новых внешних отправок для этого gate не требуется |
+| ADM-AUD-13G — права/дизайн | Role list/edit/actions и revoke, client read35+язык, desktop/mobile; email/review/Venipak open/cancel; SA footer исправлен | Visual/media DONE30октября; единый regression2ноября запущен, итоговое решение после результата |
 
 Числа тестов относятся к отдельным перекрывающимся запускам; их нельзя складывать.
 Документальные подробности и evidence остаются в датированных разделах ниже.
@@ -99,7 +99,7 @@
 | 3. ADM-AUD-13E — Вставка платёжной ссылки | DONE30октября:browser clipboard PASS + пользователь вставил системным Ctrl+V точную ссылку в чат | На тестовой платёжной ссылке проверить штатную кнопку копирования и вставку в обычное поле браузера/системный редактор. JS tests5PASS и виртуальный clipboard не заменяют этот сценарий; платёж не выполнять |
 | 4. ADM-AUD-13E — Успешный Venipak без перевозчика | DONE30октября:address/pickup create+print/download и courier error→recovery→success fake browser PASS | Заполнить synthetic sender и pickup catalog; browser выбрать город/пункт, создать этикетку через fake HTTP, открыть/скачать печать, проверить labels. Отдельно courier success/error через fake. Роли/валидация/open/cancel уже проверены, реальный provider не вызывать |
 | 5. ADM-AUD-13A/G/E — Финальная визуальная проверка и media | DONE30октября для4описанныхvisual gates; gift-mail18images desktop/mobile PASS | Read-only проверить доступные remote media без массового копирования; отличить отсутствующий исходник от неверного URL. Desktop/mobile: правая часть строки/статусы изображений, раскрытые8полей фирмы с доступными кнопками; browser gift-mail с локальными декоративными assets. Записать PASS или конкретный дефект/ограничение для каждого из этих четырёх пунктов; не требовать pixel-копию Voyager |
-| 6. ADM-AUD-13G — Итоговое решение по приёмке заказов | IN PROGRESS30октября:полный900/11256/1failure/1skip;все причины исправлены,postfix7/121иClients4/40PASS;formal all-pass900 не заявляется | Актуализировать эту матрицу, выполнить релевантные regression после необходимых изменений; перед итоговой приёмкой записать один общий suite с датой/skip. Для каждого оставшегося ограничения явно зафиксировать решение, не отмечать общий этап DONE заранее |
+| 6. ADM-AUD-13G — Итоговое решение по приёмке заказов | IN PROGRESS2ноября:повторный единый900test gate запущен после исправлений;JS15PASS;окончательный результат ожидается | Актуализировать эту матрицу, выполнить релевантные regression после необходимых изменений; перед итоговой приёмкой записать один общий suite с датой/skip. Для каждого оставшегося ограничения явно зафиксировать решение, не отмечать общий этап DONE заранее |
 
 Ранее открытые роли,11товарных веток, непустые вкладки, ручной create10сфото,
 browser single/long/gift PDF и assign/status flow повторно в TODO не включаются.

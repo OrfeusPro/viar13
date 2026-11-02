@@ -73,3 +73,15 @@ Cancel→modal hidden; reopen создал новый canvas480x360 и исхо�
 Подготовлены8 synthetic JPEG320x240 с4цветными квадрантами и Orientation1–8 в isolated-browser/public. Прямой exif_read_data/getimagesize/SHA256 verifier подтвердил24 условия (8x3): Orientation, dimensions и неизменность bytes; отчёт isolated-browser/exif-fixture-verification.json. Это проверка fixtures, не24 PHPUnit assertions и не визуальное подтверждение поворота.
 Повторный PHPUnit tests/Unit/MediaCropExifTest.php:1test16assertionsPASS,0.008s26MB. Все8 Orientation сохраняют исходный raw-pixel server crop contract12x9jpeg; это совместимость с original, а не auto-orientation correction. Product code не менялся.
 Chrome createBrowserTab отклонён сообщением Local browser use is disabled in Work settings. Страница новыхEXIF не открывалась, rotate/flip preview не проверены. Не обходить отключённое управление сторонними браузерными средствами. Server session38763 остановлен Ctrl-C,exit1 штатной остановки. Рабочие DB/images не менялись, коммита нет. Этот browser blocker появился впервые после успешных предыдущих UI проверок; весь goal не blocked, независимая code/test работа доступна. Следующий visual шаг при доступном browser — crop modal каждогоEXIF, DOM transform/screenshot/cancel/hash. Пока09EXIF browser и pinch остаются открытыми.
+
+
+## ADM-AUD-09 — EXIF-превью JPEG1–8, 2026-11-02
+- IN PROGRESS: восстановлена отдельная fixture media-exif-20261102 (копия synthetic SQLite и11public files, включая8JPEG Orientation1–8). Свои sessions/views/logs/tmp, localhost8800, DB isolation guard, Http::preventStrayRequests иMail::fake. Production DB/storage не подключаются.
+- Browser openCrop→preview DOM/transform/screenshot→cancel для8ориентаций, безcrop/save; затем сравнить11SHA исходников иsnapshotDB. Ранее unit raw-pixel contract проверен; это отдельная оставшаяся visual UAT, не новая автокоррекция EXIF. Pinch/touch/upload/media decode этим сценарием не закрываются.
+
+
+## ADM-AUD-09 / ADM-AUD-13G — Продолжение проверки, 2026-11-02
+- EXIF browser gate не завершён: два перехода кlocalhost8800 черезChrome не подтвердились; вкладка осталась наdashboard. Native screenshot fallback остановлен Computer Use URL-confidence safety guard. После этого UI input прекращён, защиту не обходили. Статус09 IN PROGRESS; это не доказанный дефект медиатеки.
+- Отдельный fixture server остановлен Ctrl-C.11/11 synthetic public SHA256 неизменны, report media-exif-20261102/after-hashes.json. Production images/DB не затрагивались; crop/save не нажимались. Следующее действие09: после восстановления управления открыть тестовую медиатеку ипроверить8EXIF preview/cancel.
+- ADM-AUD-13G: JS15testsPASS,0fail/skip,212.4886ms; общий900PHP gate всё ещё выполняется, session6279. Final JUnit не подменяется промежуточными dots. Следующее действие13G: опросить этот же живой процесс до terminal результата, не запускать дублирующий suite.
+- ТолькоMarkdown результаты иignored fixture helpers. Non-md runtime/tests дляC:/OSPanel/domains/viar/viar13 нет; mirror clean. Commit документации в source безpush; актуальная верхняя матрица очищена от уже закрытых historical TODO.

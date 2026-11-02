@@ -6111,3 +6111,15 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 - Evidence ignored storage/app/audit/payment-public-20261102/: desktop.jpg, mobile.jpg, original-desktop.jpg, original-mobile.jpg, original-metrics.json, verified.json иmobile-closed-final.jpg(desktop после reset/фокуса). По именам файлов без geometry нельзя заключать viewport.
 - Production runtime/tests не менялись. Использована computer-use skill для browser проверки. Только Markdown результаты; для C:/OSPanel/domains/viar/viar13 non-md нет, mirror проверен чистым, копирование/target commit не требуются. CRM/SA API/auth/DB/mappings без изменений, lead_id=orders.id.
 - ADM-AUD-13G IN PROGRESS: запущен единый900test gate PHP8.4.1 после последней fixture правки, stdout/JUnit storage/logs/adm-aud-13-final-20261102.{txt,xml}; результат пока ожидается. Не объявлять весь ADM-AUD-13DONE до завершения gate. Upload target gate остаётся DEFERRED по решению пользователя.
+
+
+## ADM-AUD-09 — EXIF-превью JPEG1–8, 2026-11-02
+- IN PROGRESS: восстановлена отдельная fixture media-exif-20261102 (копия synthetic SQLite и11public files, включая8JPEG Orientation1–8). Свои sessions/views/logs/tmp, localhost8800, DB isolation guard, Http::preventStrayRequests иMail::fake. Production DB/storage не подключаются.
+- Browser openCrop→preview DOM/transform/screenshot→cancel для8ориентаций, безcrop/save; затем сравнить11SHA исходников иsnapshotDB. Ранее unit raw-pixel contract проверен; это отдельная оставшаяся visual UAT, не новая автокоррекция EXIF. Pinch/touch/upload/media decode этим сценарием не закрываются.
+
+
+## ADM-AUD-09 / ADM-AUD-13G — Продолжение проверки, 2026-11-02
+- EXIF browser gate не завершён: два перехода кlocalhost8800 черезChrome не подтвердились; вкладка осталась наdashboard. Native screenshot fallback остановлен Computer Use URL-confidence safety guard. После этого UI input прекращён, защиту не обходили. Статус09 IN PROGRESS; это не доказанный дефект медиатеки.
+- Отдельный fixture server остановлен Ctrl-C.11/11 synthetic public SHA256 неизменны, report media-exif-20261102/after-hashes.json. Production images/DB не затрагивались; crop/save не нажимались. Следующее действие09: после восстановления управления открыть тестовую медиатеку ипроверить8EXIF preview/cancel.
+- ADM-AUD-13G: JS15testsPASS,0fail/skip,212.4886ms; общий900PHP gate всё ещё выполняется, session6279. Final JUnit не подменяется промежуточными dots. Следующее действие13G: опросить этот же живой процесс до terminal результата, не запускать дублирующий suite.
+- ТолькоMarkdown результаты иignored fixture helpers. Non-md runtime/tests дляC:/OSPanel/domains/viar/viar13 нет; mirror clean. Commit документации в source безpush; актуальная верхняя матрица очищена от уже закрытых historical TODO.
