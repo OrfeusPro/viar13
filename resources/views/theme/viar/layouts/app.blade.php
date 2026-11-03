@@ -1187,6 +1187,7 @@ $(".vz-art.js-popup.target-box.popup-cart").on('click', function(event) {
     @include((config('theme.resource') ?: 'theme.viar.') . 'partials.google_rating_badge')
 @endif
 
+@include('theme.viar.partials.discount_offer_styles')
 @include('theme.viar.cart.notice')
 </body>
 

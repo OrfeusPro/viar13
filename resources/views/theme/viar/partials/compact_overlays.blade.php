@@ -21,75 +21,6 @@
         pointer-events: auto;
     }
 
-    .vz-home .offer,
-    .vz-canvas .offer {
-        left: 20px;
-        right: auto;
-        bottom: 14px;
-        z-index: 19;
-    }
-
-    .vz-home .hb_popup_coupon,
-    .vz-canvas .hb_popup_coupon {
-        max-width: 270px;
-        min-height: 0;
-        padding: 12px 14px;
-        border-radius: 8px;
-        box-shadow: 0 8px 22px rgba(32, 32, 32, .14);
-    }
-
-    .vz-home .hb_popup_coupon > a,
-    .vz-canvas .hb_popup_coupon > a {
-        right: 10px;
-        top: 8px;
-    }
-
-    .vz-home .hb_popup_coupon_t1,
-    .vz-home .hb_popup_coupon_t2,
-    .vz-home .hb_popup_coupon_t3,
-    .vz-home .hb_popup_coupon_t4,
-    .vz-home .hb_popup_coupon_t5,
-    .vz-canvas .hb_popup_coupon_t1,
-    .vz-canvas .hb_popup_coupon_t2,
-    .vz-canvas .hb_popup_coupon_t3,
-    .vz-canvas .hb_popup_coupon_t4,
-    .vz-canvas .hb_popup_coupon_t5 {
-        margin: 0 0 4px;
-        font-size: 12px;
-        line-height: 1.25;
-    }
-
-    .vz-home .hb_popup_coupon_t2,
-    .vz-canvas .hb_popup_coupon_t2 {
-        font-size: 13px;
-    }
-
-    .vz-home .offer-hidden .popup-offer,
-    .vz-canvas .offer-hidden .popup-offer {
-        width: 44px;
-        height: 44px;
-        padding: 0;
-        overflow: hidden;
-        border-radius: 8px;
-        transform: none;
-    }
-
-    .vz-home .offer-hidden .popup-offer::before,
-    .vz-canvas .offer-hidden .popup-offer::before {
-        left: 0;
-        top: 0;
-        width: 44px;
-        height: 44px;
-        line-height: 44px;
-        border-radius: 8px;
-        transform: none;
-    }
-
-    .vz-home .offer-hidden .hb_popup_coupon > *,
-    .vz-canvas .offer-hidden .hb_popup_coupon > * {
-        display: none;
-    }
-
     .vz-home .cky-btn-revisit-wrapper,
     .vz-home .cky-revisit-bottom-left,
     .vz-home .cky-revisit-bottom-right,
@@ -170,17 +101,6 @@
     }
 
     @media (max-width: 700px) {
-        .vz-home .offer,
-        .vz-canvas .offer {
-            left: 12px;
-            bottom: 10px;
-        }
-
-        .vz-home .hb_popup_coupon,
-        .vz-canvas .hb_popup_coupon {
-            max-width: min(270px, calc(100vw - 92px));
-        }
-
         .vz-home .cky-consent-container,
         .vz-home .cc-window,
         .vz-home .cookieconsent,
