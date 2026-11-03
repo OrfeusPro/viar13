@@ -93,7 +93,7 @@ class OrderLifecycleActions
             ->color('danger')
             ->requiresConfirmation()
             ->modalHeading(fn ($record): string => 'Удалить заказ №'.$record->id.'?')
-            ->modalDescription('Заказ будет удалён. Использованные бонусы будут возвращены клиенту по правилам Voyager.')
+            ->modalDescription('Заказ будет удалён. Использованные бонусы будут возвращены клиенту.')
             ->modalSubmitActionLabel('Удалить заказ')
             ->action(function ($record): void {
                 app(OrderLifecycleService::class)->delete($record);

@@ -17,7 +17,7 @@ class CheckoutSizeOfferService
 
     public function offer(array $item, float $multiplier = 1): ?array
     {
-        if (! empty($item['is_recommendation']) || ! empty($item['is_canvas_recommendation']) ||
+        if (! empty($item['checkout_size_upgraded']) || ! empty($item['is_recommendation']) || ! empty($item['is_canvas_recommendation']) ||
             ! isset($item['price']) || ! is_numeric($item['price'])) {
             return null;
         }
@@ -38,6 +38,10 @@ class CheckoutSizeOfferService
 
     public function select(array $item, string $source, float $multiplier = 1): ?array
     {
+        if (! empty($item['checkout_size_upgraded'])) {
+            return null;
+        }
+
         $currentSize = '';
         foreach (['sizeId', 'size_name', 'size'] as $field) {
             $candidate = $this->clean((string) ($item[$field] ?? ''));

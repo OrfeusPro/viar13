@@ -81,83 +81,24 @@
 								<span>@lang('cart_new.step_2_phone_number')</span>
 								<div class="page-input__item phone-input">
 									<div class="country-item country-item-active">
-										@php $cur_country = ''; @endphp
-
-										@if (isset($user['country']) && $user['country'])
-											@php $cur_country = $user['country']; @endphp
-
-											<img src="{{ asset('/images/flag') }}/{{ strtolower($user['country']) }}.svg" data-country='{{ $user['country'] }}'
-												 loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($user['country'])) . '.svg', 'img', '')/>
-										@elseif (isset($user['settings']['locale']) && $user['settings']['locale'])
-											@php $cur_country = $user['settings']['locale']; @endphp
-
-											<img src="{{ asset('/images/flag') }}/{{ strtolower($user['settings']['locale']) }}.svg"
-												data-country='{{ $user['settings']['locale'] }}'  loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($user['settings']['locale'])) . '.svg', 'img', '')/>
-										@else
-											@foreach ($c_tels as $c_tel)
-												@if (\Session::has('basket_country'))
-													@php
-														$sel_ct = session()->get('basket_country');
-													@endphp
-
-													@if ($sel_ct == $c_tel['country_code'])
-														@php $cur_country = $c_tel['country_code']; @endphp
-
-														<img src="{{ asset('/images/flag') }}/{{ strtolower($c_tel['country_code']) }}.svg"
-															data-country='{{ $c_tel['country_code'] }}'  loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($c_tel['country_code'])) . '.svg', 'img', '')/>
-													@endif
-												@else
-													@php
-														$sel_ct = strtoupper(session()->get('locale'));
-
-														if ($position = \Location::get(request()->ip())) {
-                                                            if ($c_tels->contains('country_code', $position->countryCode)) {
-                                                                $sel_ct = $position->countryCode;
-                                                            } else {
-                                                                $sel_ct = 'LV';
-                                                            }
-
-															if ($sel_ct == 'FI') {
-																$sel_ct = 'FIN';
-															}
-														}
-
-														if($sel_ct == 'RU' || $sel_ct == 'UA')
-														{
-															$sel_ct = "LV";
-														}
-
-														if($sel_ct == 'EN') { $sel_ct = "US"; }
-													@endphp
-													@if ($sel_ct == $c_tel['country_code'])
-														{{-- @if($c_tel['country_code'] == 'RU' || $c_tel['country_code'] == 'UA') @continue @endif --}}
-
-														@php $cur_country = $c_tel['country_code']; @endphp
-														<img src="{{ asset('/images/flag') }}/{{ strtolower($c_tel['country_code']) }}.svg"
-															data-country='{{ $c_tel['country_code'] }}'  loading="lazy"  @frontendAlt('theme/viar/cart/step2_data.blade.php', (asset('/images/flag')) . '/' . (strtolower($c_tel['country_code'])) . '.svg', 'img', '')/>
-													@endif
-												@endif
-											@endforeach
-									@endif
-
-								@php
-									$selectedCountryTel = $c_tels->first(function ($tel) use ($cur_country) {
-										return strtoupper((string) $tel['country_code']) === strtoupper((string) $cur_country);
-									});
-									$usedCountryFallback = false;
-
-									// GeoIP, locale and profile data are hints only. A mismatch must not remove
-									// the required phone field from the checkout form.
-									if (!$selectedCountryTel) {
-										$selectedCountryTel = $c_tels->firstWhere('country_code', 'LV') ?: $c_tels->first();
-										$cur_country = $selectedCountryTel ? $selectedCountryTel['country_code'] : '';
-										$usedCountryFallback = true;
-									}
-								@endphp
-								@if ($usedCountryFallback && $selectedCountryTel)
-									<img src="{{ asset('/images/flag') }}/{{ strtolower($selectedCountryTel['country_code']) }}.svg"
-										data-country="{{ $selectedCountryTel['country_code'] }}" alt="img" loading="lazy" />
-								@endif
+                                    @php
+                                        // Resolve once: the flag, mask and country must use the same row.
+                                        $cur_country = ($user['country'] ?? '') ?: (($user['settings']['locale'] ?? '') ?: session('basket_country', ''));
+                                        if (!$cur_country) {
+                                            $position = \Location::get(request()->ip());
+                                            $cur_country = $position ? $position->countryCode : session('locale', 'LV');
+                                        }
+                                        $cur_country = strtoupper((string) $cur_country);
+                                        $cur_country = ['FI' => 'FIN', 'EN' => 'US', 'RU' => 'LV', 'UA' => 'LV'][$cur_country] ?? $cur_country;
+                                        $selectedCountryTel = $c_tels->first(function ($tel) use ($cur_country) {
+                                            return strtoupper((string) $tel['country_code']) === $cur_country;
+                                        }) ?: $c_tels->firstWhere('country_code', 'LV') ?: $c_tels->first();
+                                        $cur_country = $selectedCountryTel ? $selectedCountryTel['country_code'] : '';
+                                    @endphp
+                                    @if ($selectedCountryTel)
+                                        <img src="{{ asset('/images/flag') }}/{{ strtolower($cur_country) }}.svg"
+                                            data-country="{{ $cur_country }}" alt="{{ $selectedCountryTel['country_name'] }}" loading="lazy" />
+                                    @endif
 								</div>
 								<div class="country-list">
 										@foreach ($c_tels as $tel)

@@ -188,7 +188,7 @@ class BreadMetadata extends Page
                         ? 'Определяет доступ к действиям раздела. Права ролей меняются отдельно.'
                         : 'Текущее значение сохранено. Выбор станет доступен после переноса этой политики.'),
                 Toggle::make('generate_permissions')->label('Генерировать разрешения')->disabled(! \Illuminate\Support\Facades\Schema::hasColumn('data_types', 'generate_permissions'))->dehydrated(\Illuminate\Support\Facades\Schema::hasColumn('data_types', 'generate_permissions'))->helperText('Создаёт определения прав BREAD. Ролям права автоматически не назначаются. Выключение не удаляет существующие права.'),
-                Toggle::make('server_side')->label('Серверная пагинация')->disabled()->dehydrated(false)->helperText('Текущее значение Voyager; новый список пока всегда использует серверную пагинацию.'),
+                Toggle::make('server_side')->label('Серверная пагинация')->disabled()->dehydrated(false)->helperText('Список использует серверную пагинацию.'),
                 Select::make('order_column')->label('Колонка сортировки')->options($columns)->placeholder('ID по убыванию'),
                 Select::make('order_display_column')->label('Колонка подписи при упорядочивании')->options($columns)->placeholder('Не задана'),
                 Select::make('order_direction')->label('Направление сортировки')->options(['asc' => 'По возрастанию', 'desc' => 'По убыванию'])->required(),

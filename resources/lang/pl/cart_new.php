@@ -131,7 +131,7 @@ return array (
   'alternative_size_subtitle' => 'Ten sam rozmiar obrazu jest dostępny z rabatem',
   'current_size' => 'Aktualny rozmiar',
   'step_2_recipient_phone' => 'Numer telefonu odbiorcy',
-  'cannot_remove_main_product' => 'Nie można usunąć produktu głównego, dopóki w koszyku znajdują się polecane produkty ze zniżką',
+  'cannot_remove_main_product' => 'Aby usunąć ten produkt, najpierw usuń polecane produkty z rabatem.',
   'step_3_cart_express_warning' => 'Jesli czas realizacji jest krotszy niz 3 dni robocze, obowiazuje taryfa ekspres: +5 €',
   'step_3_courier_address' => 'Podaj swój adres (Pik-up)',
   'step_3_pickup_address' => 'Podaj swój adres',
@@ -142,4 +142,6 @@ return array (
   'existing_user_password' => 'Hasło',
   'existing_user_reset_error' => 'Nie udało się wysłać wiadomości do resetowania hasła. Spróbuj ponownie.',
   'existing_user_reset_password' => 'Zresetuj hasło',
+  'notice_title' => 'Nie można usunąć produktu',
+  'notice_close' => 'Rozumiem',
 );

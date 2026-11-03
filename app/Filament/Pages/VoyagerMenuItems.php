@@ -272,7 +272,7 @@ class VoyagerMenuItems extends Page
             TextInput::make('icon_class')->label('Иконка')->maxLength(255)
                 ->hintAction(\Filament\Actions\Action::make('iconCatalogue')->label('Каталог иконок')
                     ->url(fn (): string => Compass::getUrl().'#fonts')->openUrlInNewTab()->visible(fn (): bool => Compass::canAccess()))
-                ->helperText('Класс Voyager (voyager-photo) или Heroicon (heroicon-o-photo). Если оставить пустым, иконка выбирается по разделу.'),
+                ->helperText('Класс иконки, например heroicon-o-photo. Если оставить пустым, иконка выбирается по разделу.'),
             ColorPicker::make('color')->label('Цвет')->hexColor()->nullable()->rules(['nullable', 'regex:/^#[0-9a-fA-F]{6}$/D']),
             Toggle::make('status')->label('Активен'),
         ]);

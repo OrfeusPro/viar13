@@ -336,7 +336,7 @@ class VoyagerBread extends Page
             if (! $type || $registry->isDedicated($type) || ! $registry->model($type) || ! $registry->permitted($type, 'browse')) {
                 continue;
             }
-            $group = $item->parent_id ? trim((string) ($titles->get($item->parent_id) ?: 'Контент')) : 'Контент Voyager';
+            $group = $item->parent_id ? trim((string) ($titles->get($item->parent_id) ?: 'Контент')) : 'Контент';
             $url = static::getUrl(['type' => $type->slug]);
             if ($type->name === 'menus') {
                 $menu = preg_match('~^/admin/menus/(\d+)/builder$~', (string) $item->url, $match)

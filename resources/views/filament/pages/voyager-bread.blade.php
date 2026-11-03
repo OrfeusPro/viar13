@@ -58,7 +58,7 @@
     @php($records = ! $editing && $viewId === null ? $this->records() : [])
     @if (! app(\App\Filament\Bread\BreadRegistry::class)->model($bread))
         <x-filament::section>
-            Модель или таблица этого раздела недоступна. Редактирование заблокировано до исправления конфигурации Voyager.
+            Модель или таблица этого раздела недоступна. Редактирование заблокировано до исправления конфигурации раздела.
         </x-filament::section>
     @elseif ($viewId !== null)
         <x-filament::section>

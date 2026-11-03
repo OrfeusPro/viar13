@@ -717,7 +717,7 @@
                     'status: draft|published|publish',
                     'author_id можно передать для смены автора',
                     'categories заменяют текущие категории, если переданы',
-                    'is_idea, is_stories, is_blogwant обновляют соответствующие колонки Voyager',
+                    'is_idea, is_stories, is_blogwant обновляют соответствующие поля заказа',
                     'translations обновляют только указанные языки и поля'
                 ],
                 notes: [

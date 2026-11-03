@@ -19,7 +19,7 @@ class CheckoutOffersTest extends TestCase
             $table->increments('id');
             $table->text('sizes_30x40');
         });
-        DB::table('canvas_header')->insert(['sizes_30x40' => '20x30[15],30x40[22-12]s,40x60[20]']);
+        DB::table('canvas_header')->insert(['sizes_30x40' => '20x30[15],30x40[22-12]s,40x60[20],60x90[40]']);
         $item = ['basketType' => '1', 'is_canvas_inter' => 1, 'sizeId' => '20x30', 'price' => 25,
             'add_price' => 25, 'count' => 2, 'sumPrice' => 50, 'savedImage' => '/test/photo.jpg',
             'canvasId' => 2, 'executionId' => 2, 'boxIds' => [3], 'terms_price' => 7];
@@ -46,6 +46,11 @@ class CheckoutOffersTest extends TestCase
         $this->assertEquals(2, session('basket.0.count'));
         $this->assertSame(20.0, $saved[0]['checkout_size_base_price']);
         $this->assertSame(10.0, $saved[0]['checkout_size_extras_price']);
+        $this->assertNull(app(\App\Services\CheckoutSizeOfferService::class)->offer($saved[0]));
+        $this->postJson(route('cart.replace.size'), ['basket_key' => 0, 'new_size' => '60x90'])
+            ->assertStatus(422);
+        $this->assertSame($saved, session('basket'));
+
         $this->assertSame('50.60', app(CheckoutCouponService::class)->calculate($repo->getBasketProperties($saved), 'universal', '10%'));
         $this->assertSame('101.20', app(CheckoutCouponService::class)->calculate($repo->getBasketProperties($saved, 2), 'universal', '10%'));
         $this->postJson(route('cart.replace.size'), ['basket_key' => -1, 'new_size' => '40x60'])->assertStatus(422);

@@ -975,7 +975,7 @@ $(document).ready(function () {
         if (response) {
           var data = jQuery.parseJSON(response);
           if (data["Error"] || data["error"]) {
-            alert(data["Error"] || data["error"]);
+            window.showCartNotice(data.error_code, data["Error"] || data["error"]);
           } else if (data["success"]) {
             $("#cart_item_" + basketId).html("");
             get_cart();

@@ -427,7 +427,7 @@ $(document).ready(function() {
               if (t) {
                   var a = jQuery.parseJSON(t);
                   if (a.Error || a.error) {
-                      alert(a.Error || a.error);
+                      window.showCartNotice(a.error_code, a.Error || a.error);
                   } else if (a.success) {
                       $("#cart_item_" + e).html("");
                       u();

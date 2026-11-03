@@ -21,7 +21,7 @@ class VoyagerSettings extends Page
 {
     protected static ?string $slug = 'voyager-settings';
 
-    protected static ?string $navigationLabel = 'Настройки Voyager';
+    protected static ?string $navigationLabel = 'Настройки';
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
@@ -66,7 +66,7 @@ class VoyagerSettings extends Page
 
     public function getTitle(): string | Htmlable
     {
-        return 'Настройки Voyager';
+        return 'Настройки';
     }
 
     public function groups(): array

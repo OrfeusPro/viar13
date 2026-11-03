@@ -131,7 +131,7 @@ return array (
   'alternative_size_subtitle' => 'Diese Bildgröße ist mit Rabatt erhältlich',
   'current_size' => 'Aktuelle Größe',
   'step_2_recipient_phone' => 'Empfänger-Telefonnummer',
-  'cannot_remove_main_product' => 'Der Hauptartikel kann nicht entfernt werden, solange sich empfohlene rabattierte Produkte im Warenkorb befinden',
+  'cannot_remove_main_product' => 'Entfernen Sie zuerst die empfohlenen Artikel mit Rabatt, um diesen Artikel zu entfernen.',
   'step_3_cart_express_warning' => 'Bei Herstellungszeit unter 3 Arbeitstagen gilt der Express-Tarif: +5 €',
   'step_3_courier_address' => 'Geben Sie Ihre Adresse ein',
   'step_3_pickup_address' => 'Geben Sie Ihre Adresse ein',
@@ -142,4 +142,6 @@ return array (
   'existing_user_password' => 'Passwort',
   'existing_user_reset_error' => 'Die E-Mail zum Zurücksetzen des Passworts konnte nicht gesendet werden. Versuchen Sie es erneut.',
   'existing_user_reset_password' => 'Passwort zurücksetzen',
+  'notice_title' => 'Artikel kann nicht entfernt werden',
+  'notice_close' => 'Verstanden',
 );

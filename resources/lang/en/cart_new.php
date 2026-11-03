@@ -131,7 +131,7 @@ return array (
   'alternative_size_subtitle' => 'This same painting size is available with a discount',
   'current_size' => 'Current size',
   'step_2_recipient_phone' => 'Recipient phone number',
-  'cannot_remove_main_product' => 'The main product cannot be removed while there are discounted recommended products in the cart',
+  'cannot_remove_main_product' => 'To remove this item, first remove the recommended items with a discount.',
   'step_3_cart_express_warning' => 'If production time is less than 3 business days, an express fee applies: +5 €',
   'step_3_courier_address' => 'Enter your address (Pik-up)',
   'step_3_pickup_address' => 'Enter your address',
@@ -142,4 +142,6 @@ return array (
   'existing_user_password' => 'Password',
   'existing_user_reset_error' => 'Unable to send the password reset email. Please try again.',
   'existing_user_reset_password' => 'Reset password',
+  'notice_title' => 'Unable to remove this item',
+  'notice_close' => 'Got it',
 );

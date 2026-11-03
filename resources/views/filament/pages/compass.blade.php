@@ -11,11 +11,11 @@
     @if($tab === 'resources')
     <x-filament::section heading="Ресурсы">
         <div style="display:flex;flex-wrap:wrap;gap:16px">
-            <a href="https://voyager-docs.devdojo.com/" target="_blank" rel="noopener noreferrer" style="color:#2563eb">Документация Voyager</a>
-            <a href="https://voyager.devdojo.com/" target="_blank" rel="noopener noreferrer" style="color:#2563eb">Сайт Voyager</a>
+            <a href="https://voyager-docs.devdojo.com/" target="_blank" rel="noopener noreferrer" style="color:#2563eb">Документация системы управления контентом</a>
+            <a href="https://voyager.devdojo.com/" target="_blank" rel="noopener noreferrer" style="color:#2563eb">Сайт системы управления контентом</a>
         </div>
     </x-filament::section>
-    <x-filament::section id="fonts" heading="Иконки Voyager">
+    <x-filament::section id="fonts" heading="Иконки панели">
         <label for="compass-icon-search">Поиск класса иконки</label>
         <input id="compass-icon-search" type="search" wire:model.live.debounce.250ms="iconSearch" maxlength="255"
             style="display:block;width:100%;max-width:420px;margin-top:8px;padding:10px;border:1px solid #d1d5db;border-radius:8px" placeholder="Например, voyager-home">

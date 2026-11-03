@@ -7981,7 +7981,7 @@ class VoyagerBreadTest extends TestCase
         Schema::table('users', fn (Blueprint $table) => $table->json('settings')->nullable());
         config(['voyager.compass_in_production' => true]);
         $this->admin(['browse_admin', 'browse_compass']);
-        $this->get('/admin/compass')->assertOk()->assertSee('Иконки Voyager')->assertSee('Документация Voyager');
+        $this->get('/admin/compass')->assertOk()->assertSee('Иконки панели')->assertSee('Документация системы управления контентом');
         $page = Livewire::test(\App\Filament\Pages\Compass::class);
         $this->assertCount(206, $page->instance()->icons());
         $this->assertContains('voyager-bread', $page->instance()->icons());

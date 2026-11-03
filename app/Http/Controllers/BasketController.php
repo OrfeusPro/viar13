@@ -1416,6 +1416,7 @@ class BasketController extends Controller
 
                 if ($hasRecommendationInBasket) {
                     $response['success'] = 0;
+                    $response['error_code'] = 'cannot_remove_main_product';
                     $response['error'] = trans('cart_new.cannot_remove_main_product');
                     return json_encode($response);
                 }

@@ -85,6 +85,14 @@ class CheckoutDiscountRulesTest extends TestCase
         }
     }
 
+    public function test_upgraded_item_has_no_second_offer_even_with_larger_catalog_sizes()
+    {
+        $item = ['sizeId' => '40x60', 'price' => 27, 'checkout_size_upgraded' => true];
+        $service = app(CheckoutSizeOfferService::class);
+        $this->assertNull($service->select($item, '20x30[15],40x60[20],60x90[40]'));
+        $this->assertNull($service->offer($item));
+    }
+
     public function test_gallery_recommendations_skip_special_prices()
     {
         $service = app(CheckoutSizeOfferService::class);
