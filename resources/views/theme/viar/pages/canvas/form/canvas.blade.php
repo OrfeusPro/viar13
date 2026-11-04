@@ -22,6 +22,15 @@
                                     <picture>
                                         @php
                                             $canvasToolImageSources = image_picture_sources(data_get($item, 'image'), true);
+                                            $canvasToolImageFile = image_public_file_info(data_get($item, 'image'));
+                                            if ($canvasToolImageFile && is_file($canvasToolImageFile['path'])) {
+                                                $canvasToolImageVersion = filemtime($canvasToolImageFile['path']);
+                                                foreach (['src', 'src_webp'] as $canvasToolImageKey) {
+                                                    if (!empty($canvasToolImageSources[$canvasToolImageKey])) {
+                                                        $canvasToolImageSources[$canvasToolImageKey] .= (str_contains($canvasToolImageSources[$canvasToolImageKey], '?') ? '&' : '?') . 'v=' . $canvasToolImageVersion;
+                                                    }
+                                                }
+                                            }
                                         @endphp
                                         @if(!empty($canvasToolImageSources['src_webp']))
                                             <source srcset="{{ $canvasToolImageSources['src_webp'] }}" type="image/webp">
