@@ -5707,3 +5707,15 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
 - Из compact_overlays удалены только конфликтующие стили скидки. Стили cookie и остальных элементов сохранены. JS открытия/закрытия, коды, скидки и даты не изменены.
 - Сверка: test.viarcanvas.com/en прочитан в браузере, проверена мобильная структура. Локально использована настоящая разметка купона из layout и CSS проекта; открытие/закрытие на ПК и 390px PASS, ширина страницы без overflow. Скриншоты storage/app/audit/web-fix-03-20261103/desktop.png и mobile.png. git diff --check PASS. Проверка компонента не заменяет приёмку на опубликованной странице.
 - Следующий шаг: штатная загрузка трёх изменённых Blade-файлов на production, проверка на главной и странице canvas. Публикация в этой задаче не выполнялась.
+
+
+## 2026-11-04 — WEB-FIX-04 — Пути примеров работ портретов — IN PROGRESS
+Подтверждено: media.id=262 относится к GalleryItem 15, диск public, коллекция new_after_items. Legacy MediaLibraryPathGenerator использовал galleryitems/media/<id>/; новый default выдаёт <id>/. Восстанавливается путь GalleryItem с поддержкой файлов новой структуры; данные и физические файлы не перемещаются.
+
+
+### 2026-11-04 — WEB-FIX-04 — DONE (исправление подготовлено локально)
+- Подтверждён legacy-код MonstreX MediaLibraryPathGenerator: оригиналы <model-plural>/media/<id>/, conversions и responsive-images наследовались из default (<id>/...). Для GalleryItem восстановлен galleryitems/media/<id>/ через custom_path_generators, без возврата зависимости Voyager Extension.
+- Если файл существует только в новом <id>/, сохраняется новый путь. Если обе копии существуют — выбирается legacy. Отсутствующий локальный оригинал получает legacy URL. Другие модели используют прежний default. Данные БД и файлы не переносились.
+- Браузер production подтвердил доступность указанного изображения по /storage/galleryitems/media/262/83885533-1253274798201472-1844884694982721536-n-1.jpg, 960×960. Через read-only транзакцию на реальной локальной записи media=262 подтверждено: getUrl() теперь выдаёт /storage/galleryitems/media/262/...jpg. SELECT и rollback, без изменения БД.
+- Проверки: GalleryItemMediaPathTest 3 теста/12 assertions PASS; существующие BREAD media upload/properties, batch rollback/retry и replacement rollback — 3/83 PASS. Итого 6/95. PHP lint и diff --check PASS. JUnit storage/logs/web-fix-04-bread-20261104.xml.
+- Для production загрузить app/Support/Media/GalleryItemPathGenerator.php и config/media-library.php, затем php artisan config:clear (или пересобрать config:cache штатной процедурой deployment). Публикация не выполнялась; полная страница production должна быть проверена после загрузки исправления.
