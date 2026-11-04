@@ -5762,3 +5762,13 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
 
 ### WEB-CONFIG-01 — TODO — Совместимость frontend с кешем конфигурации
 Перед включением config:cache заменить legacy env(THEME_RESOURCES/THEME) в controllers/Blade на config(theme.resource/current), проверить главную, Canvas и gallery. В dev deployment оставлен config:clear как рабочий fallback.
+
+## 2026-11-04 — WEB-CANVAS-03 — Расположение кнопок калькулятора — IN PROGRESS
+Скриншоты пользователя: test справа, dev навигация около60% ширины после загрузки фото. Найдено правило .formalizaton__submit:has(.calculator-footer-photo:not([hidden])) с большей специфичностью: grid 1.5fr/1fr сохраняется при скрытых notes. Исправить только обычный desktop footer с calculator-comment-in-step, исключая frame selection. Проверить diff, зеркало SHA256, dev deployment; браузер ранее отключён Work.
+
+
+### WEB-CANVAS-03 — Исправление опубликовано на dev; визуальная приёмка ожидается
+- Добавлено одно scoped CSS-правило: desktop >=1000px, calculator-comment-in-step, без is-frame-selection, footer display:block!important. Оно переопределяет старую :has(photo) grid-разбивку независимо от загрузки/снятия фото. Checkout занимает100%, прежнее margin-left:auto у навигации прижимает кнопки вправо. Расчёты/обработчики, мобильная версия и отдельный выбор рам не менялись.
+- Проверки: tinycss2 parse без ошибок; копирование единственного CSS в C:/OSPanel/domains/viar/viar13 с совпадением SHA256 PASS. Зеркало/dev коммит a71e270. Dev обновлён fast-forward, ветка dev сохранена, дерево чистое. HTML /en/new/canvas выдаёт новый CSS hash08d27d656356068e17749d151a8fca619a460b44d5d458b87ef22fcbc2b938a7, равный файлу на сервере: кеш-бастер обновился.
+- Браузерное управление ранее было отключено Work; фактическую геометрию dev после этой правки не подтверждали. Следующее действие: визуально проверить подготовку фото с загруженным фото на dev; сравнить положение Назад/Далее с test, проверить выбор рам и мобильную навигацию. До этой приёмки не считать визуальное соответствие подтверждённым.
+- Production не изменялся. Push не выполнялся. Markdown в зеркало и на сервер не копировался.

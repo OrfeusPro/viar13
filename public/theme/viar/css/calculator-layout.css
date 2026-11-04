@@ -1771,3 +1771,8 @@ dialog.calculator-expanded-preview[open]{display:flex;align-items:center;justify
 
 /* Keep the floating top link clear of the calculator navigation. */
 body.calculator-working .scroll-button.anchor{visibility:hidden!important;pointer-events:none!important}
+
+/* Hidden notes must not leave the checkout in the old two-column photo grid. */
+@media(min-width:1000px){
+ #generate.calculator-v2.calculator-comment-in-step:not(.is-frame-selection) .formalizaton__submit{display:block!important;grid-template-columns:minmax(0,1fr)!important}
+}
