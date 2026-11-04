@@ -1,4 +1,7 @@
-<div class="canvas__formalization" id="generate">
+@if(config('canvas_ui.new_calculator', false))
+    <div class="calculator-order-intro"><h2 class="calculator-section-title">{{ trans('calculator.order_invite') }}</h2><p>{{ trans('calculator.order_intro') }}</p></div>
+@endif
+<div class="canvas__formalization @if(config('canvas_ui.new_calculator', false)) calculator-v2 @endif" id="generate">
     <form>
         <div class="formalization__main--wrapper">
         <div class="formalization__block--top">
@@ -63,6 +66,7 @@
                                                                  class="tool icontool-delete_cell"></div>
                                                         </div>
                                                     </div>
+                                                    @include('theme.viar.pages.canvas.wrap-controls')
                                                 </div>
                                             </div>
                                             <div class="interior tabs-item tabs-item2">
@@ -101,3 +105,7 @@
         @include(env('THEME_RESOURCES') . 'pages.canvas.form.final')
     </form>
 </div>
+
+@if(config('canvas_ui.new_calculator', false))
+@include('theme.viar.pages.canvas.calculator-layout')
+@endif

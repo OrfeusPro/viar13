@@ -323,6 +323,7 @@
     <script defer src="{{ ver_asset(env('THEME').'js/main.js') }}"></script>
     <script defer src="{{ ver_asset(env('THEME').'js/three.min.js') }}"></script>
     <script defer src="{{ ver_asset(env('THEME').'js/3dcanvas.js') }}"></script>
+    <script defer src="{{ ver_asset(env('THEME').'js/canvas-wrap.js') }}"></script>
 
     <script defer src="{{ ver_asset(env('THEME').'js/jcf.min.js') }}"></script>
     <script defer src="{{ ver_asset(env('THEME').'js/jcf.radio.min.js') }}"></script>

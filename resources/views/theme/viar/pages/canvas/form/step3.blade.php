@@ -47,7 +47,23 @@
                                     data-stock="1" data-size="{{ $clean_size_name }}" data-price="{{ $check_price }}" data-price-label="{{ $label_after_bracket }}"
                                     onclick="setSize({{ $display_size_width }},{{ $display_size_height }})">
                                     <div class="check"></div>
-                                    <label>
+                                    @if(config('canvas_ui.new_calculator', false))
+<label>
+                                        <span class="size-card-name">{{ $display_size_height }} &times; {{ $display_size_width }} {{ trans('gl.cm') }}</span>
+                                        <span class="size-card-prices">
+                                            @if($sale_price != null)
+                                                <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
+                                            @else
+                                                <b>{{ $prices_vals[0] }}€</b>
+                                            @endif
+                                        </span>
+
+                                        <input class="jcf-ignore" type="radio" name="size"
+                                               value="{{ $clean_size_name }}"
+                                               data-price-label="{{ $label_after_bracket }}">
+                                    </label>
+@else
+<label>
                                         <span>{{ $display_size_height }}x{{ $display_size_width }} {{ trans('gl.cm') }} -
                                             @if($sale_price != null)
                                                 <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
@@ -56,10 +72,11 @@
                                             @endif
                                         </span>
 
-                                        <input type="radio" name="size"
+                                        <input class="jcf-ignore" type="radio" name="size"
                                                value="{{ $clean_size_name }}"
                                                data-price-label="{{ $label_after_bracket }}">
                                     </label>
+@endif
                                     {!! sale_icon($size_item) !!}
                                 </div>
                             @endforeach
@@ -110,7 +127,23 @@
                                     data-stock="1" data-size="{{ $clean_size_name }}" data-price="{{ $check_price }}" data-price-label="{{ $label_after_bracket }}"
                                     onclick="setSize({{ $display_size_width }},{{ $display_size_height }})">
                                     <div class="check"></div>
-                                    <label>
+                                    @if(config('canvas_ui.new_calculator', false))
+<label>
+                                        <span class="size-card-name">{{ $display_size_height }} &times; {{ $display_size_width }} {{ trans('gl.cm') }}</span>
+                                        <span class="size-card-prices">
+                                            @if($sale_price != null)
+                                                <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
+                                            @else
+                                                <b>{{ $prices_vals[0] }}€</b>
+                                            @endif
+                                        </span>
+
+                                        <input class="jcf-ignore" type="radio" name="size"
+                                               value="{{ $clean_size_name }}"
+                                               data-price-label="{{ $label_after_bracket }}">
+                                    </label>
+@else
+<label>
                                         <span>{{ $display_size_height }}x{{ $display_size_width }} {{ trans('gl.cm') }} -
                                             @if($sale_price != null)
                                                 <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
@@ -119,10 +152,11 @@
                                             @endif
                                         </span>
 
-                                        <input type="radio" name="size"
+                                        <input class="jcf-ignore" type="radio" name="size"
                                                value="{{ $clean_size_name }}"
                                                data-price-label="{{ $label_after_bracket }}">
                                     </label>
+@endif
                                     {!! sale_icon($size_item) !!}
                                 </div>
                             @endforeach
@@ -171,7 +205,23 @@
                                     data-stock="1" data-size="{{ $clean_size_name }}" data-price="{{ $check_price }}" data-price-label="{{ $label_after_bracket }}"
                                     onclick="setSize({{ $display_size_width }},{{ $display_size_height }})">
                                     <div class="check"></div>
-                                    <label>
+                                    @if(config('canvas_ui.new_calculator', false))
+<label>
+                                        <span class="size-card-name">{{ $display_size_height }} &times; {{ $display_size_width }} {{ trans('gl.cm') }}</span>
+                                        <span class="size-card-prices">
+                                            @if($sale_price != null)
+                                                <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
+                                            @else
+                                                <b>{{ $prices_vals[0] }}€</b>
+                                            @endif
+                                        </span>
+
+                                        <input class="jcf-ignore" type="radio" name="size"
+                                               value="{{ $clean_size_name }}"
+                                               data-price-label="{{ $label_after_bracket }}">
+                                    </label>
+@else
+<label>
                                         <span>{{ $display_size_height }}x{{ $display_size_width }} {{ trans('gl.cm') }} -
                                             @if($sale_price != null)
                                                 <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
@@ -180,10 +230,11 @@
                                             @endif
                                         </span>
 
-                                        <input type="radio" name="size"
+                                        <input class="jcf-ignore" type="radio" name="size"
                                                value="{{ $clean_size_name }}"
                                                data-price-label="{{ $label_after_bracket }}">
                                     </label>
+@endif
                                     {!! sale_icon($size_item) !!}
                                 </div>
                             @endforeach
@@ -232,7 +283,23 @@
                                     data-stock="1" data-size="{{ $clean_size_name }}" data-price="{{ $check_price }}" data-price-label="{{ $label_after_bracket }}"
                                     onclick="setSize({{ $display_size_width }},{{ $display_size_height }})">
                                     <div class="check"></div>
-                                    <label>
+                                    @if(config('canvas_ui.new_calculator', false))
+<label>
+                                        <span class="size-card-name">{{ $display_size_height }} &times; {{ $display_size_width }} {{ trans('gl.cm') }}</span>
+                                        <span class="size-card-prices">
+                                            @if($sale_price != null)
+                                                <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
+                                            @else
+                                                <b>{{ $prices_vals[0] }}€</b>
+                                            @endif
+                                        </span>
+
+                                        <input class="jcf-ignore" type="radio" name="size"
+                                               value="{{ $clean_size_name }}"
+                                               data-price-label="{{ $label_after_bracket }}">
+                                    </label>
+@else
+<label>
                                         <span>{{ $display_size_height }}x{{ $display_size_width }} {{ trans('gl.cm') }} -
                                             @if($sale_price != null)
                                                 <del>{{ $prices_vals[0] }}€</del> <b>{{ $sale_price }}€</b>
@@ -241,10 +308,11 @@
                                             @endif
                                         </span>
 
-                                        <input type="radio" name="size"
+                                        <input class="jcf-ignore" type="radio" name="size"
                                                value="{{ $clean_size_name }}"
                                                data-price-label="{{ $label_after_bracket }}">
                                     </label>
+@endif
                                     {!! sale_icon($size_item) !!}
                                 </div>
                             @endforeach

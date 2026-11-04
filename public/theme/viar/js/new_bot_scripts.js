@@ -1,4 +1,3 @@
-
     //close modal
     $(document).on('click', '.close-content', function (e) {
         $(this).closest('.popup').removeClass('active');
@@ -161,7 +160,7 @@
         }
 
       var CanvasMainImg = null;
-      var canvasPhotoPending = false;
+      var canvasUploadSerial = 0;
       var base_64_img = null;
       var saved_tab2_img;
       var preview,file,reader;
@@ -186,7 +185,6 @@
           btn.find('input').val('');
 
           if (!$('#imgs button.is-load').length) {
-              CanvasMainImg = null;
               $('.additional-image').addClass('additional-image_pending').removeClass('additional-image_loaded');
           }
       });
@@ -250,57 +248,35 @@
           }
       }
 
+    document.addEventListener('click',function(e){var link=e.target.closest('.popup-cart .go_to_cart');if(!link)return;e.preventDefault();e.stopImmediatePropagation();window.location.assign(link.href);},true);
+    function showCanvasOrderError(message) {
+        var labels=document.getElementById('calculator-labels');
+        var box=document.getElementById('canvas-order-error');
+        if(!box){box=document.createElement('p');box.id='canvas-order-error';box.setAttribute('role','alert');document.getElementById('t3_submit_btn').before(box);}
+        box.textContent=message || (labels && labels.dataset.orderError) || 'Unable to add item. Please try again.';
+        box.scrollIntoView({block:'center'});
+    }
+    var canvasRequestId=null;
     // SUBMIT
-    function hideCanvasPhotoRequiredError() {
-        var $accordion = $('.filter-accordion').first();
-        var $stepTitle = $accordion.children('.accordion-title').first();
-        var $stepContent = $stepTitle.next('.accordion-content');
-
-        $stepContent.find('.canvas-photo-required-error').removeClass('is-visible');
-        $stepContent.find('.pd-canvas').removeAttr('aria-invalid');
-    }
-
-    function showCanvasPhotoRequiredError() {
-        var $accordion = $('.filter-accordion').first();
-        var $stepTitle = $accordion.children('.accordion-title').first();
-        var $stepContent = $stepTitle.next('.accordion-content');
-        var $message = $stepContent.find('.canvas-photo-required-error').first();
-
-        $('.popup-inv-size').removeClass('active');
-        $stepTitle.trigger('open');
-        $message.addClass('is-visible');
-        $stepContent.find('.pd-canvas').attr('aria-invalid', 'true');
-
-        window.setTimeout(function () {
-            if ($message.length) {
-                $message.get(0).scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            if ($message.length) {
-                $message.get(0).focus({ preventScroll: true });
-            }
-        }, 420);
-    }
-
     $(document).on('click', '#t3_submit_btn', function (e) {
         e.preventDefault();
 
-        if (canvasPhotoPending) return;
-        if (!CanvasMainImg || !imgs.some(function (img) { return img.isLoad; })) {
-            showCanvasPhotoRequiredError();
-            return;
-        }
-        hideCanvasPhotoRequiredError();
-
+        if (document.getElementById('imgs').dataset.uploadBusy==='true' || !editor.grid[0].resource || !CanvasMainImg) { $('.popup-inv-size').addClass('active'); return; }
+        $('.popup-inv-size').removeClass('active');
         var $btn = $(this);
         if ($btn.data('processed') === true) return;
 
-        $btn.data('processed', true);
+        $btn.data('processed', true).attr('aria-busy','true').prop('disabled',true);
 
         var $loading = $('.loading-bar');
         $loading.stop(true, true).fadeOut(0);
 
+        // Recompute synchronously before capturing the order total.
+        calcTotalPrice();
         // собираем данные
         var data = formData();
+        if(!canvasRequestId)canvasRequestId=crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+        data.append('canvas_request_id',canvasRequestId);
         data.append('pid', $btn.data('pid'));
 
         // аккуратно читаем цену
@@ -343,6 +319,11 @@
             }
 
             if (response.success) {
+                document.dispatchEvent(new Event('canvas-cart-added'));
+                canvasRequestId=null;
+                $('.popup-cart .go_to_cart').removeClass('js-popup-repair-basket');
+                var orderError=document.getElementById('canvas-order-error');if(orderError)orderError.remove();
+                $('.popup-cart').attr({'role':'dialog','aria-modal':'true','aria-label':response.message||'Added to cart'});
                 // SEO-случай (оставлено как у вас, добавлены защиты от NaN)
                 var totalSeoPrice =
                 Number($('.tabs-item #totalPrice').data('total')) ||
@@ -367,12 +348,18 @@
                 // UI
                 $('body').addClass('open-frame');
                 $('.popup-frame').css('display', 'flex').hide().fadeIn();
-                $('.popup-cart').fadeIn();
+                $('.popup-cart').fadeIn(function(){var target=this.querySelector('.go_to_cart,button,a[href]');if(target)target.focus({preventScroll:true});});
                 $loading.stop(true, true).fadeOut(150);
 
                 var cur = parseInt($('#smallCart').text(), 10);
                 cur = isNaN(cur) ? 1 : cur + 1;
-                $('#smallCart').text(cur);
+                $('#smallCart').text(Number.isFinite(Number(response.count)) ? Number(response.count) : cur);
+                var cartLink=document.querySelector('.header-cart');
+                if(cartLink && Number.isFinite(Number(response.count))) {
+                    var badge=cartLink.querySelector('.canvas-cart-count');
+                    if(!badge){badge=document.createElement('span');badge.className='canvas-cart-count';badge.setAttribute('aria-live','polite');cartLink.appendChild(badge);}
+                    badge.textContent=String(response.count);
+                }
             }
 
             $('#t1_submit_btn').attr('data-disabled', '0');
@@ -383,31 +370,15 @@
             error: function (error) {
             $loading.stop(true, true).fadeOut(150);
 
-            if (error && error.responseText) {
-                try {
-                var resp = JSON.parse(error.responseText);
-                var errors = resp.errors || resp.text || {};
-                var firstError = resp.message || '';
-                $.each(errors, function (key, value) {
-                    if (!firstError && value && value.length) firstError = value[0];
-                });
-                $('#err_msgs').html('<span style="display:block;">' + firstError + '</span>');
-                if (firstError) {
-                    alert(firstError);
-                }
-                } catch (e) {
-                alert('Server error');
-                }
-            } else {
-                alert('Server error');
-            }
+            var message='';
+            if(error && error.status===422) {try {message=JSON.parse(error.responseText).message||'';}catch(ignore){}}
+            showCanvasOrderError(message);
 
-            $('#t1_submit_btn').attr('data-disabled', '0');
             },
 
             complete: function () {
             // ВСЕГДА снимаем флаг и прячем спиннер/лоадер
-            $btn.data('processed', false);
+            $btn.data('processed', false).removeAttr('aria-busy').prop('disabled',false);
             $('.js_spinner').jmspinner(false);
             $loading.stop(true, true).fadeOut(150);
             }
@@ -421,10 +392,32 @@
       });
 
       $(document).on('click', '.calcSize', function(e){
+          $('.accordion__sizes-block .calcSize').removeClass('kviz-radio_active');
+          $(this).addClass('kviz-radio_active').find('input[name="size"]').prop('checked',true);
           let sizePrice = $(this).data('price');
           let sizeSize = $(this).data('size');
           calcTotalPrice(sizePrice, sizeSize);
       });
+
+      // Card visuals and native values must agree before pricing/submission.
+      $(document).on('click', '#generate.calculator-v2 .kviz-c-group .kviz-radio', function(e){
+          if($(e.target).closest('[role="button"],.pic-pop').length)return;
+          var input=$(this).find('input[type="radio"]').first();
+          if(!input.length||input.prop('disabled')||input.attr('name')==='size')return;
+          input.prop('checked',true).trigger('change');
+      });
+      $('.calculator-v2 .kviz-radio_active input[type="radio"]').each(function(){
+          if(this.name==='decoration'&&!$('input[name="decoration"]:checked').length)this.checked=true;
+      });
+      $('#generate .additional-image .popup-log-check').on('click', function(){
+          var toggle=this;
+          setTimeout(function(){
+              $(toggle).find('input[name="save"]').prop('checked',$(toggle).hasClass('log-check_active'));
+              calcTotalPrice();
+          },0);
+      });
+      $('input[name="save"]').on('change',function(){calcTotalPrice();});
+      function photoImprovementEnabled(){return $('#generate .additional-image .popup-log-check').hasClass('log-check_active');}
 
       // тип исполнения
       $('.calcExecution').on('click', function () {
@@ -463,8 +456,11 @@
           let executionId = $('.calcExecution.active').data('execution');
           let decorationId = $('input[name="decoration"]:checked').data('id');
           let userComment = $('#userComment').val();
+          if(editor.getCanvasConfiguration)formData.append('canvas_configuration',JSON.stringify(editor.getCanvasConfiguration()));
+          let photoComment = $('#preparationComment').val();
           let boxIds = [];
-          let terms = $('.delivery-inputs .kviz-radio_active').find('.js_term__selected').text();
+          // Basket localizes the production term from its numeric price, not its label.
+          let terms = String($('.delivery-inputs input[name="time"]:checked').val() || '0');
           let terms_price = $('.delivery-inputs .kviz-radio_active').find('input').val();
 
           let Image3d = '';
@@ -491,7 +487,8 @@
           });
 
 
-          formData.append('improve_photo', $('input[name="boxes2[]"]:checked').data('name'));
+          formData.append('improvement_id', photoImprovementEnabled()?($('input[name="boxes2[]"]:checked').data('id')||0):0);
+          formData.append('improve_photo', photoImprovementEnabled()?($('input[name="boxes2[]"]:checked').data('name')||''):'');
           const totalFromData = parseFloat($('.totalPriceNew').attr('data-total'));
           const totalFromLegacy = parseFloat($('.tabs-item #totalPrice').attr('data-total'));
           const totalFromText = parseFloat(($('.totalPriceNew').text() || '').replace(',', '.'));
@@ -500,7 +497,7 @@
               : (Number.isFinite(totalFromLegacy) ? totalFromLegacy : (Number.isFinite(totalFromText) ? totalFromText : 0));
           formData.append('price', normalizedTotal.toFixed(2));
 
-          if( $('input[name="photo_ex"]').length && $('input[name="photo_ex"').val() != ''){
+          if( $('input[name="photo_ex"]').length && $('input[name="photo_ex"]').val() != ''){
               formData.append('photo_ex', $('input[name="photo_ex"]').prop('files')[0]);
           }else{
               formData.append('photo_ex', '');
@@ -509,7 +506,13 @@
           if($('.ramu-item.active').length){
               var $activeRam = $('.ramu-item.active').last();
               var activeRamPrice = parseFloat($activeRam.data('price')) || 0;
-              if(activeRamPrice > 0){
+              var calculatorRoot=document.querySelector('#generate.calculator-v2');
+              var selectedSize=document.querySelector('.calcSize.kviz-radio_active');
+              var ratesNode=document.getElementById('calculator-frame-rates');
+              var orderFrameRates=ratesNode?JSON.parse(ratesNode.textContent):{};
+              var orderFrameSignature=$activeRam.data('id')+':'+(selectedSize?selectedSize.dataset.size:'')+':'+Number(orderFrameRates[$activeRam.data('id')]||0);
+              var frameConfirmed=!calculatorRoot||calculatorRoot.dataset.confirmedFrame===orderFrameSignature;
+              if(activeRamPrice > 0&&frameConfirmed){
                   var ram_id = $activeRam.data('id') || $activeRam.find('input[name="ram_id"]').val();
               }
           }
@@ -539,8 +542,9 @@
               formData.append('canvasId', canvasId);
           if (decorationId)
               formData.append('decorationId', decorationId);
-          if (userComment)
-              formData.append('userComment', userComment);
+          if (userComment || photoComment)
+              formData.append('userComment', [userComment, photoComment].filter(Boolean).join('\n'));
+          if (photoComment) formData.append('photoComment', photoComment);
           if (terms)
               formData.append('terms', terms);
           if (terms_price)
@@ -620,7 +624,10 @@
           if(typeof ram_price === 'undefined'){
               rp = 0;
           }else{
-              rp=parseInt(ram_price);
+              var ratesNode=document.getElementById('calculator-frame-rates');
+              var frameRates=ratesNode?JSON.parse(ratesNode.textContent):{};
+              var meterRate=frameRates[$('.ramu-item.active').data('id')];
+              rp=meterRate!=null?Math.round(2*(s1+s2)/100*Number(meterRate)*100)/100:parseFloat(ram_price);
               // if($('.calcSize.kviz-radio_active'.length)){
               //     rp = ((s1+s1+s2+s2)/100)*parseInt(ram_price);
               // }else{
@@ -719,7 +726,7 @@
 
 
 
-          var picture_improve = $('input[name="boxes2[]"]:checked').val();
+          var picture_improve = photoImprovementEnabled()?$('input[name="boxes2[]"]:checked').val():0;
           var pictureImprovePrice = parseFloat(picture_improve);
           if (Number.isFinite(pictureImprovePrice)) {
               totalPrice = parseFloat(totalPrice) + pictureImprovePrice;
@@ -771,6 +778,32 @@
               $('.totalPriceNew').attr('data-total',cur_summ_price);
           }
 
+          // Expose the same calculation operands to the new UI; ordering remains unchanged.
+          var pricingRoot = document.querySelector('#generate.calculator-v2');
+          if (pricingRoot) {
+              function optionName(selector) {
+                  var el = document.querySelector(selector);
+                  if (!el) return '';
+                  if (el.dataset.name) return el.dataset.name.replace(/\s+[+-]?\d+(?:[.,]\d+)?\s*(?:€|EUR)\s*$/, '').trim();
+                  var label = el.closest('label');
+                  var caption = label && label.querySelector('span:not(.jcf-radio):not(.jcf-checkbox)');
+                  return (caption ? caption.textContent : label ? label.textContent : '').replace(/\s+/g, ' ').replace(/\s+[+-]?\d+(?:[.,]\d+)?\s*(?:€|EUR)\s*$/, '').trim();
+              }
+              var frameName = $('.ramu-item.active .code').text().trim();
+              var breakdown = [
+                  {key:'base', name:'', amount:Number(sizePrice)},
+                  {key:'material', name:optionName('input[name="canvas_type"]:checked'), amount:Number(cur_sizes_add)-Number(sizePrice)},
+                  {key:'execution', name:$('.calcExecution.active').text().trim(), amount:Number(ex_add_price)},
+                  {key:'decoration', name:optionName('input[name="decoration"]:checked'), amount:Number(decorAddPrice)},
+                  {key:'packaging', name:optionName('input[name="boxes[]"]:checked'), amount:Number(boxImprovePrice)||0},
+                  {key:'improvement', name:photoImprovementEnabled()?optionName('input[name="boxes2[]"]:checked'):'', amount:Number(pictureImprovePrice)||0},
+                  {key:'frame', name:frameName, amount:Number(rp)||0},
+                  {key:'delivery', name:optionName('.delivery-inputs input:checked'), amount:Number(dostTimePrice)||0}
+              ];
+              pricingRoot.dataset.priceBreakdown = JSON.stringify(breakdown);
+              pricingRoot.dispatchEvent(new CustomEvent('calculator:price', {detail:breakdown}));
+          }
+
 
       }
 
@@ -785,10 +818,9 @@
           var bi_full = 'url('+img_border+') 65 68 / 5em stretch';
       })
 
-      $('.ramu-item').click(function(e){
-          setTimeout(() => {
+      // Delegation runs after the frame's direct selection handler.
+      $(document).on('click', '.ramu-item', function(){
           calcTotalPrice();
-          }, 200);
       });
 
       $('.delivery-inputs input').change(function(e){
@@ -816,9 +848,34 @@
 
       var canvas = document.getElementById("canvas");
 
-      var editor = new Canvas3D(canvas);
+      var editor, flatPreview=false;
+      try {
+          if(location.hostname==='test.viarcanvas.com'&&new URLSearchParams(location.search).get('canvas_fallback')==='1')throw new Error('QA fallback');
+          editor=new Canvas3D(canvas);
+      } catch(error) {
+          if(!document.querySelector('#generate.calculator-v2'))throw error;
+          flatPreview=true;
+          var replacement=document.createElement('canvas');replacement.id=canvas.id;canvas.replaceWith(replacement);canvas=replacement;
+          var surface=document.createElement('canvas');surface.width=surface.height=1200;
+          editor=new PhotoEditor({canvas:surface,isMouseEvents:false,DragAndDropEvents:false,isCellDiv:false,isAct_cellresize:false,isOutPhoto:false});
+          editor.canvas_ViewPort=canvas;
+          editor.setSize=function(h,w){canvas.width=w;canvas.height=h;};
+          editor.setSizeBox=function(h,w,d){this.size_height=h;this.size_width=w;this.size_depth=d;surface.height=Math.round(1200*h);surface.width=Math.round(1200*w);};
+          editor.render2D=function(){PhotoEditor.prototype.render.call(this,false);};
+          editor.render=function(){this.render2D();this.render3D();};
+          editor.render3D=function(){var ctx=canvas.getContext('2d');ctx.fillStyle='#f5f2ec';ctx.fillRect(0,0,canvas.width,canvas.height);var scale=Math.min(canvas.width/surface.width,canvas.height/surface.height)*.9;ctx.drawImage(surface,(canvas.width-surface.width*scale)/2,(canvas.height-surface.height*scale)/2,surface.width*scale,surface.height*scale);};
+          document.getElementById('generate').classList.add('calculator-flat');
+          var notice=document.createElement('p');notice.className='calculator-flat-notice';notice.setAttribute('role','status');
+          notice.textContent=document.getElementById('calculator-labels').dataset.fallback;
+          document.getElementById('PhotoEditor').after(notice);
+      }
+      if(!flatPreview)CanvasWrap.install(editor, document.getElementById('canvas-wrap-controls'));
+      if(!flatPreview && document.querySelector('#generate.calculator-v2')) {
+          if(window.CanvasRoom) CanvasRoom.install(editor);
+          else window.addEventListener('canvas-room-ready',function(){CanvasRoom.install(editor);},{once:true});
+      }
       console.log(editor)
-      editor.ColorCell = '#d2afac';
+      editor.ColorCell = document.querySelector('#generate.calculator-v2') ? '#f1f1f1' : '#eee9df';
       //правки123
       editor.is_box_offset_2_x = true;
       editor.is_box_offset_1_y = true;
@@ -828,10 +885,12 @@
       // resize
       function resize()
       {
-          var mn = canvas.parentElement.clientWidth;
-          canvas.height = mn;
-          canvas.width  = mn;
-          editor.setSize(canvas.height,canvas.width);
+          var fitted=document.querySelector('#generate.calculator-v2');
+          var cw=Math.max(1,canvas.parentElement.clientWidth);
+          var ch=fitted?Math.max(1,canvas.parentElement.clientHeight):cw;
+          if(!canvas.parentElement.clientWidth || !canvas.parentElement.clientHeight)return;
+          editor.setSize(ch,cw);
+          if(editor.fitPreview)editor.fitPreview(cw,ch);
 
           Canvas3D.prototype.render.call(editor);
       }
@@ -899,10 +958,33 @@
 
       resize();
 
+      editor.resetCanvasUpload = function () {
+          canvasUploadSerial++;
+          CanvasMainImg = null; js_img_tab2 = ''; base_64_img = null;
+          imgs.forEach(function(item){item.isLoad=false;item.img=null;});
+      };
       editor.onchange = function(){//ловим изменения в редакторе
+          if(flatPreview)editor.render();
+          var current = editor.grid[0] && editor.grid[0].resource;
+          CanvasMainImg = current && current.img.sourceFile || null;
+          js_img_tab2 = current ? current.img.original.src : '';
+          if(current && imgs && imgs[0]) {
+              imgs[0].img=current.img;imgs[0].isLoad=true;
+              imgs[0].element.src=current.img.original.src;
+              imgs[0].element.parentElement.classList.add('is-load');
+              $('#imgs .js-file-preview').hide();$('#imgs .abs-close,#imgs .js-file-multiple').show();
+              $('.additional-image').removeClass('additional-image_pending').addClass('additional-image_loaded');
+          } else if(imgs) {
+              imgs.forEach(function(item){item.isLoad=false;item.img=null;item.element.removeAttribute('src');item.element.parentElement.classList.remove('is-load');});
+              $('#imgs .abs-close,#imgs .js-file-multiple').hide();$('#imgs .js-file-preview').show();
+              $('.additional-image').addClass('additional-image_pending').removeClass('additional-image_loaded');
+          }
+
+
           editor.is_Redo()?tool_redo.classList.remove("disable"):tool_redo.classList.add("disable");
           editor.is_Undo()?tool_undo.classList.remove("disable"):tool_undo.classList.add("disable");
-          if(editor.selection && editor.selection.cell && editor.selection.cell.resource)
+          // Single-canvas toolbar must work immediately after upload, before a canvas tap.
+          if(current || (editor.selection && editor.selection.cell && editor.selection.cell.resource))
           {   tool_cell_delete.classList.remove("disable");
               tool_photo_zoom_minus.classList.remove("disable");
               tool_photo_zoom_plus.classList.remove("disable");
@@ -929,9 +1011,14 @@
       //   editor.setSizeBox(h,w,depth);
       //     resize();
       // }
+      var canvasFormTimer;
       function setSize(centimeter_h,centimeter_w,centimeter_depth = 0)
       {
+          clearTimeout(canvasFormTimer);
           console.log("setSize");
+          if(location.hostname==='test.viarcanvas.com'&&new URLSearchParams(location.search).has('canvas_qa')){
+              document.getElementById('canvas').dataset.sizeTrace=JSON.stringify({w:centimeter_w,h:centimeter_h,stack:new Error().stack});
+          }
           console.log(centimeter_h,centimeter_w);
           size_centimeter_h = centimeter_h;
           size_centimeter_w = centimeter_w;
@@ -947,6 +1034,27 @@
           resize();
       }
 
+      // Default to 40 × 50 cm; preserve explicit customer choices.
+      function initialCanvasSize(block) {
+          var choices=Array.from(block.querySelectorAll('.calcSize[data-size]')).filter(function(el){return !el.classList.contains('disabled') && el.getAttribute('aria-disabled')!=='true';});
+          var remembered=choices.find(function(el){return el.dataset.customerSize==='1';});
+          if(remembered)return $(remembered);
+          var preferred=choices.find(function(el){return el.dataset.size==='40x50';});
+          return $(preferred||choices[1]||choices[0]);
+      }
+      document.addEventListener('click',function(e){
+          var size=e.target.closest('.calcSize');
+          if(!e.isTrusted || !size || !document.querySelector('#generate.calculator-v2'))return;
+          var block=size.closest('.accordion__sizes-block');
+          block.querySelectorAll('.calcSize').forEach(function(el){delete el.dataset.customerSize;});
+          size.dataset.customerSize='1';
+      },true);
+      window.addEventListener('load',function(){
+          if(!document.querySelector('#generate.calculator-v2'))return;
+          var block=document.querySelector('.accordion__sizes-block:not(.hidden-block)');
+          if(block && !block.querySelector('[data-customer-size="1"]'))initialCanvasSize(block).click();
+      },{once:true});
+
       function setForm(index)
       {
 
@@ -954,7 +1062,12 @@
 
           var act_h, act_w, act_depth, act_price;
           var targetContainer = $(`.accordion__sizes-block[data-id="${index + 1}"] .kviz-group__item:first-child .calcSize:first-child`);
-          setTimeout(()=>{
+          if(document.querySelector('#generate.calculator-v2')) {
+              var block=document.querySelector('.accordion__sizes-block[data-id="'+(index+1)+'"]');
+              if(block)targetContainer=initialCanvasSize(block);
+          }
+          clearTimeout(canvasFormTimer);
+          canvasFormTimer = setTimeout(()=>{
             targetContainer.click();
 
           }, 200)
@@ -962,10 +1075,9 @@
           }
 
 
-      tool_cell_delete.onclick = function()
-      {
-          if (editor.selection.cell)editor.selection.cell.resource = undefined;
-          editor.selection.delete();
+      tool_cell_delete.onclick = function() {
+          var close=document.querySelector('#imgs .abs-close');
+          if(close)close.click();
       }
 
       tool_undo.onclick = function()
@@ -980,22 +1092,26 @@
 
       tool_photo_zoom_minus.onclick = function()
       {
-          editor.selection.cell.photo_zoom(Math.max(1, editor.selection.cell.resource.zoom - (editor.selection.cell.resource.zoom * 0.1)));
+          var cell=editor.selection && editor.selection.cell || editor.grid[0];
+          if(cell && cell.resource)cell.photo_zoom(Math.max(1, cell.resource.zoom * .9));
       }
 
       tool_photo_zoom_plus.onclick = function()
       {
-          editor.selection.cell.photo_zoom(editor.selection.cell.resource.zoom + (editor.selection.cell.resource.zoom * 0.1));
+          var cell=editor.selection && editor.selection.cell || editor.grid[0];
+          if(cell && cell.resource)cell.photo_zoom(cell.resource.zoom * 1.1);
       }
 
       tool_turn_right.onclick = function()
       {
-          editor.selection.cell.photo_rotate(editor.selection.cell.resource.rotate + Math.PI/2);
+          var cell=editor.selection && editor.selection.cell || editor.grid[0];
+          if(cell && cell.resource)cell.photo_rotate(cell.resource.rotate + Math.PI/2);
       }
 
       tool_turn_left.onclick = function()
       {
-          editor.selection.cell.photo_rotate(editor.selection.cell.resource.rotate - Math.PI/2);
+          var cell=editor.selection && editor.selection.cell || editor.grid[0];
+          if(cell && cell.resource)cell.photo_rotate(cell.resource.rotate - Math.PI/2);
 
       }
 
@@ -1021,11 +1137,11 @@
       {
           var img = {};
           img.original = new Image();
-          img.original.src = src;
+          if (/^(https?:)?\/\//i.test(src)) img.original.crossOrigin = 'anonymous';
 
           img.original.onload = function()
           {
-              img.icon = GetIcon(img.original);
+              try { img.icon = GetIcon(img.original); } catch (error) { callback(); return; }
               callback(img);
           }
 
@@ -1033,10 +1149,20 @@
           {
               callback();
           }
+          img.original.src = src;
       }
 
 
       var js_img_tab2 = '';
+      function canvasUploadError(inputFile) {
+          document.getElementById('imgs').dataset.uploadBusy='false';
+          inputFile.value='';
+          if(editor.onchange)editor.onchange();
+          var notice=document.getElementById('canvas-upload-error');
+          if(!notice){notice=document.createElement('p');notice.id='canvas-upload-error';notice.setAttribute('role','alert');document.getElementById('imgs').appendChild(notice);}
+          var controls=document.getElementById('canvas-wrap-controls');
+          notice.textContent=controls&&controls.dataset.uploadError||'Unable to read this image. Choose a valid image.';
+      }
       function InitImgs(imgs,type)
       {
           imgs.forEach(function (item){
@@ -1045,27 +1171,15 @@
                   inputFile.setAttribute('type', 'file');
                   inputFile.setAttribute('accept', 'image/*,image/heif,image/heic');
                   item.element.appendChild(inputFile);
-                  var photoStatus = document.createElement('span');
-                  photoStatus.setAttribute('role', 'status');
-                  photoStatus.setAttribute('aria-live', 'polite');
-                  item.element.parentElement.appendChild(photoStatus);
 
                   inputFile.onchange = async function ()
                   {
-                      var selectedFiles = Array.from(inputFile.files || []);
-                      if (!selectedFiles.length) return;
-                      if (canvasPhotoPending) return;
-                      canvasPhotoPending = true;
-                      CanvasMainImg = null;
-                      inputFile.disabled = true;
-                      item.element.setAttribute('aria-busy', 'true');
-                      photoStatus.textContent = 'Processing photo…';
-                      var failed = false;
-                      try {
+                      var ticket=++canvasUploadSerial;
+                      var selectedFiles=Array.from(inputFile.files || []);
+                      if(!selectedFiles.length)return;
+                      document.getElementById('imgs').dataset.uploadBusy='true';
 
-                      if (inputFile.files && inputFile.files.length) {
-                          $('.additional-image').removeClass('additional-image_pending').addClass('additional-image_loaded');
-                      }
+                      var notice=document.getElementById('canvas-upload-error');if(notice)notice.remove();
 
                       let pos = imgs.indexOf(item);
 
@@ -1075,59 +1189,49 @@
                           {
                               let b = imgs[pos];
 
+                              if (file.type === 'image/heic' || file.type === 'image/heif' || file.type === '') {
                                   try {
-                                      file = await window.viarConvertPhoto(file);
+                                      const convertedBlob = await heic2any({ blob: file, toType: "image/png" });
+                                      file = new File([convertedBlob], file.name.replace(/\.(heic|heif)$/i, '.png'), {
+                                          type: "image/png",
+                                      });
                                   } catch (err) {
-                                      console.warn('HEIC conversion failed:', err && err.code, err && err.message);
-                                      failed = true;
+                                      canvasUploadError(inputFile);
                                       continue;
                                   }
+                              }
 
-                              await new Promise(function (resolve, reject) {
+                              if(!/^image\/(jpeg|png|webp|gif|bmp|avif)$/i.test(file.type)) {
+                                  canvasUploadError(inputFile); continue;
+                              }
+                              var sourceFile=file;
                               var reader = new FileReader();
-                              reader.onerror = function () { reject(new Error('Photo read failed')); };
-                              reader.onabort = function () { reject(new Error('Photo read aborted')); };
                               reader.onload = function (e) {
                                   loadImg(e.target.result, function (img) {
+                                      if (ticket!==canvasUploadSerial)return;
+                                      inputFile.value='';document.getElementById('imgs').dataset.uploadBusy='false';
                                       if (img) {
+                                          img.sourceFile=sourceFile;
+                                          CanvasMainImg=sourceFile;
                                           b.element.src = img.original.src;
                                           js_img_tab2 = b.element.src;
                                           b.element.parentElement.setAttribute('class', 'is-load');
                                           b.img = img;
                                           b.isLoad = true;
 
-                                          try {
-                                              editor.grid[0].setImg(img);
-                                              CanvasMainImg = selectedFiles[0];
-                                              hideCanvasPhotoRequiredError();
-                                              resolve();
-                                          } catch (error) {
-                                              reject(error);
-                                          }
+                                          editor.grid[0].setImg(img);
                                       } else {
-                                          b.isLoad = false;
-                                          reject(new Error('Photo decode failed'));
+                                          canvasUploadError(inputFile);
                                       }
                                   });
                               }
+                              reader.onerror=function(){if(ticket===canvasUploadSerial)canvasUploadError(inputFile);};
 
                               reader.readAsDataURL(file);
-                              });
                               pos++;
                             }
 
                         }
-                      } catch (err) {
-                          failed = true;
-                          CanvasMainImg = null;
-                      } finally {
-                          canvasPhotoPending = false;
-                          inputFile.disabled = false;
-                          inputFile.value = '';
-                          item.element.removeAttribute('aria-busy');
-                          photoStatus.textContent = failed
-                              ? 'Unable to convert a photo. Please select it again or use JPEG/PNG.' : '';
-                      }
                     }
 
                     item.element.onclick = function()

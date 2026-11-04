@@ -11088,3 +11088,7 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 
 ## 2026-11-03 — ADM-UI-01
 Убрано название старой панели из пользовательских текстов админки и пояснения симулятора SA. Контракты CRM/SA, обработчики и данные не изменялись. Lifecycle 9 тестов/79 проверок PASS; Compass 1/17 PASS. Следующее действие: продолжить приёмку контента ADM-FIL-022/029.
+
+
+## 2026-11-04 — WEB-CANVAS-01
+Перенесён Canvas-калькулятор с test-сайта и session-auth AI preview/backend по подтверждению пользователя. orders.status, CRM/SA API и чаты не изменялись. Canvas metadata/AI fee сохраняются в существующих items, новые DB tables/columns не добавлялись. 62 PHP теста/416 проверок и5Nodeтестов PASS; frontend/cart и AI full cycle проверены локально с fake provider. Live API/печать остаются отдельной приёмкой WEB-CANVAS-02; подробности в MIGRATION_PLAN/PROGRESS.

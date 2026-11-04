@@ -113,6 +113,7 @@ class CheckoutCouponService
     public function calculate(array $basket, string $type, $value): string
     {
         $total = (float) ($basket['totalPrice'] ?? 0);
+        $aiFees = 0;
         $eligible = 0;
         $items = [];
         $count = 0;
@@ -120,19 +121,20 @@ class CheckoutCouponService
             if (! is_array($item) || ! isset($item['sumPrice'])) {
                 continue;
             }
+            $aiFees += (float) ($item['canvas_ai_fee'] ?? 0);
             $count += (int) ($item['count'] ?? 1);
             if (! $this->isPromotional($item) && (int) ($item['pid'] ?? 0) !== 5) {
                 // The size upgrade's extras are never discounted, including by a coupon.
                 $eligible += isset($item['checkout_size_discounted_base']) ?
                     min((float) $item['sumPrice'], (float) $item['checkout_size_discounted_base'] * max(1, (int) ($item['count'] ?? 1))) :
-                    (float) $item['sumPrice'];
+                    max(0, (float) $item['sumPrice'] - (float) ($item['canvas_ai_fee'] ?? 0));
                 $items[] = $item;
             }
         }
         $discount = 0;
         if ($type === 'giftcard') {
             // Certificates pay for goods, including promotional goods, not delivery.
-            $discount = min($total, (float) str_replace(',', '.', (string) $value));
+            $discount = min(max(0, $total - $aiFees), (float) str_replace(',', '.', (string) $value));
         } elseif (in_array($type, ['universal', 'abandoned_basket'], true)) {
             $number = (float) str_replace(',', '.', (string) $value);
             $discount = strpos((string) $value, '%') !== false ? $eligible * min(100, $number) / 100 : $number;
@@ -159,13 +161,13 @@ class CheckoutCouponService
                 if (($type === '30_40' && $canvas && $size === '30x40') ||
                     ($type === '40_60' && $largeCanvas && $canvas && in_array($size, ['40x60', '60x40'], true)) ||
                     ($type === '1free' && $count >= 4)) {
-                    $prices[] = (float) $item['sumPrice'] / max(1, (int) ($item['count'] ?? 1));
+                    $prices[] = max(0, (float) $item['sumPrice'] - (float) ($item['canvas_ai_fee'] ?? 0)) / max(1, (int) ($item['count'] ?? 1));
                 }
             }
             $discount = $prices ? min($prices) : 0;
         }
 
-        return number_format(max(0, $total - min($total, max(0, $discount))), 2, '.', '');
+        return number_format(max(0, $total - min(max(0, $total - $aiFees), max(0, $discount))), 2, '.', '');
     }
 
     /** Must be called inside the order transaction; lock remains held until commit. */

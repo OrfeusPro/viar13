@@ -176,6 +176,7 @@ class BasketRepository
 
             $basket = $this->normalizeBasket(request()->session()->get('basket', []));
             request()->session()->put('basket', $basket);
+            $data = \App\Services\CanvasAiBasket::attach($data);
             request()->session()->push('basket', $data);
 
             $this->saveBasketToAbandonedCartModel($data, true);
@@ -658,6 +659,7 @@ class BasketRepository
         $basket['coupon_val']=Session::get('coupon_val');
         $basket['spend_bonus']=Session::get('spend_bonus');
 
+        \App\Services\CanvasAiBasket::totals($basket, $totalPrice, $totalPriceWithLabels);
         $basket['totalPrice']=$totalPrice;
         $basket['totalPriceWithLabels']=$totalPriceWithLabels; // Сума товарів З позначками
         $basket['totalPriceWithoutLabels']=$totalPriceWithoutLabels; // Сума товарів БЕЗ позначок

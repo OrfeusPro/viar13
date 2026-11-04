@@ -496,3 +496,7 @@ $showed_box = 0;
 		</b>
 	</div>
 @endif
+
+@if (isset($product['canvas_ai_fee']) && $product['canvas_ai_fee'] > 0)
+<p>{{ trans('canvas_ai.cart_fee') }}: <b>{{ $product['canvas_ai_fee'] }} &euro;</b></p>
+@endif

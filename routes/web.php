@@ -564,3 +564,10 @@ Route::group(
 );
 
 Route::get('/robots.txt', [RobotsController::class, 'mainRobots'])->name('main.robots.txt');
+
+// Session-authenticated editor previews; disabled until explicitly configured.
+Route::prefix('canvas-ai')->group(function () {
+    Route::get('session', [\App\Http\Controllers\CanvasAiController::class, 'session']);
+    Route::post('preview', [\App\Http\Controllers\CanvasAiController::class, 'generate'])->middleware('throttle:5,60');
+    Route::get('preview/{id}', [\App\Http\Controllers\CanvasAiController::class, 'image'])->where('id', '[a-f0-9]{32}');
+});

@@ -1,4 +1,6 @@
 (function(){
+    // CanvasRoom owns the new calculator. Do not preload its entire frame catalogue.
+    if(document.querySelector("#generate.calculator-v2"))return;
 	
 	$(".slider-tabs").on("click", "a", function() {
 			var a = $(this).data("tabs");

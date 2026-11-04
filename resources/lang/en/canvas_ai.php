@@ -1,0 +1,26 @@
+<?php
+return [
+    'upload_invalid'=>'Unable to read this image. Choose a valid image file up to 30 MB.',
+    'quota'=>'The daily AI generation limit has been reached. Try again tomorrow.',
+    'rate'=>'The generator is busy or the request rate limit has been reached. Try again later.',
+    'timeout'=>'The request timed out. The service may have processed it; no automatic retry will be made.',
+
+    'title'=>'Image continuation — AI',
+    'moderation'=>'The AI service declined this image. Mirror or solid edges remain available for it.',
+    'login'=>'Sign in or register',
+    'notice'=>'Your image is sent to OpenAI to extend each edge by 3.5 cm. The original front is preserved. Up to 5 attempts daily; previews remain available for 24 hours. The fee is shown before approval and added to the test cart only for the approved result. Print integration is not available yet.',
+    'generate'=>'Generate / another version',
+    'apply'=>'Apply to edges',
+    'preview'=>'Extended image preview',
+    'upload'=>'Upload a photo first.',
+    'waiting'=>'Extending the image. This may take up to a minute…',
+    'changed'=>'The photo or settings changed. Solid edges are shown now. Generate a new extension.',
+    'error'=>'Could not extend the image. Try later; mirror edges remain available.',
+    'limit'=>'Test limit reached or generator busy. Try later.',
+    'unavailable'=>'Generation is temporarily unavailable.',
+    'ready'=>'AI edges are not applied yet. Generate and approve a result. Solid edges are shown meanwhile.',
+    'fee'=>'Approved version fee in the test cart: :fee EUR (API cost rounded up).',
+    'cart_fee'=>'Approved AI edge extension',
+    'review'=>'Review the 3.5 cm border and approve it. The original front is preserved. Solid edges are shown meanwhile.',
+    'applied'=>'Extension applied to the edges. Check the canvas preview.',
+];
