@@ -13,6 +13,14 @@ class ConstructBasketRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // Older collage tabs serialize the missing optional delivery price as "undefined".
+        if ($this->input('terms_price') === 'undefined') {
+            $this->merge(['terms_price' => 0]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -23,7 +31,10 @@ class ConstructBasketRequest extends FormRequest
             'userComment' => ['nullable', 'string', 'max:5000'],
             'is_orig_file' => ['nullable', 'boolean'],
             'image_offset' => ['nullable', 'string'],
-            'image' => [
+            // The collage editor sends an auxiliary base64 preview alongside image_offset.
+            'image' => ! $this->boolean('is_orig_file') && ! $this->hasFile('image') && is_string($this->input('image'))
+                ? ['nullable', 'string']
+                : [
                 'nullable',
                 'file',
                 'mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,psd,heic,heif',
@@ -84,6 +95,11 @@ class ConstructBasketRequest extends FormRequest
 
     protected function failedValidation(Validator $validator): void
     {
+        \Illuminate\Support\Facades\Log::warning('construct basket validation rejected', [
+            'errors' => $validator->errors()->toArray(),
+            'image_mode' => $this->boolean('is_orig_file') ? 'original' : 'generated',
+        ]);
+
         throw new HttpResponseException(response()->json([
             'success' => false,
             'errors' => $validator->errors(),

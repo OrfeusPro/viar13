@@ -5719,3 +5719,9 @@ BLOG-5FA03E77 export, 2026-10-27: по запросу пользователя �
 - Браузер production подтвердил доступность указанного изображения по /storage/galleryitems/media/262/83885533-1253274798201472-1844884694982721536-n-1.jpg, 960×960. Через read-only транзакцию на реальной локальной записи media=262 подтверждено: getUrl() теперь выдаёт /storage/galleryitems/media/262/...jpg. SELECT и rollback, без изменения БД.
 - Проверки: GalleryItemMediaPathTest 3 теста/12 assertions PASS; существующие BREAD media upload/properties, batch rollback/retry и replacement rollback — 3/83 PASS. Итого 6/95. PHP lint и diff --check PASS. JUnit storage/logs/web-fix-04-bread-20261104.xml.
 - Для production загрузить app/Support/Media/GalleryItemPathGenerator.php и config/media-library.php, затем php artisan config:clear (или пересобрать config:cache штатной процедурой deployment). Публикация не выполнялась; полная страница production должна быть проверена после загрузки исправления.
+
+## 2026-11-05 — WEB-HOTFIX-01 — Рабочая ветка уточнена
+- По уточнению пользователя текущая ветка основной копии — codex/laravel13-frontend. В неё перенесено итоговое серверное исправление коллажа и regression-тест. JS этой ветки сохраняет исходные ALT-настройки.
+- В зеркале codex/laravel13-frontend создана от текущей main с уже перенесённой миграцией и исправлениями коллажа. История main сохранена. Последующие изменения выполнять в codex/laravel13-frontend. Production уже получил серверные исправления, его ветка в этом шаге не менялась.
+
+- Проверка в codex/laravel13-frontend: 6 тестов / 23 assertions PASS (новый regression и существующие construct-сценарии). Итоговые request и тест совпадают с зеркалом по SHA256.
