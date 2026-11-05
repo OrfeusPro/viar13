@@ -200,6 +200,14 @@ class BasketRepository
             $data['price_label'] = strtolower(request()->get('priceLabel'));
         }
 
+        unset($data['canvas_frame_quote']);
+        $frame = request()->filled('ram_id') && \Illuminate\Support\Facades\Schema::hasColumn('canvas_rams', 'price_per_meter')
+            ? CanvasRam::find(request()->input('ram_id'))
+            : null;
+        $quote = $frame?->price_per_meter !== null
+            ? \App\Services\CanvasOrderQuote::forMeterFrame(request()->input(), $frame)
+            : [];
+
         if (! request()->hasFile('userImage')) {
             abort(422, trans('gl.error_image_canvas'));
         }
@@ -285,7 +293,7 @@ class BasketRepository
         ]);
 
         Log::info('formCanvasTypeData: завершение метода', ['final_data' => $data]);
-        return $data;
+        return array_replace($data, $quote);
     }
 
 
@@ -630,11 +638,12 @@ class BasketRepository
                             $basket[$key]['price'] = $this->calcPrice($basket[$key], $contry_mult);
                         }
 
-                    $basket[$key]['sumPrice'] = $basket[$key]['price'] * $contry_mult * $basket[$key]['count'];
+                    $unitRate = isset($product['canvas_frame_quote']) ? 1 : $contry_mult;
+                    $basket[$key]['sumPrice'] = $basket[$key]['price'] * $unitRate * $basket[$key]['count'];
 
                     $basket[$key]['sumFormatedPrice'] = rtrim(rtrim(number_format($basket[$key]['sumPrice'], 2, ',', ' '), '0'), ',') . ' €';
 
-                    $basket[$key]['formatedPrice'] = rtrim(rtrim(number_format($basket[$key]['price'] * $contry_mult, 2, ',', ' '), '0'), ',') . ' €';
+                    $basket[$key]['formatedPrice'] = rtrim(rtrim(number_format($basket[$key]['price'] * $unitRate, 2, ',', ' '), '0'), ',') . ' €';
 
                     $totalPrice += $basket[$key]['sumPrice'];
 

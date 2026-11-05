@@ -512,7 +512,7 @@
               var orderFrameRates=ratesNode?JSON.parse(ratesNode.textContent):{};
               var orderFrameSignature=$activeRam.data('id')+':'+(selectedSize?selectedSize.dataset.size:'')+':'+Number(orderFrameRates[$activeRam.data('id')]||0);
               var frameConfirmed=!calculatorRoot||calculatorRoot.dataset.confirmedFrame===orderFrameSignature;
-              if(activeRamPrice > 0&&frameConfirmed){
+              if((activeRamPrice > 0||orderFrameRates[$activeRam.data('id')]>0)&&frameConfirmed){
                   var ram_id = $activeRam.data('id') || $activeRam.find('input[name="ram_id"]').val();
               }
           }
@@ -627,7 +627,7 @@
               var ratesNode=document.getElementById('calculator-frame-rates');
               var frameRates=ratesNode?JSON.parse(ratesNode.textContent):{};
               var meterRate=frameRates[$('.ramu-item.active').data('id')];
-              rp=meterRate!=null?Math.round(2*(s1+s2)/100*Number(meterRate)*100)/100:parseFloat(ram_price);
+              rp=meterRate!=null?Math.round(2*(Number(cur_size_calc[0])+Number(cur_size_calc[1]))/100*Number(meterRate)*100)/100:parseFloat(ram_price);
               // if($('.calcSize.kviz-radio_active'.length)){
               //     rp = ((s1+s1+s2+s2)/100)*parseInt(ram_price);
               // }else{
