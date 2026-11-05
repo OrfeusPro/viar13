@@ -40,4 +40,14 @@ class CollagePreviewValidationTest extends TestCase
         $request->withValidator($validator);
         $this->assertTrue($validator->passes(), $validator->errors()->toJson());
     }
+    public function test_older_tab_missing_optional_term_price_is_normalized(): void
+    {
+        $request = ConstructBasketRequest::create('/basket/add/construct', 'POST', ['terms_price' => 'undefined']);
+        (new \ReflectionMethod($request, 'prepareForValidation'))->invoke($request);
+        $this->assertSame(0, $request->input('terms_price'));
+        $request->merge(['terms_price' => 'invalid']);
+        (new \ReflectionMethod($request, 'prepareForValidation'))->invoke($request);
+        $this->assertSame('invalid', $request->input('terms_price'));
+    }
+
 }
