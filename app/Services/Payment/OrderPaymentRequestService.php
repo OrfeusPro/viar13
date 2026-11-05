@@ -3,41 +3,54 @@
 namespace App\Services\Payment;
 
 use App\Http\Controllers\Libwebtopay\PayseraController;
-use App\Http\Controllers\Libwebtopay\WebToPay;
 use App\Models\OrderPaymentRequest;
 use App\Models\Orders;
 use App\Models\User;
 use App\Services\Payment\PayPal\OneTimePayPalService;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class OrderPaymentRequestService
 {
     public function createForOrder(Orders $order, array $attributes, ?User $creator = null): OrderPaymentRequest
     {
-        $delivery = $this->decodeDelivery($order);
-        $customer = $order->user_id ? User::find($order->user_id) : null;
-        $nameParts = $this->resolveNameParts($delivery, $customer);
+        $attributes = validator($attributes, [
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
+            'purpose' => ['nullable', 'string', 'max:255'],
+        ])->validate();
 
-        $paymentRequest = new OrderPaymentRequest();
-        $paymentRequest->order_id = (int) $order->id;
-        $paymentRequest->user_id = $order->user_id ?: null;
-        $paymentRequest->created_by = $creator ? $creator->id : null;
-        $paymentRequest->token = Str::random(40);
-        $paymentRequest->amount = round((float) $attributes['amount'], 2);
-        $paymentRequest->currency = 'EUR';
-        $paymentRequest->purpose = isset($attributes['purpose']) ? trim((string) $attributes['purpose']) : null;
-        $paymentRequest->status = OrderPaymentRequest::STATUS_PENDING;
-        $paymentRequest->customer_email = $this->resolveEmailFromSources($delivery, $customer);
-        $paymentRequest->customer_first_name = $nameParts['first_name'];
-        $paymentRequest->customer_last_name = $nameParts['last_name'];
-        $paymentRequest->customer_country = $this->resolveCountryFromSources($delivery, $order, $customer);
-        $paymentRequest->save();
+        return DB::transaction(function () use ($order, $attributes, $creator): OrderPaymentRequest {
+            $order = Orders::query()->findOrFail($order->id);
+            $delivery = $this->decodeDelivery($order);
+            $customer = $order->user_id ? User::find($order->user_id) : null;
+            $nameParts = $this->resolveNameParts($delivery, $customer);
 
-        $paymentRequest->public_number = 'OPR-' . str_pad((string) $paymentRequest->id, 6, '0', STR_PAD_LEFT);
-        $paymentRequest->save();
+            $paymentRequest = new OrderPaymentRequest;
+            $paymentRequest->order_id = (int) $order->id;
+            $paymentRequest->user_id = $order->user_id ?: null;
+            $paymentRequest->created_by = $creator ? $creator->id : null;
+            $paymentRequest->token = Str::random(40);
+            $paymentRequest->amount = round((float) $attributes['amount'], 2);
+            $paymentRequest->currency = 'EUR';
+            $paymentRequest->purpose = isset($attributes['purpose']) ? trim((string) $attributes['purpose']) : null;
+            $paymentRequest->status = OrderPaymentRequest::STATUS_PENDING;
+            $paymentRequest->customer_email = $this->resolveEmailFromSources($delivery, $customer);
+            $paymentRequest->customer_first_name = $nameParts['first_name'];
+            $paymentRequest->customer_last_name = $nameParts['last_name'];
+            $paymentRequest->customer_country = $this->resolveCountryFromSources($delivery, $order, $customer);
+            if (! $paymentRequest->save()) {
+                throw ValidationException::withMessages(['amount' => 'Не удалось создать заявку на оплату.']);
+            }
 
-        return $paymentRequest;
+            $paymentRequest->public_number = 'OPR-'.str_pad((string) $paymentRequest->id, 6, '0', STR_PAD_LEFT);
+            if (! $paymentRequest->save()) {
+                throw ValidationException::withMessages(['amount' => 'Не удалось сохранить номер заявки на оплату.']);
+            }
+
+            return $paymentRequest;
+        });
     }
 
     public function start(OrderPaymentRequest $paymentRequest, string $paymentMethod)

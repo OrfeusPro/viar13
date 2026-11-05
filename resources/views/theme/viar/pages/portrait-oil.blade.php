@@ -45,7 +45,7 @@
                 </div>
             </div>
             <div class="ellipse">
-                <img alt="img" src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374" />
+                <img  src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374"  @frontendAlt('theme/viar/pages/portrait-oil.blade.php', (asset(env('THEME').'images/icon/ellipse-whete.svg')), 'img', '')/>
             </div>
         @endif
 

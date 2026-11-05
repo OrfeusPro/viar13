@@ -12,7 +12,8 @@
 							@if ($webpSrc = image_webp_url('storage/' . $slide[App::getLocale()]))
 								<source srcset="{{ $webpSrc }}" type="image/webp">
 							@endif
-							<img class="portraits-bg lozad" src="{{ Voyager::image($slide[App::getLocale()]) }}" alt="">
+
+							<img class="portraits-bg lozad" src="{{ Voyager::image($slide[App::getLocale()]) }}" @if ($loop->first) fetchpriority="high" loading="eager" @endif  @frontendAlt('theme/viar/pages/index/slider1.blade.php', (Voyager::image($slide[App::getLocale()])), '', '')>
 						</picture>
 
 						<div class="section-frame">
@@ -38,8 +39,8 @@
 									<picture>
 										<source srcset="{{ asset('images/gift.webp') }}" type="image/webp">
 										<source srcset="{{ asset('images/gift.png') }}">
-										<img src="{{ asset('images/gift.png') }}" class="gift-photo" alt="img" loading="lazy" width="85"
-											height="51">
+										<img src="{{ asset('images/gift.png') }}" class="gift-photo"  loading="lazy" width="85"
+											height="51" @frontendAlt('theme/viar/pages/index/slider1.blade.php', (asset('images/gift.png')), 'img', '')>
 									</picture>
 									<svg class="gift-photo_mob">
 										<use xlink:href="{{ asset(env('THEME') . 'sprite.svg#gift') }}"></use>
@@ -80,7 +81,7 @@
 			@foreach ($creepingLine as $line)
 				<span class="marquee-text">{!! $line->text !!}</span>
 			@endforeach
-	
+
 			@foreach ($creepingLine as $line)
 				<span class="marquee-text">{!! $line->text !!}</span>
 			@endforeach
@@ -92,6 +93,6 @@
 		<a href="#services" class="anchor ellipse-arrow ellipse-arrow_white" aria-label="anchor link">
 			<i class="fa-arrow-down"></i>
 		</a>
-		<img src="{{ asset('images/icon/ellipse-whete.svg') }}" alt="img" loading="eager">
+		<img src="{{ asset('images/icon/ellipse-whete.svg') }}"  loading="eager" @frontendAlt('theme/viar/pages/index/slider1.blade.php', (asset('images/icon/ellipse-whete.svg')), 'img', '')>
 	</div>
 @endif

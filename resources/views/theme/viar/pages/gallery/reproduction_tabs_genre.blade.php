@@ -64,18 +64,18 @@
 				<ul>
 					<li>
 						<a href="#">
-							<img width="88" height="55" src="{{ asset(env('THEME') . 'images') }}/reproduction/1a.svg" alt="">
+							<img width="88" height="55" src="{{ asset(env('THEME') . 'images') }}/reproduction/1a.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction_tabs_genre.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/1a.svg', '', '')>
 						</a>
 					</li>
 					<li>
 						<a href="#">
-							<img width="60" height="60" src="{{ asset(env('THEME') . 'images') }}/reproduction/3a.svg" alt="">
+							<img width="60" height="60" src="{{ asset(env('THEME') . 'images') }}/reproduction/3a.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction_tabs_genre.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/3a.svg', '', '')>
 						</a>
 					</li>
 					<li>
 						<a href="#">
 							<img width="55" height="81" src="{{ asset(env('THEME') . 'images') }}/reproduction/5a.svg"
-								alt="">
+								 @frontendAlt('theme/viar/pages/gallery/reproduction_tabs_genre.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/5a.svg', '', '')>
 						</a>
 					</li>
 				</ul>

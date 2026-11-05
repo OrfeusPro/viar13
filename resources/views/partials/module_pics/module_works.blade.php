@@ -23,7 +23,7 @@
                                         $img = str_replace('\\', '/', $img);
                                     @endphp
                                     <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAoMBgDTD2qgAAAAASUVORK5CYII="
-                                    data-src="/storage/{{ $img }}" alt="">
+                                    data-src="/storage/{{ $img }}"  @frontendAlt('partials/module_pics/module_works.blade.php', '/storage/' . ($img), '', '')>
                                 </div>
                             @endforeach
                         </div>

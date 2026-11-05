@@ -20,7 +20,7 @@
                 <picture>
                     <source media="(max-width: 1200px)" srcset="{{ver_asset('images/sharj/v1Min.svg')}}">
                     <source srcset="{{ver_asset('images/sharj/v1.svg')}} ">
-                    <img src="{{ver_asset('images/sharj/v1.svg')}}" width="69" height="98" alt="">
+                    <img src="{{ver_asset('images/sharj/v1.svg')}}" width="69" height="98"  @frontendAlt('theme/viar/pages/portrait/tabs/picture.blade.php', (ver_asset('images/sharj/v1.svg')), '', '')>
                 </picture>
 
             </div>

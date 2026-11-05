@@ -1,0 +1,97 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Filament\Bread\BreadMenuTree;
+use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Tests\TestCase;
+
+class BreadMenuNavigationTest extends TestCase
+{
+    public function test_menu_preserves_order_hierarchy_active_path_and_authorized_links(): void
+    {
+        Schema::create('menus', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+        });
+        Schema::create('menu_items', function (Blueprint $table): void {
+            $table->id();
+            $table->integer('menu_id');
+            $table->integer('parent_id')->nullable();
+            $table->string('title');
+            $table->integer('order');
+            $table->boolean('status')->default(true);
+            $table->string('icon_class')->nullable();
+            $table->string('url')->nullable();
+            $table->string('route')->nullable();
+        });
+        DB::table('menus')->insert(['id' => 1, 'name' => 'admin']);
+        foreach ([
+            [1, null, 'Dashboard', 1, 'voyager.dashboard', null],
+            [2, null, 'Общие страницы', 3, null, null],
+            [3, 2, 'Блог', 1, null, null],
+            [4, 3, 'Статьи', 1, null, null],
+            [5, 2, 'FAQ', 2, null, null],
+            [6, null, 'Заказы', 2, 'voyager.orders.index', null],
+            [7, 2, 'Без прав', 3, null, null],
+            [8, null, 'Скрытая категория', 4, null, null],
+            [9, 8, 'Скрытый потомок', 1, null, null],
+            [10, null, 'Email Рассылка', 5, null, '/admin/email-sender'],
+            [11, 2, 'Клиенты', 4, 'user_filter', null],
+            [12, null, 'База данных', 6, 'voyager.database.index', null],
+        ] as [$id, $parent, $title, $order, $route, $url]) {
+            DB::table('menu_items')->insert(['id' => $id, 'menu_id' => 1, 'parent_id' => $parent,
+                'title' => $title, 'order' => $order, 'route' => $route, 'url' => $url, 'status' => $id !== 8,
+                'icon_class' => $id === 6 ? 'voyager-basket' : null]);
+        }
+        $item = fn (string $key, string $url) => NavigationItem::make($key)->key($key)->url($url)->icon('heroicon-o-document-text');
+        $navigation = [NavigationGroup::make()->items([
+            $item('dashboard', '/admin'), $item('orders', '/admin/orders'),
+            $item('bread-4', '/admin/bread/blog-posts'), $item('bread-5', '/admin/bread/page-faq-desc'),
+            $item('bread-7', '/admin/bread/private')->visible(false), $item('bread-9', '/admin/bread/hidden'),
+            $item('tool', '/admin/voyager-catalog'),
+            $item('email', '/admin/email-sender'),
+            $item('clients', '/admin/clients'),
+            $item('database', '/admin/database-tables'),
+        ])];
+        $this->app->instance('originalRequest', Request::create('/admin/bread/page-faq-desc/1/edit'));
+        $tree = BreadMenuTree::make($navigation);
+        $this->assertSame(['Dashboard', 'Заказы', 'Общие страницы', 'Email Рассылка', 'База данных', 'Дополнительно'], array_column($tree, 'label'));
+        $this->assertSame('/admin/database-tables', $tree[4]['url']);
+        $this->assertSame('/admin/email-sender', $tree[3]['url']);
+        $this->assertSame(['Блог', 'FAQ', 'Клиенты'], array_column($tree[2]['children'], 'label'));
+        $this->assertSame('/admin/clients', $tree[2]['children'][2]['url']);
+        $this->assertSame('Статьи', $tree[2]['children'][0]['children'][0]['label']);
+        $this->assertSame(['Общие страницы', 'FAQ'], array_column(BreadMenuTree::activePath($tree), 'label'));
+        $this->assertFalse($tree[0]['active']);
+        $this->assertTrue($tree[2]['children'][1]['active']);
+        $this->assertCount(1, $tree[5]['children']);
+        $this->assertSame('heroicon-o-shopping-bag', $tree[1]['icon']);
+
+        $rendered = view('filament.components.menu-tree', compact('navigation'))->render();
+        $this->assertStringContainsString('aria-controls="menu-2-children"', $rendered);
+        $this->assertStringContainsString('aria-current="page"', $rendered);
+        $this->assertStringNotContainsString('/admin/bread/private', $rendered);
+        $this->assertStringNotContainsString('/admin/bread/hidden', $rendered);
+    }
+
+    public function test_active_matching_distinguishes_filtered_products_and_menu_builders(): void
+    {
+        $this->app->instance('originalRequest', Request::create('/admin/bread/gallery-items/974/edit?type=2'));
+        $this->assertTrue(BreadMenuTree::matches('/admin/bread/gallery-items?type=2'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/bread/gallery-items?type=5'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/bread/gallery-items'));
+        $this->assertFalse(BreadMenuTree::matches('/admin'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/bread/gallery-item'));
+
+        $this->app->instance('originalRequest', Request::create('/admin/menu-items?menu=3'));
+        $this->assertTrue(BreadMenuTree::matches('/admin/menu-items?menu=3'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/menu-items?menu=2'));
+        $this->assertFalse(BreadMenuTree::matches('/admin/menu-items'));
+    }
+}

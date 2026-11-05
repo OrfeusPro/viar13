@@ -53,7 +53,7 @@
                     <picture>
                         <source srcset="{{ asset('./images/icon/load-more.webp') }}" type="image/webp">
                         <source srcset="{{ asset('./images/icon/load-more.png') }}">
-                        <img src="{{ asset('./images/icon/load-more.png') }}" alt="img" loading="lazy">
+                        <img src="{{ asset('./images/icon/load-more.png') }}"  loading="lazy" @frontendAlt('theme/viar/pages/collage/why_screen.blade.php', (asset('./images/icon/load-more.png')), 'img', '')>
                     </picture>
                     <span>{!! trans('collage_new.more_portraits') !!}</span>
                 </a>

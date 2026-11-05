@@ -29,8 +29,8 @@
                             <div class="arts__image arts__image_vertical">
                                 <picture>
                                     <source srcset="{{ asset('images/vertical.webp') }}" type="image/webp"/>
-                                    <img data-src="images/vertical.webp" src="{{ asset('images/vertical.webp') }}" alt=""
-                                         class="arts__bg"/>
+                                    <img data-src="images/vertical.webp" src="{{ asset('images/vertical.webp') }}"
+                                         class="arts__bg" @frontendAlt('partials/canvas_new/also_like_examples.blade.php', 'images/vertical.webp', '', '')/>
                                 </picture>
                                 <picture class="arts__product-image">
                                     @php

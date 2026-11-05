@@ -12,7 +12,6 @@ use Mail;
 use Cookie;
 use Session;
 use Storage;
-use Validator;
 use App\Models\User;
 use App\Models\Stock;
 use App\Models\Locale;
@@ -32,11 +31,22 @@ use App\Mail\SendUserRegister;
 use App\Models\AProductionTime;
 use App\Models\GalleryDecoration;
 use App\Services\ImageSaverService;
+use App\Services\BestEffortMailService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use App\Repositories\BasketRepository;
+use App\Http\Requests\RemoveBasketItemRequest;
+use App\Http\Requests\UpdateBasketCountRequest;
+use App\Http\Requests\BasketStoreRequest;
+use App\Http\Requests\PortraitBasketRequest;
+use App\Http\Requests\FutureArtRequest;
+use App\Http\Requests\ConstructBasketRequest;
+use App\Http\Requests\SetDeliveryRequest;
+use App\Http\Requests\SetPaymentRequest;
+use App\Http\Requests\RecommendedBasketItemRequest;
+use App\Http\Requests\CanvasRecommendationRequest;
 use App\Models\DeliveryPickupAtViarWorkshop;
 
 class BasketController extends Controller
@@ -55,7 +65,7 @@ class BasketController extends Controller
         $this->imageSaverService = $imageSaverService;
         $this->basketRepository = resolve(BasketRepository::class);
         //стартовый шаблон
-        $this->template = env('THEME_RESOURCES') . '.index';
+        $this->template = config('theme.resource') . 'index';
     }
 
     public function save_base64_image2(){
@@ -113,69 +123,41 @@ class BasketController extends Controller
     //// TODO:  Нажатие на кнопку применить купон
     public function coupon_use(Request $request)
     {
-        $cur_coupon = $request->couponData;
-        $user = \Auth::user();
-        if (!auth()->check()) {
-            return response()->json([
-                'finded' => "user",
-            ]);
-        }
-        $coupon = DB::table('coupons')->where('text', $cur_coupon)->first();
-
-        Session::put('coupon_type', 'none');
-
-        if ($coupon)
-        {
-            Session::put('coupon_id', $coupon->id);
-            Session::put('coupon_val', $coupon->value);
-
-            if ($coupon->is_dates_sale)   {  Session::put('coupon_type', 'date');   }
-
-            if ($coupon->is_30_40_free)   {  Session::put('coupon_type', '30_40');   }
-
-            if ($coupon->is_universal)   {  Session::put('coupon_type', 'universal');   }
-
-            if ($coupon->is_facebook)   {  Session::put('coupon_type', 'facebook');   }
-
-            if ($coupon->is_1free)   {  Session::put('coupon_type', '1free');   }
-
-            if ($coupon->free_delivery)   {  Session::put('coupon_type', 'free_delivery');   }
-
-            if ($coupon->is_40_60)   {  Session::put('coupon_type', '40_60');   }
-
-            if ($coupon->is_abandoned_basket)   {  Session::put('coupon_type', 'abandoned_basket');   }
-
-            if ($coupon->is_giftcard)   {  Session::put('coupon_type', 'giftcard');   }
-
-            if ($user->is_active_friend_inv==0 && Session::get('coupon_type')=='none'){
-                $friend = DB::table('users')->where('inv_sale_code', $cur_coupon)->first();
-
-                if ($friend && $friend->id==$coupon->user_id && $coupon->user_id!=$user->id ) {   Session::put('coupon_type', 'friend');   }
-                else {
-                    $user->active_coupon = null;
-                    $user->save();
-                    Session::put('coupon_id', -2);
-                }
-
-                }
-            $user->active_coupon = $coupon->id;
-            $user->save();
-        }
-        else
-        {
-            $user->active_coupon = null;
-            $user->save();
-            Session::put('coupon_id', -1);
-        }
-
-        return response()->json([
-            'finded' => "1",
+        $validator = Validator::make($request->all(), [
+            'couponData' => 'required|string|max:255', 'email' => 'nullable|email|max:255',
         ]);
+        $service = app(\App\Services\CheckoutCouponService::class);
+        if ($validator->fails()) {
+            Log::notice('Checkout coupon validation rejected');
+            return response()->json(['finded' => 'error', 'status' => 'error',
+                'message' => __('checkout_coupon.invalid_request'), 'details' => $validator->errors()], 422);
+        }
+        if (!auth()->check() && $request->filled('email')) {
+            session()->put('email', strtolower(trim($request->email)));
+        }
+        $email = auth()->check() ? auth()->user()->email : (string) session('email', '');
+        if (!$email) {
+            return response()->json(['finded' => 'email', 'message' => __('checkout_coupon.email_required')], 422);
+        }
+        $coupon = DB::table('coupons')->where('text', trim($request->couponData))->first();
+        $result = $service->inspect($coupon, $email, auth()->user());
+        if (!$result['valid']) {
+            Log::notice('Checkout coupon rejected', ['coupon_id' => $coupon->id ?? null, 'reason' => $result['reason']]);
+            return response()->json(['finded' => 'error', 'status' => 'error',
+                'code' => $result['reason'], 'message' => $result['message']], 422);
+        }
+        $duplicate = (int) session('coupon_id') === (int) $coupon->id;
+        $service->remember($coupon, $result);
+        return response()->json(['finded' => '1', 'status' => $duplicate ? 'duplicate' : 'applied',
+            'provisional' => $result['provisional'], 'message' => $result['provisional'] ? __('checkout_coupon.provisional') : null]);
+
     }
 
     //// TODO: Удаление уже выбраного Купона
     static function clearcart()
     {
+        app(\App\Services\CheckoutCouponService::class)->clear();
+        Session::forget('coupon_error');
         Session::put('coupon_id', 0);
         Session::put('coupon_val', 0);
         Session::put('coupon_type', "none");
@@ -318,11 +300,12 @@ class BasketController extends Controller
         }
     }
 
-    public function setdelivery(Request $request)
+    public function setdelivery(SetDeliveryRequest $request)
     {
+        $validated = $request->validated();
         $workingdays=null;
 
-        $cartDate = $request->input('cartDate');
+        $cartDate = $validated['cartDate'] ?? null;
 
         if($cartDate)
         {
@@ -341,11 +324,23 @@ class BasketController extends Controller
 
         $response = [];
 
-        $country = $request->input('country');
-        $price = (float)$request->input('price');
-        $delivery_type = $request->input('delivery_type');
-        $cartComment = $request->input('cartComment');
-        $cartCommentImage = $request->input('cartCommentImage');
+        $country = $validated['country'];
+        $delivery_type = $validated['delivery_type'] ?? null;
+        $countryDelivery = CountryTel::where('country_code', $country)->firstOrFail();
+        $price = match ($delivery_type) {
+            'to_the_door' => (float) ($countryDelivery->deliv_price ?? 0),
+            'venipak' => (float) ($countryDelivery->delivery_venipak ?? 0),
+            'city_delivery' => (float) ADeliveryTown::whereKey($validated['delivery_town_id'])->value('price'),
+            default => 0.0,
+        };
+
+        $basket = $this->get_basket();
+        if (($basket['coupon_type'] ?? null) === 'free_delivery') {
+            $price = 0.0;
+        }
+
+        $cartComment = $validated['cartComment'] ?? null;
+        $cartCommentImage = $validated['cartCommentImage'] ?? [];
         if(isset($cartCommentImage['src']) && $cartCommentImage['src'])
         {
             $cartCommentImage = $cartCommentImage['src'];
@@ -366,30 +361,30 @@ class BasketController extends Controller
             }
 
             $img = str_replace(' ', '+', $img);
-            $img_data = base64_decode($img);
+            $img_data = base64_decode($img, true);
             $rand_name = Str::random(12);
             file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
 
             $cartCommentImage = '/uploads/' . $rand_name . $ext;
         }
 
-        $city = $request->input('city');
-        $index = $request->input('index');
-        $pickup = $request->input('pickup');
-        $pickupWorkshopId = (int)$request->input('pickup_workshop_id', 0);
-        $deliveryTownId = (int)$request->input('delivery_town_id', 0);
+        $city = $validated['city'] ?? null;
+        $index = $validated['index'] ?? null;
+        $pickup = $validated['pickup'] ?? null;
+        $pickupWorkshopId = (int)($validated['pickup_workshop_id'] ?? 0);
+        $deliveryTownId = (int)($validated['delivery_town_id'] ?? 0);
         if($pickup)
         {
             $address = $pickup;
         }
         else
         {
-            $address = $request->input('address');
+            $address = $validated['address'] ?? null;
         }
 
         if($delivery_type == 'pickup_at_viar_workshop')
         {
-            $address = $request->input('city');
+            $address = $validated['city'] ?? null;
             $city = null;
             $deliveryTownId = 0;
         }
@@ -400,8 +395,6 @@ class BasketController extends Controller
              $pickupWorkshopId = 0;
          }
 
-
-        $pickup = $request->input('pickup');
 
         // $cart_delivery = request()->session()->get('cart_delivery');
         // Session::forget('cart_delivery');
@@ -542,6 +535,7 @@ class BasketController extends Controller
         }
 
         $request->validate([
+            'email' => 'required|email|max:255',
             'phone' => 'required|min:7|regex:/^\+?[0-9\s()-]+$/'
         ]);
 
@@ -577,8 +571,13 @@ class BasketController extends Controller
                 $user->settings = $settings;
                 $user->save();
 
-                // send user notify
-                Mail::to($user->email)->send(new SendUserRegister($user, $random_pass, $cur_loc));
+                // Registration must not block checkout when SMTP is unavailable.
+                app(BestEffortMailService::class)->send(
+                    $user->email,
+                    new SendUserRegister($user, $random_pass, $cur_loc),
+                    'checkout_step_user_registration',
+                    ['user_id' => $user->id]
+                );
 
                 Auth::attempt(['email' => $request['email'], 'password' => $random_pass]);
                 //$this->authenticated($request, $this->guard()->user()) ?: json_encode(['status' => 'ok'])
@@ -619,26 +618,19 @@ class BasketController extends Controller
         }
 
 
+        app(\App\Services\CheckoutCouponService::class)->refresh([
+            'totalPrice' => 0,
+        ]);
         return json_encode($response);
     }
 
-    public function setpay(Request $request)
+    public function setpay(SetPaymentRequest $request)
     {
-        $response = [];
-        $cart_pay_type = [];
+        session(['cart_pay_type' => [
+            'type' => $request->validated('paymentData'),
+        ]]);
 
-        if($request->input('paymentData'))
-        {
-            $cart_pay_type['type'] = $request->input('paymentData');
-            session(['cart_pay_type' => $cart_pay_type]);
-
-            $response['success'] = 1;
-        }
-        else
-        {
-            $response['success'] = 0;
-        }
-        return json_encode($response);
+        return response()->json(['success' => 1]);
     }
 
     /// TODO: Функция для получения данных корзины
@@ -697,7 +689,7 @@ class BasketController extends Controller
 
         $recommendedItems = $this->basketRepository->getRecommendedItems($basket, 3, $contry_mult);
 
-        $content = view(env('THEME_RESOURCES') . '.cart.sidebar')
+        $content = view(config('theme.resource') . 'cart.sidebar')
             ->with('basket', $basket)
             ->with('btn', trans("cart_new.general_checkout"))
             ->with('btn_class', 'cart_send_products')
@@ -739,21 +731,31 @@ class BasketController extends Controller
                         $translated =
                             $galleryItem->translate(App::getLocale());
                         $item['name'] = $translated->name;
-                        if (isset($item["decor_id"]) && $item["decor_id"] > 0) {
+                        $decorationId = filter_var(
+                            $item['decor_id'] ?? null,
+                            FILTER_VALIDATE_INT,
+                            ['options' => ['min_range' => 1]]
+                        );
+
+                        if ($decorationId !== false) {
                             $decorations =
                                 GalleryDecoration::withTranslation(App::getLocale(),
                                     false)
                                     ->where('id',
-                                        $item["decor_id"])
+                                        $decorationId)
                                     ->first();
-                            $decoration =
-                                $decorations->translate(App::getLocale());
-                            $item['hud_of'] =
-                                $decoration->name;
+
+                            if ($decorations) {
+                                $decoration = $decorations->translate(App::getLocale());
+
+                                if ($decoration) {
+                                    $item['hud_of'] = $decoration->name;
+                                }
+                            }
                         }
                     }
 
-                    if (isset($item['pack'])) {
+                    if (! empty($item['pack']) && ! in_array($item['pack'], ['null', 'undefined'], true)) {
                         $box = GalleryBox::where('name', $item['pack'])->orWhereHas('translations', function ($query) use ($item) {
                             $query->where('table_name', 'gallery_boxes')
                                 ->where('column_name', 'name')
@@ -767,7 +769,12 @@ class BasketController extends Controller
                     }
 
                     if (isset($item['terms'])) {
-                        $basket[$index]['terms'] = GalleryItem::getTermsByPrice($item['terms']) . ($item['terms_price'] === 0.0 ? '' : ' '.intval($item['terms_price']). ' €');
+                        $isCanvas = !empty($item['is_canvas_inter']) || !empty($item['is_canvas_collage']) ||
+                            ((int) ($item['basketType'] ?? 0) === 1 && empty($item['is_def_product']));
+                        $production = $isCanvas ? AProductionTime::where('category', 'canvas')->first()?->translate($lang, 'ru') : null;
+                        $termPrice = (float) ($item['terms_price'] ?? 0);
+                        $termText = $production ? ($termPrice > (float) $production->standart_price ? $production->express_text : $production->standart_text) : null;
+                        $basket[$index]['terms'] = $termText ? $termText . ' ' . $termPrice . ' €' : $item['terms'];
                     }
 
                     if (isset($item['type'])) {
@@ -863,7 +870,16 @@ class BasketController extends Controller
 
         $recommendedItems = $this->basketRepository->getRecommendedItems($basket, 3, $contry_mult);
 
-        $content = view(env('THEME_RESOURCES') . '.cart.step1')
+        $sizeOffers = [];
+        foreach ($basket as $key => $item) {
+            if (is_array($item) && isset($item['sumPrice'])) {
+                $offer = app(\App\Services\CheckoutSizeOfferService::class)->offer($item, (float) $contry_mult);
+                if ($offer) { $sizeOffers[$key] = $offer; }
+            }
+        }
+
+        $content = view(config('theme.resource') . 'cart.step1')
+            ->with('sizeOffers', $sizeOffers)
             ->with('basket', $basket)
             ->with('data', $data)
             ->with('friend_sale_count', $friend_sale_count)
@@ -873,7 +889,7 @@ class BasketController extends Controller
             ->with('recommendedItems', $recommendedItems)
             ->render();
 
-        $cart_popup = view(env('THEME_RESOURCES') . '.cart.cart_popup')
+        $cart_popup = view(config('theme.resource') . 'cart.cart_popup')
             ->render();
 
         $cart_popup = null;
@@ -933,73 +949,7 @@ class BasketController extends Controller
         $c_tels = CountryTel::orderBy('sort', 'asc')->get()->translate(App::getLocale(), 'ru');
         $friend_sale_count = DB::table('stocks')->where('id', 1)->pluck('friend_sale')->first();
 
-        $alternativeSizeData = null;
-        $recommendationData = null;
-        $showModal = false;
-
-        $modalShown = Session::get('cart_step2_modal_shown', false);
-        if (!$modalShown) {
-            $realItemsCount = 0;
-            $firstItemKey = null;
-            $firstItem = null;
-
-            foreach ($basket as $key => $item) {
-                if (is_array($item) && isset($item['pid'])) {
-                    $realItemsCount++;
-                    if ($realItemsCount === 1) {
-                        $firstItemKey = $key;
-                        $firstItem = $item;
-                    }
-                }
-            }
-
-            if ($realItemsCount === 1 && $firstItem) {
-                $hasSpecialLabel = $firstItem['has_special_label'] ?? false;
-
-                if (!$hasSpecialLabel) {
-                    $alternativeSizeData = $this->basketRepository->getAlternativeSizeWithDiscount($firstItem);
-
-                    if ($alternativeSizeData) {
-                        $alternativeSizeData['basket_key'] = $firstItemKey;
-                        $showModal = true;
-                    }
-                }
-            }
-
-            $hasRecommendationInBasket = false;
-            foreach ($basket as $item) {
-                if (is_array($item) && !empty($item['is_recommendation'])) {
-                    $hasRecommendationInBasket = true;
-                    break;
-                }
-            }
-
-            if ($realItemsCount > 1 && !$alternativeSizeData && !$hasRecommendationInBasket) {
-                $basket_country = request()->session()->get('basket_country');
-                $contry_mult = 1;
-                if ($basket_country) {
-                    $contry_mult = DB::table('country_tels')->where('country_code', $basket_country)->pluck('price_country_mltpr')->first();
-                    if (!$contry_mult || $contry_mult == null) {
-                        $contry_mult = 1;
-                    }
-                }
-
-                $recommendedItems = $this->basketRepository->getRecommendedItems($basket, 1, $contry_mult);
-
-                if (!empty($recommendedItems)) {
-                    $recommendationData = $recommendedItems[0];
-                    $showModal = true;
-
-                    Session::put('recommendation_discount_' . $recommendationData['id'], 30);
-                }
-            }
-
-            if ($showModal) {
-                Session::put('cart_step2_modal_shown', true);
-            }
-        }
-
-        $content = view(env('THEME_RESOURCES') . '.cart.step2_data')
+        $content = view(config('theme.resource') . 'cart.step2_data')
             ->with('basket', $basket)
             ->with('data', $data)
             ->with('friend_sale_count', $friend_sale_count)
@@ -1007,8 +957,6 @@ class BasketController extends Controller
             ->with('stocks', $stocks)
             ->with('empty', $this->chek_for_empty($basket))
             ->with('user', $user)
-            ->with('alternativeSizeData', $alternativeSizeData)
-            ->with('recommendationData', $recommendationData)
             ->render();
 
         $this->vars = Arr::add($this->vars, 'content', $content);
@@ -1070,7 +1018,7 @@ class BasketController extends Controller
  //       $citys=  $this->get_citys('LT');
 
 
-        $content = view(env('THEME_RESOURCES') . '.cart.step3_delivery')
+        $content = view(config('theme.resource') . 'cart.step3_delivery')
            ->with('citys', $this->get_citys(strtolower($user['country'])))
 //            ->with('citys', $citys)
             ->with('warehouses', $this->get_warehouse(strtolower($user['country'])))
@@ -1112,6 +1060,10 @@ class BasketController extends Controller
 
         $cart_delivery = request()->session()->get('cart_delivery');
 
+        if (! is_array($cart_delivery) || empty($cart_delivery['country'])) {
+            return redirect()->route('cart.step3');
+        }
+
 
         $stocks = Stock::first()->select('facebook_sale', 'friend_sale', 'date_1_sale', 'date_2_sale')
             ->get()->translate(App::getLocale(), 'ru')[0];
@@ -1123,7 +1075,7 @@ class BasketController extends Controller
 
 
 
-        $content = view(env('THEME_RESOURCES') . '.cart.step4_payment')
+        $content = view(config('theme.resource') . 'cart.step4_payment')
 
             ->with('basket', $basket)
             ->with('data', $data)
@@ -1396,11 +1348,22 @@ class BasketController extends Controller
 
     }
 
-    public function addToBasket()
+    public function addToBasket(BasketStoreRequest $request)
     {
         Log::info('BasketController@addToBasket: начало вызова', [
             'user_id' => auth()->id(),
-            'request' => request()->all(),
+            'basket_type' => $request->input('basketType'),
+            'input_fields' => array_keys($request->except([
+                'Image3d',
+                'image',
+                'image_offset',
+                'photo_ex',
+                'orig_images',
+                'userImage',
+            ])),
+            'has_image_3d' => $request->filled('Image3d'),
+            'has_user_image' => $request->hasFile('userImage'),
+            'original_images_count' => count($request->file('orig_images', [])),
         ]);
 
         try {
@@ -1431,7 +1394,7 @@ class BasketController extends Controller
         }
     }
 
-    public function removeFromBasket(Request $request)
+    public function removeFromBasket(RemoveBasketItemRequest $request)
     {
         $response = [];
         $item_id = $request['basketId'];
@@ -1453,6 +1416,7 @@ class BasketController extends Controller
 
                 if ($hasRecommendationInBasket) {
                     $response['success'] = 0;
+                    $response['error_code'] = 'cannot_remove_main_product';
                     $response['error'] = trans('cart_new.cannot_remove_main_product');
                     return json_encode($response);
                 }
@@ -1472,7 +1436,7 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
-    public function updateCount(Request $request)
+    public function updateCount(UpdateBasketCountRequest $request)
     {
         $req['count'] = intval($request->input('count'));
         $req['index'] = intval($request->input('index'));
@@ -1485,8 +1449,6 @@ class BasketController extends Controller
                     return response()->json(['success' => 0], 422);
                 }
                 $basket[$index]['count'] = $req['count'];
-                session(['basket' => $basket]);
-                $this->basketRepository->saveBasketToAbandonedCartModel($basket);
                 $response['success'] = 1;
                 $response['price'] = ($basket[$index]['price'] * $req['count']) . "€";
 
@@ -1511,105 +1473,46 @@ class BasketController extends Controller
 
     public function replaceItemSize(Request $request)
     {
-        try {
-            $basketKey = $request->input('basket_key');
-            $itemId = $request->input('item_id');
-            $newSize = $request->input('new_size');
-
-            if ($basketKey === null || $basketKey === '' || !$newSize) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.invalid_parameters')
-                ]);
-            }
-
-            $basket = $this->basketRepository->normalizeBasket(request()->session()->get('basket'));
-            request()->session()->put('basket', $basket);
-
-            if (!isset($basket[$basketKey])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.item_not_found')
-                ]);
-            }
-
-            $basketItem = $basket[$basketKey];
-            if (!is_array($basketItem)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.item_not_found')
-                ]);
-            }
-            $basketType = $basketItem['basketType'] ?? null;
-            $isCanvasInter = isset($basketItem['is_canvas_inter']);
-            $isCanvasCollage = isset($basketItem['is_canvas_collage']);
-            $hasPid = isset($basketItem['pid']) && $basketItem['pid'];
-
-            $newPrice = null;
-
-            if ($isCanvasInter || $isCanvasCollage || ($basketType == '1' && !$hasPid)) {
-                $newPrice = $this->getCanvasSizePrice($newSize);
-            } elseif ($hasPid) {
-                $item = GalleryItem::find($basketItem['pid']);
-                if ($item) {
-                    $newPrice = $this->getGalleryItemSizePrice($item, $newSize);
-                }
-            }
-
-            if ($newPrice === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => trans('cart_new.size_not_found')
-                ]);
-            }
-
-            $cleanSize = preg_replace('/[htsr]$/i', '', $newSize);
-            $basket[$basketKey]['size'] = $cleanSize;
-
-            if (isset($basketItem['sizeId'])) {
-                $basket[$basketKey]['sizeId'] = $cleanSize;
-                unset($basket[$basketKey]['size_name']);
-            } else {
-                $basket[$basketKey]['size_name'] = $cleanSize;
-                unset($basket[$basketKey]['sizeId']);
-            }
-            $basket[$basketKey]['price'] = $newPrice;
-            $basket[$basketKey]['has_special_label'] = hasSpecialLabel($newSize);
-
-            if ($basket[$basketKey]['has_special_label']) {
-                $basket[$basketKey]['label_type'] = getLabelType($newSize);
-            } else {
-                unset($basket[$basketKey]['label_type']);
-            }
-
-            if (isset($basket[$basketKey]['terms_price'])) {
-                $basket[$basketKey]['total_item_price'] = ($basket[$basketKey]['count'] * $newPrice) + (float)$basket[$basketKey]['terms_price'];
-            } else {
-                $basket[$basketKey]['total_item_price'] = $basket[$basketKey]['count'] * $newPrice;
-            }
-
-            session(['basket' => $basket]);
-            $this->basketRepository->saveBasketToAbandonedCartModel($basket);
-
-            return response()->json([
-                'success' => true,
-                'message' => trans('cart_new.size_replaced_successfully')
-            ]);
-
-        } catch (Exception $e) {
-            \Log::error('Error replacing item size: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => trans('cart_new.error_replacing_size')
-            ]);
+        $request->validate(['basket_key' => 'required|integer|min:0', 'new_size' => 'required|string|max:32']);
+        $basket = $this->get_basket();
+        $key = $request->input('basket_key');
+        $service = app(\App\Services\CheckoutSizeOfferService::class);
+        $offer = isset($basket[$key]) && is_array($basket[$key]) ?
+            $service->offer($basket[$key], $service->multiplier()) : null;
+        if (!$offer || $offer['alternative_size'] !== $request->input('new_size')) {
+            Log::notice('Checkout size replacement rejected', ['basket_key' => $key]);
+            return response()->json(['success' => false, 'message' => __('cart_new.size_not_found')], 422);
         }
+        $basket[$key]['sizeId'] = $service->clean($offer['alternative_size']);
+        $basket[$key]['size'] = $basket[$key]['sizeId'];
+        unset($basket[$key]['size_name']);
+        $basket[$key]['checkout_unit_price'] = $offer['unit_base_price'];
+        $basket[$key]['price'] = $offer['alternative_price'];
+        $basket[$key]['has_special_label'] = hasSpecialLabel($offer['alternative_size']);
+        $basket[$key]['label_type'] = getLabelType($offer['alternative_size']);
+        $basket[$key]['checkout_size_upgraded'] = true;
+        $basket[$key]['checkout_size_base_price'] = $offer['canvas_base_price'];
+        $basket[$key]['checkout_size_extras_price'] = $offer['extras_price'];
+        if (isset($basket[$key]['add_price'])) { $basket[$key]['add_price'] = $offer['unit_base_price']; }
+        // Store product rows only: calculated totals/coupon fields are not products.
+        $basket = array_filter($basket, function ($item) {
+            return is_array($item) && isset($item['basketType']);
+        });
+        session()->put('basket', $basket);
+        $this->basketRepository->saveBasketToAbandonedCartModel($basket);
+        return response()->json(['success' => true, 'message' => __('cart_new.size_replaced_successfully')]);
     }
 
-    public function addRecommendedItem(Request $request)
+    public function addRecommendedItem(RecommendedBasketItemRequest $request)
     {
+        if ($this->hasCheckoutRecommendation()) {
+            return response()->json(['success' => true, 'status' => 'duplicate']);
+        }
         try {
             $itemId = $request->input('item_id');
-            $discountedPrice = $request->input('price');
+            if (!session()->has('recommendation_discount_' . $itemId)) {
+                return response()->json(['success'=>false, 'message'=>__('cart_new.discount_not_found')], 400);
+            }
 
             if (!$itemId) {
                 return response()->json([
@@ -1619,7 +1522,7 @@ class BasketController extends Controller
             }
 
             $item = GalleryItem::find($itemId);
-            if (!$item) {
+            if (!$item || !$item->active) {
                 return response()->json([
                     'success' => false,
                     'message' => trans('cart_new.item_not_found')
@@ -1627,20 +1530,15 @@ class BasketController extends Controller
             }
 
             $itemType = GalleryType::find($item->id_type);
+            $multiplier = app(\App\Services\CheckoutSizeOfferService::class)->multiplier();
+            $regular = app(\App\Services\CheckoutSizeOfferService::class)->galleryRecommendation($item);
+            if (!$regular) { return response()->json(['success' => false, 'message' => __('cart_new.discount_not_found')], 422); }
+            $discountedPrice = round($regular['price'] * .7 * $multiplier, 2);
 
             $images = json_decode($item->image, true);
             $imageUrl = is_array($images) && !empty($images) ? $images[0] : $item->image;
 
-            $firstSize = '30x40';
-            if ($item->custom_size_prices) {
-                $sizesArray = explode(',', $item->custom_size_prices);
-                if (!empty($sizesArray[0])) {
-                    preg_match('/^(.+?)\[/', trim($sizesArray[0]), $matches);
-                    if ($matches) {
-                        $firstSize = $matches[1];
-                    }
-                }
-            }
+            $firstSize = $regular['size'];
 
             $basket = session('basket', []);
 
@@ -1650,6 +1548,7 @@ class BasketController extends Controller
                 'size' => $firstSize,
                 'size_name' => $firstSize,
                 'price' => (float)$discountedPrice,
+                'checkout_unit_price' => $discountedPrice / $multiplier,
                 'count' => 1,
                 'total_item_price' => (float)$discountedPrice,
                 'activeImage' => 'storage/' . $imageUrl,
@@ -1669,6 +1568,7 @@ class BasketController extends Controller
             $basket[] = $basketItem;
 
             session(['basket' => $basket]);
+            session()->forget('recommendation_discount_' . $itemId);
             $this->basketRepository->saveBasketToAbandonedCartModel($basket);
 
             return response()->json([
@@ -1748,21 +1648,9 @@ class BasketController extends Controller
         return null;
     }
 
-    public function addToBasketArt(Request $request)
+    public function addToBasketArt(FutureArtRequest $request)
     {
         $files = $request->images;
-
-        $validator = Validator::make($request->all(), [
-            'images' => 'max:15',
-            'images.*' => 'image|mimes:png,bmp,jpg,jpeg,heic,heif',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid filesize or extension.',
-                'errors' => $validator,
-            ]);
-        }
 
         if ($files && !empty($files)) {
             $data['name'] = $request->input('name');
@@ -1802,7 +1690,7 @@ class BasketController extends Controller
                 Mail::send([], [], function ($message) use ($data) {
                     $message->to($data['to']);
                     $message->subject($data['subject']);
-                    $message->setBody($data['content'], 'text/html');
+                    $message->html($data['content']);
                 });
             } catch (Throwable $e) {
                 return response()->json([
@@ -1817,7 +1705,7 @@ class BasketController extends Controller
                 Mail::send([], [], function ($message) use ($data) {
                     $message->to($data['email']);
                     $message->subject($data['subject']);
-                    $message->setBody($data['content'], 'text/html');
+                    $message->html($data['content']);
                 });
             } catch (Throwable $e) {
                 return response()->json([
@@ -1833,6 +1721,20 @@ class BasketController extends Controller
                 'message' => 'Media missing.',
             ]);
         }
+    }
+
+    public function retiredLegacyBasketEndpoint(Request $request)
+    {
+        $replacement = $request->routeIs('add_item_to_basket_module')
+            ? route('add_item_to_basket_construct')
+            : route('add_item_to_basket');
+
+        return response()->json([
+            'success' => false,
+            'code' => 'legacy_endpoint_retired',
+            'message' => 'This legacy basket endpoint is no longer used by the frontend.',
+            'replacement' => $replacement,
+        ], 410);
     }
 
     public function addToBasketInterier(Request $request)
@@ -2019,7 +1921,7 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
-    public function addToBasketConstruct(Request $request)
+    public function addToBasketConstruct(ConstructBasketRequest $request)
     {
         ini_set('memory_limit', '512M');
 
@@ -2028,10 +1930,6 @@ class BasketController extends Controller
 
             $data['image_uploads'] = 1;
 
-            $data['activeImage'] = $img_name;
-        } elseif (!$request->has('is_orig_file')) {
-            $img = $request->input('image');
-            $img_name = $this->save_base64_image($request->input('image_offset'));
             $data['activeImage'] = $img_name;
         } else {
             // modular-pictures
@@ -2134,17 +2032,6 @@ class BasketController extends Controller
             request()->session()->forget('recommendation_discount_' . $data['pid']);
         }
 
-        $validator = Validator::make($request->all(), [
-            'orig_images.*' => 'image',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid filesize or extension.',
-                'errors' => $validator,
-            ]);
-        }
-
         $files = $request->orig_images;
 
         if ($files && !empty($files)) {
@@ -2170,70 +2057,47 @@ class BasketController extends Controller
 
 
 
-    private function save_base64_image($image)
+    private function save_base64_image(string $image): string
     {
-        $path = public_path() . '/uploads';
-
-        if (!is_dir($path)) {
-            File::makeDirectory($path, 0777, true, true);
-        }
-
-        $rand_name = Str::random(12);
         $image = str_replace(' ', '+', $image);
+        $extension = str_contains($image, 'data:image/jpeg') ? 'jpeg' : 'png';
+        $payload = preg_replace('#^data:image/(?:jpeg|jpg|png);base64,#i', '', $image);
+        $decoded = base64_decode(preg_replace('/\s+/', '', $payload), true);
 
-        if (strpos($image, 'jpeg;') !== false) {
-            $image = str_replace('data:image/jpeg;base64,', '', $image);
-            $imageName = $rand_name . '.' . 'jpeg';
-        } else {
-            $image = str_replace('data:image/png;base64,', '', $image);
-            $imageName = $rand_name . '.' . 'png';
+        if ($decoded === false) {
+            throw new \InvalidArgumentException('Invalid base64 image.');
         }
 
-        file_put_contents(public_path() . '/uploads/' . $imageName, base64_decode($image));
+        $path = 'uploads/' . (string) Str::uuid() . '.' . $extension;
+        Storage::disk('uploads')->put($path, $decoded);
 
-        return '/uploads/' . $imageName;
+        return '/' . $path;
     }
 
-    public function addToBasketPortrait(Request $request)
+    public function addToBasketPortrait(PortraitBasketRequest $request)
     {
         $data = [];
         $data['is_port_product'] = 1;
         $data['is_gall_with_img'] = 0;
         $data['pid'] = $request->input('pid');
 
+        $originalImages = [];
+        foreach ((array) $request->file('orig_images', []) as $file) {
+            $fileName = Storage::disk('uploads')->put('uploads', $file);
+            $originalImages[] = URL::to('/') . '/' . $fileName;
+        }
+
+        if ($originalImages !== []) {
+            $data['orig_images'] = $originalImages;
+        }
+
         if ($request->input('is_gall_with_img') == 1) {
             $data['is_gall_with_img'] = 1;
-            $img_base = $request->input('image');
-
-            if (strpos($img_base, 'image/png') !== false) {
-                $img_n = str_replace('data:image/png;base64,', '', $img_base);
-                $ext = '.png';
-            } else {
-                $img_n = str_replace('data:image/jpeg;base64,', '', $img_base);
-                $ext = '.jpeg';
-            }
-
-            $img = str_replace(' ', '+', $img_n);
-            $img_data = base64_decode($img);
-            $rand_name = Str::random(12);
-            file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
-
-            $data['activeImage'] = '/uploads/' . $rand_name . $ext;
+            $data['activeImage'] = $this->storePortraitDataImage($request->input('image'));
         } elseif ($data['pid'] != 'undefined' && $data['pid'] != '') {
             if ($request->input('is_uploaded_img')) {
                 $data['is_gall_with_img'] = 1;
-                $img_base = $request->input('image');
-                if ($request->has('is_png_base')) {
-                    $ext = '.png';
-                } else {
-                    $ext = '.jpeg';
-                }
-
-                $img = str_replace(' ', '+', $img_base);
-                $img_data = base64_decode($img);
-                $rand_name = Str::random(12);
-                file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
-                $data['activeImage'] = '/uploads/' . $rand_name . $ext;
+                $data['activeImage'] = $this->storePortraitDataImage($request->input('image'));
             } else {
                 $images = DB::table('gallery_items')->where('id', $data['pid'])->pluck('images')->first();
 
@@ -2245,32 +2109,12 @@ class BasketController extends Controller
             // is oil portrait
             $img_base = $request->input('image');
 
-            if (strpos($img_base, 'image/png') !== false) {
-                $img = str_replace('data:image/png;base64,', '', $img_base);
-                $ext = '.png';
+            if (is_string($img_base) && ! in_array($img_base, ['', 'undefined'], true)) {
+                $data['activeImage'] = $this->storePortraitDataImage($img_base);
             } else {
-                $img = str_replace('data:image/jpeg;base64,', '', $img_base);
-                $ext = '.jpeg';
+                $data['activeImage'] = $originalImages[0];
             }
-
-            $img = str_replace(' ', '+', $img);
-            $img_data = base64_decode($img);
-            $rand_name = Str::random(12);
-            file_put_contents(public_path() . '/uploads/' . $rand_name . $ext, $img_data);
-            $data['activeImage'] = '/uploads/' . $rand_name . $ext;
             $data['is_oil_portrait'] = 1;
-        }
-
-        $files = $request->orig_images;
-        if ($files) {
-            $data['orig_images'] = [];
-            $i = -1;
-
-            foreach ($files as $file) {
-                $i++;
-                $file_name = Storage::disk('uploads')->put('uploads', $file);
-                $data['orig_images'][$i] = URL::to('/') . '/' . $file_name;
-            }
         }
 
         if (request()->hasFile('photo_ex')) {
@@ -2384,6 +2228,19 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
+    private function storePortraitDataImage(string $dataImage): string
+    {
+        preg_match('#^data:image/(jpeg|png);base64,(.+)$#s', $dataImage, $matches);
+
+        $extension = $matches[1] === 'png' ? 'png' : 'jpeg';
+        $contents = base64_decode(preg_replace('/\s+/', '', $matches[2]), true);
+        $path = 'uploads/'.Str::uuid().'.'.$extension;
+
+        Storage::disk('uploads')->put($path, $contents);
+
+        return '/'.$path;
+    }
+
     public function send_gift_card(Request $request)
     {
         $data = [];
@@ -2456,14 +2313,17 @@ class BasketController extends Controller
         return json_encode($response);
     }
 
-    public function addRecommendedToBasket(Request $request)
+    public function addRecommendedToBasket(RecommendedBasketItemRequest $request)
     {
+        if ($this->hasCheckoutRecommendation()) {
+            return response()->json(['success' => true, 'status' => 'duplicate']);
+        }
         try {
             $itemId = $request->input('item_id');
 
             $item = GalleryItem::find($itemId);
 
-            if (!$item) {
+            if (!$item || !$item->active) {
                 return response()->json([
                     'success' => false,
                     'message' => __('basket.item_not_found'),
@@ -2482,15 +2342,18 @@ class BasketController extends Controller
             }
             $recommendationDiscount = 30;
 
-            $originalPrice = $request->input('price') ? floatval($request->input('price')) : ($item->price_from ?? 0);
-
-            $discountedPrice = round($originalPrice/* * (1 - $recommendationDiscount / 100)*/, 2);
+            $multiplier = app(\App\Services\CheckoutSizeOfferService::class)->multiplier();
+            $regular = app(\App\Services\CheckoutSizeOfferService::class)->galleryRecommendation($item);
+            if (!$regular) { return response()->json(['success' => false, 'message' => __('cart_new.discount_not_found')], 422); }
+            $originalPrice = $regular['price'] * $multiplier;
+            $discountedPrice = round($originalPrice * .7, 2);
 
 
             $basketItem = [
                 'pid' => $item->id,
                 'name' => $item->name,
                 'price' => $discountedPrice,
+                'checkout_unit_price' => $discountedPrice / $multiplier,
                 'original_price' => floatval($originalPrice),
                 'count' => 1,
                 'sumPrice' => $discountedPrice,
@@ -2502,6 +2365,7 @@ class BasketController extends Controller
                 'is_recommendation' => true,
                 'recommendation_discount' => $recommendationDiscount,
                 'recommendation_original_price' => floatval($originalPrice),
+                'size_name' => $regular['size'],
                 'has_special_label' => true,
                 'label_type' => 'recommendation',
                 'decor_id' => 0,
@@ -2547,12 +2411,28 @@ class BasketController extends Controller
         }
     }
 
-    public function addCanvasRecommendation(Request $request)
+    public function addCanvasRecommendation(CanvasRecommendationRequest $request)
     {
+        if ($this->hasCheckoutRecommendation()) {
+            return response()->json(['success' => true, 'status' => 'duplicate']);
+        }
         try {
+            if (! $this->hasBaseBasketItem(session("basket", []))) {
+                return response()->json(["success" => false, "message" => __("cart_new.discount_not_found")], 400);
+            }
             $size = $request->input('size');
             $full_size = $request->input('full_size');
-            $price = $request->input('price');
+            $offerService = app(\App\Services\CheckoutSizeOfferService::class);
+            $recommended = $this->basketRepository->getRecommendedItems((array) session('basket', []), 3, $offerService->multiplier());
+            $matched = null;
+            foreach ($recommended as $candidate) {
+                if (!empty($candidate['is_canvas_recommendation']) && $candidate['size'] === $full_size) { $matched = $candidate; break; }
+            }
+            if (!$matched || $offerService->clean($full_size) !== $size) {
+                return response()->json(['success' => false, 'message' => __('cart_new.size_not_found')], 422);
+            }
+            $price = round((float) $matched['discounted_price'] * .7, 2);
+
 
             if (!$size || !$price) {
                 return response()->json([
@@ -2597,6 +2477,9 @@ class BasketController extends Controller
                 'userComment'              => '',
                 'count'                    => 1,
                 'is_canvas_recommendation' => true,
+                'is_recommendation' => true,
+                'recommendation_discount' => 30,
+                'checkout_unit_price' => $price / $offerService->multiplier(),
                 'improve_photo'            => null,
                 'photo_ex'                 => '',
                 'is_canvas_collage'        => 1,
@@ -2628,5 +2511,47 @@ class BasketController extends Controller
                 'message' => __('basket.error_add'),
             ], 500);
         }
+    }
+
+    private function getRecommendedGalleryPrice(GalleryItem $item, Request $request): float
+    {
+        $basePrice = (float) ($item->price_from ?? 0);
+
+        return round($basePrice * $this->getCountryPriceMultiplier($request) * 0.7, 2);
+    }
+
+    private function getCountryPriceMultiplier(Request $request): float
+    {
+        $country = $request->session()->get('basket_country');
+
+        if (! $country) {
+            return 1.0;
+        }
+
+        $multiplier = DB::table('country_tels')
+            ->where('country_code', $country)
+            ->value('price_country_mltpr');
+
+        return $multiplier && (float) $multiplier > 0 ? (float) $multiplier : 1.0;
+    }
+
+    private function hasBaseBasketItem(array $basket): bool
+    {
+        foreach ($basket as $item) {
+            if (is_array($item) && empty($item['is_recommendation'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    private function hasCheckoutRecommendation(): bool
+    {
+        foreach ((array) session('basket', []) as $item) {
+            if (is_array($item) && (!empty($item['is_recommendation']) || !empty($item['is_canvas_recommendation']))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

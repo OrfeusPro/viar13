@@ -131,7 +131,7 @@ return array (
   'alternative_size_subtitle' => 'Šāds pats gleznas izmērs ir pieejams ar atlaidi',
   'current_size' => 'Pašreizējais izmērs',
   'step_2_recipient_phone' => 'Saņēmēja telefona numurs',
-  'cannot_remove_main_product' => 'Galveno produktu nevar noņemt, kamēr grozā ir ieteiktie produkti ar atlaidi',
+  'cannot_remove_main_product' => 'Lai noņemtu šo preci, vispirms noņemiet ieteiktās preces ar atlaidi.',
   'step_3_cart_express_warning' => 'Ja izgatavosanas termins ir mazaks par 3 darba dienam, tiek piemerots ekspres tarifs: +5 €',
   'step_3_courier_address' => 'Norādiet savu adresi  ( Pik-up)',
   'step_3_pickup_address' => 'Norādiet savu adresi',
@@ -142,4 +142,6 @@ return array (
   'existing_user_password' => 'Parole',
   'existing_user_reset_error' => 'Neizdevās nosūtīt paroles atiestatīšanas e-pastu. Mēģiniet vēlreiz.',
   'existing_user_reset_password' => 'Atiestatīt paroli',
+  'notice_title' => 'Preci nevar noņemt',
+  'notice_close' => 'Sapratu',
 );

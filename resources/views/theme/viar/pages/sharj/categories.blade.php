@@ -40,9 +40,9 @@
                         @if(!empty($sharjCategoryImageSources['src']) && !empty($sharjCategoryImageSources['type']))
                             <source srcset="{{ $sharjCategoryImageSources['src'] }}" type="{{ $sharjCategoryImageSources['type'] }}">
                         @endif
-                        <img width="315" height="451" src="{{ $sharjCategoryImageSources['src'] }}" alt="">
+                        <img width="315" height="451" src="{{ $sharjCategoryImageSources['src'] }}"  @frontendAlt('theme/viar/pages/sharj/categories.blade.php', ($sharjCategoryImageSources['src']), '', '')>
                     </picture>
-                    <a href="<?php echo '/new/caricature/'.$category->slug;?>" class="default-btn">@lang('simpson.yellow_btn')</a>
+                    <a href="{{ storefront_url('/new/caricature/'.$category->slug) }}" class="default-btn">@lang('simpson.yellow_btn')</a>
                 </div>
             </div>
 

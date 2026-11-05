@@ -15,7 +15,7 @@
         @if($services)
         <div class="services-list">
                 @foreach($services as $item)
-                    <a href="{{ $item->getTranslatedAttribute('link') }}" class="services-item @if($loop->index>8) services-item_hide @endif">
+                    <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="services-item @if($loop->index>8) services-item_hide @endif">
                         <div class="services-item__title">{{ $item->getTranslatedAttribute('title') }}</div>
                         <div class="services-photo">
                             <picture>

@@ -86,13 +86,13 @@
                         <h6>{{ $collage_header['c_right1_quest_title'] }}:</h6>
                         <ul>
                             <li><a target="_blank" href="{{ setting('sots-seti.telegram_link') }}"><img
-                                        src="{{ asset('img/solial-icon.png') }}" alt=""></a></li>
+                                        src="{{ asset('img/solial-icon.png') }}"  @frontendAlt('oil-portrait.blade.php', (asset('img/solial-icon.png')), '', '')></a></li>
                             <li><a target="_blank" href="{{ setting('sots-seti.what_link') }}"><img
-                                        src="{{ asset('img/solial-icon2.png') }}" alt=""></a></li>
+                                        src="{{ asset('img/solial-icon2.png') }}"  @frontendAlt('oil-portrait.blade.php', (asset('img/solial-icon2.png')), '', '')></a></li>
                             <li><a target="_blank" href="{{ setting('sots-seti.viber_link') }}"><img
-                                        src="{{ asset('img/solial-icon3.png') }}" alt=""></a></li>
+                                        src="{{ asset('img/solial-icon3.png') }}"  @frontendAlt('oil-portrait.blade.php', (asset('img/solial-icon3.png')), '', '')></a></li>
                             <li><a target="_blank" href="{{ setting('sots-seti.gmail_link') }}"><img
-                                        src="{{ asset('img/solial-icon4.png') }}" alt=""></a></li>
+                                        src="{{ asset('img/solial-icon4.png') }}"  @frontendAlt('oil-portrait.blade.php', (asset('img/solial-icon4.png')), '', '')></a></li>
                         </ul>
                     </div>
                     <a class="order" href="{{ route('oil_portrait.buy') }}"
@@ -122,10 +122,10 @@
                 <div class="tabs-items">
                     @foreach ($ph_items as $item)
                         <div class="tabs-item{{ $loop->index }} tabs-item @if ($loop->first) active @endif ">
-                            <img src="{{ Voyager::image($item['img1']) }}" alt="" class="img-center">
+                            <img src="{{ Voyager::image($item['img1']) }}"  class="img-center" @frontendAlt('oil-portrait.blade.php', (Voyager::image($item['img1'])), '', '')>
                             <div class="text">
                                 <p>{!! $item['text'] !!}</p>
-                                <img src="{{ Voyager::image($item['img2']) }}" alt="" class="img-text">
+                                <img src="{{ Voyager::image($item['img2']) }}"  class="img-text" @frontendAlt('oil-portrait.blade.php', (Voyager::image($item['img2'])), '', '')>
                             </div>
                         </div>
                     @endforeach
@@ -144,8 +144,8 @@
                             <div class="portraits-item">
                                 <div class="img">
                                     <i></i>
-                                    <img alt="{{ $item['name'] }}" title="{{ $item['name'] }}" class="p__img"
-                                        src="{{ Voyager::image($item['image']) }}">
+                                    <img   class="p__img"
+                                        src="{{ Voyager::image($item['image']) }}" @frontendAlt('oil-portrait.blade.php', (Voyager::image($item['image'])), ($item['name']), ($item['name']))>
                                 </div>
                                 <h4>{{ $item['name'] }}</h4>
                             </div>
@@ -168,7 +168,7 @@
                 <h4>{!! $head['zl_title_3'] !!}</h4>
                 <span>{!! $head['zl_title_4'] !!}</span>
             </div>
-            <img src="{{ asset('img/complexity-img.png') }}" alt="" class="complexity-img">
+            <img src="{{ asset('img/complexity-img.png') }}"  class="complexity-img" @frontendAlt('oil-portrait.blade.php', (asset('img/complexity-img.png')), '', '')>
         </div>
     </section>
 

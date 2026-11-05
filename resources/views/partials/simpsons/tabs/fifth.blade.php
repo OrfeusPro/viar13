@@ -2,7 +2,7 @@
     <div class="about-deadline">
         <div class="deadline-block">
             <div class="deadline-title">
-                <img src="{{ ver_asset('images/clock.png') }}" alt=""/>
+                <img src="{{ ver_asset('images/clock.png') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/clock.png')), '', '')/>
                 <p>{!! trans('portrait.tab5__inner__title') !!}</p>
             </div>
             <div class="deadline-items">
@@ -11,7 +11,7 @@
                         <picture>
                             <source srcset="{{ ver_asset('images/three-days.webp') }}" type="image/webp"/>
                             <source srcset="{{ ver_asset('images/three-days.jpg') }}" type="image/jpg"/>
-                            <img src="{{ ver_asset('images/three-days.jpg') }}" alt=""/>
+                            <img src="{{ ver_asset('images/three-days.jpg') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/three-days.jpg')), '', '')/>
                         </picture>
                     </div>
                     <div class="deadline-content">
@@ -28,7 +28,7 @@
                         <picture>
                             <source srcset="{{ ver_asset('images/one-day.webp') }}" type="image/webp"/>
                             <source srcset="{{ ver_asset('images/one-day.jpg') }}" type="image/jpg"/>
-                            <img src="{{ ver_asset('images/one-day.jpg') }}" alt=""/>
+                            <img src="{{ ver_asset('images/one-day.jpg') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/one-day.jpg')), '', '')/>
                         </picture>
                     </div>
                     <div class="deadline-content">
@@ -45,7 +45,7 @@
                         <picture>
                             <source srcset="{{ ver_asset('images/on-date.webp') }}" type="image/webp"/>
                             <source srcset="{{ ver_asset('images/on-date.jpg') }}" type="image/jpg"/>
-                            <img srcset="{{ ver_asset('images/on-date.jpg') }}" alt=""/>
+                            <img srcset="{{ ver_asset('images/on-date.jpg') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/on-date.jpg')), '', '')/>
                         </picture>
                     </div>
                     <div class="deadline-content">
@@ -61,7 +61,7 @@
         </div>
         <div class="deadline-block">
             <div class="deadline-title">
-                <img src="{{ ver_asset('images/delivery.png') }}" alt=""/>
+                <img src="{{ ver_asset('images/delivery.png') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/delivery.png')), '', '')/>
                 <p>{!! trans('portrait.tab5__delivery__title') !!}</p>
             </div>
             <div class="deadline-items">
@@ -70,7 +70,7 @@
                         <picture>
                             <source srcset="{{ ver_asset('images/van.webp') }}" type="image/webp"/>
                             <source srcset="{{ ver_asset('images/van.jpg') }}" type="image/jpg"/>
-                            <img src="{{ ver_asset('images/van.jpg') }}" alt=""/>
+                            <img src="{{ ver_asset('images/van.jpg') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/van.jpg')), '', '')/>
                         </picture>
                     </div>
                     <div class="deadline-content">
@@ -85,7 +85,7 @@
                         <picture>
                             <source srcset="{{ ver_asset('images/on-adress.webp') }}" type="image/webp"/>
                             <source srcset="{{ ver_asset('images/on-adress.jpg') }}" type="image/jpg"/>
-                            <img src="{{ ver_asset('images/on-adress.jpg') }}" alt=""/>
+                            <img src="{{ ver_asset('images/on-adress.jpg') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/on-adress.jpg')), '', '')/>
                         </picture>
                     </div>
                     <div class="deadline-content">
@@ -100,7 +100,7 @@
                         <picture>
                             <source srcset="{{ ver_asset('images/abroad.webp') }}" type="image/webp"/>
                             <source srcset="{{ ver_asset('images/abroad.jpg') }}" type="image/jpg"/>
-                            <img src="{{ ver_asset('images/abroad.jpg') }}" alt=""/>
+                            <img src="{{ ver_asset('images/abroad.jpg') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/abroad.jpg')), '', '')/>
                         </picture>
                     </div>
                     <div class="deadline-content">
@@ -119,7 +119,7 @@
                     <div class="courier-item">
                         <div class="courier-inner">
                             <div class="courier-logo">
-                                <img src="{{ ver_asset('images/venipak.png') }}" alt=""/>
+                                <img src="{{ ver_asset('images/venipak.png') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/venipak.png')), '', '')/>
                             </div>
                             <div class="courier-txt">
                                 {!! trans('portrait.tab5__delivery__after_block1_text') !!}
@@ -129,8 +129,8 @@
                     <div class="courier-item">
                         <div class="courier-inner">
                             <div class="courier-logo">
-                                <img src="{{ ver_asset('images/dpd.png') }}" alt=""/>
-                                <img src="{{ ver_asset('images/omniva-logo-41B019A1E9-seeklogo.com.png') }}" style="max-width: 50px;" alt=""/>
+                                <img src="{{ ver_asset('images/dpd.png') }}"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/dpd.png')), '', '')/>
+                                <img src="{{ ver_asset('images/omniva-logo-41B019A1E9-seeklogo.com.png') }}" style="max-width: 50px;"  @frontendAlt('partials/simpsons/tabs/fifth.blade.php', (ver_asset('images/omniva-logo-41B019A1E9-seeklogo.com.png')), '', '')/>
                             </div>
                             <div class="courier-txt">
                                 {!! trans('portrait.tab5__delivery__after_block2_text') !!}

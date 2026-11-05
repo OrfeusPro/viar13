@@ -22,8 +22,7 @@ class VenipakLabelDestinationTest extends TestCase
         $this->registerCreateLabelRouteForTest();
     }
 
-    /** @test */
-    public function pickup_orders_force_pickup_payload_even_when_address_fields_are_present()
+    public function test_pickup_orders_force_pickup_payload_even_when_address_fields_are_present(): void
     {
         $admin = $this->createUser(1, 1, 'admin@example.test');
         $this->createVenipakConfig();
@@ -78,8 +77,7 @@ class VenipakLabelDestinationTest extends TestCase
         $this->assertStringNotContainsString('Wrong street', $controller->capturedXml);
     }
 
-    /** @test */
-    public function pickup_orders_reject_missing_pickup_point_identity()
+    public function test_pickup_orders_reject_missing_pickup_point_identity(): void
     {
         $admin = $this->createUser(2, 1, 'admin2@example.test');
         $this->createVenipakConfig();

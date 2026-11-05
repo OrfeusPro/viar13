@@ -42,6 +42,10 @@ class ImageCollector
      */
     public function collect(Model $entity, ?string $locale = null): Collection
     {
+        if ($entity instanceof \App\Models\FrontendImage) {
+            $image = app(FrontendImageRegistry::class)->descriptor($entity, $locale ?: app()->getLocale());
+            return new Collection($image ? [$image] : []);
+        }
         $target = $this->targetFor($entity);
 
         if (isset($target['enabled']) && $target['enabled'] === false) {

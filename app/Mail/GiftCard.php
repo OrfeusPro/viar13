@@ -14,6 +14,10 @@ class GiftCard extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public $data;
+    public $top_mail;
+    public $mult;
+
     /**
      * Create a new message instance.
      *

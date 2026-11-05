@@ -150,7 +150,7 @@
 
 	@if(filter_var(setting('site.top_sale', false), FILTER_VALIDATE_BOOLEAN))
 	<div class="top-sale">
-		<img width="77" height="66" src="{{ asset(env('THEME') . 'images/sale.webp') }}" alt="">
+		<img width="77" height="66" src="{{ asset(env('THEME') . 'images/sale.webp') }}"  @frontendAlt('all_styles.blade.php', (asset(env('THEME') . 'images/sale.webp')), '', '')>
 		<p>@lang('header_footer_new.header.top_sale')</p>
 	</div>
 	@endif
@@ -164,7 +164,7 @@
 							<a href="{{ route('home') }}" class="breadcrumbs__link breadcrumbs__link_main">
 								@lang('account.index1')
 							</a>
-							<img src="{{ asset('img/icons/angle-arrow.svg') }}" alt="" class="img-svg breadcrumbs__arrow">
+							<img src="{{ asset('img/icons/angle-arrow.svg') }}"  class="img-svg breadcrumbs__arrow" @frontendAlt('all_styles.blade.php', (asset('img/icons/angle-arrow.svg')), '', '')>
 							<a href="#" class="breadcrumbs__link">
 								{!! $data['title'] !!}
 							</a>
@@ -219,7 +219,7 @@
 			<div class="quiz-modal">
 				<div class="quiz-modal__block">
 					<div class="quiz-modal__error">
-						<img src="{{ asset('img/icons/error.svg') }}" alt="" class="img-svg">
+						<img src="{{ asset('img/icons/error.svg') }}"  class="img-svg" @frontendAlt('all_styles.blade.php', (asset('img/icons/error.svg')), '', '')>
 					</div>
 					<div class="quiz-modal__title">
 						{!! $bot_form['no_select'] !!}

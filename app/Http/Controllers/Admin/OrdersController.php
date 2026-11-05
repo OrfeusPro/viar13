@@ -22,6 +22,7 @@ use App\Models\OrderPaymentRequest;
 use App\Models\DeliveryPickupAtViarWorkshop;
 use App\Mail\SendAdminOrder;
 use App\Services\SynvolveWebhookService;
+use App\Services\Admin\OrderItemPresentationService;
 use Illuminate\Http\Request;
 use App\Mail\SendUserRegister;
 use App\Http\Controllers\Controller;
@@ -427,84 +428,7 @@ class OrdersController extends Controller
 
     protected function applyManualPresentation(array $item, string $locale): array
     {
-        $canvasId = $this->resolveCanvasIdFromItem($item);
-        $item['manual_canvas_id'] = $canvasId;
-        $item['canvasId'] = $canvasId;
-
-        $canvas = GalleryHolst::find($canvasId);
-        if ($canvas) {
-            $translatedCanvas = $canvas->translate($locale, 'ru');
-            if (!is_array($item['show'] ?? null)) {
-                $item['show'] = [];
-            }
-            if (!empty($translatedCanvas->name)) {
-                $item['show']['canvas'] = $translatedCanvas->name;
-            }
-        }
-
-        $giftCode = $this->resolveGiftCodeFromItem($item);
-        $giftToBoxId = ['G0' => 3, 'G1' => 2, 'G2' => 1];
-        $boxId = $giftToBoxId[$giftCode] ?? 3;
-
-        $boxName = null;
-        $box = GalleryBox::find($boxId);
-        if ($box) {
-            $translated = $box->translate($locale, 'ru');
-            $boxName = $translated->name ?? null;
-        }
-
-        if (!is_array($item['show'] ?? null)) {
-            $item['show'] = [];
-        }
-        if ($boxName) {
-            $item['show']['box'] = [$boxName];
-        }
-        $item['compl_id'] = $boxId;
-
-        $decorationId = $this->resolveDecorationIdFromItem($item);
-        $decoration = GalleryDecoration::find($decorationId);
-        if ($decoration) {
-            $translatedDecoration = $decoration->translate($locale, 'ru');
-            $decorationName = $translatedDecoration->name ?? null;
-            if ($decorationName) {
-                $item['show']['decoration'] = $decorationName;
-            }
-        }
-
-        $isManualExpress = !empty($item['is_manual_express']);
-        if ($isManualExpress) {
-            $terms = trim((string)($item['terms'] ?? ''));
-            if ($terms === '' || is_numeric(str_replace(',', '.', $terms))) {
-                $expressText = GalleryItem::getTermsByPriceLocaled(1, $locale);
-                $priceText = '';
-
-                $termsValue = str_replace(',', '.', $terms);
-                if ($terms !== '' && is_numeric($termsValue) && (float)$termsValue > 0) {
-                    $priceText = ' ' . rtrim(rtrim(number_format((float)$termsValue, 2, '.', ''), '0'), '.') . ' €';
-                } elseif (isset($item['terms_price']) && is_numeric($item['terms_price']) && (float)$item['terms_price'] > 0) {
-                    $priceText = ' ' . rtrim(rtrim(number_format((float)$item['terms_price'], 2, '.', ''), '0'), '.') . ' €';
-                }
-
-                $item['terms'] = trim($expressText . $priceText);
-            } elseif (!$this->isExpressText($terms)) {
-                if ($this->isStandardTermsText($terms, $locale)) {
-                    $item['terms'] = GalleryItem::getTermsByPriceLocaled(1, $locale);
-                } else {
-                    $item['terms'] = GalleryItem::getTermsByPriceLocaled(1, $locale) . ' | ' . $terms;
-                }
-            }
-        } elseif (array_key_exists('is_manual_express', $item)) {
-            // Явно снят флаг экспресса в админке: убираем старую наценку и экспресс-текст.
-            if (isset($item['terms_price'])) {
-                $item['terms_price'] = 0;
-            }
-            $terms = trim((string)($item['terms'] ?? ''));
-            if ($terms === '' || $this->isExpressText($terms)) {
-                $item['terms'] = GalleryItem::getTermsByPriceLocaled(0, $locale);
-            }
-        }
-
-        return $item;
+        return app(OrderItemPresentationService::class)->apply($item, $locale);
     }
 
     protected function create_admin_order_action($user, $request, $delivery, $random_pass = '')

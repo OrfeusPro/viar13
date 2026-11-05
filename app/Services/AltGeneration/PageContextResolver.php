@@ -69,6 +69,18 @@ class PageContextResolver
         $locale = $this->localeResolver->normalizeOrDefault($locale);
         $target = $this->targetFor($entity);
 
+        if ($entity instanceof \App\Models\FrontendImage) {
+            $context = $entity->context['locales'][$locale] ?? [];
+            return array_merge($context, [
+                'language' => $locale,
+                'resolver_source' => 'frontend_template_inventory',
+                'purpose' => $context['page_title'] ?? null,
+                'surrounding_text' => $context['surrounding_text'] ?? '',
+                'url' => $context['page_url'] ?? null,
+                'sibling_image_alts' => [],
+            ]);
+        }
+
         if ($entity instanceof SiteImage) {
             return $this->resolveSiteImageContext($entity, $target, $image, $locale);
         }

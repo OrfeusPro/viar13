@@ -26,6 +26,10 @@ class GetStringsProvider extends ServiceProvider
      */
     public function boot()
     {
+        View::share('trackers', '');
+        View::share('trackers_body', '');
+        View::share('cur_loc', app()->getLocale());
+
         if(isset($_SERVER['REQUEST_URI']) && !str_contains($_SERVER['REQUEST_URI'], '/admin/')){
             View::composer('*', function ($view) {
                 $loc = \App::getLocale();

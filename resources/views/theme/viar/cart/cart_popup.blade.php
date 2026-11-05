@@ -13,7 +13,7 @@
 		<b class="block"> с выгодной скидкой!</b>
 	 </div>
 	 <div class="popup-discount__arrow-art">
-		<img src="{{ asset(env('THEME') . 'img/cart/arrow-img.svg') }}" alt="">
+		<img src="{{ asset(env('THEME') . 'img/cart/arrow-img.svg') }}"  @frontendAlt('theme/viar/cart/cart_popup.blade.php', (asset(env('THEME') . 'img/cart/arrow-img.svg')), '', '')>
 	 </div>
 	 <div class="popup-discount__row">
 		<div class="popup-discount__col small">
@@ -21,7 +21,7 @@
 				Ваш заказ
 			</span>
 		   <div class="popup-discount__img">
-			  <img src="{{ asset(env('THEME') . 'img/cart/painting.svg') }}" alt="">
+			  <img src="{{ asset(env('THEME') . 'img/cart/painting.svg') }}"  @frontendAlt('theme/viar/cart/cart_popup.blade.php', (asset(env('THEME') . 'img/cart/painting.svg')), '', '')>
 		   </div>
 		</div>
 		<div class="popup-discount__col big">
@@ -33,7 +33,7 @@
 			  <svg>
 				 <use xlink:href="{{ asset(env('THEME') . 'img/cart/sprite.svg') }}#discount"></use>
 			  </svg>
-			  <img src="{{ asset(env('THEME') . 'img/cart/painting.svg') }}" alt="">
+			  <img src="{{ asset(env('THEME') . 'img/cart/painting.svg') }}"  @frontendAlt('theme/viar/cart/cart_popup.blade.php', (asset(env('THEME') . 'img/cart/painting.svg')), '', '')>
 		   </div>
 		   <strong> 32€</strong>
 		</div>

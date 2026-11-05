@@ -16,7 +16,7 @@ return array (
   'hb_main_popup_coupon_t1' => 'Lisaallahindlus',
   'hb_main_popup_coupon_t2' => 'Kasuta kupongi: 10%',
   'hb_main_popup_coupon_t3' => 'Ostukorvis:',
-  'hb_main_popup_coupon_t4' => 'kuumus2026',
+  'hb_main_popup_coupon_t4' => 'SUGIS10',
   'hb_main_popup_coupon_t5' => 'Aktiivne kuni:',
   'abandoned_basket' => 'Kasutatud kupong: Mahajäetud käru',
   'giftcard' => 'Kinkekaart kasutatud',

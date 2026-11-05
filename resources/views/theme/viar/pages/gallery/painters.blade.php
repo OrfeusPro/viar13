@@ -55,7 +55,7 @@
 						type="image/jpeg">
 					{{-- <source srcset="{{ asset(env('THEME').'images') }}/reproduction/1.webp" type="image/webp"> --}}
 					<source srcset="{{ asset(env('THEME') . 'images') }}/reproduction/1.jpg" type="image/jpeg">
-					<img width="1350" height="381" src="{{ asset(env('THEME') . 'images') }}/reproduction/1.jpg" alt="">
+					<img width="1350" height="381" src="{{ asset(env('THEME') . 'images') }}/reproduction/1.jpg"  @frontendAlt('theme/viar/pages/gallery/painters.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/1.jpg', '', '')>
 				</picture>
 				<div></div>
 			</div>
@@ -105,7 +105,7 @@
 											@else
 												<source srcset="{{ asset(env('THEME') . 'images') }}/gallery/7.jpg" type="image/jpeg">
 												<img width="433" height="583" src="{{ asset(env('THEME') . 'images') }}/gallery/7.jpg"
-													alt="{{ $item->name }}" title="{{ $item->name }}" loading="lazy">
+													  loading="lazy" @frontendAlt('theme/viar/pages/gallery/painters.blade.php', (asset(env('THEME') . 'images')) . '/gallery/7.jpg', ($item->name), ($item->name))>
 											@endif
 										</picture>
 									</div>

@@ -3,12 +3,12 @@
         <div class="arts__title h2_old">
             {{ $item['title'] }}
         </div>
-        <a href="{{ $item['link'] }}">
+        <a href="{{ storefront_url($item['link']) }}">
             <div class="arts__image arts__image_vertical">
                 <picture>
                     <source srcset="{{ asset('img/vertical.webp') }}" type="image/webp">
-                    <img data-src="{{ asset('img/vertical.webp') }}" src="{{ asset('img/load.png') }}" alt=""
-                        class="arts__bg lazyload">
+                    <img data-src="{{ asset('img/vertical.webp') }}" src="{{ asset('img/load.png') }}"
+                        class="arts__bg lazyload" @frontendAlt('partials/all_styles/center_items.blade.php', (asset('img/vertical.webp')), '', '')>
                 </picture>
                 <picture class="arts__product-image">
                     {{-- <source srcset="img/art1.webp" type="image/webp">
@@ -23,7 +23,7 @@
                     @if(!empty($centerItemImageSources['src']) && !empty($centerItemImageSources['type']))
                         <source srcset="{{ $centerItemImageSources['src'] }}" type="{{ $centerItemImageSources['type'] }}">
                     @endif
-                    <img @if (!empty($centerItemImageSources['src'])) src="{{ $centerItemImageSources['src'] }}" @else src="{{ asset('img/load.png') }}" @endif alt="">
+                    <img @if (!empty($centerItemImageSources['src'])) src="{{ $centerItemImageSources['src'] }}" @else src="{{ asset('img/load.png') }}" @endif  @frontendAlt('partials/all_styles/center_items.blade.php', ($centerItemImageSources['src']), '', '')>
                 </picture>
             </div>
         </a>
@@ -34,7 +34,7 @@
         <p class="arts__price">
             {{ $data['from_text'] }} <span>{{ $item['price'] }}{{ $data['price_val'] }}</span>
         </p>
-        <a class="arts__btn btn" href="{{ $item['link'] }}">
+        <a class="arts__btn btn" href="{{ storefront_url($item['link']) }}">
             {{ $data['order_btn_text'] }}
         </a>
     </div>

@@ -37,7 +37,7 @@
                     <use xlink:href="{{ asset(env('THEME') . 'sprite.svg#check') }}"></use>
                 </svg>
                 <div class="file-save__title">
-                    <p class="file-title_green">Файлы загружены</p>
+                    <p class="file-title_green">{{ trans('portrait.form_files_loaded') }}</p>
                 </div>
             </div>
             <input id="real_file_input" data-desc="Вы можете загрузить фото пример" name="photo_ex" accept="image/*,image/heif,image/heic"

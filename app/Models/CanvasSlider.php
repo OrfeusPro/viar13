@@ -12,5 +12,5 @@ class CanvasSlider extends Model
 	use Translatable;
 	protected $table = 'canvas_slider';
     protected $fillable = [];
-    protected $translatable = ['title','sub_title','text_gift','text1','text2','text3','text4','btn','size_text', 'size_title'];
+	protected $translatable = ['title','sub_title','hero_subtitle','text_gift','text1','text2','text3','text4','btn','size_text', 'size_title'];
 }

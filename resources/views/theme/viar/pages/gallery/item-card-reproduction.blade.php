@@ -291,7 +291,7 @@
 											 <source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/5.webp" type="image/webp">
 											<source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/5.jpg" type="image/jpeg">
 											<img width="75" height="94" src="{{ asset(env('THEME') . 'images') }}/cardreproduction/5.jpg"
-												alt="">
+												 @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/cardreproduction/5.jpg', '', '')>
 										</picture>
 										<span>@lang("gallery.reproduction_type_1")</span>
 									</div>
@@ -300,7 +300,7 @@
 											 <source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/3.webp" type="image/webp">
 											<source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/3.jpg" type="image/jpeg">
 											<img width="75" height="94" src="{{ asset(env('THEME') . 'images') }}/cardreproduction/3.jpg"
-												alt="">
+												 @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/cardreproduction/3.jpg', '', '')>
 										</picture>
 										<span>@lang("gallery.reproduction_type_2")</span>
 									</div>
@@ -314,7 +314,7 @@
 											 <source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/4.webp" type="image/webp">
 											<source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/4.jpg" type="image/jpeg">
 											<img width="93" height="96" src="{{ asset(env('THEME') . 'images') }}/cardreproduction/4.jpg"
-												alt="Viar" loading="lazy">
+												 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/cardreproduction/4.jpg', 'Viar', '')>
 										</picture>
 										<span>@lang("gallery.reproduction_type_3")</span>
 									</div>
@@ -402,7 +402,7 @@
 									 <source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/6.webp" type="image/webp">
 									<source srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/6.jpg" type="image/jpeg">
 									<img width="166" height="73" src="{{ asset(env('THEME') . 'images') }}/cardreproduction/6.jpg"
-										alt="Viar" loading="lazy">
+										 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/cardreproduction/6.jpg', 'Viar', '')>
 								</picture>
 								<svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
 									<path
@@ -536,7 +536,7 @@
                                                     @endif
 													<source srcset="{{ asset($ramSrc) }}" type="image/jpeg">
 													<img width="150" height="150" src="{{ asset($ramSrc) }}"
-														alt="Viar" loading="lazy">
+														 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset($ramSrc)), 'Viar', '')>
 												</picture>
 												<div class="fi-info">
 													<p>
@@ -650,7 +650,7 @@
 											<picture>
 												 <source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio1.webp" type="image/webp">
 												<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio1.jpg" type="image/jpeg">
-												<img src="{{ asset(env('THEME') . 'images') }}/mcard/interio1.jpg" loading="lazy" alt="Viar">
+												<img src="{{ asset(env('THEME') . 'images') }}/mcard/interio1.jpg" loading="lazy"  @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/mcard/interio1.jpg', 'Viar', '')>
 											</picture>
 										</div>
 										<div data-slider="1" class="interiorSlide swiper-slide"
@@ -667,7 +667,7 @@
 												 <source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio2.webp" type="image/webp">
 												<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio2.jpg" type="image/jpeg">
 												<img width="162" height="122" src="{{ asset(env('THEME') . 'images') }}/mcard/interio2.jpg"
-													alt="Viar" loading="lazy">
+													 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/mcard/interio2.jpg', 'Viar', '')>
 											</picture>
 										</div>
 										<div data-slider="2" class="interiorSlide swiper-slide">
@@ -683,7 +683,7 @@
 												 <source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio3.webp" type="image/webp">
 												<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio3.jpg" type="image/jpeg">
 												<img width="162" height="122" src="{{ asset(env('THEME') . 'images') }}/mcard/interio3.jpg"
-													alt=" Viar" loading="lazy">
+													 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/mcard/interio3.jpg', ' Viar', '')>
 											</picture>
 										</div>
 										<div data-slider="3" class="interiorSlide swiper-slide">
@@ -699,7 +699,7 @@
 												 <source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio1.webp" type="image/webp">
 												<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio1.jpg" type="image/jpeg">
 												<img width="162" height="122" src="{{ asset(env('THEME') . 'images') }}/mcard/interio1.jpg"
-													loading="lazy" alt="Viar">
+													loading="lazy"  @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/mcard/interio1.jpg', 'Viar', '')>
 											</picture>
 										</div>
 										<div data-slider="4" class="interiorSlide swiper-slide">
@@ -715,7 +715,7 @@
 												 <source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio2.webp" type="image/webp">
 												<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio2.jpg" type="image/jpeg">
 												<img width="162" height="122" src="{{ asset(env('THEME') . 'images') }}/mcard/interio2.jpg"
-													alt="Viar" loading="lazy">
+													 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/mcard/interio2.jpg', 'Viar', '')>
 											</picture>
 										</div>
 										<div data-slider="5" class="interiorSlide swiper-slide">
@@ -731,7 +731,7 @@
 												 <source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio3.webp" type="image/webp">
 												<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/interio3.jpg" type="image/jpeg">
 												<img width="162" height="122" src="{{ asset(env('THEME') . 'images') }}/mcard/interio3.jpg"
-													alt="Viar" loading="lazy">
+													 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/mcard/interio3.jpg', 'Viar', '')>
 											</picture>
 										</div>
 									</div>
@@ -1037,7 +1037,7 @@
 								 <source srcset="{{ asset(env('THEME') . 'images') }}/gallery/7.webp" type="image/webp">
 								<source srcset="{{ asset(env('THEME') . 'images') }}/gallery/7.jpg" type="image/jpeg">
 								<img width="433" height="583" src="{{ asset(env('THEME') . 'images') }}/gallery/7.jpg"
-									alt="ViarCanvas" loading="lazy">
+									 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/gallery/7.jpg', 'ViarCanvas', '')>
 							</picture>
 						</div>
 						<p>Пейзаж</p>
@@ -1051,7 +1051,7 @@
 								 <source srcset="{{ asset(env('THEME') . 'images') }}/gallery/8.webp" type="image/webp">
 								<source srcset="{{ asset(env('THEME') . 'images') }}/gallery/8.jpg" type="image/jpeg">
 								<img width="433" height="583" src="{{ asset(env('THEME') . 'images') }}/gallery/8.jpg"
-									alt="ViarCanvas" loading="lazy">
+									 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/gallery/8.jpg', 'ViarCanvas', '')>
 							</picture>
 						</div>
 						<p>Абстракция</p>
@@ -1065,7 +1065,7 @@
 								 <source srcset="{{ asset(env('THEME') . 'images') }}/gallery/7.webp" type="image/webp">
 								<source srcset="{{ asset(env('THEME') . 'images') }}/gallery/7.jpg" type="image/jpeg">
 								<img width="433" height="583" src="{{ asset(env('THEME') . 'images') }}/gallery/7.jpg"
-									alt="ViarCanvas" loading="lazy">
+									 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/gallery/7.jpg', 'ViarCanvas', '')>
 							</picture>
 						</div>
 						<p>Пейзаж</p>
@@ -1079,7 +1079,7 @@
 								 <source srcset="{{ asset(env('THEME') . 'images') }}/gallery/8.webp" type="image/webp">
 								<source srcset="{{ asset(env('THEME') . 'images') }}/gallery/8.jpg" type="image/jpeg">
 								<img width="433" height="583" src="{{ asset(env('THEME') . 'images') }}/gallery/8.jpg"
-									alt="ViarCanvas" loading="lazy">
+									 loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card-reproduction.blade.php', (asset(env('THEME') . 'images')) . '/gallery/8.jpg', 'ViarCanvas', '')>
 							</picture>
 						</div>
 						<p>Абстракция</p>

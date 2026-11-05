@@ -594,11 +594,11 @@
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp2.avif" type="image/avif">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp2.webp" type="image/webp">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp2.jpg" type="image/jpeg">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/cp2.jpg" alt="Viar">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/cp2.jpg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/cp2.jpg', 'Viar', '')>
                                         </picture>
                                     </div>
                                     <div class="mc-p-content">
-                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_6_b1_1")
                                         </div>
@@ -610,11 +610,11 @@
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp1.avif" type="image/avif">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp1.webp" type="image/webp">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp1.jpg" type="image/jpeg">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/cp1.jpg" alt="Viar">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/cp1.jpg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/cp1.jpg', 'Viar', '')>
                                         </picture>
                                     </div>
                                     <div class="mc-p-content">
-                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_6_b1_2")
                                         </div>
@@ -626,11 +626,11 @@
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp3.avif" type="image/avif">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp3.webp" type="image/webp">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/cp3.jpg" type="image/jpeg">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/cp3.jpg" alt="Viar">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/cp3.jpg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/cp3.jpg', 'Viar', '')>
                                         </picture>
                                     </div>
                                     <div class="mc-p-content">
-                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_6_b1_3")
                                         </div>
@@ -684,7 +684,7 @@
                                 <div class="mc-c-item">
                                     <a href="#" class="mc-active-a">
                                         <div class="img">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         </div>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_8_b1_1")
@@ -725,7 +725,7 @@
                                 <div class="mc-c-item">
                                     <a href="#">
                                         <div class="img">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         </div>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_8_b2_1")
@@ -738,7 +738,7 @@
                                 <div class="mc-c-item">
                                     <a href="#">
                                         <div class="img">
-                                            <img width="120" height="120"src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                            <img width="120" height="120"src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         </div>
                                         <div class="mc-del-cont">
                                             <div class="mc-d-title">
@@ -778,7 +778,7 @@
                                 <div class="mc-c-item">
                                     <a href="#">
                                         <div class="img">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         </div>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_8_b4_1")
@@ -796,19 +796,19 @@
                                         <div class="img">
                                             <picture>
                                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/d1.png">
-                                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/d1.png" alt="">
+                                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/d1.png"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/d1.png', '', '')>
                                             </picture>
                                         </div>
                                         <div class="img">
                                             <picture>
                                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/d2.png">
-                                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/d2.png" alt="">
+                                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/d2.png"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/d2.png', '', '')>
                                             </picture>
                                         </div>
                                         <div class="img">
                                             <picture>
                                                 <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/d3.png">
-                                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/d3.png" alt="">
+                                                <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/d3.png"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/d3.png', '', '')>
                                             </picture>
                                         </div>
                                     </div>
@@ -823,7 +823,7 @@
                                         <picture>
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/whatsapp.webp" type="image/webp">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/whatsapp.png" type="image/png">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/whatsapp.png" alt="">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/whatsapp.png"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/whatsapp.png', '', '')>
                                         </picture>
                                     </div>
                                     <p>@lang('popup.target-box_3_btn')</p>
@@ -858,11 +858,11 @@
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r1.avif" type="image/avif">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r1.webp" type="image/webp">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r1.jpg" type="image/jpeg">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/r1.jpg" alt="Viar">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/r1.jpg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/r1.jpg', 'Viar', '')>
                                         </picture>
                                     </div>
                                     <div class="mc-p-content">
-                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_9_b1_1")
                                         </div>
@@ -874,11 +874,11 @@
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r2.avif" type="image/avif">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r2.webp" type="image/webp">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r2.jpg" type="image/jpeg">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/r2.jpg" alt="Viar">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/r2.jpg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/r2.jpg', 'Viar', '')>
                                         </picture>
                                     </div>
                                     <div class="mc-p-content">
-                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_9_b1_2")
                                         </div>
@@ -890,11 +890,11 @@
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r3.avif" type="image/avif">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r3.webp" type="image/webp">
                                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/r3.jpg" type="image/jpeg">
-                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/r3.jpg" alt="Viar">
+                                            <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/contacts/r3.jpg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/r3.jpg', 'Viar', '')>
                                         </picture>
                                     </div>
                                     <div class="mc-p-content">
-                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg" alt="">
+                                        <img width="120" height="120" src="{{ asset(env('THEME') . 'images') }}/icon/check-circle.svg"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(env('THEME') . 'images')) . '/icon/check-circle.svg', '', '')>
                                         <div class="mc-d-title">
                                             @lang("contacts.text_1_9_b1_3")
                                         </div>
@@ -988,7 +988,7 @@
                                                 {{-- <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/mapSlider1.avif" type="image/avif"> --}}
                                                 {{-- <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/mapSlider1.webp" type="image/webp"> --}}
                                                 <source srcset="{{ asset(Voyager::image($image)) }}" type="image/jpeg">
-                                                <img width="568" height="535" src="{{ asset(Voyager::image($image)) }}" alt="Viar">
+                                                <img width="568" height="535" src="{{ asset(Voyager::image($image)) }}"  @frontendAlt('theme/viar/pages/contacts/index.blade.php', (asset(Voyager::image($image))), 'Viar', '')>
                                             </picture>
                                         </div>
                                     @endforeach

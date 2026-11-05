@@ -18,9 +18,9 @@
                     <div class="pd-m-row">
                         <p>@lang('gallery.photo_item_block_about_delivery_t1_6')</p>
                         <div class="img-row">
-                            <img width="87" height="47" src="{{ asset(env('THEME') . 'images') }}/module/1.svg" loading="lazy" alt="">
-                            <img width="92" height="27" src="{{ asset(env('THEME') . 'images') }}/module/2.svg" loading="lazy" alt="">
-                            <img width="75" height="32" src="{{ asset(env('THEME') . 'images') }}/module/3.svg" loading="lazy" alt="">
+                            <img width="87" height="47" src="{{ asset(env('THEME') . 'images') }}/module/1.svg" loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_modals.blade.php', (asset(env('THEME') . 'images')) . '/module/1.svg', '', '')>
+                            <img width="92" height="27" src="{{ asset(env('THEME') . 'images') }}/module/2.svg" loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_modals.blade.php', (asset(env('THEME') . 'images')) . '/module/2.svg', '', '')>
+                            <img width="75" height="32" src="{{ asset(env('THEME') . 'images') }}/module/3.svg" loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_modals.blade.php', (asset(env('THEME') . 'images')) . '/module/3.svg', '', '')>
                         </div>
                     </div>
                     <div class="pd-b-row">
@@ -61,7 +61,7 @@
                         <picture>
                             {{-- <source srcset="{{ asset(env('THEME') . 'images') }}/module/1 (1).webp" type="image/webp"> --}}
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module/1.png" type="image/png">
-                            <img src="{{ asset(env('THEME') . 'images') }}/module/1.png" loading="lazy" alt="WhatsApp">
+                            <img src="{{ asset(env('THEME') . 'images') }}/module/1.png" loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_modals.blade.php', (asset(env('THEME') . 'images')) . '/module/1.png', 'WhatsApp', '')>
                         </picture>
                         <b>@lang('popup.target-box_3_btn')</b>
                     </a>
@@ -117,7 +117,7 @@
                         <picture>
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module/1 (1).webp" type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module/1.png" type="image/png">
-                            <img src="{{ asset(env('THEME') . 'images') }}/module/1.png" loading="lazy" alt="WhatsApp">
+                            <img src="{{ asset(env('THEME') . 'images') }}/module/1.png" loading="lazy"  @frontendAlt('theme/viar/pages/gallery/zpart_modals.blade.php', (asset(env('THEME') . 'images')) . '/module/1.png', 'WhatsApp', '')>
                         </picture>
                         <b>@lang('popup.target-box_3_btn')</b>
                     </a>
@@ -135,7 +135,7 @@
                         <picture>
                              <source loading="lazy" class="lozad" srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/frame.webp" type="image/webp">
                             <source loading="lazy" class="lozad" srcset="{{ asset(env('THEME') . 'images') }}/cardreproduction/frame.jpg" type="image/jpeg">
-                            <img loading="lazy" class="lozad" width="418" height="414" src="{{ asset(env('THEME') . 'images') }}/cardreproduction/frame.jpg" alt="ViarCanvas">
+                            <img loading="lazy" class="lozad" width="418" height="414" src="{{ asset(env('THEME') . 'images') }}/cardreproduction/frame.jpg"  @frontendAlt('theme/viar/pages/gallery/zpart_modals.blade.php', (asset(env('THEME') . 'images')) . '/cardreproduction/frame.jpg', 'ViarCanvas', '')>
                         </picture>
                     </div>
                     <div class="pf-info">

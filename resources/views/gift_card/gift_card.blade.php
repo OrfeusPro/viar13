@@ -19,7 +19,7 @@
             <div class="section-frame">
                 <div class="breadcrumbs">
                     <div class="breadcrumbs__block">
-                        <a href="https://viarcanvas.com" class="breadcrumbs__link breadcrumbs__link_main">
+                        <a href="{{ storefront_url('/') }}" class="breadcrumbs__link breadcrumbs__link_main">
                             @lang('account.index1') </a>
                         <svg xmlns="http://www.w3.org/2000/svg" width="6" height="11" viewBox="0 0 6 11" fill="none" class="img-svg breadcrumbs__arrow replaced-svg">
                             <path
@@ -80,7 +80,7 @@
         </div>
 
         <div class="ellipse">
-            <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async" height="99" width="1374">
+            <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async" height="99" width="1374" @frontendAlt('gift_card/gift_card.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
         </div>
 
         <form id="gift-card-form" action="{{ route('send_gift_card') }}" method="post">
@@ -263,7 +263,7 @@
         </div>
 
         <div class="ellipse ellipse_black custom-ellipse">
-            <img src="./images/icon/ellipse-black.svg" alt="img" loading="lazy">
+            <img src="./images/icon/ellipse-black.svg"  loading="lazy" @frontendAlt('gift_card/gift_card.blade.php', './images/icon/ellipse-black.svg', 'img', '')>
         </div>
 
 
@@ -280,27 +280,27 @@
                         <div class="rgift-content">
                             <ul>
                                 <li>
-                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25" alt="Viar">
+                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25"  @frontendAlt('gift_card/gift_card.blade.php', (asset(env('THEME') . 'images/gift')) . '/gal.svg', 'Viar', '')>
                                     @lang('gift_card.vozvrat')
                                 </li>
                                 <li>
-                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25" alt="Viar">
+                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25"  @frontendAlt('gift_card/gift_card.blade.php', (asset(env('THEME') . 'images/gift')) . '/gal.svg', 'Viar', '')>
                                     @lang('gift_card.card_payment')
                                 </li>
                                 <li>
-                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25" alt="Viar">
+                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25"  @frontendAlt('gift_card/gift_card.blade.php', (asset(env('THEME') . 'images/gift')) . '/gal.svg', 'Viar', '')>
                                     @lang('gift_card.gift_cart_friends')
                                 </li>
                                 <li>
-                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25" alt="Viar">
+                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25"  @frontendAlt('gift_card/gift_card.blade.php', (asset(env('THEME') . 'images/gift')) . '/gal.svg', 'Viar', '')>
                                     @lang('gift_card.sertificate')
                                 </li>
                                 <li>
-                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25" alt="Viar">
+                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25"  @frontendAlt('gift_card/gift_card.blade.php', (asset(env('THEME') . 'images/gift')) . '/gal.svg', 'Viar', '')>
                                     @lang('gift_card.code_sertificate')
                                 </li>
                                 <li>
-                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25" alt="Viar">
+                                    <img src="{{ asset(env('THEME') . 'images/gift') }}/gal.svg" width="25" height="25"  @frontendAlt('gift_card/gift_card.blade.php', (asset(env('THEME') . 'images/gift')) . '/gal.svg', 'Viar', '')>
                                     @lang('gift_card.card_value')
                                 </li>
                             </ul>
@@ -313,9 +313,4 @@
 
     @include(config('theme.resource') . 'pages.index.faq9')
 
-    <script src="{{ asset('js/jcf.min.js') }}"></script>
-    <script src="{{ asset('js/jcf.radio.min.js') }}"></script>
-    <script src="{{ asset('js/jcf.select.min.js') }}"></script>
-    <script src="{{ asset('js/jcf.checkbox.min.js') }}"></script>
-    <script src="{{ asset('js/gift-card.min.js') }}"></script>
 @endsection

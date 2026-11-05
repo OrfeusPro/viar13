@@ -756,6 +756,27 @@ $(document).ready(function () {
             }
           }
         },
+        error: function (error) {
+          var response = error.responseJSON || {};
+
+          if (!Object.keys(response).length && error.responseText) {
+            try {
+              response = JSON.parse(error.responseText);
+            } catch (parseError) {
+              response = {};
+            }
+          }
+
+          var message = response.message || "";
+          if (!message && response.errors) {
+            $.each(response.errors, function (field, errors) {
+              message = errors && errors.length ? errors[0] : "";
+              return false;
+            });
+          }
+
+          alert(message || "Server error");
+        },
       });
     }
 	else
@@ -769,11 +790,17 @@ $(document).ready(function () {
 
 
   $(document).on('click', '.cart_send_pay', function() {
+    let button = $(this);
     let paymentMethod = $('.cart-payments-page__item.js-active .window-prompt').text();
     let paymentData = $('.cart-payments-page__item.js-active').data('type');
     let href = $(this).data('action');
 
     if ($('.cart-payments-sidebar__personal-data .cart-payments-page__item').hasClass('js-active') && $('.cart-payments-page__list .cart-payments-page__item').hasClass('js-active')) {
+      if (button.data('submitting')) {
+        return;
+      }
+      button.data('submitting', true);
+
       $.ajax({
         type: "post",
         dataType: "html",
@@ -789,12 +816,34 @@ $(document).ready(function () {
           if (response) {
             var data = jQuery.parseJSON(response);
             if (data["Error"]) {
+              button.removeData('submitting');
               alert(data["Error"]);
             } else if (data["success"]) {
               console.log("ok");
-              window.location.href = href;
+              $('<form>', {method: 'post', action: href})
+                .append($('<input>', {
+                  type: 'hidden',
+                  name: '_token',
+                  value: $('meta[name="csrf-token"]').attr('content')
+                }))
+                .appendTo('body')
+                .trigger('submit');
             }
           }
+        },
+        error: function (error) {
+          button.removeData('submitting');
+          var response = error.responseJSON || {};
+          var message = response.message || "";
+
+          if (!message && response.errors) {
+            $.each(response.errors, function (field, errors) {
+              message = errors && errors.length ? errors[0] : "";
+              return false;
+            });
+          }
+
+          alert(message || "Server error");
         },
       });
     }
@@ -926,7 +975,7 @@ $(document).ready(function () {
         if (response) {
           var data = jQuery.parseJSON(response);
           if (data["Error"] || data["error"]) {
-            alert(data["Error"] || data["error"]);
+            window.showCartNotice(data.error_code, data["Error"] || data["error"]);
           } else if (data["success"]) {
             $("#cart_item_" + basketId).html("");
             get_cart();

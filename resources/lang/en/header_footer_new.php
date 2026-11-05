@@ -22,9 +22,9 @@ return array (
   'terms_and_conditions' => 'Privacy Policy, General Terms and Conditions',
   'prices' => 'Prices',
   'stocks' => 'Sale',
-  'header' => 
+  'header' =>
   array (
-    'top_sale' => 'Summer Sale 2026 <span>up to -65%</span>',
+    'top_sale' => 'Autumn Sale 2026 <span>up to -65%</span>',
   ),
   'footer_paysera' => 'ViarStudia SIA provides functionality for the development and promotion of the site. graphics development',
   'footer_phone_new' => '+371 27044470',

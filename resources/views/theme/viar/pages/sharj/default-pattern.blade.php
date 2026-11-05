@@ -20,7 +20,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern1Min.webp" type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern1.webp" type="image/webp">
-                            <img width="92" height="121" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern1.webp" alt="">
+                            <img width="92" height="121" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern1.webp"  @frontendAlt('theme/viar/pages/sharj/default-pattern.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/s-pattern1.webp', '', '')>
                         </picture>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern2Min.webp" type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern2.webp" type="image/webp">
-                            <img width="190" height="239" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern2.webp" alt="">
+                            <img width="190" height="239" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern2.webp"  @frontendAlt('theme/viar/pages/sharj/default-pattern.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/s-pattern2.webp', '', '')>
                         </picture>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern3.webp?v=1" type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern3.webp?v=1" type="image/webp">
-                            <img width="190" height="239" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern3.webp?v=1" alt="">
+                            <img width="190" height="239" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/s-pattern3.webp?v=1"  @frontendAlt('theme/viar/pages/sharj/default-pattern.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/s-pattern3.webp?v=1', '', '')>
                         </picture>
                     </div>
                 </div>
@@ -161,7 +161,7 @@
                     @if(!empty($sharjDefaultPatternImageSources['src']) && !empty($sharjDefaultPatternImageSources['type']))
                         <source srcset="{{ $sharjDefaultPatternImageSources['src'] }}" type="{{ $sharjDefaultPatternImageSources['type'] }}">
                     @endif
-                    <img width="315" height="451" src="{{ $sharjDefaultPatternImageSources['src'] }}" alt="">
+                    <img width="315" height="451" src="{{ $sharjDefaultPatternImageSources['src'] }}"  @frontendAlt('theme/viar/pages/sharj/default-pattern.blade.php', ($sharjDefaultPatternImageSources['src']), '', '')>
                 </picture>
                 <a href="#" class="default-btn js-simps-calc" attr_image="{{ $ba_item->getUrl() }}" attr_type="fon" attr_name="{{ $ba_item["custom_properties"][$locale] }}">@lang("sharj.translate1")</a>
             </div>

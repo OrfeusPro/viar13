@@ -19,19 +19,19 @@
               <div class="c-abt-col">
                 <div class="c-abt-text">
                   <span>{!! trans('collage_new.z6_generator_info_text1') !!}</span>
-                  <img loading="lazy" width="73" height="32" src="{{ asset('images/collage/vector14.svg') }}" alt="">
+                  <img loading="lazy" width="73" height="32" src="{{ asset('images/collage/vector14.svg') }}"  @frontendAlt('theme/viar/pages/collage/generator_info.blade.php', (asset('images/collage/vector14.svg')), '', '')>
                 </div>
                 <div class="c-abt-block_row">
                   <div class="c-abt-block">
                     <div class="c-abt-b_title">{!! trans('collage_new.z6_generator_info_text2') !!}</div>
                     <div class="c-abt-img">
-                      <img loading="lazy" width="222" height="139" src="{{ asset('images/collage/cub1.svg') }}" alt="">
+                      <img loading="lazy" width="222" height="139" src="{{ asset('images/collage/cub1.svg') }}"  @frontendAlt('theme/viar/pages/collage/generator_info.blade.php', (asset('images/collage/cub1.svg')), '', '')>
                     </div>
                   </div>
                   <div class="c-abt-block">
                     <div class="c-abt-b_title">{!! trans('collage_new.z6_generator_info_text3') !!}</div>
                     <div class="c-abt-img">
-                      <img loading="lazy" width="172" height="142" src="{{ asset('images/collage/cub2.svg') }}" alt="">
+                      <img loading="lazy" width="172" height="142" src="{{ asset('images/collage/cub2.svg') }}"  @frontendAlt('theme/viar/pages/collage/generator_info.blade.php', (asset('images/collage/cub2.svg')), '', '')>
                     </div>
                   </div>
                 </div>
@@ -39,7 +39,7 @@
               <div class="c-abt-col">
                 <div class="c-abt-text">
                   <span>{!! trans('collage_new.z6_generator_info_text4') !!}</span>
-                  <img loading="lazy" width="73" height="32" src="{{ asset('images/collage/vector15.svg') }}" alt="">
+                  <img loading="lazy" width="73" height="32" src="{{ asset('images/collage/vector15.svg') }}"  @frontendAlt('theme/viar/pages/collage/generator_info.blade.php', (asset('images/collage/vector15.svg')), '', '')>
                 </div>
                 <div class="c-abt-block_row">
                   <div class="c-abt-block">
@@ -49,7 +49,7 @@
                         <source srcset="{{ asset('images/collage/g1.webp') }}" type="image/webp">
                         <source srcset="{{ asset('images/collage/g1.jpg') }}" type="image/jpeg">
                         <img loading="lazy" class="lozad" width="110" height="109" src="{{ asset('images/collage/g1.jpg') }}"
-                          data-src="{{ asset('images/collage/g1.jpg') }}" alt="Портрет по фото" loading="lazy">
+                          data-src="{{ asset('images/collage/g1.jpg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/collage/generator_info.blade.php', (asset('images/collage/g1.jpg')), 'Портрет по фото', '')>
                       </picture>
                     </div>
                   </div>
@@ -60,7 +60,7 @@
                         <source srcset="{{ asset('images/collage/g2.webp') }}" type="image/webp">
                         <source srcset="{{ asset('images/collage/g2.jpg') }}" type="image/jpeg">
                         <img loading="lazy" class="lozad" width="110" height="109" src="{{ asset('images/collage/g2.jpg') }}"
-                          data-src="{{ asset('images/collage/g2.jpg') }}" alt="Портрет по фото" loading="lazy">
+                          data-src="{{ asset('images/collage/g2.jpg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/collage/generator_info.blade.php', (asset('images/collage/g2.jpg')), 'Портрет по фото', '')>
                       </picture>
                     </div>
                   </div>
@@ -71,7 +71,7 @@
                         <source srcset="{{ asset('images/collage/g3.webp') }}" type="image/webp">
                         <source srcset="{{ asset('images/collage/g3.jpg') }}" type="image/jpeg">
                         <img loading="lazy" class="lozad" width="110" height="109" src="{{ asset('images/collage/g3.jpg') }}"
-                          data-src="{{ asset('images/collage/g3.jpg') }}" alt="Портрет по фото" loading="lazy">
+                          data-src="{{ asset('images/collage/g3.jpg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/collage/generator_info.blade.php', (asset('images/collage/g3.jpg')), 'Портрет по фото', '')>
                       </picture>
                     </div>
                   </div>

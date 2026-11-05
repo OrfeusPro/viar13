@@ -1,7 +1,7 @@
 <div class="vz-art cart-page-global">
 	<div class="section-frame">
 
-		@include(env('THEME_RESOURCES') . '.cart.bread', ['step' => 1])
+		@include(config('theme.resource') . 'cart.bread', ['step' => 1])
 
 		@if (!empty($basket))
 			@php $total_item_counts = 0; @endphp
@@ -41,11 +41,11 @@
 												</div>
 											@endif
 											<div class="cart-page-item__photo">
-												@include(env('THEME_RESOURCES') . '.cart.cart_item_image')
+												@include(config('theme.resource') . 'cart.cart_item_image')
 											</div>
 										</div>
 										<div class="cart-page-item__left--content">
-											@include(env('THEME_RESOURCES') . '.cart.cart_items')
+											@include(config('theme.resource') . 'cart.cart_items')
 										</div>
 									</div>
 									<div class="cart-page-item__pricing">
@@ -96,7 +96,7 @@
 										@foreach ($product['orig_images'] as $key_img=>$img)
 											@if($key_img>0)
 											<div class="cart-page-item__photo" id="cart_img_{{ $basketIndex }}_{{ $key_img }}">
-												<img src="{{ asset($img) }}">
+												<img src="{{ asset($img) }}" @frontendAlt('theme/viar/cart/step1.blade.php', (asset($img)), '', '')>
 
 												<div class="cart-page-item__photo--btns">
 													<a href="#" class="cart-page-item__photo--btn cart-page-item-edit" data-type="upload" data-cartid="{{ $basketIndex }}" data-cartimgid="{{ $key_img }}" data-curid="cart_img_{{ $basketIndex }}_{{ $key_img }}" data-img="{{ $img }}">
@@ -109,13 +109,14 @@
 												</div>
 											</div>
 											@endif
-										@endforeach
+					@endforeach
 										@endif
 
 									</div>
 								@endisset
 
 							</div>
+                            @include(config('theme.resource') . 'cart.size_offer', ['offer' => $sizeOffers[$basketIndex] ?? null, 'basketKey' => $basketIndex])
 						</div>
 					@endforeach
 					<div class="cart-page-global__bottom">
@@ -124,7 +125,7 @@
 					</div>
 				</div>
 
-				@include(env('THEME_RESOURCES') . '.cart.sidebar', [
+				@include(config('theme.resource') . 'cart.sidebar', [
 				    'basket' => $basket,
 				    'btn' => trans('cart_new.general_checkout'),
 					'btn_class' => 'cart_send_products',

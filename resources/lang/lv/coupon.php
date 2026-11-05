@@ -16,7 +16,7 @@ return array (
   'hb_main_popup_coupon_t1' => 'Extra Atlaide',
   'hb_main_popup_coupon_t2' => 'Izmantojiet kuponu: 10%',
   'hb_main_popup_coupon_t3' => 'Iepirkumu grozā:',
-  'hb_main_popup_coupon_t4' => 'siltums2026',
+  'hb_main_popup_coupon_t4' => 'RUDENS10',
   'hb_main_popup_coupon_t5' => 'Aktīvs līdz:',
   'abandoned_basket' => 'Izmantotais kupons: Pamests grozs',
   'giftcard' => 'Dāvanu karte izmantota',

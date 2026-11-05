@@ -1121,7 +1121,9 @@ $(document).ready(function () {
       form_data.append('photo_ex', photo_ex);
       form_data.append('pack', pack);
       form_data.append('dost_time', dost_time);
-      form_data.append('image', image);
+      if (image && image !== 'null' && image !== 'undefined') {
+        form_data.append('image', image);
+      }
       form_data.append('is_gall_with_img', is_gall_with_img);
       form_data.append('forma_id', forma_id);
       form_data.append('size', size);
@@ -1158,6 +1160,11 @@ $(document).ready(function () {
           $("body").addClass("open-frame");
           $(".popup-frame").css("display", "flex").hide().fadeIn();
           $(".popup-cart").fadeIn();
+        },
+        error: function (xhr) {
+          const errors = xhr.responseJSON && xhr.responseJSON.errors;
+          const firstError = errors && Object.values(errors).flat()[0];
+          alert(firstError || (xhr.responseJSON && xhr.responseJSON.message) || 'Request failed');
         },
       });
     }

@@ -5,14 +5,23 @@ namespace Tests\Feature\Api;
 use App\Models\SaEscalation;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
+use Tests\Support\CreatesSaChatSchema;
+use PHPUnit\Framework\Attributes\Test;
 
 class SaEscalationsCreateTest extends TestCase
 {
+    use CreatesSaChatSchema;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createSaChatSchema();
+    }
     private const ENDPOINT = '/api/sa/escalations';
     private const CREATE_LEAD_ENDPOINT = '/api/sa/leads';
     private const API_KEY = 'test-key';
 
-    /** @test */
+    #[Test]
     public function t07_001_valid_escalation_returns_ok()
     {
         $leadId = $this->createLeadForTests();
@@ -25,7 +34,7 @@ class SaEscalationsCreateTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function t07_002_duplicate_request_returns_duplicate()
     {
         $leadId = $this->createLeadForTests();
@@ -38,7 +47,7 @@ class SaEscalationsCreateTest extends TestCase
             ->assertJsonPath('status', 'duplicate');
     }
 
-    /** @test */
+    #[Test]
     public function t07_003_missing_reason_code_returns_validation_error()
     {
         $leadId = $this->createLeadForTests();
@@ -52,7 +61,7 @@ class SaEscalationsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function t07_004_missing_dialog_messages_returns_validation_error()
     {
         $leadId = $this->createLeadForTests();
@@ -66,7 +75,7 @@ class SaEscalationsCreateTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function t07_005_set_handoff_to_manager_is_reflected()
     {
         $leadId = $this->createLeadForTests();
@@ -80,7 +89,7 @@ class SaEscalationsCreateTest extends TestCase
             ->assertJsonPath('data.bot_mode', 'handoff_to_manager');
     }
 
-    /** @test */
+    #[Test]
     public function t07_006_missing_api_key_returns_unauthorized()
     {
         $leadId = $this->createLeadForTests();
@@ -89,7 +98,7 @@ class SaEscalationsCreateTest extends TestCase
         $this->assertContains($response->getStatusCode(), [401, 403]);
     }
 
-    /** @test */
+    #[Test]
     public function t07_007_client_phone_is_sanitized_before_persist()
     {
         $leadId = $this->createLeadForTests();
@@ -111,7 +120,7 @@ class SaEscalationsCreateTest extends TestCase
         $this->assertSame('+37129123456789', data_get($dialog, 'client.phone'));
     }
 
-    /** @test */
+    #[Test]
     public function t07_008_overlong_client_phone_returns_validation_error()
     {
         $leadId = $this->createLeadForTests();

@@ -9,10 +9,18 @@ use Tests\TestCase;
 
 class CrmWebhooksSendMessageTest extends TestCase
 {
+    use \Tests\Support\CreatesSaChatSchema;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createSaChatSchema();
+    }
+
     private const ENDPOINT = '/api/crm/webhooks/send-message';
     private const API_KEY = 'test-key';
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_001_valid_send_request_returns_accepted()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -31,10 +39,13 @@ class CrmWebhooksSendMessageTest extends TestCase
         $this->assertNotNull(SaMessage::query()->where('message_id', $messageId)->first());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_002_duplicate_idempotency_key_does_not_resend()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
+
+        $this->mock(\App\Services\SynvolveWebhookService::class, fn ($mock) => $mock
+            ->shouldReceive('notifyManagerMessageForOrderOrPhone')->once()->andReturn(true));
 
         $payload = $this->sendMessagePayload();
 
@@ -43,10 +54,11 @@ class CrmWebhooksSendMessageTest extends TestCase
         $response = $this->postJson(self::ENDPOINT, $payload, $this->apiHeaders());
 
         $response->assertStatus(200);
-        $this->assertContains($response->json('status'), ['ok', 'duplicate']);
+        $response->assertJsonPath('status', 'duplicate');
+        $this->assertDatabaseCount('sa_messages', 1);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_003_mode_after_send_handoff_to_manager_returns_bot_mode()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -58,7 +70,7 @@ class CrmWebhooksSendMessageTest extends TestCase
             ->assertJsonPath('result.bot_mode', 'handoff_to_manager');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_004_missing_client_phone_returns_validation_error()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -73,7 +85,7 @@ class CrmWebhooksSendMessageTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_005_missing_message_text_returns_validation_error()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -90,7 +102,7 @@ class CrmWebhooksSendMessageTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_006_missing_api_key_returns_unauthorized()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -100,7 +112,7 @@ class CrmWebhooksSendMessageTest extends TestCase
         $this->assertContains($response->getStatusCode(), [401, 403]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_007_missing_lead_id_is_allowed_for_preorder_conversation()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -128,7 +140,7 @@ class CrmWebhooksSendMessageTest extends TestCase
         $this->assertSame((string) data_get($payload, 'data.conversation_id'), (string) $message->conversation_id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t02_008_outbound_send_marks_conversation_as_read_for_manager()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);

@@ -1,3 +1,7 @@
+function checkoutEndpoint(name) {
+    var endpoints = document.getElementById('checkout-endpoints');
+    return endpoints && endpoints.getAttribute('data-' + name) || '/cart/' + name;
+}
 $(document).ready(function() {
 
     let portraitsSlider = $(".examples-portrait__slider");
@@ -278,26 +282,21 @@ $(document).ready(function() {
   }), $(".cart-page-item").on("click", ".cart_item_delete", function() {
       basketId = $(this).data("id"), d(basketId)
   }), $(document).on("click", ".cart-page-sidebar__certificate--btn", function(e) {
-      var t;
-      console.log("Применен купон"), e.preventDefault();
-      let a = $(this).prev().val();
-      a && (t = a, $.ajax({
-          type: "post",
-          dataType: "html",
-          headers: {
-              "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-          },
-          url: "/basket/coupon_use",
-          data: {
-              couponData: t
-          },
-          success: function(e) {
-              if (e) {
-                  var t = jQuery.parseJSON(e);
-                  "user" == t.finded && $(".js-popup-login").click(), 1 == t.finded && u()
-              }
-          }
-      }))
+      e.preventDefault();
+      const $block = $(this).closest('.cart-page-sidebar__certificate');
+      const $error = $block.find('.js-coupon-error');
+      const $button = $(this);
+      if ($button.data('pending')) return;
+      const code = $block.find('input[name="coupon"]').val();
+      if (!code) return;
+      $button.data('pending', true);
+      $.ajax({type: 'POST', dataType: 'json', url: $button.data('url') || '/basket/coupon_use',
+          headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+          data: {couponData: code, email: $block.find('input[name="coupon_email"]').val()},
+          success: function(response) { $error.text(''); if (response.finded == 1) u(); },
+          error: function(xhr) { $error.text((xhr.responseJSON || {}).message || ''); },
+          complete: function() { $button.data('pending', false); }
+      });
   }), $(document).on("click", "#country_block .select__option", function(e) {
       e.preventDefault();
       let t = $(this).data("value");
@@ -330,7 +329,7 @@ $(document).ready(function() {
               headers: {
                   "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
               },
-              url: "/cart/updateimg",
+              url: checkoutEndpoint("updateimg"),
               data: {
                   curId: n.curId,
                   imgSrc: n.imgSrc,
@@ -364,7 +363,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/delimage",
+          url: checkoutEndpoint("delimage"),
           data: {
               curId: t.curId,
               imgSrc: t.imgSrc,
@@ -389,7 +388,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setmaking",
+          url: checkoutEndpoint("setmaking"),
           data: {
               makeInfo: t,
               makePrice: 0,
@@ -428,7 +427,7 @@ $(document).ready(function() {
               if (t) {
                   var a = jQuery.parseJSON(t);
                   if (a.Error || a.error) {
-                      alert(a.Error || a.error);
+                      window.showCartNotice(a.error_code, a.Error || a.error);
                   } else if (a.success) {
                       $("#cart_item_" + e).html("");
                       u();
@@ -505,10 +504,6 @@ $(document).ready(function() {
                   var t = jQuery.parseJSON(e);
                   t.Error || (t.success ? (console.log(t),
                       $(".cart-pickup").css("display", "block"),
-                      $(".js-active").removeClass("js-active"),
-                      $(".cart-pickup").addClass("js-active"),
-                      $(".cart-delivery-item__content").css("display", "none"),
-                      $(".cart-pickup .cart-delivery-item__content").css("display", "block"),
                       $(".cart-data-page__input .simplebar-content").html(t.towns),
                       $(".cities-inner").text($(".cities-inner").data("inner")), $(".cart-delivery-point__pickup-point--wrapper .simplebar-content").html(t.pickup_points),
                       $(".pickup-text").text($(".cart-delivery-point__pickup-point--item:not(.hidden-item)").length),
@@ -537,7 +532,7 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setmaking",
+          url: checkoutEndpoint("setmaking"),
           data: {
               makeInfo: t,
               makePrice: 0,
@@ -569,28 +564,41 @@ $(document).ready(function() {
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setdelivery",
+          url: checkoutEndpoint("setdelivery"),
           data: t,
           success: function(t) {
               if (t) {
                   var a = jQuery.parseJSON(t);
                   a.Error ? alert(a.Error) : a.success && (console.log("ok"), window.location.href = e)
               }
+          },
+          error: function(e) {
+              var t = e.responseJSON || {};
+              if (!Object.keys(t).length && e.responseText) try {
+                  t = JSON.parse(e.responseText)
+              } catch (e) {
+                  t = {}
+              }
+              var a = t.message || "";
+              !a && t.errors && $.each(t.errors, function(e, t) {
+                  return a = t && t.length ? t[0] : "", !1
+              }), alert(a || "Server error")
           }
       }) : $("html, body").animate({
           scrollTop: $(".js-cart-delivery-item").offset().top
       }, 1e3)
   }), $(document).on("click", ".cart_send_pay", function() {
-      let e = $(".cart-payments-page__item.js-active .window-prompt").text(),
+      let n = $(this),
+          e = $(".cart-payments-page__item.js-active .window-prompt").text(),
           t = $(".cart-payments-page__item.js-active").data("type"),
           a = $(this).data("action");
-      $(".cart-payments-sidebar__personal-data .cart-payments-page__item").hasClass("js-active") && $(".cart-payments-page__list .cart-payments-page__item").hasClass("js-active") && $.ajax({
+      $(".cart-payments-sidebar__personal-data .cart-payments-page__item").hasClass("js-active") && $(".cart-payments-page__list .cart-payments-page__item").hasClass("js-active") && !n.data("submitting") && (n.data("submitting", !0), $.ajax({
           type: "post",
           dataType: "html",
           headers: {
               "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
           },
-          url: "/cart/setpay",
+          url: checkoutEndpoint("setpay"),
           data: {
               paymentMethod: e,
               paymentData: t
@@ -598,10 +606,25 @@ $(document).ready(function() {
           success: function(e) {
               if (e) {
                   var t = jQuery.parseJSON(e);
-                  t.Error ? alert(t.Error) : t.success && (console.log("ok"), window.location.href = a)
+                  t.Error ? (n.removeData("submitting"), alert(t.Error)) : t.success && (console.log("ok"), $("<form>", {
+                      method: "post",
+                      action: a
+                  }).append($("<input>", {
+                      type: "hidden",
+                      name: "_token",
+                      value: $('meta[name="csrf-token"]').attr("content")
+                  })).appendTo("body").trigger("submit"))
               }
+          },
+          error: function(e) {
+              n.removeData("submitting");
+              var t = e.responseJSON || {},
+                  a = t.message || "";
+              !a && t.errors && $.each(t.errors, function(e, t) {
+                  return a = t && t.length ? t[0] : "", !1
+              }), alert(a || "Server error")
           }
-      })
+      }))
   }), $(".cart-data-page__input input, .cart-data-page__input input").on("keyup", function() {
       c(this)
   }), $(document).on("click", ".cart_send_userdata", function(event) {
@@ -666,7 +689,7 @@ $(document).ready(function() {
             headers: {
                 "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
             },
-            url: "/cart/setuser",
+            url: checkoutEndpoint("setuser"),
             data: {
                 name: t,
                 surname: a,
@@ -752,8 +775,9 @@ $(document).ready(function() {
           }
       })
   }), $(document).on("click", ".clear_coupon", function(e) {
+      e.preventDefault();
       $.ajax({
-          url: "/cart/clear_coupon",
+          url: checkoutEndpoint("clear_coupon"),
           type: "get",
           success: function(e) {
               u(), console.log("AJAX request successful")
@@ -775,13 +799,7 @@ $(document).ready(function() {
       $(".popup-inv-size").addClass("active");
       return
   }
-}), $(document).on("click", "#t3_submit_btn", function(e) {
-  e.preventDefault();
-  if (0 == $('.product-download input[type="file"]')[0].files.length) {
-      $(".popup-inv-size").addClass("active");
-      return
-  }
-	}), $(document).ready(function() {
+}), $(document).ready(function() {
 	  function e() {
 	      const menuLinks = $(".header-item_pc > ul > li > a");
 	      const headerFixed = $(".vz-header").hasClass("is-fixed");
@@ -850,6 +868,44 @@ $('.popup-repair-basket .popup-close').on('click', function (e) {
 
     window.location.href = '/cart';
 });
+
+// Load the HEIC converter only for HEIC and HEIF photos.
+(function (window, document) {
+    var pending;
+    window.viarLoadHeic = function () {
+        if (pending) return pending;
+        if (typeof window.HeicTo === 'function') return Promise.resolve(window.HeicTo);
+        pending = new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            var timer;
+            function fail() {
+                clearTimeout(timer);
+                script.onload = script.onerror = null;
+                script.remove();
+                reject(new Error('Unable to load HEIC converter. Please select the file again.'));
+            }
+            script.setAttribute('data-cfasync', 'false');
+            script.async = true;
+            script.src = 'https://cdn.jsdelivr.net/npm/heic-to@1.5.2/dist/iife/heic-to.js';
+            script.onload = function () {
+                if (typeof window.HeicTo !== 'function') return fail();
+                clearTimeout(timer);
+                script.onload = script.onerror = null;
+                resolve(window.HeicTo);
+            };
+            script.onerror = fail;
+            timer = setTimeout(fail, 30000);
+            document.head.appendChild(script);
+        }).catch(function (error) { pending = null; throw error; });
+        return pending;
+    };
+    window.viarConvertPhoto = async function (file) {
+        if (file.type !== 'image/heic' && file.type !== 'image/heif' && file.type !== '') return file;
+        var convert = await window.viarLoadHeic();
+        var blob = await convert({ blob: file, type: 'image/png' });
+        return new File([blob], file.name.replace(/\.(heic|heif)$/i, '.png'), { type: 'image/png' });
+    };
+})(window, document);
 
 $(document).ready(function() {
     /* -- faq --*/
@@ -1140,4 +1196,18 @@ $(document).ready(function () {
 
     initGoogleRatingBadge();
     initGoogleReviewsSection();
+});
+
+$(document).on('click', '.js-checkout-size-offer', function () {
+    const button = this;
+    if (button.disabled) return;
+    button.disabled = true;
+    const $error = $(button).closest('.checkout-size-offer').find('.js-checkout-size-error');
+    $.ajax({type: 'POST', dataType: 'json', url: $(button).data('url'),
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data: {basket_key: $(button).data('basket-key'), new_size: $(button).data('size')},
+        success: function(response) { if (response.success) window.location.reload(); else $error.text(response.message); },
+        error: function(xhr) { $error.text((xhr.responseJSON || {}).message || ''); },
+        complete: function() { button.disabled = false; }
+    });
 });

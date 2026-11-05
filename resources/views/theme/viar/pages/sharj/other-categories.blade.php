@@ -23,7 +23,7 @@
                                     @if(!empty($sharjOtherCategoryImageSources['src']) && !empty($sharjOtherCategoryImageSources['type']))
                                         <source srcset="{{ $sharjOtherCategoryImageSources['src'] }}" type="{{ $sharjOtherCategoryImageSources['type'] }}">
                                     @endif
-                                    <img width="315" height="451" src="{{ $sharjOtherCategoryImageSources['src'] }}" alt="">
+                                    <img width="315" height="451" src="{{ $sharjOtherCategoryImageSources['src'] }}"  @frontendAlt('theme/viar/pages/sharj/other-categories.blade.php', ($sharjOtherCategoryImageSources['src']), '', '')>
                                 </picture>
                             </div>
                         </a>

@@ -42,8 +42,8 @@
         </ul>
 
     </div>
-    <img src="{{ asset('img/modular-banner-img.png') }}" alt="" class="modular-banner-img">
-    <img src="{{ asset('img/modular-banner-img2.png') }}" alt="" class="modular-banner-img2">
+    <img src="{{ asset('img/modular-banner-img.png') }}"  class="modular-banner-img" @frontendAlt('partials/module_pics/header.blade.php', (asset('img/modular-banner-img.png')), '', '')>
+    <img src="{{ asset('img/modular-banner-img2.png') }}"  class="modular-banner-img2" @frontendAlt('partials/module_pics/header.blade.php', (asset('img/modular-banner-img2.png')), '', '')>
     <div class="modular-banner-content def__tabs clearfix">
         <div class="modular-tabs">
             <div class="tabs-title">
@@ -63,13 +63,13 @@
                     <h6>{{ $tab['c_right1_quest_title'] }}</h6>
                     <ul>
                         <li><a target="_blank" href="{{ setting('sots-seti.telegram_link') }}">
-                                <img src="{{ asset('img/solial-icon.png') }}" alt=""></a></li>
+                                <img src="{{ asset('img/solial-icon.png') }}"  @frontendAlt('partials/module_pics/header.blade.php', (asset('img/solial-icon.png')), '', '')></a></li>
                         <li><a target="_blank" href="{{ setting('sots-seti.what_link') }}">
-                                <img src="{{ asset('img/solial-icon2.png') }}" alt=""></a></li>
+                                <img src="{{ asset('img/solial-icon2.png') }}"  @frontendAlt('partials/module_pics/header.blade.php', (asset('img/solial-icon2.png')), '', '')></a></li>
                         <li><a target="_blank" href="{{ setting('sots-seti.viber_link') }}">
-                                <img src="{{ asset('img/solial-icon3.png') }}" alt=""></a></li>
+                                <img src="{{ asset('img/solial-icon3.png') }}"  @frontendAlt('partials/module_pics/header.blade.php', (asset('img/solial-icon3.png')), '', '')></a></li>
                         <li><a target="_blank" href="{{ setting('sots-seti.gmail_link') }}">
-                                <img src="{{ asset('img/solial-icon4.png') }}" alt=""></a></li>
+                                <img src="{{ asset('img/solial-icon4.png') }}"  @frontendAlt('partials/module_pics/header.blade.php', (asset('img/solial-icon4.png')), '', '')></a></li>
                     </ul>
                 </div>
                 <a class="order js_scroll_calc" href="#generator"

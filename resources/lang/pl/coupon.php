@@ -16,7 +16,7 @@ return array (
   'hb_main_popup_coupon_t1' => 'Dodatkowa Zniżka',
   'hb_main_popup_coupon_t2' => 'Użyj kuponu: 10%',
   'hb_main_popup_coupon_t3' => 'W Koszyku:',
-  'hb_main_popup_coupon_t4' => 'ciepło2026',
+  'hb_main_popup_coupon_t4' => 'JESIEN10',
   'hb_main_popup_coupon_t5' => 'Aktywny do:',
   'abandoned_basket' => 'Użyty kupon: Porzucony koszyk',
   'giftcard' => 'Użyto karty podarunkowej',

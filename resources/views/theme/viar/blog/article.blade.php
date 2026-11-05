@@ -4,7 +4,7 @@
 
 			<div class="breadcrumbs breadcrumbs__block" itemscope itemtype="https://schema.org/BreadcrumbList">
 				<div itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-					<a href="https://viarcanvas.com" class="breadcrumbs__link breadcrumbs__link_main" itemprop="item">
+					<a href="{{ storefront_url('/') }}" class="breadcrumbs__link breadcrumbs__link_main" itemprop="item">
 						<span itemprop="name">@lang('breadcrumbs.home')</span>
 					</a>
 					<meta itemprop="position" content="1" />
@@ -75,8 +75,15 @@
 							@endif
 						<p>@lang("blog.article_author")</p>
 						<div class="a-date">
-							{{ date('d M, Y', strtotime($blog_item->created_at)) }}
-							<span class="date-published" itemprop="datePublished" style="display: none;"><?php echo date('Y-m-d\TH:i:sP', strtotime($blog_item->created_at)); ?></span>
+							@php
+							    $publicationDate = $blog_item->created_at;
+							    $publicationTimestamp = $publicationDate === null || trim((string) $publicationDate) === ''
+							        ? false : strtotime((string) $publicationDate);
+							@endphp
+							@if ($publicationTimestamp !== false)
+							    {{ date('d M, Y', $publicationTimestamp) }}
+							    <span class="date-published" itemprop="datePublished" style="display: none;">{{ date('Y-m-d\TH:i:sP', $publicationTimestamp) }}</span>
+							@endif
 							<span class="date-modified" itemprop="dateModified" style="display: none;"><?php echo date('Y-m-d\TH:i:sP', strtotime($blog_item->updated_at)); ?></span>
 							<a href="{{ route('blog_inner', $blog_item->slug) }}" itemprop="url" style="display: none;"><?php echo date('Y-m-d\TH:i:sP', strtotime($blog_item->updated_at)); ?>{{ $blog_item->title }}</a>
 						</div>
@@ -105,7 +112,7 @@
 							</p>
 						</div>
 						<div class="article-block" itemprop="articleBody">
-							{!! render_content_images($blog_item->text) !!}
+							{!! storefront_html(render_content_images($blog_item->text)) !!}
 						</div>
 						{{-- <div class="article-block">
 						<div class="article-banner orange-banner">
@@ -304,6 +311,6 @@
 		.main-first {
 			padding: 90px 0 92px;
 		}
-	</style>	
+	</style>
 	@include(env('THEME_RESOURCES') . 'pages.faq.item',["faqs" => $faqs])
 </div>

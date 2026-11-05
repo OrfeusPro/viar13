@@ -33,12 +33,12 @@
                     <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/main.webp" type="image/webp">
                     <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/main.png" type="image/png">
                     <img width="1350" height="745"
-                        src="{{ asset(env('THEME') . 'images') }}/module-generator/main.png" alt="Viar">
+                        src="{{ asset(env('THEME') . 'images') }}/module-generator/main.png"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/main.png', 'Viar', '')>
                 </picture>
             </div>
             <div class="ellipse">
-                <img alt="img" src="{{ asset(env('THEME') . 'images') }}/module-generator/el.svg" decoding="async"
-                    height="99" width="1374">
+                <img  src="{{ asset(env('THEME') . 'images') }}/module-generator/el.svg" decoding="async"
+                    height="99" width="1374" @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/el.svg', 'img', '')>
             </div>
             <div class="mg-content">
                 <h1 class="mg-title page-title">
@@ -125,8 +125,8 @@
 
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async"
-        height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async"
+        height="99" width="1374" @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 @include(config('theme.resource') . 'pages.modular-generator.mg-types')
@@ -144,7 +144,7 @@
                 <div class="mg-design__item">
                     <div class="icon">
                         <img width="71" height="71"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i1.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i1.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/i1.svg', '', '')>
                     </div>
                     <div class="mg-design__content">
                         <div class="title">
@@ -158,14 +158,14 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/d1.jpg"
                                 type="image/jpeg">
-                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d1.jpg" alt="">
+                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d1.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/d1.jpg', '', '')>
                         </picture>
                     </div>
                 </div>
                 <div class="mg-design__item">
                     <div class="icon">
                         <img width="71" height="71"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i2.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i2.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/i2.svg', '', '')>
                     </div>
                     <div class="mg-design__content">
                         <div class="title">
@@ -179,14 +179,14 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/d2.jpg"
                                 type="image/jpeg">
-                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d2.jpg" alt="">
+                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d2.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/d2.jpg', '', '')>
                         </picture>
                     </div>
                 </div>
                 <div class="mg-design__item">
                     <div class="icon">
                         <img width="71" height="71"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i3.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i3.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/i3.svg', '', '')>
                     </div>
                     <div class="mg-design__content">
                         <div class="title">
@@ -200,14 +200,14 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/d3.jpg"
                                 type="image/jpeg">
-                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d3.jpg" alt="">
+                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d3.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/d3.jpg', '', '')>
                         </picture>
                     </div>
                 </div>
                 <div class="mg-design__item">
                     <div class="icon">
                         <img width="71" height="71"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i4.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/i4.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/i4.svg', '', '')>
                     </div>
                     <div class="mg-design__content">
                         <div class="title">
@@ -221,7 +221,7 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/d4.jpg"
                                 type="image/jpeg">
-                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d4.jpg" alt="">
+                            <img src="{{ asset(env('THEME') . 'images') }}/module-generator/d4.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/d4.jpg', '', '')>
                         </picture>
                     </div>
                 </div>
@@ -319,28 +319,28 @@
                             @lang('pages.modular-generator.mg-why.p1')
                         </p>
                         <img width="85" height="85"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w1.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w1.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/w1.svg', '', '')>
                     </li>
                     <li>
                         <p>
                             @lang('pages.modular-generator.mg-why.p2')
                         </p>
                         <img width="85" height="85"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w2.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w2.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/w2.svg', '', '')>
                     </li>
                     <li>
                         <p>
                             @lang('pages.modular-generator.mg-why.p3')
                         </p>
                         <img width="85" height="85"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w3.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w3.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/w3.svg', '', '')>
                     </li>
                     <li>
                         <p>
                             @lang('pages.modular-generator.mg-why.p4')
                         </p>
                         <img width="85" height="85"
-                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w4.svg" alt="">
+                            src="{{ asset(env('THEME') . 'images') }}/module-generator/w4.svg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/w4.svg', '', '')>
                     </li>
                 </ul>
                 <picture>
@@ -348,7 +348,7 @@
                         type="image/webp">
                     <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/why1.png" type="image/png">
                     <img width="1321" height="864" class="img-bg"
-                        src="{{ asset(env('THEME') . 'images') }}/module-generator/why1.png" alt="">
+                        src="{{ asset(env('THEME') . 'images') }}/module-generator/why1.png"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/why1.png', '', '')>
                 </picture>
             </div>
         </div>
@@ -357,8 +357,8 @@
 
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async"
-        height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async"
+        height="99" width="1374" @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 <div class="mg-inspire">
@@ -381,7 +381,7 @@
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg"
                                 type="image/jpeg">
                             <img width="460" height="340"
-                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg" alt="Viar">
+                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/ins1.jpg', 'Viar', '')>
                         </picture>
                     </div>
                     <div class="swiper-slide">
@@ -391,7 +391,7 @@
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/ins2.jpg"
                                 type="image/jpeg">
                             <img width="460" height="340"
-                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins2.jpg" alt="Viar">
+                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins2.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/ins2.jpg', 'Viar', '')>
                         </picture>
                     </div>
                     <div class="swiper-slide">
@@ -401,7 +401,7 @@
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/ins3.jpg"
                                 type="image/jpeg">
                             <img width="460" height="340"
-                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins3.jpg" alt="Viar">
+                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins3.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/ins3.jpg', 'Viar', '')>
                         </picture>
                     </div>
                     <div class="swiper-slide">
@@ -411,7 +411,7 @@
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg"
                                 type="image/jpeg">
                             <img width="460" height="340"
-                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg" alt="Viar">
+                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/ins1.jpg', 'Viar', '')>
                         </picture>
                     </div>
                     <div class="swiper-slide">
@@ -421,7 +421,7 @@
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg"
                                 type="image/jpeg">
                             <img width="460" height="340"
-                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg" alt="Viar">
+                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins1.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/ins1.jpg', 'Viar', '')>
                         </picture>
                     </div>
                     <div class="swiper-slide">
@@ -431,7 +431,7 @@
                             <source srcset="{{ asset(env('THEME') . 'images') }}/module-generator/ins2.jpg"
                                 type="image/jpeg">
                             <img width="460" height="340"
-                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins2.jpg" alt="Viar">
+                                src="{{ asset(env('THEME') . 'images') }}/module-generator/ins2.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/ins2.jpg', 'Viar', '')>
                         </picture>
                     </div>
                 </div>
@@ -477,7 +477,7 @@
                                             type="image/png">
                                         <img width="95" height="114"
                                             src="{{ asset(env('THEME') . 'images') }}/module-generator/pngwing.png"
-                                            alt="Viar">
+                                             @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/pngwing.png', 'Viar', '')>
                                     </picture>
                                     <p>
                                         @lang('pages.modular-generator.generate.p1')
@@ -512,7 +512,7 @@
                                                                         <div class="mg-tab__target">
                                                                             <span>1.</span>
                                                                             <img src="{{ asset(env('THEME') . 'images') }}/module-generator/mt1.svg"
-                                                                                alt="">
+                                                                                 @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/mt1.svg', '', '')>
                                                                             <p>@lang('pages.modular-generator.generate.step1.select_photo')</p>
                                                                         </div>
                                                                         <div class="mg-tab__content">
@@ -598,7 +598,7 @@
                                                                         <div class="mg-tab__target">
                                                                             <span>2.</span>
                                                                             <img src="{{ asset(env('THEME') . 'images') }}/module-generator/mt2.svg"
-                                                                                alt="">
+                                                                                 @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/mt2.svg', '', '')>
                                                                             <p>
                                                                                 @lang('pages.modular-generator.generate.step2.select_form')
                                                                             </p>
@@ -613,7 +613,7 @@
                                                                         <div class="mg-tab__target">
                                                                             <span>3.</span>
                                                                             <img src="{{ asset(env('THEME') . 'images') }}/module-generator/mt3.svg"
-                                                                                alt="">
+                                                                                 @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/mt3.svg', '', '')>
                                                                             <p>
                                                                                 @lang('pages.modular-generator.generate.step3.select_size')
                                                                             </p>
@@ -697,7 +697,7 @@
                                                                         <div class="mg-tab__target">
                                                                             <span>4.</span>
                                                                             <img src="{{ asset(env('THEME') . 'images') }}/module-generator/mt4.svg"
-                                                                                alt="">
+                                                                                 @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/mt4.svg', '', '')>
                                                                             <p>@lang('gl.hud_of_text')</p>
                                                                         </div>
                                                                         <div class="mg-tab__content">
@@ -716,7 +716,7 @@
                                                                                                     <label>
                                                                                                         <span>{{ $item->getTranslatedAttribute('name', app()->getLocale()) }}
                                                                                                             <img src="{{ asset('images/icon/info.svg') }}"
-                                                                                                                alt=""></span>
+                                                                                                                 @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                                                                                                         <input
                                                                                                             name="decoration"
                                                                                                             type="radio"
@@ -758,7 +758,7 @@
                                                                         <div class="mg-tab__target">
                                                                             <span>5.</span>
                                                                             <img src="{{ asset(env('THEME') . 'images') }}/module-generator/mt5.svg"
-                                                                                alt="">
+                                                                                 @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/module-generator/mt5.svg', '', '')>
                                                                             <p>@lang('cart.comment')</p>
                                                                         </div>
                                                                         <div class="mg-tab__content">
@@ -842,7 +842,7 @@
                                                                                         srcset="{{ asset(env('THEME') . 'images') }}/canvas/interio1.jpg"
                                                                                         type="image/jpeg">
                                                                                     <img src="{{ asset(env('THEME') . 'images') }}/canvas/interio1.jpg"
-                                                                                        alt="" />
+                                                                                          @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/canvas/interio1.jpg', '', '')/>
                                                                                 </picture>
                                                                             </div>
                                                                         </div>
@@ -876,7 +876,7 @@
                                                                                         srcset="{{ asset(env('THEME') . 'images') }}/canvas/interio2.jpg"
                                                                                         type="image/jpeg">
                                                                                     <img src="{{ asset(env('THEME') . 'images') }}/canvas/interio2.jpg"
-                                                                                        alt="" />
+                                                                                          @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/canvas/interio2.jpg', '', '')/>
                                                                                 </picture>
                                                                             </div>
                                                                         </div>
@@ -910,7 +910,7 @@
                                                                                         srcset="{{ asset(env('THEME') . 'images') }}/canvas/interio3.jpg"
                                                                                         type="image/jpeg">
                                                                                     <img src="{{ asset(env('THEME') . 'images') }}/canvas/interio3.jpg"
-                                                                                        alt="" />
+                                                                                          @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/canvas/interio3.jpg', '', '')/>
                                                                                 </picture>
                                                                             </div>
 
@@ -945,7 +945,7 @@
                                                                                         srcset="{{ asset(env('THEME') . 'images') }}/canvas/interio4.jpg"
                                                                                         type="image/jpeg">
                                                                                     <img src="{{ asset(env('THEME') . 'images') }}/canvas/interio4.jpg"
-                                                                                        alt="" />
+                                                                                          @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/canvas/interio4.jpg', '', '')/>
                                                                                 </picture>
                                                                             </div>
 
@@ -980,7 +980,7 @@
                                                                                         srcset="{{ asset(env('THEME') . 'images') }}/canvas/interio5.jpg"
                                                                                         type="image/jpeg">
                                                                                     <img src="{{ asset(env('THEME') . 'images') }}/canvas/interio5.jpg"
-                                                                                        alt="" />
+                                                                                          @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/canvas/interio5.jpg', '', '')/>
                                                                                 </picture>
                                                                             </div>
                                                                         </div>
@@ -1189,7 +1189,7 @@
                         <div class="formalizaton__submit">
                             <div class="formalization-price" id="totalSum">
                                 {!! trans('collage_new.z7_generator_total_text1') !!} <span><span data-total="15.00"
-                                        class="totalPriceNew">15</span>€</span>
+                                        class="totalPriceNew">15</span>â‚¬</span>
                             </div>
                             <div class="formalization-btn" id="t3_submit_btn" data-pid="3" data-name="Canvas">
                                 {!! trans('collage_new.z7_generator_total_text2') !!}</div>
@@ -1208,7 +1208,7 @@
                                                 <label>
                                                     <span>{{ $set->getTranslatedAttribute('name', app()->getLocale()) }}<img
                                                             src="{{ asset('images/icon/info.svg') }}"
-                                                            alt="" /></span>
+                                                              @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset('images/icon/info.svg')), '', '')/></span>
                                                     <input name="boxes[]" type="radio" checked
                                                         data-id="{{ $set['id'] }}"
                                                         data-name="{{ $set->getTranslatedAttribute('name', app()->getLocale()) }}"
@@ -1237,7 +1237,7 @@
                                         <div class="check check-border"></div>
                                         <label>
                                             <span>{!! $AProductionTime->standart_text !!} {{ $AProductionTime->standart_price }}
-                                                €</span>
+                                                â‚¬</span>
                                             <input type="radio" name="dost_time"
                                                 value="{{ $AProductionTime->standart_price }}" />
                                         </label>
@@ -1246,7 +1246,7 @@
                                         <div class="check check-border"></div>
                                         <label>
                                             <span>{!! $AProductionTime->express_text !!} {{ $AProductionTime->express_price }}
-                                                €</span>
+                                                â‚¬</span>
                                             <input type="radio" name="dost_time"
                                                 value="{{ $AProductionTime->express_price }}" />
                                         </label>
@@ -1264,8 +1264,8 @@
 </div>
 
 <div class="ellipse ellipse_black">
-    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg" alt="img"
-        loading="lazy" style="background: linear-gradient(180deg, rgb(31 36 51) 50%, rgb(250 242 234) 50%);">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"
+        loading="lazy" style="background: linear-gradient(180deg, rgb(31 36 51) 50%, rgb(250 242 234) 50%);" @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
 </div>
 
 <div class="about-work">
@@ -1288,7 +1288,7 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w1.jpg" type="image/jpeg">
                             <img width="120" height="120"
-                                src="{{ asset(env('THEME') . 'images') }}/contacts/w1.jpg" alt="">
+                                src="{{ asset(env('THEME') . 'images') }}/contacts/w1.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w1.jpg', '', '')>
                         </picture>
                     </div>
                     <div class="ab-title">
@@ -1313,7 +1313,7 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w2.jpg" type="image/jpeg">
                             <img width="120" height="120"
-                                src="{{ asset(env('THEME') . 'images') }}/contacts/w2.jpg" alt="">
+                                src="{{ asset(env('THEME') . 'images') }}/contacts/w2.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w2.jpg', '', '')>
                         </picture>
                     </div>
                     <div class="ab-title">
@@ -1338,7 +1338,7 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w3.jpg" type="image/jpeg">
                             <img width="120" height="120"
-                                src="{{ asset(env('THEME') . 'images') }}/contacts/w3.jpg" alt="">
+                                src="{{ asset(env('THEME') . 'images') }}/contacts/w3.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w3.jpg', '', '')>
                         </picture>
                     </div>
                     <div class="ab-title">
@@ -1363,7 +1363,7 @@
                                 type="image/webp">
                             <source srcset="{{ asset(env('THEME') . 'images') }}/contacts/w4.jpg" type="image/jpeg">
                             <img width="120" height="120"
-                                src="{{ asset(env('THEME') . 'images') }}/contacts/w4.jpg" alt="">
+                                src="{{ asset(env('THEME') . 'images') }}/contacts/w4.jpg"  @frontendAlt('theme/viar/pages/modular-generator/index.blade.php', (asset(env('THEME') . 'images')) . '/contacts/w4.jpg', '', '')>
                         </picture>
                     </div>
                     <div class="ab-title">

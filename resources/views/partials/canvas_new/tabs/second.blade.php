@@ -5,7 +5,7 @@
                 <picture>
                     <source srcset="{{ ver_asset('images/canvas/minimum-size.webp') }}" type="image/webp">
                     <source srcset="{{ ver_asset('images/canvas/minimum-size.jpg') }}" type="image/jpeg">
-                    <img src="{{ ver_asset('images/canvas/minimum-size.jpg') }}" alt="">
+                    <img src="{{ ver_asset('images/canvas/minimum-size.jpg') }}"  @frontendAlt('partials/canvas_new/tabs/second.blade.php', (ver_asset('images/canvas/minimum-size.jpg')), '', '')>
                 </picture>
             </div>
             <div class="about__fit-content">
@@ -17,7 +17,7 @@
                 <picture>
                     <source srcset="{{ ver_asset('images/canvas/social.webp') }}" type="image/webp">
                     <source srcset="{{ ver_asset('images/canvas/social.jpg') }}" type="image/jpeg">
-                    <img src="{{ ver_asset('images/canvas/social.jpg') }}" alt="">
+                    <img src="{{ ver_asset('images/canvas/social.jpg') }}"  @frontendAlt('partials/canvas_new/tabs/second.blade.php', (ver_asset('images/canvas/social.jpg')), '', '')>
                 </picture>
             </div>
             <div class="about__fit-content">
@@ -29,7 +29,7 @@
                 <picture>
                     <source srcset="{{ ver_asset('images/canvas/selfie.webp') }}" type="image/webp">
                     <source srcset="{{ ver_asset('images/canvas/selfie.jpg') }}" type="image/jpeg">
-                    <img src="{{ ver_asset('images/canvas/selfie.jpg') }}" alt="">
+                    <img src="{{ ver_asset('images/canvas/selfie.jpg') }}"  @frontendAlt('partials/canvas_new/tabs/second.blade.php', (ver_asset('images/canvas/selfie.jpg')), '', '')>
                 </picture>
             </div>
             <div class="about__fit-content">
@@ -59,7 +59,7 @@
             <picture>
                 <source srcset="{{ ver_asset('images/canvas/social-min.webp') }}" type="image/webp">
                 <source srcset="{{ ver_asset('images/canvas/social-min.png') }}" type="image/png"/>
-                <img src="{{ ver_asset('images/canvas/social-min.png') }}" alt=""/>
+                <img src="{{ ver_asset('images/canvas/social-min.png') }}"  @frontendAlt('partials/canvas_new/tabs/second.blade.php', (ver_asset('images/canvas/social-min.png')), '', '')/>
             </picture>
         </div>
     </div>

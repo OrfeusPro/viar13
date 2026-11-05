@@ -19,13 +19,13 @@
 											<source srcset="{{ $webpSrc }}" type="image/webp">
 										@endif
 										<source srcset="{{ Voyager::image($slide['png']) }}" type="image/jpeg">
-										<img width="578" height="589" src="{{ Voyager::image($slide['png']) }}" alt="Viar Image">
+										<img width="578" height="589" src="{{ Voyager::image($slide['png']) }}"  @frontendAlt('theme/viar/pages/portrait/slider--royal.blade.php', (Voyager::image($slide['png'])), 'Viar Image', '')>
 									</picture>
 
 									@if (isset($slide['sub_title']) && $slide['sub_title'] && $slide['sub_title'] != '-')
 										<div class="pmo-block pmo-block1">
 											<p @if (isset($slide['is_white']) && $slide['is_white']) class="slider_hb_white" @endif>{!! explode('|', $slide['sub_title'])[0] ?? '' !!}</p>
-											<img src="{{ asset('/images/sharj/pngwing.webp') }}" alt="">
+											<img src="{{ asset('/images/sharj/pngwing.webp') }}"  @frontendAlt('theme/viar/pages/portrait/slider--royal.blade.php', (asset('/images/sharj/pngwing.webp')), '', '')>
 										</div>
 									@endif
 									@if (isset($slide['fotopng']) && $slide['fotopng'])
@@ -40,7 +40,7 @@
 												@if(!empty($royalSliderPhotoSources['src']) && !empty($royalSliderPhotoSources['type']))
 													<source srcset="{{ $royalSliderPhotoSources['src'] }}" type="{{ $royalSliderPhotoSources['type'] }}">
 												@endif
-												<img width="150" height="195" src="{{ $royalSliderPhotoSources['src'] }}" alt="Viar Image">
+												<img width="150" height="195" src="{{ $royalSliderPhotoSources['src'] }}"  @frontendAlt('theme/viar/pages/portrait/slider--royal.blade.php', ($royalSliderPhotoSources['src']), 'Viar Image', '')>
 											</picture>
 										</div>
 									@endif
@@ -58,7 +58,7 @@
 												@if(!empty($royalSliderMobilePhotoSources['src']) && !empty($royalSliderMobilePhotoSources['type']))
 													<source srcset="{{ $royalSliderMobilePhotoSources['src'] }}" type="{{ $royalSliderMobilePhotoSources['type'] }}">
 												@endif
-												<img width="150" height="195" src="{{ $royalSliderMobilePhotoSources['src'] }}" alt="Viar Image">
+												<img width="150" height="195" src="{{ $royalSliderMobilePhotoSources['src'] }}"  @frontendAlt('theme/viar/pages/portrait/slider--royal.blade.php', ($royalSliderMobilePhotoSources['src']), 'Viar Image', '')>
 											</picture>
 										</div>
 									@endif
@@ -81,7 +81,7 @@
 									@if (isset($slide['sub_title']) && $slide['sub_title'] && $slide['sub_title'] != '-')
 										<div class="pmm-block">
 											<p @if (isset($slide['is_white']) && $slide['is_white']) class="slider_hb_white" @endif>{!! explode('|', $slide['sub_title'])[1] ?? '' !!}</p>
-											<img src="{{ asset(env('THEME') . 'images/wing.svg') }}" alt="">
+											<img src="{{ asset(env('THEME') . 'images/wing.svg') }}"  @frontendAlt('theme/viar/pages/portrait/slider--royal.blade.php', (asset(env('THEME') . 'images/wing.svg')), '', '')>
 										</div>
 									@endif
 								</div>
@@ -183,7 +183,7 @@
 								<div class="absolute-elements">
 									<div class="portrait-gift">
 										<img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}"
-											alt="Viar Image">
+											 @frontendAlt('theme/viar/pages/portrait/slider--royal.blade.php', (asset('images/collage/gift.svg')), 'Viar Image', '')>
 										<p>{!! $slide['text_gift'] !!}</p>
 									</div>
 								</div>
@@ -223,5 +223,5 @@
 </div>
 @endif
 
-<div class="ellipse notmobile"><img alt="img" src="{{ asset(env('THEME') . 'images/icon/ellipse-whete.svg') }}"
-		decoding="async" height="99" width="1374" /></div>
+<div class="ellipse notmobile"><img  src="{{ asset(env('THEME') . 'images/icon/ellipse-whete.svg') }}"
+		decoding="async" height="99" width="1374"  @frontendAlt('theme/viar/pages/portrait/slider--royal.blade.php', (asset(env('THEME') . 'images/icon/ellipse-whete.svg')), 'img', '')/></div>

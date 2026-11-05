@@ -6,22 +6,22 @@
             </div>
             <div class="requirements-file clearfix">
                 <div class="file-item">
-                    <img src="{{ asset('img/file-item-img1.png') }}" alt="">
+                    <img src="{{ asset('img/file-item-img1.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/file-item-img1.png')), '', '')>
                     {!! $canvas_req['req_item1'] !!}
                 </div>
                 <div class="file-item">
-                    <img src="{{ asset('img/file-item-img2.png') }}" alt="">
+                    <img src="{{ asset('img/file-item-img2.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/file-item-img2.png')), '', '')>
                     {!! $canvas_req['req_item2'] !!}
                 </div>
                 <div class="file-item">
-                    <img src="{{ asset('img/file-item-img3.png') }}" alt="">
+                    <img src="{{ asset('img/file-item-img3.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/file-item-img3.png')), '', '')>
                     {!! $canvas_req['req_item3'] !!}
                 </div>
             </div>
             <div class="social-photo">
                 <div class="social-title">
                     <h3>{!! $canvas_req['req_photo_title'] !!}</h3>
-                    <img src="{{ asset('img/social-title-img.png') }}" alt="">
+                    <img src="{{ asset('img/social-title-img.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/social-title-img.png')), '', '')>
                 </div>
                 <div class="social-items clearfix">
                     <div class="social-item">
@@ -53,16 +53,16 @@
                 </div>
                 <div class="take-img clearfix">
                     <div class="take-item">
-                        <img src="{{ asset('img/take-item-img1.png') }}" alt="" class="take-item-img1">
+                        <img src="{{ asset('img/take-item-img1.png') }}"  class="take-item-img1" @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/take-item-img1.png')), '', '')>
                         <div class="text">
-                            <img src="{{ asset('img/take-item-after1.png') }}" alt="">
+                            <img src="{{ asset('img/take-item-after1.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/take-item-after1.png')), '', '')>
                             {!! $canvas_req['req_blank_pay'] !!}
                         </div>
                     </div>
                     <div class="take-item">
-                        <img src="{{ asset('img/take-item-img2.png') }}" alt="" class="take-item-img2">
+                        <img src="{{ asset('img/take-item-img2.png') }}"  class="take-item-img2" @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/take-item-img2.png')), '', '')>
                         <div class="text">
-                            <img src="{{ asset('img/take-item-after2.png') }}" alt="">
+                            <img src="{{ asset('img/take-item-after2.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/take-item-after2.png')), '', '')>
                             {!! $canvas_req['req_int_free'] !!}
                         </div>
                     </div>
@@ -82,15 +82,15 @@
                             <div class="text">
                                 {!! $canvas_req['req_img_right_text'] !!}
                             </div>
-                            <img src="{{ asset('img/paid-img.png') }}" alt="">
+                            <img src="{{ asset('img/paid-img.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/paid-img.png')), '', '')>
                         </div>
                         <p>{!! $canvas_req['req_zap_right_title'] !!}</p>
-                        <img src="{{ asset('img/paid-img2.png') }}" alt="" class="paid-img2">
+                        <img src="{{ asset('img/paid-img2.png') }}"  class="paid-img2" @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/paid-img2.png')), '', '')>
                     </div>
                 </div>
                 <div class="search-image-left2">
                     <p>{!! $canvas_req['req_ins_filter'] !!}</p>
-                    <img src="{{ asset('img/screen-img.png') }}" alt="">
+                    <img src="{{ asset('img/screen-img.png') }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (asset('img/screen-img.png')), '', '')>
                 </div>
                 <div class="search-image-right2">
                     {!! $canvas_req['req_zap_right_text'] !!}
@@ -103,22 +103,22 @@
                 <div class="ready-items clearfix">
                     <div class="ready-item">
                         <a href="{!! $canvas_req['req_link1_lnk'] !!}"></a>
-                        <img src="{{ Voyager::image( $canvas_req['req_link1_img'] ) }}" alt="">
+                        <img src="{{ Voyager::image( $canvas_req['req_link1_img'] ) }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (Voyager::image( $canvas_req['req_link1_img'] )), '', '')>
                         <h5><span></span>{!! $canvas_req['req_link1_title'] !!}</h5>
                     </div>
                     <div class="ready-item">
                         <a href="{!! $canvas_req['req_link2_link'] !!}"></a>
-                        <img src="{{ Voyager::image( $canvas_req['req_link2_img'] ) }}" alt="">
+                        <img src="{{ Voyager::image( $canvas_req['req_link2_img'] ) }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (Voyager::image( $canvas_req['req_link2_img'] )), '', '')>
                         <h5><span></span>{!! $canvas_req['req_link2_title'] !!}</h5>
                     </div>
                     <div class="ready-item">
                         <a href="{!! $canvas_req['req_link3_link'] !!}"></a>
-                        <img src="{{ Voyager::image( $canvas_req['req_link3_img'] ) }}" alt="">
+                        <img src="{{ Voyager::image( $canvas_req['req_link3_img'] ) }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (Voyager::image( $canvas_req['req_link3_img'] )), '', '')>
                         <h5><span></span>{!! $canvas_req['req_link3_title'] !!}</h5>
                     </div>
                     <div class="ready-item">
                         <a href="{!! $canvas_req['req_link4_link'] !!}"></a>
-                        <img src="{{ Voyager::image( $canvas_req['req_link4_img'] ) }}" alt="">
+                        <img src="{{ Voyager::image( $canvas_req['req_link4_img'] ) }}"  @frontendAlt('partials/module_pics/module_req.blade.php', (Voyager::image( $canvas_req['req_link4_img'] )), '', '')>
                         <h5><span></span>{!! $canvas_req['req_link4_title'] !!}</h5>
                     </div>
                 </div>

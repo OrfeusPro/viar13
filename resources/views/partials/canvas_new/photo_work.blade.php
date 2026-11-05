@@ -149,7 +149,7 @@
                             @if(!empty($optimalBeforeImageSources['src']) && !empty($optimalBeforeImageSources['type']))
                                 <source srcset="{{ $optimalBeforeImageSources['src'] }}" type="{{ $optimalBeforeImageSources['type'] }}">
                             @endif
-                            <img src="{{ $optimalBeforeImageSources['src'] }}" alt=""/>
+                            <img src="{{ $optimalBeforeImageSources['src'] }}"  @frontendAlt('partials/canvas_new/photo_work.blade.php', ($optimalBeforeImageSources['src']), '', '')/>
                         </picture>
                         <div class="resize">
                             <picture>
@@ -162,7 +162,7 @@
                                 @if(!empty($optimalAfterImageSources['src']) && !empty($optimalAfterImageSources['type']))
                                     <source srcset="{{ $optimalAfterImageSources['src'] }}" type="{{ $optimalAfterImageSources['type'] }}">
                                 @endif
-                                <img src="{{ $optimalAfterImageSources['src'] }}" alt=""/>
+                                <img src="{{ $optimalAfterImageSources['src'] }}"  @frontendAlt('partials/canvas_new/photo_work.blade.php', ($optimalAfterImageSources['src']), '', '')/>
                             </picture>
                         </div>
                     @endif
@@ -244,7 +244,7 @@
                             @if(!empty($premiumBeforeImageSources['src']) && !empty($premiumBeforeImageSources['type']))
                                 <source srcset="{{ $premiumBeforeImageSources['src'] }}" type="{{ $premiumBeforeImageSources['type'] }}">
                             @endif
-                            <img src="{{ $premiumBeforeImageSources['src'] }}" alt=""/>
+                            <img src="{{ $premiumBeforeImageSources['src'] }}"  @frontendAlt('partials/canvas_new/photo_work.blade.php', ($premiumBeforeImageSources['src']), '', '')/>
                         </picture>
                         <div class="resize">
                             <picture>
@@ -257,7 +257,7 @@
                                 @if(!empty($premiumAfterImageSources['src']) && !empty($premiumAfterImageSources['type']))
                                     <source srcset="{{ $premiumAfterImageSources['src'] }}" type="{{ $premiumAfterImageSources['type'] }}">
                                 @endif
-                                <img src="{{ $premiumAfterImageSources['src'] }}" alt=""/>
+                                <img src="{{ $premiumAfterImageSources['src'] }}"  @frontendAlt('partials/canvas_new/photo_work.blade.php', ($premiumAfterImageSources['src']), '', '')/>
                             </picture>
                         </div>
                     @endif

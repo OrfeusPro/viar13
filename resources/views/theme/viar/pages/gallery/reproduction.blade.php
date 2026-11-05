@@ -68,7 +68,7 @@
                                     <source srcset="{{ $webpSrc }}" type="image/webp">
                                 @endif
                                 <source srcset="https://viarcanvas.com{{ $src }}" type="image/jpeg">
-                                <img width="1350" height="381" src="https://viarcanvas.com{{ $src }}" alt="">
+                                <img width="1350" height="381" src="https://viarcanvas.com{{ $src }}"  @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', 'https://viarcanvas.com' . ($src), '', '')>
                             </picture>
 
                         @endforeach
@@ -295,22 +295,22 @@
                                         <ul class="mc-subcat np-subcat">
                                             <div class="forms-grid">
                                                 <div class="active">
-                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/1.svg" alt="">
+                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/1.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/1.svg', '', '')>
                                                 </div>
                                                 <div>
-                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/2.svg" alt="">
+                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/2.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/2.svg', '', '')>
                                                 </div>
                                                 <div>
-                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/3.svg" alt="">
+                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/3.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/3.svg', '', '')>
                                                 </div>
                                                 <div>
-                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/4.svg" alt="">
+                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/4.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/4.svg', '', '')>
                                                 </div>
                                                 <div>
-                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/5.svg" alt="">
+                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/5.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/5.svg', '', '')>
                                                 </div>
                                                 <div>
-                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/6.svg" alt="">
+                                                    <img src="{{ asset(env('THEME') . 'images') }}/reproduction/6.svg"  @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/6.svg', '', '')>
                                                 </div>
                                             </div>
                                         </ul>
@@ -722,7 +722,7 @@
                 <source srcset="{{ asset(env('THEME').'images') }}/reproduction/2.webp" type="image/webp">
                 <source srcset="{{ asset(env('THEME') . 'images') }}/reproduction/2.jpg" type="image/jpeg">
                 <img width="1399" height="65" src="{{ asset(env('THEME') . 'images') }}/reproduction/2.jpg"
-                    alt="Viar" loading="lazy">
+                     loading="lazy" @frontendAlt('theme/viar/pages/gallery/reproduction.blade.php', (asset(env('THEME') . 'images')) . '/reproduction/2.jpg', 'Viar', '')>
             </picture>
         </div>
     </div>

@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Stevebauman\Location\Facades\Location;
+use App\Services\RequestGeoIp;
 
 class UserLocationServiceProvider extends ServiceProvider
 {
@@ -24,7 +24,7 @@ class UserLocationServiceProvider extends ServiceProvider
     public function boot()
     {
         if (isset($_SERVER['REQUEST_URI']) && !str_contains($_SERVER['REQUEST_URI'], '/admin/')){
-            if ($position = Location::get(request()->ip())) {
+            if ($position = app(RequestGeoIp::class)->get(request())) {
                 $country_code = $position->countryCode;
                 if ($country_code == 'FI') {
                     $country_code = 'FIN';

@@ -31,12 +31,12 @@
                                 @if(!empty($portraitNewSlidePngSources['src']) && !empty($portraitNewSlidePngSources['type']))
                                     <source srcset="{{ $portraitNewSlidePngSources['src'] }}" type="{{ $portraitNewSlidePngSources['type'] }}">
                                 @endif
-                                <img class="canvas-object" width="550" height="600" src="{{ $portraitNewSlidePngSources['src'] }}" alt="Viar Image">
+                                <img class="canvas-object" width="550" height="600" src="{{ $portraitNewSlidePngSources['src'] }}"  @frontendAlt('partials/portrait_new/slider.blade.php', ($portraitNewSlidePngSources['src']), 'Viar Image', '')>
                             </picture>
                             @if(isset($slide['sub_title']) && $slide['sub_title'] && $slide['sub_title']!='-')
                             <div class="pmo-block pmo-block1">
                                 <p>{!! $slide['sub_title'] !!}</p>
-                                <img src="{{ asset(env('THEME').'images/wing.svg')}}" alt="">
+                                <img src="{{ asset(env('THEME').'images/wing.svg')}}"  @frontendAlt('partials/portrait_new/slider.blade.php', (asset(env('THEME').'images/wing.svg')), '', '')>
                             </div>
                             @endif
                             @if(isset($slide['fotopng']) && $slide['fotopng'])
@@ -51,7 +51,7 @@
                                     @if(!empty($portraitNewSlidePhotoSources['src']) && !empty($portraitNewSlidePhotoSources['type']))
                                         <source srcset="{{ $portraitNewSlidePhotoSources['src'] }}" type="{{ $portraitNewSlidePhotoSources['type'] }}">
                                     @endif
-                                    <img width="150" height="195" src="{{ $portraitNewSlidePhotoSources['src'] }}" alt="Viar Image">
+                                    <img width="150" height="195" src="{{ $portraitNewSlidePhotoSources['src'] }}"  @frontendAlt('partials/portrait_new/slider.blade.php', ($portraitNewSlidePhotoSources['src']), 'Viar Image', '')>
                                 </picture>
                             </div>
                             @endif
@@ -69,7 +69,7 @@
                                     @if(!empty($portraitNewSlideMobilePhotoSources['src']) && !empty($portraitNewSlideMobilePhotoSources['type']))
                                         <source srcset="{{ $portraitNewSlideMobilePhotoSources['src'] }}" type="{{ $portraitNewSlideMobilePhotoSources['type'] }}">
                                     @endif
-                                    <img width="150" height="195" src="{{ $portraitNewSlideMobilePhotoSources['src'] }}" alt="Viar Image">
+                                    <img width="150" height="195" src="{{ $portraitNewSlideMobilePhotoSources['src'] }}"  @frontendAlt('partials/portrait_new/slider.blade.php', ($portraitNewSlideMobilePhotoSources['src']), 'Viar Image', '')>
                                 </picture>
                             </div>
                             @endif
@@ -89,7 +89,7 @@
                             @if(isset($slide['sub_title']) && $slide['sub_title'] && $slide['sub_title']!='-')
                             <div class="pmm-block">
                                 <p>{!! $slide['sub_title'] !!}</p>
-                                <img src="{{ asset(env('THEME').'images/wing.svg')}}" alt="">
+                                <img src="{{ asset(env('THEME').'images/wing.svg')}}"  @frontendAlt('partials/portrait_new/slider.blade.php', (asset(env('THEME').'images/wing.svg')), '', '')>
                             </div>
                             @endif
                         </div>
@@ -172,7 +172,7 @@
                         </div>
                         <div class="absolute-elements">
                             <div class="portrait-gift">
-                                <img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}" alt="Viar Image">
+                                <img loading="lazy" width="149" height="138" src="{{ asset('images/collage/gift.svg') }}"  @frontendAlt('partials/portrait_new/slider.blade.php', (asset('images/collage/gift.svg')), 'Viar Image', '')>
                                 <p>{!! $slide['text_gift'] !!}</p>
                             </div>
                         </div>
@@ -186,4 +186,4 @@
 </div>
 
 
-<div class="ellipse"><img alt="img" src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374" /></div>
+<div class="ellipse"><img  src="{{ asset(env('THEME').'images/icon/ellipse-whete.svg') }}" decoding="async" height="99" width="1374"  @frontendAlt('partials/portrait_new/slider.blade.php', (asset(env('THEME').'images/icon/ellipse-whete.svg')), 'img', '')/></div>

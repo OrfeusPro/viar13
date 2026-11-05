@@ -2537,6 +2537,25 @@
     padding: 15px 15px 20px 15px;
 }
 
+.canvas-photo-required-error {
+    display: none;
+    margin: 0 0 8px;
+    color: #c9362b;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.canvas-photo-required-error.is-visible {
+    display: block;
+}
+
+.filter-accordion .pd-canvas[aria-invalid="true"] .file-save {
+    border-color: #e34b3f;
+    background: #fff8f6;
+    box-shadow: 0 0 0 2px rgba(227, 75, 63, .22);
+}
+
 .generate .generate-content .gallery-photo .photo-filter .filter-accordion .accordion-content .shapes ul {
     display: flex;
     flex-wrap: wrap;

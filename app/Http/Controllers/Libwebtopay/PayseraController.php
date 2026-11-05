@@ -3,21 +3,19 @@
 namespace App\Http\Controllers\Libwebtopay;
 
 use Exception;
+use Throwable;
 use Redirect;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Libwebtopay\WebToPay;
-use App\Models\Orders;
-use App\Services\SynvolveWebhookService;
+use App\Services\Payment\PayseraCallbackService;
 
 class PayseraController extends Controller
 {
     private $WebToPay;
-    const projectid = '230308'; //номер проекта
-    const sign_password = '79b7cdcd14db14e9cb498f1793817d69'; // пароль проекта
-
     public function __construct()
     {
         $this->WebToPay = app(WebToPay::class);
@@ -30,9 +28,25 @@ class PayseraController extends Controller
         try {
             $requestData = $request instanceof Request ? $request->all() : (array) $request;
 
-            WebToPay::redirectToPayment([
-                'projectid' => self::projectid,
-                'sign_password' => self::sign_password,
+            $projectId = (string) config('paysera.project_id');
+            $signPassword = (string) config('paysera.sign_password');
+            if ($projectId === '' || $signPassword === '') {
+                throw new Exception('Paysera is not configured.');
+            }
+
+            $acceptUrl = Arr::get($requestData, 'accepturl');
+            $cancelUrl = Arr::get($requestData, 'cancelurl');
+            $callbackUrl = Arr::get($requestData, 'callbackurl');
+            if (! $acceptUrl || ! $cancelUrl || ! $callbackUrl) {
+                $selfUrl = PayseraController::getSelfUrl();
+                $acceptUrl = $acceptUrl ?: $selfUrl . '/pay_accept';
+                $cancelUrl = $cancelUrl ?: $selfUrl . '/pay_cancel';
+                $callbackUrl = $callbackUrl ?: $selfUrl . '/pay_callback';
+            }
+
+            $paymentUrl = WebToPay::buildPaymentUrl([
+                'projectid' => $projectId,
+                'sign_password' => $signPassword,
                 'orderid' => Arr::get($requestData, 'order_id'),
                 'amount' => (int) Arr::get($requestData, 'payseraTotalPrice'),
                 'currency' => 'EUR',
@@ -40,53 +54,31 @@ class PayseraController extends Controller
                 'p_firstname' => Arr::get($requestData, 'name'),
                 'p_lastname' => Arr::get($requestData, 'last_name'),
                 'p_email' => Arr::get($requestData, 'email'),
-                'accepturl' => Arr::get($requestData, 'accepturl', PayseraController::getSelfUrl() . '/pay_accept'),
-                'cancelurl' => Arr::get($requestData, 'cancelurl', PayseraController::getSelfUrl() . '/pay_cancel'),
-                'callbackurl' => Arr::get($requestData, 'callbackurl', PayseraController::getSelfUrl() . '/pay_callback'),
-                'test' => 0,
+                'accepturl' => $acceptUrl,
+                'cancelurl' => $cancelUrl,
+                'callbackurl' => $callbackUrl,
+                'test' => config('paysera.test') ? 1 : 0,
                 'payment' => Arr::get($requestData, 'payment'),
             ]);
 
+            return redirect()->away($paymentUrl);
         } catch (Exception $exception) {
-            dd($exception->getMessage());
-        }
+            Log::error('Unable to start Paysera checkout.', [
+                'order_id' => Arr::get($requestData ?? [], 'order_id'),
+                'payment' => Arr::get($requestData ?? [], 'payment'),
+                'message' => $exception->getMessage(),
+            ]);
 
-        exit();
+            return redirect()->back()->with(
+                'error',
+                __('Unable to start online payment. Please try again or choose another payment method.')
+            );
+        }
     }
     //
     static public function getSelfUrl(): string
     {
-        $url = substr(strtolower($_SERVER['SERVER_PROTOCOL']), 0, strpos($_SERVER['SERVER_PROTOCOL'], '/'));
-
-        if (isset($_SERVER['HTTPS']) === true) {
-            $url .= ($_SERVER['HTTPS'] === 'on') ? 's' : '';
-        }
-
-        $url .= '://' . $_SERVER['HTTP_HOST'];
-
-        if (isset($_SERVER['SERVER_PORT']) === true && $_SERVER['SERVER_PORT'] !== '80') {
-            $url .= ':' . $_SERVER['SERVER_PORT'];
-        }
-
-        $url .= dirname($_SERVER['SCRIPT_NAME']);
-        $url = $url . App::getLocale();
-        $url = str_replace("\\",'/', $url);
-        return $url;
-    }
-
-    function isPaymentValid(array $order, array $response): bool
-    {
-        if (array_key_exists('payamount', $response) === false) {
-            if ($order['amount'] !== $response['amount'] || $order['currency'] !== $response['currency']) {
-                throw new Exception('Wrong payment amount');
-            }
-        } else {
-            if ($order['amount'] !== $response['payamount'] || $order['currency'] !== $response['paycurrency']) {
-                throw new Exception('Wrong payment amount');
-            }
-        }
-
-        return true;
+        return rtrim(url(App::getLocale()), '/');
     }
 
     function pay_accept()
@@ -96,27 +88,13 @@ class PayseraController extends Controller
         try {
             $response = WebToPay::validateAndParseData(
                 $_REQUEST,
-                self::projectid,
-                self::sign_password
+                (string) config('paysera.project_id'),
+                (string) config('paysera.sign_password')
             );
 
             if ($response['status'] === '1' || $response['status'] === '3') {
-                //@ToDo: Validate payment amount and currency, example provided in isPaymentValid method.
-                //@ToDo: Validate order status by $response['orderid']. If it is not already approved, approve it.
+                app(PayseraCallbackService::class)->confirmOrder($response);
 
-                $order = Orders::where('id', $response['orderid'])->get()->first();
-
-                // get the id of current order
-                // i want to check delivery data in this order by id , i have a function in Order model called getDeliveryData()
-                // i want to check if has_invited_sale=1 then i want to know id of the user who invited this sale
-
-                // $order_id = $response['orderid'];
-                // $has_invited_sale= $order->getDeliveryData($order_id,'has_invited_sale');
-                $order->payment_status = "payed";
-                $order->save();
-                app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paysera');
-
-                echo 'OK';
                 // $content = view(env('THEME_RESOURCES') . '.pay.callback')->with('response', $response)->render();
                 return Redirect::route('thanks', ['order_id' => $response['orderid'], 'payed' => true ]);
             } else {
@@ -124,19 +102,17 @@ class PayseraController extends Controller
                 //$content = view(env('THEME_RESOURCES') . '.pay.callback')->with('exception', 'Payment was not successful')->render();
                 return Redirect::route('thanks', ['order_id' => $response['orderid']]);
             }
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
             //$content = view(env('THEME_RESOURCES') . '.pay.callback')->with('exception', $exception->getMessage())->render();
 
             //dd($response, $exception);
 
-            if(isset($response['orderid']))
-            {
-                return Redirect::route('thanks', ['order_id' => $response['orderid']]);
-            }
-            else
-            {
-                return Redirect::route('thanks', ['exception' => $exception->getMessage()]);
-            }
+            Log::warning('Paysera accept was rejected.', [
+                'order_id' => $response['orderid'] ?? null,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return Redirect::route('cart.index')->with('error', __('Payment confirmation could not be verified.'));
         }
 
 
@@ -153,48 +129,22 @@ class PayseraController extends Controller
         try {
             $response = WebToPay::validateAndParseData(
                 $_REQUEST,
-                self::projectid,
-                self::sign_password
+                (string) config('paysera.project_id'),
+                (string) config('paysera.sign_password')
             );
 
-            if ($response['status'] === '1' || $response['status'] === '3') {
-                //@ToDo: Validate payment amount and currency, example provided in isPaymentValid method.
-                //@ToDo: Validate order status by $response['orderid']. If it is not already approved, approve it.
-
-                $order = Orders::where('id', $response['orderid'])->get()->first();
-
-                // get the id of current order
-
-                // i want to check delivery data in this order by id , i have a function in Order model called getDeliveryData()
-                // i want to check if has_invited_sale=1 then i want to know id of the user who invited this sale
-
-                // $order_id = $response['orderid'];
-                // $has_invited_sale= $order->getDeliveryData($order_id,'has_invited_sale');
-                $order->payment_status = "payed";
-                $order->save();
-                app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paysera');
-
-                echo 'OK';
-                // $content = view(env('THEME_RESOURCES') . '.pay.callback')->with('response', $response)->render();
-                return Redirect::route('thanks', ['order_id' => $response['orderid'], 'payed' => true ]);
-            } else {
-                throw new Exception('Payment was not successful');
-                //$content = view(env('THEME_RESOURCES') . '.pay.callback')->with('exception', 'Payment was not successful')->render();
-                return Redirect::route('thanks', ['order_id' => $response['orderid']]);
-            }
-        } catch (Exception $exception) {
+            return Redirect::route('thanks', ['order_id' => $response['orderid'] ?? null]);
+        } catch (Throwable $exception) {
             //$content = view(env('THEME_RESOURCES') . '.pay.callback')->with('exception', $exception->getMessage())->render();
 
             //dd($response, $exception);
 
-            if(isset($response['orderid']))
-            {
-                return Redirect::route('thanks', ['order_id' => $response['orderid']]);
-            }
-            else
-            {
-                return Redirect::route('thanks', ['exception' => $exception->getMessage()]);
-            }
+            Log::warning('Paysera cancel response was rejected.', [
+                'order_id' => $response['orderid'] ?? null,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return Redirect::route('cart.index')->with('error', __('Payment cancellation could not be verified.'));
         }
 
 
@@ -212,25 +162,20 @@ class PayseraController extends Controller
         try {
             $response = WebToPay::validateAndParseData(
                 $_REQUEST,
-                self::projectid,
-                self::sign_password
+                (string) config('paysera.project_id'),
+                (string) config('paysera.sign_password')
             );
 
-            if ($response['status'] === '1' || $response['status'] === '3') {
+            app(PayseraCallbackService::class)->confirmOrder($response);
 
-                $order = Orders::where('id', $response['orderid'])->get()->first();
-                $order->payment_status = "payed";
-                $order->save();
-                app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order->id, 'payment_status_changed_paysera');
+            return response('OK', 200);
+        } catch (Throwable $exception) {
+            Log::warning('Paysera callback was rejected.', [
+                'order_id' => $response['orderid'] ?? null,
+                'message' => $exception->getMessage(),
+            ]);
 
-                echo 'OK';
-                // $order_id = $response['orderid'];
-                // $has_invited_sale= $order->getDeliveryData($order_id,'has_invited_sale');
-            } else {
-                throw new Exception('Payment was not successful');
-            }
-        } catch (Exception $exception) {
-            echo get_class($exception) . ':' . $exception->getMessage();
+            return response('ERROR', 400);
         }
     }
 }

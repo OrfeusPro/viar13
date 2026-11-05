@@ -7,32 +7,32 @@
             <div class="what-items clearfix">
                 <div class="what-item">
                     <img class="" src="{{ asset('img/what-item-img1.png') }}"
-                        data-src="{{ asset('img/what-item-img1.png') }}" alt="">
+                        data-src="{{ asset('img/what-item-img1.png') }}"  @frontendAlt('partials/canvas/what_1_block.blade.php', (asset('img/what-item-img1.png')), '', '')>
                     {!! $canvas_what['top_text'] !!}
                 </div>
                 <div class="what-item">
                     <img class="" src="{{ asset('img/what-item-img2.png') }}"
-                        data-src="{{ asset('img/what-item-img2.png') }}" alt="">
+                        data-src="{{ asset('img/what-item-img2.png') }}"  @frontendAlt('partials/canvas/what_1_block.blade.php', (asset('img/what-item-img2.png')), '', '')>
                     {!! $canvas_what['left_text'] !!}
                 </div>
                 <div class="what-item">
                     <img class="" src="{{ asset('img/what-item-img3.png') }}"
-                        data-src="{{ asset('img/what-item-img3.png') }}" alt="">
+                        data-src="{{ asset('img/what-item-img3.png') }}"  @frontendAlt('partials/canvas/what_1_block.blade.php', (asset('img/what-item-img3.png')), '', '')>
                     {!! $canvas_what['right_text'] !!}
                 </div>
                 <div class="what-item">
                     <img class="" src="{{ asset('img/what-item-img4.png') }}"
-                        data-src="{{ asset('img/what-item-img4.png') }}" alt="">
+                        data-src="{{ asset('img/what-item-img4.png') }}"  @frontendAlt('partials/canvas/what_1_block.blade.php', (asset('img/what-item-img4.png')), '', '')>
                     {!! $canvas_what['bot_left_text'] !!}
                 </div>
                 <div class="what-item">
                     <img class="" src="{{ asset('img/what-item-img5.png') }}"
-                        data-src="{{ asset('img/what-item-img5.png') }}" alt="">
+                        data-src="{{ asset('img/what-item-img5.png') }}"  @frontendAlt('partials/canvas/what_1_block.blade.php', (asset('img/what-item-img5.png')), '', '')>
                     {!! $canvas_what['bot_right_text'] !!}
                 </div>
                 <div class="what-item">
                     <img class="" src="{{ asset('img/what-item-img6.png') }}"
-                        data-src="{{ asset('img/what-item-img6.png') }}" alt="">
+                        data-src="{{ asset('img/what-item-img6.png') }}"  @frontendAlt('partials/canvas/what_1_block.blade.php', (asset('img/what-item-img6.png')), '', '')>
                     {!! $canvas_what['bot_bot_text'] !!}
                 </div>
             </div>

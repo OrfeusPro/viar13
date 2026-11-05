@@ -201,7 +201,7 @@
     <div class="formalization-prompt">
         <div class="formalization-prompt--wrapper">
             <div class="formalization-prompt--inner">
-                <img src="{{ asset('images/prompt3.png') }}" alt=""/>
+                <img src="{{ asset('images/prompt3.png') }}"  @frontendAlt('theme/viar/pages/portrait/form/sizes.blade.php', (asset('images/prompt3.png')), '', '')/>
                 <p>
                      {!! trans('portrait_buy_form.step3_bot_desc') !!}
                 </p>

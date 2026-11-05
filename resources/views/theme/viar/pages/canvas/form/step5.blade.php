@@ -12,7 +12,7 @@
                 <div class="check"></div>
                 <label>
                                                 <span>Эконом (плотность 280г/м2)
-                                                  <img src="{{ asset('images/icon/info.svg') }}" alt=""></span>
+                                                  <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('theme/viar/pages/canvas/form/step5.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                     <input name="canvas_type" type="radio" data-id="1"
                            data-text="Эконом " value="0.97"/>
                 </label>
@@ -23,7 +23,7 @@
                 <div class="check"></div>
                 <label>
                                                 <span>Интерьерный (плотность 500г/м2)
-                                                  <img src="{{ asset('images/icon/info.svg') }}" alt="">
+                                                  <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('theme/viar/pages/canvas/form/step5.blade.php', (asset('images/icon/info.svg')), '', '')>
                                                 </span>
                     <input name="canvas_type" type="radio" data-id="2"
                            data-text="Интерьерный " checked=""
@@ -36,7 +36,7 @@
                 <div class="check"></div>
                 <label>
                                                                                             <span>Синтетический (плотность 230г/м2)<img src="{{ asset('images/icon/info.svg') }}"
-                                                                                                                                        alt=""></span>
+                                                                                                                                         @frontendAlt('theme/viar/pages/canvas/form/step5.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                     <input name="canvas_type" type="radio" data-id="3"
                            data-text="Синтетический " value="0.97"/>
                 </label>
@@ -48,7 +48,7 @@
                 <label>
                                                                                             <span>Хлопковый (плотность 340г/м2)<img
                                                                                                     src="{{ asset('images/icon/info.svg') }}"
-                                                                                                    alt=""></span>
+                                                                                                     @frontendAlt('theme/viar/pages/canvas/form/step5.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                     <input name="canvas_type" type="radio" data-id="4"
                            data-text="Хлопковый " value="1.05"/>
                 </label>
@@ -60,7 +60,7 @@
                 <label>
                                                                                             <span>Глянцевый (плотность 280г/м2)<img
                                                                                                     src="{{ asset('images/icon/info.svg') }}"
-                                                                                                    alt=""></span>
+                                                                                                     @frontendAlt('theme/viar/pages/canvas/form/step5.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                     <input name="canvas_type" type="radio" data-id="5"
                            data-text="Глянцевый " value="1.05"/>
                 </label>

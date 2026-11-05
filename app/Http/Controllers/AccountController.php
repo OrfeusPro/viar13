@@ -96,7 +96,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         if (!is_null($uploaded_images)) {
@@ -132,7 +132,7 @@ class AccountController extends Controller
 				/*Mail::send([], [], function ($message) use ($data) {
 					$message->to($data['to']);
 					$message->subject($data['subject']);
-					$message->setBody($data['content'], 'text/html');
+					$message->html($data['content']);
 				});*/
 			}
 
@@ -140,6 +140,8 @@ class AccountController extends Controller
                 'status' => 1,
                 'order_id' => $request->order_id,
                 'images' => $cur_images . ',' . $uploaded_images,
+                'image_alt_attributes' => app(\App\Services\AltGeneration\FrontendImageRegistry::class)
+                    ->attributesForList('account.blade.php', $cur_images . ',' . $uploaded_images),
             ]);
         }
 
@@ -170,7 +172,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         if (!is_null($uploaded_images)) {
@@ -207,7 +209,7 @@ class AccountController extends Controller
 				Mail::send([], [], function ($message) use ($data) {
 					$message->to($data['to']);
 					$message->subject($data['subject']);
-					$message->setBody($data['content'], 'text/html');
+					$message->html($data['content']);
 				});*/
 			}
 
@@ -215,6 +217,8 @@ class AccountController extends Controller
                 'status' => 1,
                 'order_id' => $request->order_id,
                 'images' => $cur_images . ',' . $uploaded_images,
+                'image_alt_attributes' => app(\App\Services\AltGeneration\FrontendImageRegistry::class)
+                    ->attributesForList('account.blade.php', $cur_images . ',' . $uploaded_images),
             ]);
         }
 
@@ -248,7 +252,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         return json_encode([
@@ -324,6 +328,8 @@ class AccountController extends Controller
             'order_id' => $request->order_id,
             'comment' => $request->client_comment,
             'images' => $client_images_urls,
+            'image_alt_attributes' => app(\App\Services\AltGeneration\FrontendImageRegistry::class)
+                ->attributesForList('account.blade.php', (string) $client_images_urls),
         ]);
     }
 
@@ -343,7 +349,7 @@ class AccountController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['user_email']);
             $message->subject($data['subject_send']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         $updated = DB::table('orders_chats')->insert([

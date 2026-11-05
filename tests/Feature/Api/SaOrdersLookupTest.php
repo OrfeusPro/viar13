@@ -8,15 +8,55 @@ use Tests\TestCase;
 
 class SaOrdersLookupTest extends TestCase
 {
+    use \Tests\Support\CreatesSaLeadFixtures;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createSaLeadFixtures();
+        DB::table('users')->insert(['id' => 1, 'phone' => '+12025550123', 'email' => 'lookup@example.invalid']);
+        $base = ['user_id' => 1, 'status' => 'completed', 'price' => '20', 'country' => 'LV',
+            'delivery' => json_encode(['payer_phone' => '+12025550123', 'city' => 'Riga', 'deliv_price' => 4]),
+            'payment_status' => 'payed', 'created_at' => now(), 'updated_at' => now()];
+        DB::table('orders')->insert(array_merge($base, ['id' => 17335, 'items' => json_encode([
+            ['name' => 'Canvas', 'pid' => 1, 'activeImage' => 'storage/fixture-canvas.jpg', 'form' => 'undefined', 'canvas' => 'undefined']
+        ])]));
+        DB::table('orders')->insert(array_merge($base, ['id' => 17336, 'painter_images' => '["fixture-painter.jpg"]',
+            'items' => '[{"name":"Caricature","pid":27}]']));
+        DB::table('orders')->insert(array_merge($base, ['id' => 17337, 'ur_name' => 'Fixture Company',
+            'ur_reg_num' => 'LOCAL-123', 'items' => '[]']));
+    }
     private const ENDPOINT = '/api/sa/orders/lookup';
     private const API_KEY = 'test-key';
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function lookup_reads_named_service_items_without_basket_metadata(): void
+    {
+        $items = ['totalPrice' => 150, 'coupon' => ['id' => 42, 'name' => 'Discount'],
+            'delivery' => ['price' => 4], 'invalid_item' => ['name' => 'Metadata']];
+        $services = ['canvas' => 'HM-2', 'collage' => 'HM-3', 'gallery' => 'HM-44',
+            'modular' => 'HM-43', 'family_constructor' => 'FC-1', 'gift_card' => 'GC-5'];
+        foreach ($services as $key => $id) {
+            $items[$key . '_item'] = ['id' => $id, 'type' => 'sa_service', 'name' => $key,
+                'count' => 2, 'size' => '40x60', 'price' => 25, 'sumPrice' => 50,
+                'activeImage' => 'storage/fixture.jpg', 'terms' => 'Express production'];
+        }
+        DB::table('orders')->where('id', 17335)->update(['items' => json_encode($items)]);
+        $response = $this->getJson(self::ENDPOINT . '?order_id=17335', $this->apiHeaders())
+            ->assertOk()->assertJsonCount(6, 'data.orders.0.products');
+        $this->assertSame(array_values($services), array_column($response->json('data.orders.0.products'), 'service_id'));
+        $response->assertJsonPath('data.orders.0.products.0.quantity', 2)
+            ->assertJsonPath('data.orders.0.products.0.size', '40x60')
+            ->assertJsonPath('data.orders.0.products.0.image', 'storage/fixture.jpg')
+            ->assertJsonPath('data.orders.0.products.0.options.production', 'Express production');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_001_lookup_by_order_id_returns_order_payload()
     {
         $order = $this->latestOrder();
         if (!$order) {
-            $this->markTestSkipped('No orders found in current test DB connection');
+            $this->fail('No orders found in current test DB connection');
         }
 
         $response = $this->getJson(self::ENDPOINT . '?order_id=' . $order->id, $this->apiHeaders());
@@ -47,12 +87,12 @@ class SaOrdersLookupTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_002_lookup_by_phone_returns_all_matching_orders()
     {
         $phone = $this->knownOrderPhone();
         if ($phone === null) {
-            $this->markTestSkipped('No order phone found in current test DB connection');
+            $this->fail('No order phone found in current test DB connection');
         }
 
         $response = $this->getJson(self::ENDPOINT . '?phone=' . urlencode($phone), $this->apiHeaders());
@@ -64,7 +104,7 @@ class SaOrdersLookupTest extends TestCase
         $this->assertIsArray($response->json('data.orders'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_003_missing_lookup_key_returns_validation_error()
     {
         $response = $this->getJson(self::ENDPOINT, $this->apiHeaders());
@@ -74,12 +114,12 @@ class SaOrdersLookupTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_003a_lang_changes_human_readable_titles_only()
     {
         $order = $this->latestOrderWithStatus('completed');
         if (!$order) {
-            $this->markTestSkipped('No completed order found in current test DB connection');
+            $this->fail('No completed order found in current test DB connection');
         }
 
         $response = $this->getJson(self::ENDPOINT . '?order_id=' . $order->id . '&lang=en', $this->apiHeaders());
@@ -91,7 +131,7 @@ class SaOrdersLookupTest extends TestCase
             ->assertJsonPath('data.orders.0.status.title', 'Completed');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_003b_product_image_reads_active_image_and_cleans_undefined_options()
     {
         $order = DB::table('orders')->where('id', 17335)->first();
@@ -104,7 +144,7 @@ class SaOrdersLookupTest extends TestCase
         }
 
         if (!$order) {
-            $this->markTestSkipped('No order with activeImage and undefined options found in current test DB connection');
+            $this->fail('No order with activeImage and undefined options found in current test DB connection');
         }
 
         $response = $this->getJson(self::ENDPOINT . '?order_id=' . $order->id . '&lang=ru', $this->apiHeaders());
@@ -124,7 +164,7 @@ class SaOrdersLookupTest extends TestCase
         $this->assertNotSame('undefined', data_get($product, 'options.canvas'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_003c_artist_flow_order_returns_artist_images_and_caricature_service_id()
     {
         $order = DB::table('orders')
@@ -137,7 +177,7 @@ class SaOrdersLookupTest extends TestCase
             ->first();
 
         if (!$order) {
-            $this->markTestSkipped('No artist-flow caricature order found in current test DB connection');
+            $this->fail('No artist-flow caricature order found in current test DB connection');
         }
 
         $response = $this->getJson(self::ENDPOINT . '?order_id=' . $order->id . '&lang=ru', $this->apiHeaders());
@@ -149,7 +189,7 @@ class SaOrdersLookupTest extends TestCase
         $this->assertNotEmpty($response->json('data.orders.0.artist.painter_images') ?: $response->json('data.orders.0.artist.painter_sketch_images'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_003d_company_order_returns_billing_company_block()
     {
         $order = DB::table('orders')
@@ -164,7 +204,7 @@ class SaOrdersLookupTest extends TestCase
             ->first();
 
         if (!$order) {
-            $this->markTestSkipped('No company order found in current test DB connection');
+            $this->fail('No company order found in current test DB connection');
         }
 
         $response = $this->getJson(self::ENDPOINT . '?order_id=' . $order->id . '&lang=ru', $this->apiHeaders());
@@ -176,7 +216,7 @@ class SaOrdersLookupTest extends TestCase
         $this->assertNotEmpty(array_filter((array) $response->json('data.orders.0.billing.company')));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_004_invalid_phone_returns_validation_error()
     {
         $response = $this->getJson(self::ENDPOINT . '?phone=123', $this->apiHeaders());
@@ -186,7 +226,7 @@ class SaOrdersLookupTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t18_005_missing_api_key_returns_unauthorized()
     {
         $response = $this->getJson(self::ENDPOINT . '?order_id=1');

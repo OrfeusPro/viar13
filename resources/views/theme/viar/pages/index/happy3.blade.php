@@ -13,25 +13,25 @@
             <div class="happy-item">
                 <img class="lozad"
                     src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                    data-src="{{ asset('images/happy/happy-1.svg') }}" alt="img" loading="lazy">
+                    data-src="{{ asset('images/happy/happy-1.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/happy3.blade.php', (asset('images/happy/happy-1.svg')), 'img', '')>
                 <p>{{ trans('homepage_new.you_feel_nice_1_text') }}</p>
             </div>
             <div class="happy-item">
                 <img class="lozad"
                     src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                    data-src="{{ asset('images/happy/happy-2.svg') }}" alt="img" loading="lazy">
+                    data-src="{{ asset('images/happy/happy-2.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/happy3.blade.php', (asset('images/happy/happy-2.svg')), 'img', '')>
                 <p>{{ trans('homepage_new.you_feel_nice_2_text') }}</p>
             </div>
             <div class="happy-item">
                 <img class="lozad"
                     src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                    data-src="{{ asset('images/happy/happy-3.svg') }}" alt="img" loading="lazy">
+                    data-src="{{ asset('images/happy/happy-3.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/happy3.blade.php', (asset('images/happy/happy-3.svg')), 'img', '')>
                 <p>{{ trans('homepage_new.you_feel_nice_3_text') }}</p>
             </div>
             <div class="happy-item">
                 <img class="lozad"
                     src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                    data-src="{{ asset('images/happy/happy-4.svg') }}" alt="img" loading="lazy">
+                    data-src="{{ asset('images/happy/happy-4.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/happy3.blade.php', (asset('images/happy/happy-4.svg')), 'img', '')>
                 <p>{{ trans('homepage_new.you_feel_nice_4_text') }}</p>
             </div>
         </div>
@@ -43,5 +43,5 @@
         aria-label="anchor link">
         <i class="fa-arrow-down"></i>
     </a>
-    <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+    <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/happy3.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
 </div>

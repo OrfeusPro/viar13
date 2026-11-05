@@ -14,9 +14,9 @@
             <div class="before-slider">
                 <div id="slider" class="beer-slider" data-beer-label="before">
                     @foreach($before_after as $img)
-                    <img src="{{ Voyager::image($img['img_before']) }}" alt="">
+                    <img src="{{ Voyager::image($img['img_before']) }}"  @frontendAlt('partials/graph_portrait_promo/before_after.blade.php', (Voyager::image($img['img_before'])), '', '')>
                     <div class="beer-reveal" data-beer-label="after">
-                        <img src="{{ Voyager::image($img['img_after']) }}" alt="">
+                        <img src="{{ Voyager::image($img['img_after']) }}"  @frontendAlt('partials/graph_portrait_promo/before_after.blade.php', (Voyager::image($img['img_after'])), '', '')>
                     </div>
                     @break
                     @endforeach
@@ -45,7 +45,7 @@
                                 <source srcset="{{ $graphicBeforeAfterThumbSources['src'] }}" type="{{ $graphicBeforeAfterThumbSources['type'] }}">
                             @endif
                             <img class="" src="{{ $graphicBeforeAfterThumbSources['src'] }}"
-                                data-src="{{ $graphicBeforeAfterThumbSources['src'] }}" alt="">
+                                data-src="{{ $graphicBeforeAfterThumbSources['src'] }}"  @frontendAlt('partials/graph_portrait_promo/before_after.blade.php', ($graphicBeforeAfterThumbSources['src']), '', '')>
                         </picture>
                     </div>
                     @endforeach

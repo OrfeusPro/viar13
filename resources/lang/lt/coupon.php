@@ -16,7 +16,7 @@ return array (
   'hb_main_popup_coupon_t1' => 'Ekstra Nuolaida',
   'hb_main_popup_coupon_t2' => 'Naudokite kuponą: 10%',
   'hb_main_popup_coupon_t3' => 'Pirkinių krepšelyje:',
-  'hb_main_popup_coupon_t4' => 'karštis2026',
+  'hb_main_popup_coupon_t4' => 'RUDUO10',
   'hb_main_popup_coupon_t5' => 'Aktyvus iki:',
   'abandoned_basket' => 'Naudotas kuponas: Apleistas krepšelis',
   'giftcard' => 'Naudotas dovanų kuponas',

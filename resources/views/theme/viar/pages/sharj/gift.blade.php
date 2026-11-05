@@ -39,7 +39,7 @@
                     <div class="absolute-elements">
                         <div class="portrait-gift">
                             <img loading="lazy" width="149" height="138"
-                                src="{{ asset(env('THEME') . 'images') }}/collage/gift.svg" alt="Viar Image">
+                                src="{{ asset(env('THEME') . 'images') }}/collage/gift.svg"  @frontendAlt('theme/viar/pages/sharj/gift.blade.php', (asset(env('THEME') . 'images')) . '/collage/gift.svg', 'Viar Image', '')>
                             <p> @lang('sharj.translate35')</p>
                         </div>
                     </div>
@@ -53,7 +53,7 @@
                     <source srcset="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/gift3.webp?v=1"
                         type="image/webp">
                     <img width="800" height="451"
-                        src="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/gift3.webp?v=1" alt="">
+                        src="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/gift3.webp?v=1"  @frontendAlt('theme/viar/pages/sharj/gift.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/categories/gift3.webp?v=1', '', '')>
                 </picture>
             </div>
         </div>

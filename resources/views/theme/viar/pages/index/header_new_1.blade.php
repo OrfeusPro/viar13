@@ -1,8 +1,8 @@
-<header class="vz-art vz-header header_1">
+<header class="vz-art vz-header header_1 {{ is_array($article_language_urls ?? null) ? 'article-language-header' : '' }}">
 	<div class="vz-art section-frame">
 		<div class="vz-art header-bar">
 			<a href="{{ route('home') }}" class="vz-art logo">
-				<img loading="lazy" src="{{ asset('img/icons/logo.svg') }}" width="170" height="68" alt="@lang('settings.site_name')" class="img-svg">
+				<img loading="lazy" src="{{ asset('img/icons/logo.svg') }}" width="170" height="68"  class="img-svg" @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', (asset('img/icons/logo.svg')), __('settings.site_name'), '')>
 			</a>
 			<ul class="vz-art header-social">
 				<li>
@@ -41,7 +41,7 @@
 							{{-- <a href="{{ route('blog') }}">
 								<span>{{ trans('header_footer_new.header_col4_name') }}</span>
 							</a> --}}
-							<a class="mainl" href="{{ asset('page/contacts') }}">
+							<a class="mainl" href="{{ storefront_url('/page/contacts') }}">
 								<span>{{ trans('header_footer_new.contacts') }}</span>
 							</a>
 						</li>
@@ -78,9 +78,10 @@
 
 					<ul class="ver1_langs">
 						@foreach (LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                    @continue(is_array($article_language_urls ?? null) && !isset($article_language_urls[$localeCode]))
 							@php
-                                if (!in_array($localeCode, $allowed_lang)) { continue; }
-                                 $cur_url = $localized_urls[$localeCode] ?? LaravelLocalization::getLocalizedURL($localeCode, null, [], true);
+                                if (!is_array($article_language_urls ?? null) && !in_array($localeCode, $allowed_lang)) { continue; }
+                                 $cur_url = $article_language_urls[$localeCode] ?? ($localized_urls[$localeCode] ?? LaravelLocalization::getLocalizedURL($localeCode, null, [], true));
                                  $cur_url_mod = strtok($cur_url, '?');
 							@endphp
 							<li>
@@ -113,8 +114,10 @@
 												if (isset($item['png']) && $item['png'] && !$menu_def_img) {
 												$menu_def_img = Voyager::image($item['png']);
 												}
-											@endphp <a href="{{ $item->getTranslatedAttribute('link') }}" class="header-new-drop__item"
-												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
+											@endphp
+
+                                            <a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
+												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" data-image-alt-attributes="{{ \App\Models\FrontendImage::attributesFor('theme/viar/pages/index/header_new_1.blade.php', Voyager::image($item['png'])) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
 										@endif
@@ -125,7 +128,7 @@
                             @if ($menu_def_img)
                                 <div class="header-new-drop__img">
                                     <div class="header-new-drop__img--wrapper">
-                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy" alt="">
+                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', ($menu_def_img), '', '')>
                                     </div>
                                 </div>
                             @endif
@@ -145,8 +148,9 @@
 												$menu_def_img = Voyager::image($item['png']);
 												}
 											@endphp
-											<a href="{{ $item->getTranslatedAttribute('link') }}" class="header-new-drop__item"
-												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
+
+											<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
+												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" data-image-alt-attributes="{{ \App\Models\FrontendImage::attributesFor('theme/viar/pages/index/header_new_1.blade.php', Voyager::image($item['png'])) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
 										@endif
@@ -157,7 +161,7 @@
                             @if ($menu_def_img)
                                 <div class="header-new-drop__img">
                                     <div class="header-new-drop__img--wrapper">
-                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy" alt="">
+                                        <img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', ($menu_def_img), '', '')>
                                     </div>
                                 </div>
                             @endif
@@ -177,8 +181,9 @@
 												$menu_def_img = Voyager::image($item['png']);
 												}
 											@endphp
-											<a href="{{ $item->getTranslatedAttribute('link') }}" class="header-new-drop__item"
-												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" @endif>
+
+											<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" class="header-new-drop__item"
+												@if (isset($item['png']) && $item['png']) data-img="{{ Voyager::image($item['png']) }}" data-image-alt-attributes="{{ \App\Models\FrontendImage::attributesFor('theme/viar/pages/index/header_new_1.blade.php', Voyager::image($item['png'])) }}" @endif>
 												{{ $item->getTranslatedAttribute('title') }}
 											</a>
 										@endif
@@ -189,7 +194,7 @@
                             @if ($menu_def_img)
 							<div class="header-new-drop__img">
 								<div class="header-new-drop__img--wrapper">
-									<img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy" alt="">
+									<img class="js-img-drop lozad" src="{{ $menu_def_img }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_1.blade.php', ($menu_def_img), '', '')>
 								</div>
 							</div>
                             @endif

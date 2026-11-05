@@ -24,7 +24,7 @@
 						<div class="info_small_img">
 							<picture>
 								<source srcset="{{ ver_asset(env('THEME') . 'images/oil/oil_b2.webp') }}" type="image/webp">
-								<img width="211" height="194" src="{{ ver_asset(env('THEME') . 'images/oil/oil_b2.png') }}" alt="">
+								<img width="211" height="194" src="{{ ver_asset(env('THEME') . 'images/oil/oil_b2.png') }}"  @frontendAlt('theme/viar/pages/portrait/oil-info.blade.php', (ver_asset(env('THEME') . 'images/oil/oil_b2.png')), '', '')>
 							</picture>
 							<div class="sub_text">
 								@lang('pages.portrait_oil.oilinfo.t14')
@@ -33,7 +33,7 @@
 								<picture>
 									<source media="(max-width: 1200px)" srcset="https://viarcanvas.com/images/sharj/v1.svg?1691276006">
 									<source srcset="https://viarcanvas.com/images/sharj/v1.svg?1691276006 ">
-									<img src="https://viarcanvas.com/images/sharj/v1.svg?1691276006" width="69" height="98" alt="">
+									<img src="https://viarcanvas.com/images/sharj/v1.svg?1691276006" width="69" height="98"  @frontendAlt('theme/viar/pages/portrait/oil-info.blade.php', 'https://viarcanvas.com/images/sharj/v1.svg?1691276006', '', '')>
 								</picture>
 							</div>
 						</div>
@@ -45,7 +45,7 @@
 						<source media="(max-width: 576px)" srcset="{{ ver_asset(env('THEME') . 'images/oil/oil_b1.webp') }}"
 							type="image/webp">
 						<source srcset="{{ ver_asset(env('THEME') . 'images/oil/oil_b1.webp') }}" type="image/webp">
-						<img width="652" height="744" src="{{ ver_asset(env('THEME') . 'images/oil/oil_b1.png') }}" alt="">
+						<img width="652" height="744" src="{{ ver_asset(env('THEME') . 'images/oil/oil_b1.png') }}"  @frontendAlt('theme/viar/pages/portrait/oil-info.blade.php', (ver_asset(env('THEME') . 'images/oil/oil_b1.png')), '', '')>
 					</picture>
 				</div>
 

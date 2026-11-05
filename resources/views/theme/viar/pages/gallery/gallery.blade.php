@@ -25,6 +25,13 @@
     <div class="section-frame">
         <div class="gs-slider">
             @foreach ($top_slides as $item)
+            @php
+                $slidePath = trim((string) parse_url((string) $item['link'], PHP_URL_PATH), '/');
+                $slideType = strtolower((string) basename($slidePath));
+                $slideLink = in_array($slideType, ['photo', 'module', 'reproduction'], true)
+                    ? route('hb.gallery.module', ['type' => $slideType])
+                    : storefront_url($item['link']);
+            @endphp
             <div class="gallery-main__inner">
                 <div class="gallery-main__content">
 
@@ -59,7 +66,7 @@
                                 <img width="575" height="530" src="{{ Voyager::image($item['image']) }}"
                                     @altAttrs($item, 'image', $item->image, null, 'ViarCanvas')>
                             </picture>
-                            <a href="{{ $item['link'] }}" class="g-btn">@lang('gallery.go_to_category')</a>
+                            <a href="{{ $slideLink }}" class="g-btn">@lang('gallery.go_to_category')</a>
                         </div>
                     </div>
                 </div>
@@ -163,7 +170,7 @@
                                     @endif
                                     <source srcset="{{ Voyager::image($item->main_category_image) }}" type="image/jpeg">
                                     <img width="433" height="583" src="{{ Voyager::image($item->main_category_image) }}"
-                                        alt="ViarCanvas" loading="lazy">
+                                         loading="lazy" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', (Voyager::image($item->main_category_image)), 'ViarCanvas', '')>
                                 </picture>
                                 <div class="g-c-slide__inner">
                                     <div class="gcs-title">
@@ -183,7 +190,7 @@
                                     @endif
                                     <source srcset="{{ Voyager::image($item->main_category_image) }}" type="image/jpeg">
                                     <img width="433" height="583" src="{{ Voyager::image($item->main_category_image) }}"
-                                        alt="ViarCanvas" loading="lazy">
+                                         loading="lazy" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', (Voyager::image($item->main_category_image)), 'ViarCanvas', '')>
                                 </picture>
                                 <div class="g-c-slide__inner">
                                     <div class="gcs-title">
@@ -203,7 +210,7 @@
                                     @endif
                                     <source srcset="{{ Voyager::image($item->main_category_image) }}" type="image/jpeg">
                                     <img width="433" height="583" src="{{ Voyager::image($item->main_category_image) }}"
-                                        alt="ViarCanvas" loading="lazy">
+                                         loading="lazy" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', (Voyager::image($item->main_category_image)), 'ViarCanvas', '')>
                                 </picture>
                                 <div class="g-c-slide__inner">
                                     <div class="gcs-title">
@@ -225,8 +232,8 @@
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_popular')
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
-        decoding="async" loading="eager" height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
+        decoding="async" loading="eager" height="99" width="1374" @frontendAlt('theme/viar/pages/gallery/gallery.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_bestseller')

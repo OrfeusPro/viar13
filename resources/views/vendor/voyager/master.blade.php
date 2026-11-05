@@ -27,6 +27,7 @@
     @endif
 
     <link rel="stylesheet" href="{{ asset('css/admin2.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin_assets/css/alt-suggestions-editor.css') }}?v=3">
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <!-- Few Dynamic Styles -->
     <style type="text/css">
@@ -155,6 +156,7 @@ if (\Illuminate\Support\Facades\Schema::hasTable('sa_conversations')
 
 <script type="text/javascript" src="{{ asset('admin_assets/js/app.js') }}?v=1"></script>
 <script src="{{ asset('admin_assets/js/custom_new_v2.js') }}?v8"></script>
+<script src="{{ asset('admin_assets/js/alt-suggestions-editor.js') }}?v=2"></script>
 
 <script>
     @if(Session::has('alerts'))

@@ -2,12 +2,18 @@
 
 namespace Tests\Feature\Api;
 
+use App\Http\Controllers\BlogController;
+use App\Http\Middleware\ArticleLocaleSessionRedirect;
+use App\Models\BlogPost;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class BlogIntegrationReadApiTest extends TestCase
@@ -18,9 +24,10 @@ class BlogIntegrationReadApiTest extends TestCase
     {
         parent::setUp();
         $this->prepareBlogFixtures();
+        config(['services.sa_integration.api_key' => self::API_KEY]);
     }
 
-    /** @test */
+    #[Test]
     public function categories_returns_multilingual_payload()
     {
         $response = $this->getJson('/api/blog/categories', $this->apiHeaders());
@@ -36,7 +43,7 @@ class BlogIntegrationReadApiTest extends TestCase
         $this->assertContains('en', $response->json('meta.locales'));
     }
 
-    /** @test */
+    #[Test]
     public function authors_returns_multilingual_payload()
     {
         $response = $this->getJson('/api/blog/authors', $this->apiHeaders());
@@ -49,7 +56,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('data.authors.0.translations.en.name', 'Editor');
     }
 
-    /** @test */
+    #[Test]
     public function author_can_be_created_with_translations()
     {
         $response = $this->postJson('/api/blog/authors', [
@@ -80,7 +87,7 @@ class BlogIntegrationReadApiTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function repeated_author_name_returns_duplicate()
     {
         $payload = [
@@ -95,7 +102,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('data.author.id', 1);
     }
 
-    /** @test */
+    #[Test]
     public function author_create_requires_name()
     {
         $response = $this->postJson('/api/blog/authors', [
@@ -107,7 +114,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function posts_returns_multilingual_html_text_and_categories()
     {
         $response = $this->getJson('/api/blog/posts?per_page=10', $this->apiHeaders());
@@ -123,7 +130,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('data.posts.0.translations.en.text', '<p>English HTML</p>');
     }
 
-    /** @test */
+    #[Test]
     public function posts_can_omit_html_text()
     {
         $response = $this->getJson('/api/blog/posts?include_text=false', $this->apiHeaders());
@@ -135,7 +142,7 @@ class BlogIntegrationReadApiTest extends TestCase
         $this->assertArrayNotHasKey('text', $response->json('data.posts.0.translations.en'));
     }
 
-    /** @test */
+    #[Test]
     public function category_filter_limits_posts()
     {
         $response = $this->getJson('/api/blog/posts?category_id=2', $this->apiHeaders());
@@ -146,7 +153,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('data.posts', []);
     }
 
-    /** @test */
+    #[Test]
     public function invalid_query_returns_validation_error()
     {
         $response = $this->getJson('/api/blog/posts?per_page=9999', $this->apiHeaders());
@@ -156,7 +163,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function missing_api_key_is_rejected()
     {
         $response = $this->getJson('/api/blog/posts');
@@ -166,7 +173,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('error.code', 'UNAUTHORIZED');
     }
 
-    /** @test */
+    #[Test]
     public function wp_like_payload_creates_draft_post_with_custom_slug()
     {
         $response = $this->postJson('/api/blog/posts', [
@@ -219,7 +226,7 @@ class BlogIntegrationReadApiTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function repeated_payload_returns_duplicate()
     {
         $payload = [
@@ -239,7 +246,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('data.post.translations.en.slug', 'duplicate-slug');
     }
 
-    /** @test */
+    #[Test]
     public function translations_payload_creates_language_specific_slugs()
     {
         $response = $this->postJson('/api/blog/posts', [
@@ -279,7 +286,7 @@ class BlogIntegrationReadApiTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function patch_updates_existing_post_translations_status_and_categories()
     {
         DB::table('blog_categories')->insert([
@@ -290,7 +297,10 @@ class BlogIntegrationReadApiTest extends TestCase
             'updated_at' => Carbon::parse('2026-05-20 08:00:00'),
         ]);
 
+        $snapshot = $this->getJson('/api/blog/posts', $this->apiHeaders())->json('data.posts.0');
         $response = $this->patchJson('/api/blog/posts/10', [
+            'expected_revision' => $snapshot['revision'],
+            'expected_status' => $snapshot['status'],
             'status' => 'draft',
             'categories' => [2],
             'author_id' => 1,
@@ -341,7 +351,7 @@ class BlogIntegrationReadApiTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function patch_rejects_slug_used_by_another_post()
     {
         DB::table('blog_posts')->insert([
@@ -367,7 +377,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function create_rejects_unknown_author()
     {
         $response = $this->postJson('/api/blog/posts', [
@@ -384,7 +394,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[Test]
     public function patch_unknown_post_returns_not_found()
     {
         $response = $this->patchJson('/api/blog/posts/999999', [
@@ -396,7 +406,7 @@ class BlogIntegrationReadApiTest extends TestCase
             ->assertJsonPath('error.code', 'POST_NOT_FOUND');
     }
 
-    /** @test */
+    #[Test]
     public function media_upload_stores_image_and_returns_path_and_url()
     {
         Storage::fake('public');
@@ -415,11 +425,11 @@ class BlogIntegrationReadApiTest extends TestCase
 
         $path = $response->json('data.media.path');
         $this->assertStringStartsWith('blog/', $path);
-        $this->assertStringContainsString('article-header', $path);
+        $this->assertMatchesRegularExpression('~^blog/api/[a-f0-9]{64}\.jpg$~', $path);
         Storage::disk('public')->assertExists($path);
     }
 
-    /** @test */
+    #[Test]
     public function media_upload_rejects_non_image_file()
     {
         Storage::fake('public');
@@ -431,6 +441,134 @@ class BlogIntegrationReadApiTest extends TestCase
         $response->assertStatus(400)
             ->assertJsonPath('status', 'error')
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
+    }
+
+    public function test_revision_conflict_and_precondition_preserve_post(): void
+    {
+        $snapshot = $this->getJson('/api/blog/posts', $this->apiHeaders())->json('data.posts.0');
+        $this->patchJson('/api/blog/posts/10', ['status' => 'draft'], $this->apiHeaders())
+            ->assertStatus(428)->assertJsonPath('error.code', 'PRECONDITION_REQUIRED');
+        $payload = ['expected_revision' => $snapshot['revision'], 'expected_status' => 'published', 'status' => 'draft'];
+        $this->patchJson('/api/blog/posts/10', $payload, $this->apiHeaders())->assertOk();
+        $payload['status'] = 'published';
+        $this->patchJson('/api/blog/posts/10', $payload, $this->apiHeaders())
+            ->assertStatus(409)->assertJsonPath('error.code', 'CONFLICT');
+        $this->assertDatabaseHas('blog_posts', ['id' => 10, 'status' => 'draft']);
+    }
+
+    public function test_idempotency_key_cannot_be_reused_for_changed_content(): void
+    {
+        $payload = ['categories' => [1], 'idempotency_key' => 'ownership', 'title' => 'Original', 'content' => '<p>Original</p>', 'slug' => 'owned'];
+        $this->postJson('/api/blog/posts', $payload, $this->apiHeaders())->assertCreated();
+        $payload['title'] = 'Changed';
+        $this->postJson('/api/blog/posts', $payload, $this->apiHeaders())
+            ->assertStatus(409)->assertJsonPath('error.code', 'CONFLICT');
+        $this->assertDatabaseCount('blog_posts', 2);
+    }
+
+    public function test_missing_translations_are_not_reported_as_native_content(): void
+    {
+        $post = $this->getJson('/api/blog/posts', $this->apiHeaders())->assertOk()->json('data.posts.0');
+        $this->assertNull($post['translations']['de']['title']);
+        $this->assertSame([], $post['translations']['de']['present_fields']);
+        $this->assertSame('Canvas photo', $post['translations']['en']['title']);
+        $this->assertSame('Фото на холсте', $post['translations']['ru']['title']);
+        $controller = new BlogController;
+        $method = new \ReflectionMethod($controller, 'buildBlogPostLocalizedUrls');
+        $urls = $method->invoke($controller, BlogPost::findOrFail(10));
+        $this->assertArrayHasKey('en', $urls);
+        $this->assertArrayHasKey('ru', $urls);
+        $this->assertArrayNotHasKey('de', $urls);
+        $this->assertArrayNotHasKey('pl', $urls);
+    }
+
+    public function test_pilot_contract_stores_all_alts_and_rejects_modified_media(): void
+    {
+        Storage::fake('public');
+        $hashes = [];
+        for ($i = 0; $i < 5; $i++) {
+            Storage::disk('public')->put("blog/api/test-$i.jpg", "test-image-$i");
+            $hashes["blog/api/test-$i.jpg"] = hash('sha256', "test-image-$i");
+        }
+        $translations = [];
+        foreach (['de', 'ee', 'en', 'lt', 'lv', 'ru'] as $locale) {
+            $translations[$locale] = ['title' => "Title $locale", 'slug' => "pilot-$locale", 'content' => "<p>$locale</p>",
+                'image_alt' => "Main $locale", 'image_preview_alt' => "Preview $locale", 'image_user_alt' => ''];
+        }
+        $payload = ['categories' => [1], 'automation_contract' => 3, 'status' => 'draft', 'external_id' => 'pilot', 'idempotency_key' => 'pilot',
+            'image' => 'blog/api/test-0.jpg', 'image_preview' => 'blog/api/test-1.jpg', 'image_user' => 'blog/api/test-2.jpg',
+            'media_sha256' => $hashes, 'story_alt_mode' => 'decorative', 'translations' => $translations];
+        $response = $this->postJson('/api/blog/posts', $payload, $this->apiHeaders())->assertCreated()
+            ->assertJsonPath('data.post.translations.ru.image_alt', 'Main ru')
+            ->assertJsonPath('data.post.translations.ru.image_user_alt', '');
+        $this->assertDatabaseCount('image_alt_suggestions', 18);
+        $this->postJson('/api/blog/posts', $payload, $this->apiHeaders())->assertOk()->assertJsonPath('status', 'duplicate');
+        $invalid = $payload;
+        $invalid['media_sha256'] = null;
+        $this->postJson('/api/blog/posts', $invalid, $this->apiHeaders())->assertStatus(422)->assertJsonPath('status', 'error');
+        Storage::disk('public')->put('blog/api/test-0.jpg', 'changed');
+        $this->postJson('/api/blog/posts', $payload, $this->apiHeaders())->assertStatus(422)
+            ->assertJsonPath('status', 'error');
+        $this->assertDatabaseCount('image_alt_suggestions', 18);
+        $this->assertSame('draft', $response->json('data.post.status'));
+    }
+
+    public function test_invalid_contract_shape_is_validation_error(): void
+    {
+        $this->postJson('/api/blog/posts', ['automation_contract' => 3, 'media_sha256' => 'invalid'], $this->apiHeaders())
+            ->assertStatus(400)->assertJsonPath('error.code', 'VALIDATION_ERROR');
+    }
+
+    public function test_view_counter_does_not_change_editor_revision(): void
+    {
+        $before = $this->getJson('/api/blog/posts', $this->apiHeaders())->json('data.posts.0.revision');
+        DB::table('blog_posts')->where('id', 10)->increment('count_viewed');
+        $after = $this->getJson('/api/blog/posts', $this->apiHeaders())->json('data.posts.0.revision');
+        $this->assertSame($before, $after);
+    }
+
+    public function test_unique_migration_is_repeatable_and_rejects_duplicates_without_changes(): void
+    {
+        Schema::table('blog_posts', fn (Blueprint $table) => $table->dropUnique(['idempotency_key']));
+        DB::table('blog_posts')->where('id', 10)->update(['idempotency_key' => 'same']);
+        DB::table('blog_posts')->insert(['id' => 11, 'idempotency_key' => 'same']);
+        $migration = require database_path('migrations/2026_10_09_180000_unique_blog_idempotency.php');
+        try {
+            $migration->up();
+            $this->fail('Duplicate keys must block migration.');
+        } catch (\RuntimeException $error) {
+            $this->assertStringContainsString('Duplicate blog', $error->getMessage());
+        }
+        $this->assertSame(2, DB::table('blog_posts')->where('idempotency_key', 'same')->count());
+        DB::table('blog_posts')->where('id', 11)->update(['idempotency_key' => null]);
+        $migration->up();
+        $migration->up();
+        $this->assertTrue(Schema::hasIndex('blog_posts', 'blog_posts_idempotency_unique'));
+        $migration->down();
+        $this->assertFalse(Schema::hasIndex('blog_posts', 'blog_posts_idempotency_unique'));
+    }
+
+    public function test_default_article_does_not_redirect_to_session_language(): void
+    {
+        $request = Request::create('/blog/canvas-photo');
+        $route = new Route('GET', 'blog/{slug}', fn () => null);
+        $route->name('blog_inner');
+        $request->setRouteResolver(fn () => $route);
+        $request->setLaravelSession(app('session.store'));
+        $request->session()->put('locale', 'en');
+        $response = (new ArticleLocaleSessionRedirect)->handle($request, fn () => response('article'));
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('ru', app()->getLocale());
+        $this->assertSame('en', $request->session()->get('locale'));
+    }
+
+    public function test_alt_missing_file_rolls_back_created_post(): void
+    {
+        $this->postJson('/api/blog/posts', ['categories' => [1], 'title' => 'Missing', 'slug' => 'missing', 'content' => '<p>Missing</p>',
+            'translations' => ['en' => ['title' => 'Missing', 'slug' => 'missing', 'content' => '<p>Missing</p>', 'image_alt' => 'ALT']],
+            'image' => 'blog/nonexistent.jpg'], $this->apiHeaders())->assertStatus(422);
+        $this->assertDatabaseCount('blog_posts', 1);
+        $this->assertDatabaseCount('image_alt_suggestions', 0);
     }
 
     private function apiHeaders(): array
@@ -450,6 +588,9 @@ class BlogIntegrationReadApiTest extends TestCase
 
     private function prepareBlogFixtures(): void
     {
+        Schema::dropIfExists('image_alt_suggestions');
+        require_once database_path('migrations/2026_07_01_120000_create_image_alt_suggestions_table.php');
+        (new \CreateImageAltSuggestionsTable)->up();
         Schema::dropIfExists('blog_category_blog_post');
         Schema::dropIfExists('translations');
         Schema::dropIfExists('blog_posts');
@@ -474,7 +615,7 @@ class BlogIntegrationReadApiTest extends TestCase
             $table->text('text')->nullable();
             $table->text('excerpt')->nullable();
             $table->text('tags')->nullable();
-            $table->string('idempotency_key')->nullable();
+            $table->string('idempotency_key')->nullable()->unique();
             $table->string('external_id')->nullable();
             $table->longText('api_payload')->nullable();
             $table->string('slug')->nullable();
@@ -537,11 +678,11 @@ class BlogIntegrationReadApiTest extends TestCase
 
         DB::table('blog_posts')->insert([
             'id' => 10,
-            'title' => 'Фото на холсте',
-            'slug' => 'foto-na-holste',
+            'title' => 'Canvas photo',
+            'slug' => 'canvas-photo',
             'meta_title' => 'Фото на холсте',
             'meta_desc' => 'Описание статьи',
-            'text' => '<p>Русский HTML</p>',
+            'text' => '<p>English HTML</p>',
             'excerpt' => 'Короткое описание',
             'image' => 'blog/photo.jpg',
             'author_id' => 1,
@@ -560,12 +701,12 @@ class BlogIntegrationReadApiTest extends TestCase
             $this->translation('blog_categories', 'slug', 1, 'en', 'gifts'),
             $this->translation('blog_categories', 'meta_title', 1, 'en', 'Gifts'),
             $this->translation('blog_authors', 'name', 1, 'en', 'Editor'),
-            $this->translation('blog_posts', 'title', 10, 'en', 'Canvas photo'),
+            $this->translation('blog_posts', 'title', 10, 'ru', 'Фото на холсте'),
             $this->translation('blog_posts', 'slug', 10, 'en', 'canvas-photo'),
             $this->translation('blog_posts', 'meta_title', 10, 'en', 'Canvas photo'),
             $this->translation('blog_posts', 'meta_desc', 10, 'en', 'Article description'),
             $this->translation('blog_posts', 'excerpt', 10, 'en', 'Short description'),
-            $this->translation('blog_posts', 'text', 10, 'en', '<p>English HTML</p>'),
+            $this->translation('blog_posts', 'text', 10, 'ru', '<p>Русский HTML</p>'),
         ]);
     }
 

@@ -36,13 +36,26 @@ use App\Http\Controllers\Pages\PagePortraitOilController;
 use App\Http\Controllers\Pages\PagePortraitRoyalController;
 use App\Http\Controllers\Account\AccountController as NewAccountController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\ConfirmPasswordController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Storage;
 //Route::get('/err_sizes', function () {
 //    return view('errors.err_sizes');
 //});
 
-/** admin routes */
-Auth::routes();
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register']);
+Route::get('/password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+Route::get('/password/confirm', [ConfirmPasswordController::class, 'showConfirmForm'])->name('password.confirm');
+Route::post('/password/confirm', [ConfirmPasswordController::class, 'confirm']);
 
 $localizedPasswordResetLocales = array_diff(
     array_keys(config('laravellocalization.supportedLocales', [])),
@@ -57,7 +70,19 @@ Route::post('/{locale}/password/reset', [ResetPasswordController::class, 'resetL
     ->where('locale', $localizedPasswordResetLocalePattern)
     ->name('password.update.localized');
 
-require_once __DIR__ . '/admin.php';
+if (config('app.admin_enabled', false)) {
+    require_once __DIR__ . '/admin.php';
+}
+
+Route::get('/filament/{path?}', function (\Illuminate\Http\Request $request, ?string $path = null) {
+    $target = '/admin'.($path ? '/'.$path : '');
+    if ($query = $request->getQueryString()) {
+        $target .= '?'.$query;
+    }
+
+    return redirect($target);
+})->where('path', '.*');
+
 require_once __DIR__ . '/redirect.php';
 
 Route::get('/storage/{path}', function ($path) {
@@ -242,11 +267,13 @@ Route::group(
         Route::get('get_warehouse', [VinepakApiController::class, 'get_warehouse'])->name('get_warehouse');
 
         /** Login& register */
-        Route::post('custom_login_ajax', [UserManageController::class, 'custom_login_ajax'])->name('custom_login_ajax');
+        Route::post('custom_login_ajax', [UserManageController::class, 'custom_login_ajax'])
+            ->middleware('throttle:10,1')
+            ->name('custom_login_ajax');
         Route::post(
             'custom_register_ajax',
             [UserManageController::class, 'custom_register_ajax']
-        )->name('custom_register_ajax');
+        )->middleware('throttle:5,1')->name('custom_register_ajax');
 
         Route::post(
             'send_photo_portrait_form',
@@ -257,7 +284,7 @@ Route::group(
         Route::post(
             'send_photo_form',
             [UserManageController::class, 'send_photo_form']
-        )->name('send_photo_form');
+        )->name('send_photo_form_legacy');
 
 
         Route::get('/', [IndexController::class, 'hbrender'])->name('home');
@@ -341,7 +368,7 @@ Route::group(
         Route::get('/set_genre', [GalleryController::class, 'hb_set_genre']);
         Route::get('/set_style', [GalleryController::class, 'hb_set_style']);
 
-        Route::get('/get/ram_search', [GalleryController::class, 'ram_search'])->name('hb.gallery.ram_search');
+        Route::get('/get/ram_search', [GalleryController::class, 'ram_search'])->name('hb.gallery.ram_search.get');
         Route::post('/get/ram_search', [GalleryController::class, 'ram_search'])->name('hb.gallery.ram_search');
         Route::get('/gallery/painters', [GalleryController::class, 'painters'])->name('hb.gallery.painters');
         Route::get('/gallery/painters/{letter}', [GalleryController::class, 'painters'])->name('hb.gallery.painters_letter');
@@ -369,7 +396,7 @@ Route::group(
         // Route::get('/gallery/{type}/item/{id}', [GalleryController::class, 'item_render_single']);
 
         Route::get('/google-ads.xml', [AdvertisingController::class, 'google'])->name('google.ads');
-        Route::get('/kurpirkt.xml', [AdvertisingController::class, 'kurpirkt'])->name('kurpirkt');
+        Route::get('/kurpirkt.xml', [AdvertisingController::class, 'kurpirkt'])->name('kurpirkt_legacy');
         Route::get('/salidzini.xml', [AdvertisingController::class, 'salidzini'])->name('kurpirkt');
         Route::get('/lv-google-ads.xml', [AdvertisingController::class, 'google_lv'])->name('google.ads.lv');
         Route::get('/lt-google-ads.xml', [AdvertisingController::class, 'google_lt'])->name('google.ads.lt');
@@ -387,7 +414,7 @@ Route::group(
         Route::post('/cart/setdelivery', [BasketController::class, 'setdelivery'])->name('setdelivery')->middleware('preventBackHistory');
         Route::post('/cart/setuser', [BasketController::class, 'setuser'])->name('setuser')->middleware('preventBackHistory');
         Route::post('/cart/setpay', [BasketController::class, 'setpay'])->name('setpay')->middleware('preventBackHistory');
-        Route::get('/save_order_and_pay', [OrdersController::class, 'save_order_and_pay'])->name('save_order_and_pay');
+        Route::post('/save_order_and_pay', [OrdersController::class, 'save_order_and_pay'])->name('save_order_and_pay');
         Route::get('/cart/clear_coupon', [BasketController::class, 'clearcart'])->name('clearcart')->middleware('preventBackHistory');
         Route::get('/cart', [BasketController::class, 'cart'])->name('cart.index')->middleware('preventBackHistory');
         Route::get('/cart/data', [BasketController::class, 'cart_step2'])->name('cart.step2')->middleware('preventBackHistory');
@@ -409,8 +436,8 @@ Route::group(
         Route::any('/basket/coupon_use', [BasketController::class, 'coupon_use'])->name('coupon_use');
 
         Route::post('/basket/add/portrait',[BasketController::class, 'addToBasketPortrait'])->name('add_item_to_basket_portrait');
-        Route::post('/basket/add/inter', [BasketController::class, 'addToBasketInterier'])->name('add_item_to_basket_inter');
-        Route::post('/basket/add/module', [BasketController::class, 'addToBasketModule'])->name('add_item_to_basket_module');
+        Route::post('/basket/add/inter', [BasketController::class, 'retiredLegacyBasketEndpoint'])->name('add_item_to_basket_inter');
+        Route::post('/basket/add/module', [BasketController::class, 'retiredLegacyBasketEndpoint'])->name('add_item_to_basket_module');
         Route::post('/basket/add/construct', [BasketController::class, 'addToBasketConstruct'])->name('add_item_to_basket_construct');
         Route::post('/basket/add/future_art', [BasketController::class, 'addToBasketArt'])->name('add_future_art');
         Route::post('/basket/add/recommended', [BasketController::class, 'addRecommendedToBasket'])->name('basket.add_recommended');
@@ -418,7 +445,7 @@ Route::group(
 
         Route::post('/basket/remove', [BasketController::class, 'removeFromBasket'])->name('remove_item_from_basket');
 
-        Route::post('/basket/submitbonuses', [BasketController::class, 'submitBonuses'])->name('submit_bonuses');
+        Route::post('/basket/submitbonuses', [BasketController::class, 'submitBonuses'])->name('submit_bonuses_post');
 
         Route::get('/basket/submitbonuses', [BasketController::class, 'submitBonuses'])->name('submit_bonuses');
 

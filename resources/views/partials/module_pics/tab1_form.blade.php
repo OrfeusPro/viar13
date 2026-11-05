@@ -9,7 +9,7 @@
                     <div class="download">
                         <div class="img">
                             <img src="" alt="" class="download-img">
-                            <img src="{{ asset('img/download-icon.png') }}" alt="" class="download-icon">
+                            <img src="{{ asset('img/download-icon.png') }}"  class="download-icon" @frontendAlt('partials/module_pics/tab1_form.blade.php', (asset('img/download-icon.png')), '', '')>
                         </div>
                         <div class="delete"></div>
                         <input type="file" class="imageFile" accept="image/*,image/heif,image/heic" name="user_image[]">

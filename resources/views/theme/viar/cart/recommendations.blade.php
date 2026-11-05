@@ -31,7 +31,7 @@
                 @if($isCanvas)
                     <div class="cart-recommendations__item--canvas">
                         <div class="cart-recommendations__item-image-full">
-                            <img src="{{ $imageUrl }}" alt="{{ $item['name'] }}">
+                            <img src="{{ $imageUrl }}"  @frontendAlt('theme/viar/cart/recommendations.blade.php', ($imageUrl), ($item['name']), '')>
                         </div>
                         <div class="cart-recommendations__item-content-canvas">
                             <div class="canvas-info-row canvas-info-row-1">
@@ -70,7 +70,7 @@
                         <a class="cart-recommendations__item-link">
                             <div class="cart-recommendations__item-image">
                                 @if(isset($item['image']))
-                                    <img src="{{ asset('storage/'.$imageUrl) }}" alt="{{ $item['name'] }}">
+                                    <img src="{{ asset('storage/'.$imageUrl) }}"  @frontendAlt('theme/viar/cart/recommendations.blade.php', (asset('storage/'.$imageUrl)), ($item['name']), '')>
                                 @else
                                     <div class="no-image">@lang('cart_new.no_image')</div>
                                 @endif

@@ -16,7 +16,7 @@
                 </picture>
             </div> --}}
             <div class="not-found__text">
-                <img alt="ViarCanvas" style="max-width: 91%;display: block;margin: 0 auto;" src="https://viarcanvas.com/img/banner-img.png">
+                <img  style="max-width: 91%;display: block;margin: 0 auto;" src="https://viarcanvas.com/img/banner-img.png" @frontendAlt('errors/404.blade.php', 'https://viarcanvas.com/img/banner-img.png', 'ViarCanvas', '')>
                 <br>
                 <h1 class="page-title">404 - @lang('gl.err_title')</h1>
                 {{-- <p class="not-found__desc">

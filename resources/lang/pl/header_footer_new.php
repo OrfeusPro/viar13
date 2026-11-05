@@ -22,9 +22,9 @@ return array (
   'terms_and_conditions' => 'Polityka Prywatności, Ogólne Warunki Handlowe',
   'prices' => 'Ceny',
   'stocks' => 'Sprzedaż',
-  'header' => 
+  'header' =>
   array (
-    'top_sale' => 'Letnia wyprzedaż 2026 <span>do -65%</span>',
+    'top_sale' => 'Jesienna wyprzedaż 2026 <span>do -65%</span>',
   ),
   'footer_paysera' => 'D-Art-Solutions  SP. Z O.O, 40203366048,  Jēkabpils nov., Jēkabpils, Slimnīcas iela 3 - 27, LV-5202',
   'footer_phone_new' => '+37127044470',

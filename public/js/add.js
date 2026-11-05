@@ -115,8 +115,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
         }
         // $('.js_spinner').jmspinner(false);
       },
-      error: function (jqXHR, exception) {
-        // $('.js_spinner').jmspinner(false);
+      error: function (jqXHR) {
+        const errors = jqXHR.responseJSON && jqXHR.responseJSON.errors;
+        if (errors) {
+          $('.js_login_form [data-name="email"]').text(
+            (errors.email || errors.password || [""])[0]
+          );
+        }
       },
     });
   });

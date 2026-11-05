@@ -28,7 +28,6 @@ $(document).on('submit', '.js_forget_pass', function(e){
     $('.js_forget_pass').find('button').attr("disabled", true);
     var route_forget = $(this).attr('action');
     var user_email = $('.js__mail_forget').val();
-    var locale = $(this).find('input[name="locale"]').val();
     $.ajax({
             method: 'POST',
             headers: {
@@ -36,8 +35,7 @@ $(document).on('submit', '.js_forget_pass', function(e){
             },
             url: route_forget,
             data: {
-                email: user_email,
-                locale: locale
+                email: user_email
             },
             success: function (response) {
                 $('.js_forget_pass button').removeAttr("disabled");

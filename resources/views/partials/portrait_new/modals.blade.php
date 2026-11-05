@@ -300,7 +300,7 @@
                         <use xlink:href="{{ asset(env('THEME').'sprite.svg#lock') }}"></use>
                     </svg>
                     <p>
-                        {!! trans('homepage_new_login_reg.create_acc_policy_text') !!}
+                        {!! storefront_html(trans('homepage_new_login_reg.create_acc_policy_text')) !!}
                     </p>
                 </div>
             </div>
@@ -334,7 +334,7 @@
         <picture>
             <source srcset="{{ asset('images/portrait-form.webp') }}" type="image/webp" />
             <source srcset="{{ asset('images/portrait-form.png') }}" />
-            <img src="{{ asset('images/portrait-form.png') }}" class="vz-art photo-mokap" alt="img" loading="lazy" />
+            <img src="{{ asset('images/portrait-form.png') }}" class="vz-art photo-mokap"  loading="lazy"  @frontendAlt('partials/portrait_new/modals.blade.php', (asset('images/portrait-form.png')), 'img', '')/>
         </picture>
     </form>
 @endif

@@ -12,6 +12,8 @@ class Payment_successful extends Mailable
     use Queueable;
     use SerializesModels;
 
+    public $data;
+
     /**
      * Create a new message instance.
      *

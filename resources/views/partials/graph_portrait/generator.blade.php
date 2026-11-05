@@ -39,7 +39,7 @@
                             @if($item['images'])
                             @foreach( json_decode($item['images']) as $img)
                             <div class="def__tab__img_sms def__imgs_rem">
-                                <img src="{{ Voyager::image($img) }}" alt="">
+                                <img src="{{ Voyager::image($img) }}"  @frontendAlt('partials/graph_portrait/generator.blade.php', (Voyager::image($img)), '', '')>
                             </div>
                             @endforeach
                             @endif
@@ -58,16 +58,16 @@
                                 <div class="accordion-content">
                                     <div class="js_zone_no_drop">
                                         <div class="upl__btn">
-                                            <img class="upl_ico" src="{{ asset('img/download-icon.png') }}" alt=""
-                                                class="download-icon">
+                                            <img class="upl_ico" src="{{ asset('img/download-icon.png') }}"
+                                                class="download-icon" @frontendAlt('partials/graph_portrait/generator.blade.php', (asset('img/download-icon.png')), '', '')>
                                         </div>
                                         <div class="upl__btn">
-                                            <img class="upl_ico" src="{{ asset('img/download-icon.png') }}" alt=""
-                                                class="download-icon">
+                                            <img class="upl_ico" src="{{ asset('img/download-icon.png') }}"
+                                                class="download-icon" @frontendAlt('partials/graph_portrait/generator.blade.php', (asset('img/download-icon.png')), '', '')>
                                         </div>
                                         <div class="upl__btn">
-                                            <img class="upl_ico" src="{{ asset('img/download-icon.png') }}" alt=""
-                                                class="download-icon">
+                                            <img class="upl_ico" src="{{ asset('img/download-icon.png') }}"
+                                                class="download-icon" @frontendAlt('partials/graph_portrait/generator.blade.php', (asset('img/download-icon.png')), '', '')>
                                         </div>
                                     </div>
                                     {{-- <div class="product-download pd-graph">
@@ -171,14 +171,14 @@
                             <div data-id="maslom" class="execution-item js__calc_ex js_ex_1" data-execution="1">
                                 <div class="img">
                                     <i class="icon-down-arrow"></i>
-                                    <img src="{{ asset('img/execution-item1.png') }}" alt="">
+                                    <img src="{{ asset('img/execution-item1.png') }}"  @frontendAlt('partials/graph_portrait/generator.blade.php', (asset('img/execution-item1.png')), '', '')>
                                 </div>
                                 <p>@lang('modular_pictures.index46')</p>
                             </div>
                             <div data-id="pechat" class="execution-item active js__calc_ex js_ex_2" data-execution="2">
                                 <div class="img">
                                     <i class="icon-down-arrow"></i>
-                                    <img src="{{ asset('img/execution-item2.png') }}" alt="">
+                                    <img src="{{ asset('img/execution-item2.png') }}"  @frontendAlt('partials/graph_portrait/generator.blade.php', (asset('img/execution-item2.png')), '', '')>
                                 </div>
                                 <p>@lang('modular_pictures.index45')</p>
                             </div>

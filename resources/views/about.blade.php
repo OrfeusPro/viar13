@@ -67,17 +67,17 @@
         <div class="about-content clearfix">
             <div class="about-text">
                 {!! render_content_images($pageContent) !!}
-                <img class="about-img2" src="{{ asset('images/about-img2.png') }}" alt=""/>
+                <img class="about-img2" src="{{ asset('images/about-img2.png') }}"  @frontendAlt('about.blade.php', (asset('images/about-img2.png')), '', '')/>
             </div>
             <div class="about-logo">
                 <div class="link modile"><img class="about-link" src="{{ asset('images/about-link.png') }}"
-                                              data-src="{{ asset('images/about-link.png') }}" alt=""/>
+                                              data-src="{{ asset('images/about-link.png') }}"  @frontendAlt('about.blade.php', (asset('images/about-link.png')), '', '')/>
                     <a href="{{ route('gallery.index') }}">{{ trans('gl.choose_pic') }}</a>
                 </div>
-                <img class="logo-about" src="{{ asset('images/logo-about.png') }}" alt=""/>
+                <img class="logo-about" src="{{ asset('images/logo-about.png') }}"  @frontendAlt('about.blade.php', (asset('images/logo-about.png')), '', '')/>
                 <div class="link desc">
                     <img class="about-link" src="{{ asset('images/about-link.png') }}"
-                         data-src="{{ asset('images/about-link.png') }}" alt=""/>
+                         data-src="{{ asset('images/about-link.png') }}"  @frontendAlt('about.blade.php', (asset('images/about-link.png')), '', '')/>
                     <a href="{{ route('gallery.index') }}"><span>{{ trans('gl.choose_pic') }}</span></a>
                 </div>
             </div>

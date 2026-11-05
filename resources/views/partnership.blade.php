@@ -46,7 +46,7 @@
             {!! $page->partner_item_3 !!}
             <div class="sale">
                 <div>
-                    <span>{!! $page->sale_from !!} </span> <img src="{{ asset('img/sale-img.png') }}" alt="" />
+                    <span>{!! $page->sale_from !!} </span> <img src="{{ asset('img/sale-img.png') }}"   @frontendAlt('partnership.blade.php', (asset('img/sale-img.png')), '', '')/>
                     <h6>{!! $page->sale_after !!}</h6>
                 </div>
                 {!! $page->sale_bot_text !!}

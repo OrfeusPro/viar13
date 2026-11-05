@@ -131,7 +131,9 @@ class BasketRepository
                 }
             }
 
-            if (isset($data['pid']) && request()->session()->has('recommendation_discount_' . $data['pid'])) {
+            if (isset($data['pid']) && request()->session()->has('recommendation_discount_' . $data['pid']) &&
+                !in_array($data['price_label'] ?? '', ['h', 's', 't'], true) &&
+                !hasSpecialLabel($data['sizeId'] ?? $data['size_name'] ?? $data['full_size'] ?? $data['size'] ?? '')) {
                 $recommendationDiscount = 30;
 
                 $data['original_price'] = $data['price'];
@@ -428,6 +430,25 @@ class BasketRepository
                 }
             }
             foreach ($basket as $key => $product) {
+                if (is_array($product) && isset($product['checkout_unit_price'])) {
+                    if (!isset($product['is_def_product']) && !isset($product['is_canvas_inter']) &&
+                        (string) ($product['basketType'] ?? '') === '1') {
+                        $basket = $this->formCanvasTypeProperties($basket, $key);
+                    }
+                    $basket[$key]['price'] = round((float) $product['checkout_unit_price'] * $contry_mult, 2);
+                    if (isset($product['checkout_size_base_price'])) {
+                        $basket[$key]['checkout_size_discounted_base'] = round((float) $product['checkout_size_base_price'] * .85 * $contry_mult, 2);
+                        $basket[$key]['price'] = round($basket[$key]['checkout_size_discounted_base'] + (float) $product['checkout_size_extras_price'] * $contry_mult, 2);
+                    }
+                    $basket[$key]['sumPrice'] = round($basket[$key]['price'] * max(1, (int) ($product['count'] ?? 1)), 2);
+                    $basket[$key]['show']['size'] = $product['sizeId'] ?? $product['size_name'] ?? '';
+                    $totalPrice += $basket[$key]['sumPrice'];
+                    if (app(\App\Services\CheckoutCouponService::class)->isPromotional($product)) {
+                        $totalPriceWithLabels += $basket[$key]['sumPrice'];
+                    } else { $totalPriceWithoutLabels += $basket[$key]['sumPrice']; }
+                    continue;
+                }
+
                 if (!isset($basket[$key]['basketType'])) {
                     if (isset($basket[$key]['basketType'])) {
                         $basket[$key]['show']['basketType'] = BasketType::getName($basket[$key]['basketType']);
@@ -652,14 +673,7 @@ class BasketRepository
                     Session::put('bonus', $bonuses);
                 }
             }
-        if ($basket['coupon_id']>0) {
-            // Передаємо суми окремо: застосовуємо знижку тільки до товарів БЕЗ позначок
-            $basket['sale_price'] = $this->caclSales($totalPrice, $basket, $totalPriceWithoutLabels, $totalPriceWithLabels);
-        }
-
-
-
-
+        $basket = app(\App\Services\CheckoutCouponService::class)->refresh($basket);
 
         $basket['bonus']=request()->session()->get('bonus');
         $basket['coupon_val']=Session::get('coupon_val');
@@ -677,179 +691,6 @@ class BasketRepository
     }
 
     /// TODO : вычисляем цену с учетом акций
-    private function caclSales($total, $basket, $totalPriceWithoutLabels = null, $totalPriceWithLabels = null)
-    {
-        // Якщо не передані окремі суми, використовуємо загальну (backwards compatibility)
-        if ($totalPriceWithoutLabels === null) {
-            $totalPriceWithoutLabels = $total;
-        }
-        if ($totalPriceWithLabels === null) {
-            $totalPriceWithLabels = 0;
-        }
-
-        if (Auth::user()) {
-            $user = \Auth::user();
-
-            /// Даты
-            if ($basket['coupon_type'] == 'date') {
-                // Застосовуємо знижку тільки до товарів БЕЗ позначок
-                $discountedPrice = $totalPriceWithoutLabels;
-
-                if ($discountedPrice < 21 && $discountedPrice > 0) {
-                    $discountedPrice = $discountedPrice - ($discountedPrice * (30 / 100)); // до 20 - 30%
-                    \Session::put('sale_dated', 30);
-                }
-
-                if ($discountedPrice > 20 && $discountedPrice < 31) {
-                    $discountedPrice = $discountedPrice - ($discountedPrice * (20 / 100)); // до 30 - 20%
-                    \Session::put('sale_dated', 20);
-                }
-
-                if ($discountedPrice > 30 && $discountedPrice < 100) {
-                    $discountedPrice = $discountedPrice - ($discountedPrice * (10 / 100)); // >30 - 10%
-                    \Session::put('sale_dated', 10);
-                }
-
-                if ($discountedPrice > 99) {
-                    $discountedPrice = $discountedPrice - ($discountedPrice * (5 / 100)); // >99 - 5 %
-                    \Session::put('sale_dated', 5);
-                }
-
-                // Додаємо товари З позначками (без знижки)
-                $total = $discountedPrice + $totalPriceWithLabels;
-                $total = floatval($total);
-                $total = number_format($total, 2, '.', '');
-                return $total;
-            }
-            /// Пригласи друга
-            if ($basket['coupon_type'] == 'friend') {
-                /// $user->is_active_friend_inv==1 Записать при удачном заказе
-                ///  Добавить бонусов User
-                /// Купон не удаляется
-                // Застосовуємо знижку тільки до товарів БЕЗ позначок
-                $discountedPrice = $totalPriceWithoutLabels - 5;
-                $total = $discountedPrice + $totalPriceWithLabels;
-                $total = floatval($total);
-                $total = number_format($total, 2, '.', '');
-                return $total;
-
-        }
-
-            // Принт скрин Facebook
-            if ($basket['coupon_type'] == 'facebook') {
-                // Застосовуємо знижку тільки до товарів БЕЗ позначок
-                $discountedPrice = $totalPriceWithoutLabels - ($totalPriceWithoutLabels * (2 / 100));
-                $total = $discountedPrice + $totalPriceWithLabels;
-                $total = floatval($total);
-                $total = number_format($total, 2, '.', '');
-                return $total;
-            }
-
-            /// Купон 30_40 бесплатно
-            if ($basket['coupon_type'] == '30_40') {
-
-                foreach ($basket as $basket_item)
-                {
-                    if ( isset($basket_item["sizeId"]) && $basket_item["sizeId"]=="30x40" && isset($basket_item["name"]) &&  $basket_item["name"]=="Canvas" ) {
-
-                        if (isset($sale) && $sale>$basket_item["price"] ){
-                            $sale = $basket_item["price"];
-                        }
-                        if (!isset($sale)) {
-                            $sale = $basket_item["price"];
-                        }
-                    }
-
-                }
-                if (isset($sale)) {  $total = $total-$sale;}
-
-                $total = floatval($total);
-                $total = number_format($total, 2, '.', '');
-                return $total;
-            }
-
-
-
-
-            /// Купон 40_60 бесплатно
-            if ($basket['coupon_type'] == '40_60') {
-
-                $have_sale=0;
-                foreach ($basket as $basket_item)
-                {
-                    if ( isset($basket_item["sizeId"]) && ($basket_item["sizeId"]=="80x120" || $basket_item["sizeId"]=="120x80" )) {
-
-                    $have_sale=1;
-                    }
-                }
-                foreach ($basket as $basket_item)
-                {
-                if ($have_sale && isset($basket_item["sizeId"]) && ($basket_item["sizeId"] == "40x60" || $basket_item["sizeId"] == "60x40") && isset($basket_item["name"]) && $basket_item["name"] == "Canvas") {
-                    if (isset($sale) && $sale > $basket_item["price"]) {
-                        $sale = $basket_item["price"];
-                    }
-                    if (!isset($sale)) {
-                        $sale = $basket_item["price"];
-                    }
-                }
-                }
-                if (isset($sale)) {  $total = $total-$sale;}
-
-                $total = floatval($total);
-                $total = number_format($total, 2, '.', '');
-                return $total;
-
-            }
-
-
-            /// Купон 3 одна бесплатно
-            if ($basket['coupon_type'] == '1free') {
-                if ($this->total_item_counts($basket)>=4 ) {
-
-                    foreach ($basket as $basket_item) {
-
-                        if (isset($basket_item["price"])) {
-                            if (isset($sale) && $sale > $basket_item["price"]) {
-                                $sale = $basket_item["price"];
-                            }
-                            if (!isset($sale)) {
-                                $sale = $basket_item["price"];
-                            }
-                        }
-                    }
-                    if (isset($sale)) {  $total = $total-$sale;}
-
-                    $total = floatval($total);
-                    $total = number_format($total, 2, '.', '');
-                    return $total;
-                }
-            }
-
-            /// Универсальный купон
-            if ($basket['coupon_type'] == 'universal') {
-
-                return  $this->convert_percent($basket, $total, $totalPriceWithoutLabels, $totalPriceWithLabels);
-
-            }
-
-            if ($basket['coupon_type'] == 'abandoned_basket') {
-                return  $this->convert_percent($basket, $total, $totalPriceWithoutLabels, $totalPriceWithLabels);
-            }
-
-            if ($basket['coupon_type'] == 'giftcard') {
-                return  $this->convert_percent($basket, $total, $totalPriceWithoutLabels, $totalPriceWithLabels);
-            }
-
-
-
-        }
-
-
-
-        return $total;
-    }
-
-
     public function total_item_counts($basket)
     {
         $total_item_counts = 0;
@@ -1165,6 +1006,7 @@ class BasketRepository
 
     private function formBoxProperty($basket, $key)
     {
+        $basket[$key]['show']['box'] = [];
         if ($basket[$key]['boxIds']) {
             $basket[$key]['price']['boxPrice'] = 0;
 
@@ -1358,7 +1200,7 @@ class BasketRepository
 
         $result = [];
 
-        $canvasRecommendation = $this->generateCanvasRecommendation($currentSize);
+        $canvasRecommendation = $this->generateCanvasRecommendation($currentSize, $contry_mult);
         if ($canvasRecommendation) {
             $result[] = $canvasRecommendation;
         }
@@ -1369,8 +1211,8 @@ class BasketRepository
                 ->with('types')
                 ->first();
 
-            if ($specificItem) {
-                $priceFrom = ($specificItem->price_from ?? 0) * $contry_mult;
+            if ($specificItem && ($regular = app(\App\Services\CheckoutSizeOfferService::class)->galleryRecommendation($specificItem))) {
+                $priceFrom = $regular['price'] * $contry_mult;
                 $discountedPrice = round($priceFrom * 0.7, 2);
                 $discountAmount = round($priceFrom - $discountedPrice, 2);
 
@@ -1392,7 +1234,9 @@ class BasketRepository
         }
 
         foreach ($recommendedItems as $item) {
-            $priceFrom = ($item->price_from ?? 0) * $contry_mult;
+            $regular = app(\App\Services\CheckoutSizeOfferService::class)->galleryRecommendation($item);
+            if (!$regular) { continue; }
+            $priceFrom = $regular['price'] * $contry_mult;
 
             $discountedPrice = round($priceFrom * 0.7, 2);
             $discountAmount = round($priceFrom - $discountedPrice, 2);
@@ -1731,7 +1575,7 @@ class BasketRepository
         return 0;
     }
 
-    private function generateCanvasRecommendation($currentSize = null): ?array
+    private function generateCanvasRecommendation($currentSize = null, $multiplier = 1): ?array
     {
         $sizes_30x40 = \DB::table('canvas_header')->pluck('sizes_30x40')->first();
 
@@ -1749,6 +1593,7 @@ class BasketRepository
 
             if ($matches) {
                 $sizeStr = $matches[1] . $matches[3];
+                if (hasSpecialLabel($sizeStr)) { continue; }
                 $priceArr = explode('-', $matches[2]);
                 $originalPrice = (float)$priceArr[0];
                 $discountedPrice = count($priceArr) > 1 ? (float)$priceArr[1] : $originalPrice;
@@ -1796,6 +1641,8 @@ class BasketRepository
         });
 
         $selectedSize = $largerSizes[0];
+        $selectedSize['original_price'] *= $multiplier;
+        $selectedSize['discounted_price'] *= $multiplier;
 
         $galleryType = GalleryType::where('url', 'new/canvas')->first();
         $id_type = $galleryType ? $galleryType->id : null;

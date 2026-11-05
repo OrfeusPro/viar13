@@ -40,7 +40,7 @@
             <picture>
                 <source srcset="{{ asset('images/portrait-bg.webp') }}" type="image/webp"/>
                 <source srcset="{{ asset('images/portrait-bg.png') }}" type="image/png"/>
-                <img src="{{ asset('images/portrait-bg.png') }}" alt=""/>
+                <img src="{{ asset('images/portrait-bg.png') }}"  @frontendAlt('partials/portrait_new/h_zero.blade.php', (asset('images/portrait-bg.png')), '', '')/>
             </picture>
         </div>
     </div>

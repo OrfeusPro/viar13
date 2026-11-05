@@ -32,6 +32,7 @@ return array (
   'report_suc_send' => 'Edukalt saadetud!',
   'too_big_filesize' => 'Faili suurus on liiga suur',
   'inv_filesize_or_ext' => 'Faili ei lisatud',
+  'canvas_photo_required_step1' => 'Lisage foto.',
   'media_missing' => 'Pilt puudub',
   'pic_on_wall' => 'Pilt seinal',
   'choose_person_count' => 'Valige <span>Inimeste arv</span>',
@@ -167,4 +168,5 @@ return array (
   'error_image_modular' => 'Pildi üleslaadimine on kohustuslik',
   'category' => 'Kategooria',
   'type' => 'Tüüp',
+  'canvas_photo_required_step1' => 'Lisage foto.',
 );

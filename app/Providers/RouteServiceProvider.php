@@ -44,9 +44,18 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->mapApiRoutes();
 
+        $this->mapSeoAnalyticsRoutes();
+
         $this->mapWebRoutes();
 
         //
+    }
+
+    /** Public OAuth information pages do not require a storefront session. */
+    protected function mapSeoAnalyticsRoutes(): void
+    {
+        Route::namespace($this->namespace)
+            ->group(base_path('routes/seo_analytics.php'));
     }
 
     /**

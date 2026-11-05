@@ -43,7 +43,7 @@ class Controller extends BaseController
 		$this->vars = Arr::add($this->vars, 'seo', $this->seo);
 		$this->vars = Arr::add($this->vars, 'meta_desc', $this->meta_desc);
 		$this->vars = Arr::add($this->vars, 'title', $this->title);
-		$this->vars = Arr::add($this->vars, 'locales', Loc::all());
+		$this->vars = Arr::add($this->vars, 'locales', $this->vars['locales'] ?? Loc::all());
 		// $this->vars = Arr::add($this->vars, 'why_are_you_leaving_questions', WhyAreYouLeavingQuestion::All()->where('is_show', 1)->translate(App::getLocale(), 'ru'));
 
 		return view($this->template)->with($this->vars);

@@ -668,7 +668,7 @@ class AdminSaIntegrationController extends Controller
             ->value('id');
     }
 
-    private function resolveSimulatorDefaults(): array
+    public function resolveSimulatorDefaults(): array
     {
         $leadId = null;
         $conversationId = null;

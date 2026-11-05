@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use GuzzleHttp\Client;
 
 class RegisterStoreRequest extends FormRequest
 {
@@ -12,7 +11,7 @@ class RegisterStoreRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -22,7 +21,7 @@ class RegisterStoreRequest extends FormRequest
      *
      * @return array
      */
-    public function messages()
+    public function messages(): array
     {
         return [
             'name' => trans('homepage_new_login_reg.name_error'),
@@ -46,30 +45,23 @@ class RegisterStoreRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => mb_strtolower(trim((string) $this->input('email', ''))),
+            'phone' => preg_replace('/[()\s-]+/', '', (string) $this->input('phone', '')),
+        ]);
+    }
+
+    public function rules(): array
     {
         return [
-            'name' => 'required|max:255',
-            'surname' => 'max:255',
-            'email' => 'required|unique:users',
-            'phone' => 'required|min:7|regex:/^\+?[0-9\s()-]+$/',
-            'password' => 'min:6|required_with:password_confirmation|same:password_confirmation',
-            'password_confirmation' => 'min:6',
-            'g-recaptcha-response' => ['required', function ($attribute, $value, $fail) {
-                $gResponseToken = (string) $value;
-
-                $client = new Client();
-                $response = $client->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'form_params' => [
-                        'secret' => env('RECAPTCHA_SECRET_KEY'),
-                        'response' => $gResponseToken,
-                    ]
-                ]);
-
-                if (!json_decode($response->getBody(), true)['success']) {
-                    $fail('Invalid recaptcha');
-                }
-            }],
+            'name' => ['required', 'string', 'max:255'],
+            'surname' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'email:rfc', 'max:150', 'unique:users,email'],
+            'phone' => ['required', 'regex:/^\+?\d{7,15}$/'],
+            'password' => ['required', 'string', 'min:6', 'max:255', 'same:password_confirmation'],
+            'password_confirmation' => ['required', 'string', 'min:6', 'max:255'],
         ];
     }
 }

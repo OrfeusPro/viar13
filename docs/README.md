@@ -4,6 +4,24 @@
 
 ## Основные разделы
 
+### Laravel 13 — публичный frontend
+
+- [`../MIGRATION_PLAN.md`](../MIGRATION_PLAN.md) — актуальный план, backlog и
+  найденные задачи.
+- [`../MIGRATION_PROGRESS.md`](../MIGRATION_PROGRESS.md) — журнал выполненных
+  работ и evidence.
+- [`frontend-mutating-routes-audit.md`](frontend-mutating-routes-audit.md) —
+  аудит публичных POST/AJAX/ANY routes.
+- [`basket-add-payload-audit.md`](basket-add-payload-audit.md) — матрица
+  basket add-endpoints, JS/Blade payloads и статусов проверки.
+- [`frontend-browser-smoke.md`](frontend-browser-smoke.md) — матрица запуска
+  основных страниц и найденные браузером frontend-проблемы.
+- [`production-frontend-runbook.md`](production-frontend-runbook.md) — порядок
+  production-развёртывания, smoke-check, cache policy и rollback Laravel 13
+  frontend.
+- `upgrade-laravel13-filament5/` — архив прежнего направления; использовать
+  только как справочные аудиты, не как активный план.
+
 ### CRM <-> SA
 
 - [crm_sa_implementation_plan.md](./crm_sa_implementation_plan.md) - основной план работ и журнал статуса.

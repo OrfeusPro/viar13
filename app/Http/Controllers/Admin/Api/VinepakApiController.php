@@ -92,8 +92,9 @@ class VinepakApiController extends Controller
 
         $unique = $response->unique('city');
 
-        $towns = view(env('THEME_RESOURCES') . '.cart.citys')->with('citys', $unique)->render();
-        $pickup_points = view(env('THEME_RESOURCES') . '.cart.warehouses')->with('warehouses', $response)->render();
+        $themeResource = config('theme.resource') ?: 'theme.viar.';
+        $towns = view($themeResource . 'cart.citys')->with('citys', $unique)->render();
+        $pickup_points = view($themeResource . 'cart.warehouses')->with('warehouses', $response)->render();
 
         $c_tels = CountryTel::where('country_code', $_GET['country'])->first();
         if (!$c_tels) {
@@ -231,7 +232,9 @@ class VinepakApiController extends Controller
             }
         });
 
-         $pickup_points = view(env('THEME_RESOURCES') . '.cart.warehouses')->with('warehouses', $response)->render();
+         $pickup_points = view((config('theme.resource') ?: 'theme.viar.') . 'cart.warehouses')
+             ->with('warehouses', $response)
+             ->render();
 
         $res = [];
 

@@ -9,7 +9,7 @@
                         @foreach ($menu_items1 as $item)
 							@if($item->is_show)
 								<li>
-									<a href="{{ $item->getTranslatedAttribute('link') }}" data-link="{{ $loop->iteration }}">
+					<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" data-link="{{ $loop->iteration }}">
 										<span>{{ $item->getTranslatedAttribute('title') }}</span>
 										<i class="fa-arrow-next"></i>
 									</a>
@@ -35,7 +35,7 @@
                                                 @if(!empty($homeNewMenuImageSources['src']) && !empty($homeNewMenuImageSources['type']))
                                                     <source srcset="{{ $homeNewMenuImageSources['src'] }}" type="{{ $homeNewMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -52,7 +52,7 @@
                                         @if(!empty($homeNewMenuPngSources['src']) && !empty($homeNewMenuPngSources['type']))
                                             <source srcset="{{ $homeNewMenuPngSources['src'] }}" type="{{ $homeNewMenuPngSources['type'] }}">
                                         @endif
-                                        <img class="lozad" src="{{ $homeNewMenuPngSources['src'] }}" loading="lazy" alt="">
+                                        <img class="lozad" src="{{ $homeNewMenuPngSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuPngSources['src']), '', '')>
                                     </picture>
                                 </a>
                                 @endif
@@ -72,7 +72,7 @@
                         @foreach ($menu_items2 as $item)
 							@if($item->is_show)
 								<li>
-									<a href="{{ $item->getTranslatedAttribute('link') }}" data-link="{{ $loop->iteration }}">
+					<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" data-link="{{ $loop->iteration }}">
 										<span>{{ $item->getTranslatedAttribute('title') }}</span>
 										<i class="fa-arrow-next"></i>
 									</a>
@@ -98,7 +98,7 @@
                                                 @if(!empty($homeNewMenuImageSources['src']) && !empty($homeNewMenuImageSources['type']))
                                                     <source srcset="{{ $homeNewMenuImageSources['src'] }}" type="{{ $homeNewMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -118,7 +118,7 @@
                         @foreach ($menu_items3 as $item)
 							@if($item->is_show)
 								<li>
-									<a href="{{ $item->getTranslatedAttribute('link') }}" data-link="{{ $loop->iteration }}">
+					<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}" data-link="{{ $loop->iteration }}">
 										<span>{{ $item->getTranslatedAttribute('title') }}</span>
 										<i class="fa-arrow-next"></i>
 									</a>
@@ -144,7 +144,7 @@
                                                 @if(!empty($homeNewMenuImageSources['src']) && !empty($homeNewMenuImageSources['type']))
                                                     <source srcset="{{ $homeNewMenuImageSources['src'] }}" type="{{ $homeNewMenuImageSources['type'] }}">
                                                 @endif
-												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy" alt="">
+												<img class="lozad" src="{{ $homeNewMenuImageSources['src'] }}" loading="lazy"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', ($homeNewMenuImageSources['src']), '', '')>
 											</picture>
 										</a>
 									@endforeach
@@ -163,7 +163,7 @@
 <div class="vz-art burge-menu">
     <div class="vz-art header-bar header-bar_burger">
         <a href="{{ route('home') }}" class="vz-art logo" aria-label="logo link">
-            <img loading="lazy" src="{{ asset('images/logo.svg') }}" alt="@lang('settings.site_name')">
+            <img loading="lazy" src="{{ asset('images/logo.svg') }}"  @frontendAlt('theme/viar/pages/index/header_new_0.blade.php', (asset('images/logo.svg')), __('settings.site_name'), '')>
         </a>
         <div class="header-button">
             <a href="#" class="vz-art header-user" aria-label="user link">
@@ -186,7 +186,7 @@
                     @foreach ($menu_items1 as $item)
 						@if($item->is_show)
 							<li>
-								<a href="{{ $item->getTranslatedAttribute('link') }}">{{ $item->getTranslatedAttribute('title') }}</a>
+								<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">{{ $item->getTranslatedAttribute('title') }}</a>
 							</li>
 						@endif
                     @endforeach
@@ -201,7 +201,7 @@
                     @foreach ($menu_items2 as $item)
 						@if($item->is_show)
 							<li>
-								<a href="{{ $item->getTranslatedAttribute('link') }}">{{ $item->getTranslatedAttribute('title') }}</a>
+								<a href="{{ storefront_url($item->getTranslatedAttribute('link')) }}">{{ $item->getTranslatedAttribute('title') }}</a>
 							</li>
 						@endif
                     @endforeach
@@ -227,7 +227,7 @@
 
         <div class="vz-art burge-menu__item">
 		{{--<div><a href="{{ route('blog') }}">{{ trans('header_footer_new.header_col4_name') }}</a></div>--}}
-            <div class="h3_old"><a class="mainl" href="{{ asset('page/contacts')}}">{{ trans('header_footer_new.contacts') }}</a></div>
+            <div class="h3_old"><a class="mainl" href="{{ storefront_url('/page/contacts') }}">{{ trans('header_footer_new.contacts') }}</a></div>
         </div>
         <div class="vz-art burge-menu__item">
             <div class="h3_old"><a class="mainl" href="{{ route('sizesprices') }}">{{ trans('header_footer_new.prices') }}</a></div>
@@ -243,8 +243,9 @@
 
                 <ul class="ver1_langs">
                     @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                    @continue(is_array($article_language_urls ?? null) && !isset($article_language_urls[$localeCode]))
                         @php
-                            $cur_url = isset($localized_urls[$localeCode]) ? $localized_urls[$localeCode] : LaravelLocalization::getLocalizedURL($localeCode, null, [], true);
+                            $cur_url = $article_language_urls[$localeCode] ?? (isset($localized_urls[$localeCode]) ? $localized_urls[$localeCode] : LaravelLocalization::getLocalizedURL($localeCode, null, [], true));
                             $cur_url_mod = strtok($cur_url, '?');
                         @endphp
                         <li>

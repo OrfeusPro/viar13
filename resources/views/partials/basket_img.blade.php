@@ -1,5 +1,5 @@
 @if (isset($product['image_uploads']))
-    <img class="def_img image_offset" src="{{ order_image_url($product['activeImage'] ?? null) }}" alt="">
+    <img class="def_img image_offset" src="{{ order_image_url($product['activeImage'] ?? null) }}"  @frontendAlt('partials/basket_img.blade.php', (order_image_url($product['activeImage'] ?? null)), '', '')>
 @else
     @if (isset($product['activeImage']))
         @php
@@ -19,7 +19,7 @@
         @isset($product['collageSvgImage'])
             @if ($svgLocal && file_exists($svgLocal))
                 <a style="position:relative;display:block;" href="javascript:void(0);" data-file="{{ $file }}">
-                    <img class="def_img_some" style="max-width:223px;opacity:0;" src="{{ $activeSrc }}" alt="">
+                    <img class="def_img_some" style="max-width:223px;opacity:0;" src="{{ $activeSrc }}"  @frontendAlt('partials/basket_img.blade.php', ($activeSrc), '', '')>
                     @php
                         try {
                             $svg_file = file_get_contents($svgLocal);
@@ -32,15 +32,15 @@
                     @endphp
                 </a>
             @else
-                <img alt="" class="def_img_some" style="max-width:223px;" src="{{ $activeSrc }}">
+                <img  class="def_img_some" style="max-width:223px;" src="{{ $activeSrc }}" @frontendAlt('partials/basket_img.blade.php', ($activeSrc), '', '')>
             @endif
         @else
-            <img class="def_img" src="{{ $savedSrc }}" alt="">
+            <img class="def_img" src="{{ $savedSrc }}"  @frontendAlt('partials/basket_img.blade.php', ($savedSrc), '', '')>
         @endisset
     @endif
 
     @isset($product['is_gift_card'])
-        <img alt="Gift" style="max-width:72px;" class="def_img card__img" src="{{ asset('img/benefits-img1.png') }}"
-             alt="">
+        <img  style="max-width:72px;" class="def_img card__img" src="{{ asset('img/benefits-img1.png') }}"
+              @frontendAlt('partials/basket_img.blade.php', (asset('img/benefits-img1.png')), 'Gift', '')>
     @endisset
 @endif

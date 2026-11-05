@@ -22,7 +22,7 @@
 					@if ($webpSrc = image_webp_url($image))
 						<source srcset="{{ $webpSrc }}" type="image/webp">
 					@endif
-					<img width="515" height="527" alt="{{ App\Models\GalleryItem::getTransName($item->id) }}" title="{{ App\Models\GalleryItem::getTransName($item->id) }}" class="" src="{{ $image }}" data-src="{{ $image }}" loading="lazy"/>
+					<img width="515" height="527"   class="" src="{{ $image }}" data-src="{{ $image }}" loading="lazy" @frontendAlt('theme/viar/pages/modular-generator/one_item.blade.php', ($image), (App\Models\GalleryItem::getTransName($item->id)), (App\Models\GalleryItem::getTransName($item->id)))/>
 				</picture>
 			</div>
 			<div class="mc-item__content">
@@ -35,7 +35,7 @@
 							<path fill-rule="evenodd" clip-rule="evenodd" d="M5.46667 5H5V5.46667V10.1333H5.93333V6.5933L9.80335 10.4633L10.4633 9.80335L6.5933 5.93333H10.1333V5H5.46667ZM18.5333 5H19V5.46667V10.1333H18.0667V6.5933L14.1966 10.4633L13.5367 9.80335L17.4067 5.93333H13.8667V5H18.5333ZM19 19H18.5333H13.8667V18.0667H17.4067L13.5367 14.1966L14.1966 13.5367L18.0667 17.4067V13.8667H19V18.5333V19ZM5.46667 19H5V18.5333V13.8667H5.93333V17.4067L9.80335 13.5367L10.4633 14.1966L6.5933 18.0667H10.1333V19H5.46667Z" fill="#FA7846"></path>
 						</svg>     
 						<span>
-							@include(env('THEME_RESOURCES') . 'pages.gallery.custom_sizes_calc_cat', ['current_first_size' => true])&nbsp;
+							@include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.custom_sizes_calc_cat', ['current_first_size' => true])&nbsp;
 						</span>
 					</p>
 					<p class="mc-avail">
@@ -56,7 +56,7 @@
 					<div class="mc-price">
 						<p>
 						@if($item->minSumPrice)
-							@lang('gl.price_from_text') <span class="cats-m-price">@include(env('THEME_RESOURCES') . 'pages.gallery.custom_sizes_calc_cat', ['full_current_price' => true])</span>
+							@lang('gl.price_from_text') <span class="cats-m-price">@include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.custom_sizes_calc_cat', ['full_current_price' => true])</span>
 						@endif
 					</p>
 					</div>

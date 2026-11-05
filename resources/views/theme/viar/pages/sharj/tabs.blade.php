@@ -82,7 +82,7 @@ foreach ($defs as $key => $cfg) {
                                                     <source srcset="{{ $sharjBeforeImageSources['src'] }}" type="{{ $sharjBeforeImageSources['type'] }}">
                                                 @endif
                                                 <img width="400" height="400" srcset="{{ $sharjBeforeImageSources['src'] }}"
-                                                    alt="" />
+                                                      @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', ($sharjBeforeImageSources['src']), '', '')/>
                                             </picture>
 
                                             <div class="resize">
@@ -97,7 +97,7 @@ foreach ($defs as $key => $cfg) {
                                                         <source srcset="{{ $sharjAfterImageSources['src'] }}" type="{{ $sharjAfterImageSources['type'] }}">
                                                     @endif
                                                     <img width="400" height="400"
-                                                        srcset="{{ $sharjAfterImageSources['src'] }}" alt="" />
+                                                        srcset="{{ $sharjAfterImageSources['src'] }}"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', ($sharjAfterImageSources['src']), '', '')/>
                                                 </picture>
                                             </div>
                                             <span class="handle"></span>
@@ -147,7 +147,7 @@ foreach ($defs as $key => $cfg) {
                                                 type="image/webp">
                                             <img width="100" height="100"
                                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/c1.webp"
-                                                alt="">
+                                                 @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/categories/c1.webp', '', '')>
                                         </picture>
                                     </div>
                                     <div class="text">
@@ -165,7 +165,7 @@ foreach ($defs as $key => $cfg) {
                                                 type="image/webp">
                                             <img width="100" height="100"
                                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/c2.webp"
-                                                alt="">
+                                                 @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/categories/c2.webp', '', '')>
                                         </picture>
                                     </div>
                                     <div class="text">
@@ -185,7 +185,7 @@ foreach ($defs as $key => $cfg) {
                                                 type="image/webp">
                                             <img width="100" height="100"
                                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/c3.webp"
-                                                alt="">
+                                                 @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/categories/c3.webp', '', '')>
                                         </picture>
                                     </div>
                                     <div class="text">
@@ -204,7 +204,7 @@ foreach ($defs as $key => $cfg) {
                                                 type="image/webp">
                                             <img width="100" height="100"
                                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/c4.webp"
-                                                alt="">
+                                                 @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/categories/c4.webp', '', '')>
                                         </picture>
                                     </div>
                                     <div class="text">
@@ -217,7 +217,7 @@ foreach ($defs as $key => $cfg) {
                         <div class="arrow-desk">
                             <img width="267" height="66"
                                 src="{{ asset(env('THEME') . 'images') }}/sharj/new/categories/arr.svg"
-                                alt="">
+                                 @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/categories/arr.svg', '', '')>
                         </div>
                     </div>
                 </div>
@@ -230,7 +230,7 @@ foreach ($defs as $key => $cfg) {
                         <div class="img">
                             <div class="flex">
                                 <img width="40" height="40"
-                                    src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/i1.svg" alt="">
+                                    src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/i1.svg"  @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/i1.svg', '', '')>
                                 <p> <span class="orange">@lang('sharj.translate7')</span></p>
                                 <svg width="55" height="40" viewBox="0 0 55 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -255,22 +255,22 @@ foreach ($defs as $key => $cfg) {
                         </div>
                         <ul>
                             <li>
-                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai1.webp" lt="">
+                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai1.webp" lt="" @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/ai1.webp', '', '')>
                                     <p>{!! trans('portrait_royal.tab_two_types_body_list_1') !!}</p>
                             </li>
                             <li>
-                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai2.webp" alt="">
+                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai2.webp"  @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/ai2.webp', '', '')>
                                 <p>{!! trans('portrait_royal.tab_two_types_body_list_2') !!}</p>
                             </li>
                             <li>
-                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai3.webp" alt="">
+                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai3.webp"  @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/ai3.webp', '', '')>
                                 <p>{!! trans('portrait_royal.tab_two_types_body_list_3') !!}</b></p>
                             </li>
                         </ul>
                         <div class="img">
                             <div class="flex">
                                 <img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/i2.svg"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/i2.svg', '', '')>
                                 <p> @lang('sharj.translate11')</p>
                                 <svg width="55" height="40" viewBox="0 0 55 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -301,7 +301,7 @@ foreach ($defs as $key => $cfg) {
                         <div class="img">
                             <div class="flex mb-2">
                                 <img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/i3.svg"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/i3.svg', '', '')>
                                 <p> <span class="orange">@lang('sharj.translate12')</p>
                                 <svg width="55" height="40" viewBox="0 0 55 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -326,18 +326,18 @@ foreach ($defs as $key => $cfg) {
                         </div>
                         <ul>
                             <li>
-                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai4.webp" alt="">
+                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai4.webp"  @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/ai4.webp', '', '')>
                                     <p>{!! trans('portrait_royal.tab_two_types_body_list_4') !!}</p>
                             </li>
                             <li>
-                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai5.webp" alt="">
+                                <img width="65" height="65" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/ai5.webp"  @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/ai5.webp', '', '')>
                                 <p>{!! trans('portrait_royal.tab_two_types_body_list_5') !!}/p>
                             </li>
                         </ul>
                         <div class="img">
                             <div class="flex">
                                 <img width="40" height="40" src="{{ asset(env('THEME') . 'images') }}/sharj/new/page/i4.svg"
-                                    alt="">
+                                     @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/page/i4.svg', '', '')>
                                 <p> @lang('sharj.translate15')</p>
                                 <svg width="55" height="40" viewBox="0 0 55 40" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -390,7 +390,7 @@ foreach ($defs as $key => $cfg) {
                         <picture>
                             <source srcset="/images/about-m1.webp" type="image/webp" />
                             <source srcset="/images/about-m1.png" type="image/png" />
-                            <img width="100" height="100" src="/images/about-m1.png" alt="" />
+                            <img width="100" height="100" src="/images/about-m1.png"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/about-m1.png', '', '')/>
                         </picture>
                     </div>
                 </div>
@@ -408,7 +408,7 @@ foreach ($defs as $key => $cfg) {
                                 <source media="(max-width: 500px)" srcset="/images/fit-1min.jpg" type="image/jpg" />
                                 <source srcset="/images/fit-1.webp" type="image/webp" />
                                 <source srcset="/images/fit-1.jpg" type="image/jpg" />
-                                <img width="100" height="100" src="/images/fit-1.jpg" alt="" />
+                                <img width="100" height="100" src="/images/fit-1.jpg"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/fit-1.jpg', '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -425,7 +425,7 @@ foreach ($defs as $key => $cfg) {
                                 <source media="(max-width: 500px)" srcset="/images/fit-2min.jpg" type="image/jpg" />
                                 <source srcset="/images/fit-2.webp" type="image/webp" />
                                 <source srcset="/images/fit-2.jpg" type="image/jpg" />
-                                <img width="100" height="100" src="/images/fit-2.jpg" alt="" />
+                                <img width="100" height="100" src="/images/fit-2.jpg"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/fit-2.jpg', '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -442,7 +442,7 @@ foreach ($defs as $key => $cfg) {
                                 <source media="(max-width: 500px)" srcset="/images/fit-3min.jpg" type="image/jpg" />
                                 <source srcset="/images/fit-3.webp" type="image/webp" />
                                 <source srcset="/images/fit-3.jpg" type="image/jpg" />
-                                <img width="100" height="100" src="/images/fit-3.jpg" alt="" />
+                                <img width="100" height="100" src="/images/fit-3.jpg"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/fit-3.jpg', '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -473,7 +473,7 @@ foreach ($defs as $key => $cfg) {
                 <div class="about-deadline">
                     <div class="deadline-block">
                         <div class="deadline-title">
-                            <img width="100" height="100" src="/images/clock.png" alt="" />
+                            <img width="100" height="100" src="/images/clock.png"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/clock.png', '', '')/>
                             <p>@lang('sharj.translate81')</p>
                         </div>
                         <div class="deadline-items">
@@ -483,7 +483,7 @@ foreach ($defs as $key => $cfg) {
                                         <source srcset="/images/three-days.webp" type="image/webp" />
                                         <source srcset="/images/three-days.jpg" type="image/jpg" />
                                         <img width="100" height="100" src="/images/three-days.jpg"
-                                            alt="" />
+                                              @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/three-days.jpg', '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -505,7 +505,7 @@ foreach ($defs as $key => $cfg) {
                                         <source srcset="/images/one-day.webp" type="image/webp" />
                                         <source srcset="/images/one-day.jpg" type="image/jpg" />
                                         <img width="100" height="100" src="/images/one-day.jpg"
-                                            alt="" />
+                                              @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/one-day.jpg', '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -523,7 +523,7 @@ foreach ($defs as $key => $cfg) {
                                         <source srcset="/images/on-date.webp" type="image/webp" />
                                         <source srcset="/images/on-date.jpg" type="image/jpg" />
                                         <img width="100" height="100" src="/images/on-date.jpg"
-                                            alt="" />
+                                              @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/on-date.jpg', '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -539,7 +539,7 @@ foreach ($defs as $key => $cfg) {
                     </div>
                     <div class="deadline-block">
                         <div class="deadline-title">
-                            <img width="100" height="100" src="/images/delivery.png" alt="" />
+                            <img width="100" height="100" src="/images/delivery.png"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/delivery.png', '', '')/>
                             <p>@lang('sharj.translate59')</p>
                         </div>
                         <div class="deadline-items">
@@ -548,7 +548,7 @@ foreach ($defs as $key => $cfg) {
                                     <picture>
                                         <source srcset="/images/van.webp" type="image/webp" />
                                         <source srcset="/images/van.jpg" type="image/jpg" />
-                                        <img width="100" height="100" src="/images/van.jpg" alt="" />
+                                        <img width="100" height="100" src="/images/van.jpg"   @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/van.jpg', '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -563,7 +563,7 @@ foreach ($defs as $key => $cfg) {
                                         <source srcset="/images/on-adress.webp" type="image/webp" />
                                         <source srcset="/images/on-adress.jpg" type="image/jpg" />
                                         <img width="100" height="100" src="/images/on-adress.jpg"
-                                            alt="" />
+                                              @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/on-adress.jpg', '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -579,7 +579,7 @@ foreach ($defs as $key => $cfg) {
                                         <source srcset="/images/abroad.webp" type="image/webp" />
                                         <source srcset="/images/abroad.jpg" type="image/jpg" />
                                         <img width="100" height="100" src="/images/abroad.jpg"
-                                            alt="" />
+                                              @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/abroad.jpg', '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -599,7 +599,7 @@ foreach ($defs as $key => $cfg) {
                                     <div class="courier-inner">
                                         <div class="courier-logo">
                                             <img width="100" height="100" src="/images/venipak.png"
-                                                alt="" />
+                                                  @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/venipak.png', '', '')/>
                                         </div>
                                         <div class="courier-txt">
                                             @lang('sharj.translate93')
@@ -610,7 +610,7 @@ foreach ($defs as $key => $cfg) {
                                     <div class="courier-inner">
                                         <div class="courier-logo">
                                             <img width="100" height="100" src="/images/dpd.png"
-                                                alt="" />
+                                                  @frontendAlt('theme/viar/pages/sharj/tabs.blade.php', '/images/dpd.png', '', '')/>
                                         </div>
                                         <div class="courier-txt">
                                             @lang('sharj.translate94')

@@ -1,4 +1,20 @@
 ﻿<style>
+    .hb_slider_canvas .canvas-hero-subtitle {
+        max-width: 600px;
+        margin: 12px 0 24px;
+        font-size: 22px;
+        line-height: 1.4;
+        font-weight: 400;
+        overflow-wrap: break-word;
+    }
+    @media screen and (max-width: 767px) {
+        .hb_slider_canvas .canvas-hero-subtitle {
+            max-width: 100%;
+            margin: 10px 0 18px;
+            font-size: 18px;
+            text-align: center;
+        }
+    }
     .ellipse {
         margin-top: -100px;
     }
@@ -41,12 +57,12 @@
         </div> --}}
     </div>
     <div class="ellipse ellipse_black custom-ellipse lgTop">
-        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" decoding="async" height="99" width="1374">
+        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  decoding="async" height="99" width="1374" @frontendAlt('theme/viar/pages/canvas.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
     </div>
     {{-- @include((config('theme.resource') ?: 'theme.viar.') . 'pages.canvas.sizes') --}}
 
     <div class="mobile-ell">
-        <img src="{{ asset('images/sizes/union.png') }}" alt=""/>
+        <img src="{{ asset('images/sizes/union.png') }}"  @frontendAlt('theme/viar/pages/canvas.blade.php', (asset('images/sizes/union.png')), '', '')/>
     </div>
     <div style="background: #FBF2EA;height: 60px;margin-top: -60px;"></div>
     @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.item-card_part-about')
@@ -56,12 +72,12 @@
         <a href="#formalizaton" class="anchor ellipse-arrow ellipse-arrow_white" aria-label="anchor link">
             <i class="fa-arrow-down"></i>
         </a>
-        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" decoding="async" height="99" width="1374">
+        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  decoding="async" height="99" width="1374" @frontendAlt('theme/viar/pages/canvas.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
     </div>
         @include((config('theme.resource') ?: 'theme.viar.') . 'pages.canvas.steps')
 
     <div class="ellipse ellipse_black">
-        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}" alt="img" loading="lazy">
+        <img src="{{ asset(env('THEME').'images/icon/ellipse-black.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/canvas.blade.php', (asset(env('THEME').'images/icon/ellipse-black.svg')), 'img', '')>
     </div>
     @include((config('theme.resource') ?: 'theme.viar.') . 'pages.canvas.also_like_examples')
     </div>

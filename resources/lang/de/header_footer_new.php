@@ -22,9 +22,9 @@ return array (
   'terms_and_conditions' => 'Datenschutzerklärung, Allgemeine Geschäftsbedingungen',
   'prices' => 'Preise',
   'stocks' => 'Rabatte',
-  'header' => 
+  'header' =>
   array (
-    'top_sale' => 'Sommer Sale 2026 <span>bis zu -65%</span>',
+    'top_sale' => 'Herbst-Sale 2026 <span>bis zu -65%</span>',
   ),
   'footer_paysera' => 'ViarStudia DE bietet Funktionen für die Entwicklung und Werbung der Website. Grafikentwicklung',
   'footer_phone_new' => '+37127044470',

@@ -49,6 +49,8 @@ use App\Http\Controllers\IndexController;
 use App\Http\Controllers\GiftcardController;
 use App\Notifications\ThanksForBuyNotification;
 use App\Services\SynvolveWebhookService;
+use App\Services\BestEffortMailService;
+use App\Support\CheckoutPaymentMethods;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Controllers\Libwebtopay\PayseraController;
 
@@ -57,6 +59,9 @@ class OrdersController extends Controller
     private $Orders;
     private $DynamicPDF;
     private $basketRepository;
+    private $paypalService;
+    private $payseraController;
+    private $gfc;
 
     public function __construct()
     {
@@ -64,60 +69,13 @@ class OrdersController extends Controller
         $this->DynamicPDF = app(DynamicPDFController::class);
         $this->basketRepository = resolve(BasketRepository::class);
         $this->payseraController = resolve(PayseraController::class);
+        $this->paypalService = resolve(OneTimePayPalService::class);
         $this->gfc = resolve(GiftcardController::class);
     }
 
     private function rus2translit($string)
     {
-        $converter = [
-
-            'а' => 'a', 'б' => 'b', 'в' => 'v',
-
-            'г' => 'g', 'д' => 'd', 'е' => 'e',
-
-            'ё' => 'e', 'ж' => 'zh', 'з' => 'z',
-
-            'и' => 'i', 'й' => 'y', 'к' => 'k',
-
-            'л' => 'l', 'м' => 'm', 'н' => 'n',
-
-            'о' => 'o', 'п' => 'p', 'р' => 'r',
-
-            'с' => 's', 'т' => 't', 'у' => 'u',
-
-            'ф' => 'f', 'х' => 'h', 'ц' => 'c',
-
-            'ч' => 'ch', 'ш' => 'sh', 'щ' => 'sch',
-
-            'ь' => '\'', 'ы' => 'y', 'ъ' => '\'',
-
-            'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
-
-            'А' => 'A', 'Б' => 'B', 'В' => 'V',
-
-            'Г' => 'G', 'Д' => 'D', 'Е' => 'E',
-
-            'Ё' => 'E', 'Ж' => 'Zh', 'З' => 'Z',
-
-            'И' => 'I', 'Й' => 'Y', 'К' => 'K',
-
-            'Л' => 'L', 'М' => 'M', 'Н' => 'N',
-
-            'О' => 'O', 'П' => 'P', 'Р' => 'R',
-
-            'С' => 'S', 'Т' => 'T', 'У' => 'U',
-
-            'Ф' => 'F', 'Х' => 'H', 'Ц' => 'C',
-
-            'Ч' => 'Ch', 'Ш' => 'Sh', 'Щ' => 'Sch',
-
-            'Ь' => '\'', 'Ы' => 'Y', 'Ъ' => '\'',
-
-            'Э' => 'E', 'Ю' => 'Yu', 'Я' => 'Ya',
-
-        ];
-
-        return strtr($string, $converter);
+        return \App\Services\Admin\OrderCustomerSearch::transliterate((string) $string);
     }
 
     /// Фунция для страницы /admin/orders
@@ -729,7 +687,7 @@ class OrdersController extends Controller
         ]);
     }
 
-    protected function sortAdminRotationOrders($orders, ?\DateTimeImmutable $now = null, ?string $orderIdSort = null): array
+    public function sortAdminRotationOrders($orders, ?\DateTimeImmutable $now = null, ?string $orderIdSort = null): array
     {
         if (in_array($orderIdSort, ['desc', 'asc'], true)) {
             return $this->sortAdminRotationOrdersById($orders, $orderIdSort);
@@ -802,7 +760,7 @@ class OrdersController extends Controller
         );
     }
 
-    protected function sortAdminExpressOrders($orders, ?string $orderIdSort = null): array
+    public function sortAdminExpressOrders($orders, ?string $orderIdSort = null): array
     {
         $expressOrders = [];
         $priorityOrders = [];
@@ -1158,7 +1116,7 @@ class OrdersController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['user_email']);
                 $message->subject($data['subject_send']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
         } else {
             DB::table('painter_orders')->where('order_id', $order_id)->delete();
@@ -1190,7 +1148,7 @@ class OrdersController extends Controller
             // Mail::send([], [], function ($message) use ($data) {
             //     $message->to($data['user_email']);
             //     $message->subject($data['subject_send']);
-            //     $message->setBody($data['content'], 'text/html');
+            //     $message->html($data['content']);
             // });
         } else {
             DB::table('printing_orders')->where('order_id', $order_id)->delete();
@@ -1547,7 +1505,7 @@ class OrdersController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
 			*/
         }
@@ -1732,7 +1690,7 @@ class OrdersController extends Controller
                 Mail::send([], [], function ($message) use ($data) {
                     $message->to($data['to']);
                     $message->subject('Вам пришли бонусы на сайте viarcanvas.com');
-                    $message->setBody('Вам пришел бонус на 5 евро', 'text/html');
+                    $message->html('Вам пришел бонус на 5 евро');
                 });
 
                 /// Update user bonuses with addBonusToUser function from OrderModel///
@@ -1993,8 +1951,10 @@ class OrdersController extends Controller
 
             $request["payseraTotalPrice"] = number_format($payseraTotal, 2, '', '');
 
-            $this->payseraController->index($request);
+            return $this->payseraController->index($request);
         }
+
+        return null;
     }
 
     public function save_order_and_pay(Request $request)
@@ -2016,6 +1976,17 @@ class OrdersController extends Controller
 
         $cart_delivery = request()->session()->get('cart_delivery');
         $cart_pay_type = request()->session()->get('cart_pay_type');
+
+        if (! is_array($cart_delivery) || empty($cart_delivery['country'])) {
+            return redirect()->route('cart.step3');
+        }
+
+        $paymentType = is_array($cart_pay_type) ? ($cart_pay_type['type'] ?? null) : null;
+        if (! is_string($paymentType)
+            || ! CheckoutPaymentMethods::isAllowedForDelivery($paymentType, $cart_delivery)) {
+            return redirect()->route('cart.step4')
+                ->with('error', __('The selected payment method is unavailable.'));
+        }
 
         $ur_name = request()->session()->get('ur_name');
         if($ur_name) $ur_name = 'on';
@@ -2093,6 +2064,9 @@ class OrdersController extends Controller
         }
 
         $makeOrder = $this->makeOrder($request);
+        if ($makeOrder instanceof \Symfony\Component\HttpFoundation\Response) {
+            return $makeOrder;
+        }
         // $makeOrder = 136;
 
         // if ($request['payment'] === 'paypalOnetimePayment' && $makeOrder) {
@@ -2126,10 +2100,16 @@ class OrdersController extends Controller
             $paypalTotal = $baseTotal + $termsTotal + $deliveryTotal;
             $request["paypalTotalPrice"] = number_format($paypalTotal, 2, '.', '');
 
-            (new OneTimePayPalService)->getRequisites($request->all());
+            $gatewayResponse = $this->paypalService->getRequisites($request->all());
+            if ($gatewayResponse) {
+                return $gatewayResponse;
+            }
         }
 
-        $this->handlePayseraMethods($request, $makeOrder, $terms_price, $basket);
+        $gatewayResponse = $this->handlePayseraMethods($request, $makeOrder, $terms_price, $basket);
+        if ($gatewayResponse) {
+            return $gatewayResponse;
+        }
 
         $currentDate = date('ymd');
 
@@ -2180,6 +2160,10 @@ class OrdersController extends Controller
 
     public function makeOrder(Request $request)
     {
+        if (session('coupon_error')) {
+            return redirect()->back()->with('def_error', session('coupon_error'));
+        }
+        $requestedCouponId = (int) session('coupon_id', 0);
 
         $response = [];
 
@@ -2238,7 +2222,17 @@ class OrdersController extends Controller
 
 
         // Сохранение заказа
-        $order_id = $this->Orders->saveOrder($basket, $request->all());
+        if ($requestedCouponId > 0 && (int) ($basket['coupon_id'] ?? 0) !== $requestedCouponId) {
+            return redirect()->back()->with('def_error', session('coupon_error', __('checkout_coupon.inactive')));
+        }
+        try {
+            $order_id = $this->Orders->saveOrder($basket, $request->all());
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            $errors = $exception->errors();
+            $message = $errors['coupon'][0] ?? __('checkout_coupon.invalid_request');
+            session()->put('coupon_error', $message);
+            return redirect()->back()->with('def_error', $message);
+        }
 
 
 
@@ -2247,7 +2241,11 @@ class OrdersController extends Controller
             return redirect()->back()->with('def_error', $response['Error']);
         }
         AbandonedCart::where('email', $request['email'])->delete();
-        $this->sendOrderInPdfToAdminEmail($order_id);
+        app(BestEffortMailService::class)->attempt(
+            fn () => $this->sendOrderInPdfToAdminEmail($order_id),
+            'checkout_admin_order_notification',
+            ['order_id' => $order_id]
+        );
 
 
         // скидки
@@ -2353,7 +2351,7 @@ class OrdersController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'] . 'Заказ: ' . $data['order_id'], 'text/html');
+            $message->html($data['content'] . 'Заказ: ' . $data['order_id']);
         });
 
         return true;

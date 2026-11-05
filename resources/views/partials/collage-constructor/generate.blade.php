@@ -87,80 +87,80 @@
                                                 <div class="accordion_body">
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                 </div>
 
                                                 <div class="accordion_header">смайлы 2</div>
                                                 <div class="accordion_body">
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                     <div class="item"><img height="30"
                                                             src="/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png"
-                                                            width="30" onload="this.style.opacity=1" /></div>
+                                                            width="30" onload="this.style.opacity=1"  @frontendAlt('partials/collage-constructor/generate.blade.php', '/img/smiles/kisspng-iphone-emoji-apple-ios-11-emojis-5abe1fe3bbe4f9.0061549515224094437696.png', '', '')/></div>
                                                 </div>
 
                                                 <div class="accordion_header">добавить свои</div>

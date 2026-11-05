@@ -2,6 +2,35 @@
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\Storage;
 
+if (!function_exists('str_trans')) {
+    /**
+     * Read a locale-specific fragment from legacy Voyager Extension strings.
+     *
+     * Supported formats:
+     *   {{en}}English{{ru}}Русский
+     *   [[en]]English[[ru]]Русский
+     */
+    function str_trans(?string $string, ?string $locale = null): string
+    {
+        if ($string === null || $string === '') {
+            return '';
+        }
+
+        $locale = $locale ?: app()->getLocale();
+        $openBracket = str_contains($string, '[[') ? '[[' : '{{';
+        $closeBracket = $openBracket === '[[' ? ']]' : '}}';
+        $fragments = explode($openBracket, $string);
+
+        foreach ($fragments as $fragment) {
+            if (str_starts_with($fragment, $locale . $closeBracket)) {
+                return substr($fragment, strlen($locale . $closeBracket));
+            }
+        }
+
+        return $fragments[0] ?? $string;
+    }
+}
+
 if (!function_exists('ver_asset')) {
     function ver_asset($path, $secure = null): string
     {
@@ -232,11 +261,14 @@ if (!function_exists('image_normalize_url_scheme')) {
             return $url;
         }
 
-        if (strpos($trimmed, '//') === 0 && image_is_same_domain_url($trimmed)) {
+        $host = parse_url(strpos($trimmed, '//') === 0 ? 'http:' . $trimmed : $trimmed, PHP_URL_HOST);
+        $isLocalHost = in_array(strtolower((string) $host), ['localhost', '127.0.0.1', '::1'], true);
+
+        if (strpos($trimmed, '//') === 0 && image_is_same_domain_url($trimmed) && !$isLocalHost) {
             return 'https:' . $trimmed;
         }
 
-        if (stripos($trimmed, 'http://') === 0 && image_is_same_domain_url($trimmed)) {
+        if (stripos($trimmed, 'http://') === 0 && image_is_same_domain_url($trimmed) && !$isLocalHost) {
             return 'https://' . substr($trimmed, 7);
         }
 
@@ -1079,5 +1111,52 @@ if (!function_exists('translated_value')) {
         }
 
         return $value !== null && $value !== '' ? $value : $fallback;
+    }
+}
+
+if (!function_exists('storefront_url')) {
+    /**
+     * Generate a locale-aware internal storefront URL.
+     */
+    function storefront_url(string $url, ?string $locale = null): string
+    {
+        return \App\Support\StorefrontLocale::url($url, $locale);
+    }
+}
+
+if (!function_exists('storefront_html')) {
+    /**
+     * Localize internal anchor targets embedded in trusted translated HTML.
+     */
+    function storefront_html(string $html, ?string $locale = null): string
+    {
+        return preg_replace_callback(
+            '#\bhref=("|\')([^"\']+)\1#i',
+            function (array $matches) use ($locale) {
+                return 'href=' . $matches[1] . storefront_url($matches[2], $locale) . $matches[1];
+            },
+            $html
+        );
+    }
+}
+
+if (! function_exists('setting')) {
+    function setting(string $key, mixed $default = null): mixed
+    {
+        return \TCG\Voyager\Facades\Voyager::setting($key, $default);
+    }
+}
+
+if (! function_exists('menu')) {
+    function menu(string $name, ?string $type = null, array $options = []): mixed
+    {
+        return \App\Models\Menu::display($name, $type, $options);
+    }
+}
+
+if (! function_exists('voyager_asset')) {
+    function voyager_asset(string $path): string
+    {
+        return asset('vendor/tcg/voyager/assets/'.ltrim($path, '/'));
     }
 }

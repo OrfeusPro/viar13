@@ -131,7 +131,7 @@ return array (
   'alternative_size_subtitle' => 'Sama suurusega pilt on saadaval soodushinnaga',
   'current_size' => 'Praegune suurus',
   'step_2_recipient_phone' => 'Saaja telefoninumber',
-  'cannot_remove_main_product' => 'Peamist toodet ei saa eemaldada, kuni ostukorvis on soovitatud soodushinnaga tooted',
+  'cannot_remove_main_product' => 'Selle toote eemaldamiseks eemaldage esmalt allahindlusega soovitatud tooted.',
   'step_3_cart_express_warning' => 'Kui valmistusaeg on alla 3 toopaeva, rakendub ekspresstarif: +5 €',
   'step_3_courier_address' => 'Sisestage oma aadress (Pik-up)',
   'step_3_pickup_address' => 'Sisestage oma aadress',
@@ -142,4 +142,6 @@ return array (
   'existing_user_password' => 'Parool',
   'existing_user_reset_error' => 'Parooli lähtestamise e-kirja saatmine ebaõnnestus. Proovige uuesti.',
   'existing_user_reset_password' => 'Lähtesta parool',
+  'notice_title' => 'Toodet ei saa eemaldada',
+  'notice_close' => 'Sain aru',
 );

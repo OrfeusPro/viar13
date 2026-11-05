@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
+use App\Filament\Bread\BreadRegistry;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Mail;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,11 +13,9 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
-        if ($this->app->isLocal()) {
-            $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
-        }
+        $this->app->scoped(BreadRegistry::class);
     }
 
     /**
@@ -24,12 +23,14 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        $swiftTransport = Mail::getSwiftMailer()->getTransport();
-        if ($swiftTransport instanceof \Swift_SmtpTransport) {
-            $localDomain = config('mail.host');
-            $swiftTransport->setLocalDomain($localDomain);
-        }
+        EloquentCollection::macro('translate', function (?string $locale = null, string|bool $fallback = true) {
+            return $this->map(function ($model) use ($locale, $fallback) {
+                return method_exists($model, 'translate')
+                    ? $model->translate($locale, $fallback)
+                    : $model;
+            });
+        });
     }
 }

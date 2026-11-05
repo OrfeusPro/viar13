@@ -107,13 +107,13 @@
                     <h6>{{ $collage_header['c_right1_quest_title'] }}:</h6>
                     <ul>
                         <li><a target="_blank" href="{{ setting('sots-seti.telegram_link') }}"><img
-                                    src="{{ asset('img/solial-icon.png') }}" alt=""></a></li>
+                                    src="{{ asset('img/solial-icon.png') }}"  @frontendAlt('partials/graph_portrait_promo/header.blade.php', (asset('img/solial-icon.png')), '', '')></a></li>
                         <li><a target="_blank" href="{{ setting('sots-seti.what_link') }}"><img
-                                    src="{{ asset('img/solial-icon2.png') }}" alt=""></a></li>
+                                    src="{{ asset('img/solial-icon2.png') }}"  @frontendAlt('partials/graph_portrait_promo/header.blade.php', (asset('img/solial-icon2.png')), '', '')></a></li>
                         <li><a target="_blank" href="{{ setting('sots-seti.viber_link') }}"><img
-                                    src="{{ asset('img/solial-icon3.png') }}" alt=""></a></li>
+                                    src="{{ asset('img/solial-icon3.png') }}"  @frontendAlt('partials/graph_portrait_promo/header.blade.php', (asset('img/solial-icon3.png')), '', '')></a></li>
                         <li><a target="_blank" href="{{ setting('sots-seti.gmail_link') }}"><img
-                                    src="{{ asset('img/solial-icon4.png') }}" alt=""></a></li>
+                                    src="{{ asset('img/solial-icon4.png') }}"  @frontendAlt('partials/graph_portrait_promo/header.blade.php', (asset('img/solial-icon4.png')), '', '')></a></li>
                     </ul>
                 </div>
                 @if($data_id == 5)

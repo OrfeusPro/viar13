@@ -56,12 +56,12 @@
                     </li>
                 </ul>
                 <div class="n-p-icon">
-                    <img src="https://viarcanvas.com/images/deadline.svg" alt="">
+                    <img src="https://viarcanvas.com/images/deadline.svg"  @frontendAlt('theme/viar/partials/thanks_part.blade.php', 'https://viarcanvas.com/images/deadline.svg', '', '')>
                     <p>{{ trans('portrait_buy_form.ths_we_will_process_your_order_instantly') }}</p>
                 </div>
             </div>
             <a href="https://wa.me/@lang('portrait_buy_form.setting_whatsapp_phone_href')" class="n-p-whatsapp">
-				<img src="https://viarcanvas.com/images/premium-icon-whatsapp.svg" alt="">
+				<img src="https://viarcanvas.com/images/premium-icon-whatsapp.svg"  @frontendAlt('theme/viar/partials/thanks_part.blade.php', 'https://viarcanvas.com/images/premium-icon-whatsapp.svg', '', '')>
                 <p>{{ trans('portrait_buy_form.ths_contact_us_now') }}</p>
             </a>
             {{--

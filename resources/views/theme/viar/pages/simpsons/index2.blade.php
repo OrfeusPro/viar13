@@ -49,11 +49,11 @@
                         @if(!empty($simpsonsTwoHeroPngSources['src']) && !empty($simpsonsTwoHeroPngSources['type']))
                             <source srcset="{{ $simpsonsTwoHeroPngSources['src'] }}" type="{{ $simpsonsTwoHeroPngSources['type'] }}">
                         @endif
-                        <img width="536" height="620" src="{{ $simpsonsTwoHeroPngSources['src'] }}" alt="">
+                        <img width="536" height="620" src="{{ $simpsonsTwoHeroPngSources['src'] }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', ($simpsonsTwoHeroPngSources['src']), '', '')>
                     </picture>
                     <div class="img-badge">
                         <div class="text">@lang("simpson.img_badge")</div>
-                        <img width="71" height="78" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i1.webp') }}" alt="">
+                        <img width="71" height="78" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i1.webp')), '', '')>
                     </div>
                 </div>
             </div>
@@ -117,7 +117,7 @@
                     </div>
                     <div class="simpson-image-text">
                         @lang("simpson.about__screen__blocks.simpson_image_text")
-                        <img src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/arr-bottom.svg') }}" width="80" height="80" alt="">
+                        <img src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/arr-bottom.svg') }}" width="80" height="80"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/arr-bottom.svg')), '', '')>
                     </div>
                     <div class="portrait-list__inner">
 
@@ -129,7 +129,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp')), '', '')>
                                 </picture>
 
                                 <a href="#" class="yellow-btn">
@@ -147,7 +147,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp')), '', '')>
                                 </picture>
 
                                 <a href="#" class="yellow-btn">
@@ -166,7 +166,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp')), '', '')>
                                 </picture>
                                 <a href="#" class="yellow-btn">
                                     @lang("gallery.trybuy_btn")
@@ -182,7 +182,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp')), '', '')>
                                 </picture>
 
                                 <a href="#" class="yellow-btn">
@@ -200,7 +200,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp')), '', '')>
                                 </picture>
 
                                 <a href="#" class="yellow-btn">
@@ -219,7 +219,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp')), '', '')>
                                 </picture>
 
                                 <a href="#" class="yellow-btn">
@@ -238,7 +238,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp')), '', '')>
                                 </picture>
                                 <a href="#" class="yellow-btn">
                                     @lang("gallery.trybuy_btn")
@@ -256,7 +256,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}" type="image/webp">
-                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}" alt="">
+                                    <img width="315" height="244" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp')), '', '')>
                                 </picture>
                                 <a href="#" class="yellow-btn">
                                     @lang("gallery.trybuy_btn")
@@ -296,7 +296,7 @@
                     <div class="about__block-types-row">
                         <div class="img">
                             <div class="flex">
-                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i1.svg') }}" alt="">
+                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i1.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i1.svg')), '', '')>
 
                                 @lang("simpson.about__block_types_row.img1.flex.text1")
 
@@ -307,25 +307,25 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a4Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a4.webp') }}" type="image/webp">
-                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a4.webp') }}" alt="">
+                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a4.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/a4.webp')), '', '')>
                             </picture>
                         </div>
                         <ul>
                             <li>
-                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai1.webp') }}" alt="">
+                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai1.webp')), '', '')>
 
                                 @lang("simpson.about__block_types_row.ul.li1")
 
                             </li>
                             <li>
-                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai2.webp') }}" alt="">
+                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai2.webp')), '', '')>
 
                                 @lang("simpson.about__block_types_row.ul.li2")
 
                             </li>
 
                             <li>
-                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai3.webp') }}" alt="">
+                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai3.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai3.webp')), '', '')>
 
                                 @lang("simpson.about__block_types_row.ul.li3")
 
@@ -334,7 +334,7 @@
                         </ul>
                         <div class="img">
                             <div class="flex">
-                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i2.svg') }}" alt="">
+                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i2.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i2.svg')), '', '')>
 
                                 @lang("simpson.about__block_types_row.img2.flex.text1")
 
@@ -346,7 +346,7 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a1Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a1.webp') }}" type="image/webp">
-                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a1.webp') }}" alt="">
+                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/a1.webp')), '', '')>
                             </picture>
                         </div>
                     </div>
@@ -358,7 +358,7 @@
                     <div class="about__block-types-row">
                         <div class="img">
                             <div class="flex mb-2">
-                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i3.svg') }}" alt="">
+                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i3.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i3.svg')), '', '')>
 
                                 @lang("simpson.about__screen__blocks.about__block_types_row2.img.flex")
 
@@ -370,19 +370,19 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a3Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a3.webp') }}" type="image/webp">
-                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a3.webp') }}" alt="">
+                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a3.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/a3.webp')), '', '')>
                             </picture>
                         </div>
                         <ul>
                             <li>
-                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai4.webp') }}" alt="">
+                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai4.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai4.webp')), '', '')>
 
                                 @lang("simpson.about__block_types_row2.ul.li1")
 
 
                             </li>
                             <li>
-                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai5.webp') }}" alt="">
+                                <img width="65" height="65" src="{{ asset(config('theme.current') . '/images/sharj/new/page/ai5.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/page/ai5.webp')), '', '')>
 
                                 @lang("simpson.about__block_types_row2.ul.li2")
 
@@ -391,7 +391,7 @@
                         </ul>
                         <div class="img">
                             <div class="flex">
-                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i4.svg') }}" alt="">
+                                <img width="40" height="40" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/i4.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/i4.svg')), '', '')>
 
                                 @lang("simpson.about__block_types_row2.img.flex")
 
@@ -403,7 +403,7 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a2Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a2.webp') }}" type="image/webp">
-                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a2.webp') }}" alt="">
+                                <img width="450" height="360" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/a2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/a2.webp')), '', '')>
                             </picture>
                         </div>
                     </div>
@@ -447,7 +447,7 @@
                         <picture>
                             <source srcset="{{ asset(config('theme.current') . '/images/about-m1.webp') }}" type="image/webp" />
                             <source srcset="{{ asset(config('theme.current') . '/images/about-m1.png') }}" type="image/png" />
-                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/about-m1.png') }}" alt="" />
+                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/about-m1.png') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/about-m1.png')), '', '')/>
                         </picture>
                     </div>
                 </div>
@@ -466,7 +466,7 @@
                                 <source media="(max-width: 500px)" srcset="{{ asset(config('theme.current') . '/images/fit-1min.jpg') }}" type="image/jpg" />
                                 <source srcset="{{ asset(config('theme.current') . '/images/fit-1.webp') }}" type="image/webp" />
                                 <source srcset="{{ asset(config('theme.current') . '/images/fit-1.jpg') }}" type="image/jpg" />
-                                <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/fit-1.jpg') }}" alt="" />
+                                <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/fit-1.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/fit-1.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -485,7 +485,7 @@
                                 <source media="(max-width: 500px)" srcset="{{ asset(config('theme.current') . '/images/fit-2min.jpg') }}" type="image/jpg" />
                                 <source srcset="{{ asset(config('theme.current') . '/images/fit-2.webp') }}" type="image/webp" />
                                 <source srcset="{{ asset(config('theme.current') . '/images/fit-2.jpg') }}" type="image/jpg" />
-                                <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/fit-2.jpg') }}" alt="" />
+                                <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/fit-2.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/fit-2.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -503,7 +503,7 @@
                                 <source media="(max-width: 500px)" srcset="{{ asset(config('theme.current') . '/images/fit-3min.jpg') }}" type="image/jpg" />
                                 <source srcset="{{ asset(config('theme.current') . '/images/fit-3.webp') }}" type="image/webp" />
                                 <source srcset="{{ asset(config('theme.current') . '/images/fit-3.jpg') }}" type="image/jpg" />
-                                <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/fit-3.jpg') }}" alt="" />
+                                <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/fit-3.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/fit-3.jpg')), '', '')/>
                             </picture>
                         </div>
                     </div>
@@ -551,7 +551,7 @@
                 <div class="about-deadline">
                     <div class="deadline-block">
                         <div class="deadline-title">
-                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/clock.png') }}" alt="" />
+                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/clock.png') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/clock.png')), '', '')/>
 
                             @lang("simpson.about.about_deadline.deadline_title")
 
@@ -568,7 +568,7 @@
                                             srcset="{{ asset(config('theme.current') . '/images/three-days.jpg') }}"
                                             type="image/jpg"
                                         />
-                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/three-days.jpg') }}" alt="" />
+                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/three-days.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/three-days.jpg')), '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -597,7 +597,7 @@
                                             srcset="{{ asset(config('theme.current') . '/images/one-day.jpg') }}"
                                             type="image/jpg"
                                         />
-                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/one-day.jpg') }}" alt="" />
+                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/one-day.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/one-day.jpg')), '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -622,7 +622,7 @@
                                             srcset="{{ asset(config('theme.current') . '/images/on-date.jpg') }}"
                                             type="image/jpg"
                                         />
-                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/on-date.jpg') }}" alt="" />
+                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/on-date.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/on-date.jpg')), '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -638,7 +638,7 @@
                     </div>
                     <div class="deadline-block">
                         <div class="deadline-title">
-                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/delivery.png') }}" alt="" />
+                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/delivery.png') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/delivery.png')), '', '')/>
                             @lang("simpson.about.deadline_block.deadline_title")
                         </div>
                         <div class="deadline-items">
@@ -647,7 +647,7 @@
                                     <picture>
                                         <source srcset="{{ asset(config('theme.current') . '/images/van.webp') }}" type="image/webp" />
                                         <source srcset="{{ asset(config('theme.current') . '/images/van.jpg') }}" type="image/jpg" />
-                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/van.jpg') }}" alt="" />
+                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/van.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/van.jpg')), '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -667,7 +667,7 @@
                                             srcset="{{ asset(config('theme.current') . '/images/on-adress.jpg') }}"
                                             type="image/jpg"
                                         />
-                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/on-adress.jpg') }}" alt="" />
+                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/on-adress.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/on-adress.jpg')), '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -692,7 +692,7 @@
                                             type="image/webp"
                                         />
                                         <source srcset="{{ asset(config('theme.current') . '/images/abroad.jpg') }}" type="image/jpg" />
-                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/abroad.jpg') }}" alt="" />
+                                        <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/abroad.jpg') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/abroad.jpg')), '', '')/>
                                     </picture>
                                 </div>
                                 <div class="deadline-content">
@@ -718,7 +718,7 @@
                                 <div class="courier-item">
                                     <div class="courier-inner">
                                         <div class="courier-logo">
-                                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/venipak.png') }}" alt="" />
+                                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/venipak.png') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/venipak.png')), '', '')/>
                                         </div>
 
                                         <div class="courier-txt">
@@ -731,7 +731,7 @@
                                 <div class="courier-item">
                                     <div class="courier-inner">
                                         <div class="courier-logo">
-                                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/dpd.png') }}" alt="" />
+                                            <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/dpd.png') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/dpd.png')), '', '')/>
                                         </div>
                                         <div class="courier-txt">
 
@@ -789,14 +789,14 @@
                 <div class="ba-slider ba-slider1">
                     <picture>
                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}" type="image/webp" />
-                        <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}" data-image="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}" alt="img"
-                             loading="lazy" />
+                        <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}" data-image="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}"
+                             loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp')), 'img', '')/>
                     </picture>
                     <div class="resize">
                         <picture>
                             <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex4.webp') }}" type="image/webp" />
-                            <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex4.webp') }}" data-image="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex4.webp') }}" alt="img"
-                                 loading="lazy" />
+                            <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex4.webp') }}" data-image="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex4.webp') }}"
+                                 loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/ex4.webp')), 'img', '')/>
                         </picture>
                     </div>
                     <span class="handle"></span>
@@ -841,8 +841,8 @@
                         <a class="examples-slide__photo">
                             <picture>
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}" type="image/webp" />
-                                <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}" data-image="images/examples/examples-2.jpg" alt="img"
-                                     loading="lazy" />
+                                <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp') }}" data-image="images/examples/examples-2.jpg"
+                                     loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/ex1.webp')), 'img', '')/>
                             </picture>
                         </a>
                     </div>
@@ -850,8 +850,8 @@
                         <a class="examples-slide__photo">
                             <picture>
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex2.webp') }}" type="image/webp" />
-                                <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex2.webp') }}" data-image="images/examples/examples-2.jpg" alt="img"
-                                     loading="lazy" />
+                                <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex2.webp') }}" data-image="images/examples/examples-2.jpg"
+                                     loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/ex2.webp')), 'img', '')/>
                             </picture>
                         </a>
                     </div>
@@ -859,8 +859,8 @@
                         <a class="examples-slide__photo">
                             <picture>
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex3.webp') }}" type="image/webp" />
-                                <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex3.webp') }}" data-image="images/examples/examples-2.jpg" alt="img"
-                                     loading="lazy" />
+                                <img width="300" height="435" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/ex3.webp') }}" data-image="images/examples/examples-2.jpg"
+                                     loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/ex3.webp')), 'img', '')/>
                             </picture>
                         </a>
                     </div>
@@ -914,7 +914,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern1Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern1.webp') }}" type="image/webp">
-                                    <img width="124" height="106" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern1.webp') }}" alt="">
+                                    <img width="124" height="106" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern1.webp')), '', '')>
                                 </picture>
                             </div>
                         </div>
@@ -927,7 +927,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern2Min.webp') }}" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern2.webp') }}" type="image/webp">
-                                    <img width="271" height="189" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern2.webp') }}" alt="">
+                                    <img width="271" height="189" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern2.webp')), '', '')>
                                 </picture>
                             </div>
                         </div>
@@ -940,7 +940,7 @@
                                 <picture>
                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern3.webp') }}?v=1" type="image/webp">
                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern3.webp') }}?v=1" type="image/webp">
-                                    <img width="299" height="224" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern3.webp') }}?v=1" alt="">
+                                    <img width="299" height="224" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern3.webp') }}?v=1"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-pattern3.webp')) . '?v=1', '', '')>
                                 </picture>
                             </div>
                         </div>
@@ -1055,7 +1055,7 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/simpson/p1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp') }}" type="image/webp">
-                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp') }}" alt="">
+                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp')), '', '')>
                             </picture>
 
                             <a href="#" class="yellow-btn">
@@ -1074,7 +1074,7 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/simpson/p1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp') }}" type="image/webp">
-                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp') }}" alt="">
+                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp')), '', '')>
                             </picture>
 
                             <a href="#" class="yellow-btn">
@@ -1092,7 +1092,7 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/simpson/p1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider3.webp') }}" type="image/webp">
-                                <img width="200" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider3.webp') }}" alt="">
+                                <img width="200" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider3.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-slider3.webp')), '', '')>
                             </picture>
 
                             <a href="#" class="yellow-btn">
@@ -1110,7 +1110,7 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/simpson/p1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider4.webp') }}" type="image/webp">
-                                <img width="430" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider4.webp') }}" alt="">
+                                <img width="430" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider4.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-slider4.webp')), '', '')>
                             </picture>
 
                             <a href="#" class="yellow-btn">
@@ -1128,7 +1128,7 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/simpson/p1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp') }}" type="image/webp">
-                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp') }}" alt="">
+                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-slider1.webp')), '', '')>
                             </picture>
 
                             <a href="#" class="yellow-btn">
@@ -1145,7 +1145,7 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/simpson/p1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp') }}" type="image/webp">
-                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp') }}" alt="">
+                                <img width="315" height="265" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/s-slider2.webp')), '', '')>
                             </picture>
 
                             <a href="#" class="yellow-btn">
@@ -1191,7 +1191,7 @@
                 </p>
 
                 <div class="form-inner">
-                    <img src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/homer.webp') }}" width="250" height="525" alt="">
+                    <img src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/homer.webp') }}" width="250" height="525"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/homer.webp')), '', '')>
                     <div class="form-grid">
                         <div class="kviz-input">
 
@@ -1266,7 +1266,7 @@
                             <div class="page-input__item phone-input">
                                 <div class="banner__input-item">
                                     <input type="text" id="phone2" name="phone" class="banner__input phone" required>
-                                    <img src="https://viarcanvas.com/img/icons/phone.svg" alt="" class="img-svg img-svg__posa">
+                                    <img src="https://viarcanvas.com/img/icons/phone.svg"  class="img-svg img-svg__posa" @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', 'https://viarcanvas.com/img/icons/phone.svg', '', '')>
                                 </div>
                             </div>
                         </div>
@@ -1316,7 +1316,7 @@
                 <picture>
                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/gift2Min.webp') }}" type="image/webp">
                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/gift2.webp') }}" type="image/webp">
-                    <img width="800" height="451" src="{{ asset(config('theme.current') . '/images/sharj/simpson/gift2.webp') }}" alt="">
+                    <img width="800" height="451" src="{{ asset(config('theme.current') . '/images/sharj/simpson/gift2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/simpson/gift2.webp')), '', '')>
                 </picture>
             </div>
         </div>
@@ -1340,12 +1340,12 @@
                     <picture>
                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon1Min.webp') }}" type="image/webp">
                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon1.webp') }}" type="image/webp">
-                        <img class="homerUp" width="115" height="113" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon1.webp') }}" alt="">
+                        <img class="homerUp" width="115" height="113" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon1.webp')), '', '')>
                     </picture>
                     <picture>
                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon2Min.webp') }}" type="image/webp">
                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon2.webp') }}" type="image/webp">
-                        <img class="homerBottom" width="115" height="113" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon2.webp') }}" alt="">
+                        <img class="homerBottom" width="115" height="113" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/stepsIcon2.webp')), '', '')>
                     </picture>
                 </div>
             </div>
@@ -1356,7 +1356,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask1Min.webp') }}" type="image/webp">
                             <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask1.webp') }}" type="image/webp">
-                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask1.webp') }}" alt="">
+                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask1.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1374,7 +1374,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask2Min.webp') }}" type="image/webp">
                             <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask2.webp') }}" type="image/webp">
-                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask2.webp') }}" alt="">
+                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask2.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1394,7 +1394,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask3Min.webp') }}" type="image/webp">
                             <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask3.webp') }}" type="image/webp">
-                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask3.webp') }}" alt="">
+                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask3.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask3.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1413,7 +1413,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask4Min.webp') }}" type="image/webp">
                             <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask4.webp') }}" type="image/webp">
-                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask4.webp') }}" alt="">
+                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask4.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask4.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1433,7 +1433,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask5Min.webp') }}" type="image/webp">
                             <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask5.webp') }}" type="image/webp">
-                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask5.webp') }}" alt="">
+                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask5.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask5.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1453,7 +1453,7 @@
                         <picture>
                             <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask6Min.webp') }}" type="image/webp">
                             <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask6.webp') }}" type="image/webp">
-                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask6.webp') }}" alt="">
+                            <img width="170" height="170" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/mask6.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/mask6.webp')), '', '')>
                         </picture>
                     </div>
 
@@ -1473,14 +1473,14 @@
 
             <div class="steps-order__top simpson-delivery">
                 <div class="steps-order__top-item">
-                    <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/express.svg') }}" alt="">
+                    <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/express.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/express.svg')), '', '')>
 
                     @lang("simpson.steps-order__top.steps-order__top-item1")
 
                 </div>
 
                 <div class="steps-order__top-item">
-                    <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/standart.svg') }}" alt="">
+                    <img width="100" height="100" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/standart.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/standart.svg')), '', '')>
 
                     @lang("simpson.steps-order__top.steps-order__top-item2")
 
@@ -1498,7 +1498,7 @@
 
                                 @lang("simpson.simpson-formalization.simpson-titleBlock")
 
-                                <img width="148" height="179" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/formTitle1.webp') }}" alt="">
+                                <img width="148" height="179" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/formTitle1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/formTitle1.webp')), '', '')>
                             </div>
 
                             <div class="formalization__col">
@@ -1510,7 +1510,7 @@
                                     <div class="formalization-item">
                                         <div class="formalization-box">
                                             <div class="formalization-tab">
-                                                <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format7.svg') }}" alt="">
+                                                <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format7.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/format7.svg')), '', '')>
 
 
                                                 @lang("simpson.formalization-items.formalization-item1.formalization-tab")
@@ -1532,7 +1532,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1558,7 +1558,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1586,7 +1586,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1613,7 +1613,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1641,7 +1641,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1669,7 +1669,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1697,7 +1697,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1725,7 +1725,7 @@
                                                                     <picture>
                                                                         <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8Min.webp') }}" type="image/webp">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}" type="image/webp">
-                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}" alt="">
+                                                                        <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp')), '', '')>
                                                                     </picture>
                                                                     <div class="zoom-in">
                                                                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1753,7 +1753,7 @@
                                         <div class="formalization-prompt">
                                             <div class="formalization-prompt--wrapper">
                                                 <div class="formalization-prompt--inner">
-                                                    <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}" alt="" />
+                                                    <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/ficon1.webp')), '', '')/>
 
                                                     <p>
                                                         @lang("simpson.formalization-items.formalization-item1.formalization-prompt--inner.p")
@@ -1772,7 +1772,7 @@
                                     <div class="formalization-item">
                                         <div class="formalization-box">
                                             <div class="formalization-tab">
-                                                <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format1.svg') }}" alt="">
+                                                <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format1.svg') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/format1.svg')), '', '')>
 
                                                 @lang("simpson.formalization-items.formalization-item3.formalization-tab")
 
@@ -1798,7 +1798,7 @@
 
                                                                     <picture class="kviz-image">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp') }}" type="image/webp">
-                                                                        <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp') }}" alt="">
+                                                                        <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp')), '', '')>
                                                                     </picture>
 
                                                                 </label>
@@ -1820,7 +1820,7 @@
 
                                                                     <picture class="kviz-image">
                                                                         <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp') }}" type="image/webp">
-                                                                        <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp') }}" alt="">
+                                                                        <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp')), '', '')>
                                                                     </picture>
 
                                                                 </label>
@@ -1835,7 +1835,7 @@
                                         <div class="formalization-prompt">
                                             <div class="formalization-prompt--wrapper">
                                                 <div class="formalization-prompt--inner">
-                                                    <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}" alt="" />
+                                                    <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}"   @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/ficon1.webp')), '', '')/>
 
                                                     <p>
                                                         @lang("simpson.formalization-items.formalization-item3.formalization-prompt--inner.p")
@@ -1914,12 +1914,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service1Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service1.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service1.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service1.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service1.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service2Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service2.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service2.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service2.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service2.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -1993,12 +1993,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service3Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service3.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service3.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service3.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service3.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service4Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service4.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service4.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service4.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service4.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2067,12 +2067,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service5Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service5.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service5.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service5.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service5.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service6Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service6.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service6.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service6.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service6.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2145,12 +2145,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service7.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service7.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service7.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service7.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service2Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service8.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service8.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service8.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service8.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2179,12 +2179,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service3Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service9.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service9.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service9.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service9.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service4Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service10.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service10.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service10.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service10.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2212,12 +2212,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service5Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service11.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service11.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service11.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service11.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service6Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service12.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service12.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service12.webp') }}"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/sharj/new/service12.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -2501,66 +2501,66 @@
 
                 <div class="vz-art page-input__item phone-input">
                     <div class="country-item country-item-active">
-                        <img src="{{ asset(config('theme.current') . '/images/flag/lv.svg') }}" alt="img" loading="lazy" />
+                        <img src="{{ asset(config('theme.current') . '/images/flag/lv.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/lv.svg')), 'img', '')/>
                     </div>
                     <div class="country-list">
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/lv.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/lv.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/lv.svg')), 'img', '')/>
                             <p>Латвия</p>
                             <span data-mask="+371 99 99-99-99" data-placeholder="+371 00 00-00-00">+371</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/lt.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/lt.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/lt.svg')), 'img', '')/>
                             <p>Литва</p>
                             <span data-mask="+370 999 9-99-99" data-placeholder="+370 000 0-00-00">+370</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/es.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/es.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/es.svg')), 'img', '')/>
                             <p>Эстония</p>
                             <span data-mask="+372 99 999-99-99" data-placeholder="+372 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/fl.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/fl.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/fl.svg')), 'img', '')/>
                             <p>Финляндия</p>
                             <span data-mask="+358 99 999-99-99" data-placeholder="+358 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/no.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/no.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/no.svg')), 'img', '')/>
                             <p>Норвегия</p>
                             <span data-mask="+47 99 999-99-99" data-placeholder="+47 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/pl.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/pl.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/pl.svg')), 'img', '')/>
                             <p>Польша</p>
                             <span data-mask="+48 99 999-99-99" data-placeholder="+48 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/ge.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/ge.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/ge.svg')), 'img', '')/>
                             <p>Германия</p>
                             <span data-mask="+49 99 999-99-99" data-placeholder="+49 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/da.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/da.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/da.svg')), 'img', '')/>
                             <p>Дания</p>
                             <span data-mask="+45 99 999-99-99" data-placeholder="+45 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/cz.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/cz.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/cz.svg')), 'img', '')/>
                             <p>Чехия</p>
                             <span data-mask="+420 99 999-99-99" data-placeholder="+420 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/se.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/se.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/se.svg')), 'img', '')/>
                             <p>Швеция</p>
                             <span data-mask="+46 99 999-99-99" data-placeholder="+46 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/nl.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/nl.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/nl.svg')), 'img', '')/>
                             <p>Нидерланды</p>
                             <span data-mask="+31 99 999-99-99" data-placeholder="+31 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="{{ asset(config('theme.current') . '/images/flag/be.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/be.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/be.svg')), 'img', '')/>
                             <p>Бельгия</p>
                             <span data-mask="+32 99 999-99-99" data-placeholder="+32 00 000-00-00">+359</span>
                         </div>
@@ -2972,9 +2972,9 @@
             </div>
         </div>
         <picture>
-            <source srcset="./images/portrait-form.webp') }}" type="image/webp" />
-            <source srcset="./images/portrait-form.png') }}" />
-            <img src="./images/portrait-form.png') }}" class="vz-art photo-mokap" alt="img" loading="lazy" />
+            <source srcset="{{ asset(config('theme.current') . '/images/portrait-form.webp') }}" type="image/webp" />
+            <source srcset="{{ asset(config('theme.current') . '/images/portrait-form.png') }}" />
+            <img src="{{ asset(config('theme.current') . '/images/portrait-form.png') }}" class="vz-art photo-mokap"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/portrait-form.png')), 'img', '')/>
         </picture>
     </form>
     <form action="#" method="POST" class="vz-art js-popup target-box popup-login">
@@ -3072,66 +3072,66 @@
                 </p>
                 <div class="vz-art page-input__item phone-input">
                     <div class="country-item country-item-active">
-                        <img src="./images/flag/lv.svg') }}" alt="img" loading="lazy" />
+                        <img src="{{ asset(config('theme.current') . '/images/flag/lv.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/lv.svg')), 'img', '')/>
                     </div>
                     <div class="country-list">
                         <div class="country-item">
-                            <img src="./images/flag/lv.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/lv.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/lv.svg')), 'img', '')/>
                             <p>Латвия</p>
                             <span data-mask="+371 99 99-99-99" data-placeholder="+371 00 00-00-00">+371</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/lt.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/lt.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/lt.svg')), 'img', '')/>
                             <p>Литва</p>
                             <span data-mask="+370 999 9-99-99" data-placeholder="+370 000 0-00-00">+370</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/es.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/es.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/es.svg')), 'img', '')/>
                             <p>Эстония</p>
                             <span data-mask="+372 99 999-99-99" data-placeholder="+372 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/fl.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/fl.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/fl.svg')), 'img', '')/>
                             <p>Финляндия</p>
                             <span data-mask="+358 99 999-99-99" data-placeholder="+358 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/no.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/no.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/no.svg')), 'img', '')/>
                             <p>Норвегия</p>
                             <span data-mask="+47 99 999-99-99" data-placeholder="+47 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/pl.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/pl.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/pl.svg')), 'img', '')/>
                             <p>Польша</p>
                             <span data-mask="+48 99 999-99-99" data-placeholder="+48 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/ge.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/ge.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/ge.svg')), 'img', '')/>
                             <p>Германия</p>
                             <span data-mask="+49 99 999-99-99" data-placeholder="+49 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/da.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/da.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/da.svg')), 'img', '')/>
                             <p>Дания</p>
                             <span data-mask="+45 99 999-99-99" data-placeholder="+45 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/cz.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/cz.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/cz.svg')), 'img', '')/>
                             <p>Чехия</p>
                             <span data-mask="+420 99 999-99-99" data-placeholder="+420 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/se.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/se.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/se.svg')), 'img', '')/>
                             <p>Швеция</p>
                             <span data-mask="+46 99 999-99-99" data-placeholder="+46 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/nl.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/nl.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/nl.svg')), 'img', '')/>
                             <p>Нидерланды</p>
                             <span data-mask="+31 99 999-99-99" data-placeholder="+31 00 000-00-00">+359</span>
                         </div>
                         <div class="country-item">
-                            <img src="./images/flag/be.svg') }}" alt="img" loading="lazy" />
+                            <img src="{{ asset(config('theme.current') . '/images/flag/be.svg') }}"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', (asset(config('theme.current') . '/images/flag/be.svg')), 'img', '')/>
                             <p>Бельгия</p>
                             <span data-mask="+32 99 999-99-99" data-placeholder="+32 00 000-00-00">+359</span>
                         </div>
@@ -3193,7 +3193,7 @@
     </form>
     <div class="js-popup thanks">
         <div class="kviz-thanks">
-            <img src="./images/icon/check-done.svg" class="kviz-thanks__icon" alt="img" loading="lazy" />
+            <img src="./images/icon/check-done.svg" class="kviz-thanks__icon"  loading="lazy"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', './images/icon/check-done.svg', 'img', '')/>
             <div class="kviz-thanks__title">
                 <div class="h3_old">Спасибо за доверие!</div>
                 <p>
@@ -3220,7 +3220,7 @@
                 <div class="pf-img">
                     <picture>
                         <source srcset="https://viarcanvas.com/theme/viar/images/cardreproduction/frame.jpg" type="image/jpeg">
-                        <img width="418" height="414" src="https://viarcanvas.com/theme/viar/images/cardreproduction/frame.jpg" alt="ViarCanvas">
+                        <img width="418" height="414" src="https://viarcanvas.com/theme/viar/images/cardreproduction/frame.jpg"  @frontendAlt('theme/viar/pages/simpsons/index2.blade.php', 'https://viarcanvas.com/theme/viar/images/cardreproduction/frame.jpg', 'ViarCanvas', '')>
                     </picture>
                 </div>
                 <div class="pf-info">

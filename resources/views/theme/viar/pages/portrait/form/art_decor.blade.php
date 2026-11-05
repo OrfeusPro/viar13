@@ -16,7 +16,7 @@
 									<div class="check"></div>
 									<label>
 										<span>{{ $item->getTranslatedAttribute('name', app()->getLocale()) }}
-											<img src="{{ asset('images/icon/info.svg') }}" alt="">
+											<img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('theme/viar/pages/portrait/form/art_decor.blade.php', (asset('images/icon/info.svg')), '', '')>
 										</span>
 
 										<input style="height: 0px;" @if ($loop->last) checked @endif class="js_art_decor"
@@ -53,7 +53,7 @@
 	<div class="formalization-prompt">
 		<div class="formalization-prompt--wrapper">
 			<div class="formalization-prompt--inner">
-				<img src="{{ asset('images/prompt6.png') }}" alt="" />
+				<img src="{{ asset('images/prompt6.png') }}"   @frontendAlt('theme/viar/pages/portrait/form/art_decor.blade.php', (asset('images/prompt6.png')), '', '')/>
 				<p>
 					{!! trans('portrait_buy_form.step6_bot_desc') !!}
 				</p>

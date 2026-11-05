@@ -69,7 +69,7 @@
                                     <source srcset="{{ $webpSrc }}" type="image/webp">
                                 @endif
                                 <source srcset="https://viarcanvas.com{{ $src }}" type="image/jpeg">
-                                <img width="695" height="501" src="https://viarcanvas.com{{ $src }}" alt="ViarCanvas">
+                                <img width="695" height="501" src="https://viarcanvas.com{{ $src }}"  @frontendAlt('theme/viar/pages/gallery/module.blade.php', 'https://viarcanvas.com' . ($src), 'ViarCanvas', '')>
                             </picture>
 
                         @endforeach
@@ -161,7 +161,7 @@
 
 <div class="ellipse ellipse_black ellipse_top">
     <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"
-        alt="img" loading="lazy">
+         loading="lazy" @frontendAlt('theme/viar/pages/gallery/module.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
 </div>
 
 
@@ -273,8 +273,8 @@
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_popular')
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
-        decoding="async" loading="eager" height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
+        decoding="async" loading="eager" height="99" width="1374" @frontendAlt('theme/viar/pages/gallery/module.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_bestseller')

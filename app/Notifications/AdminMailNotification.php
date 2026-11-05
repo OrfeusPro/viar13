@@ -20,6 +20,15 @@ class AdminMailNotification extends Notification implements ShouldQueue
 
     public $salutation;
 
+    public ?string $campaignRecipientEmail = null;
+
+    public function shouldSend($notifiable, string $channel): bool
+    {
+        return $this->campaignRecipientEmail === null
+            || (config('admin_migration.bulk_email_enabled') && $notifiable->news === 'YES'
+                && $notifiable->email === $this->campaignRecipientEmail);
+    }
+
     /**
 
      * Create a new notification instance.
@@ -85,9 +94,13 @@ class AdminMailNotification extends Notification implements ShouldQueue
     {
         $base_url = \URL::to('/');
 
-        $uns_text = \App\Models\UserMessage::first()->get()->translate($notifiable->locale, 'ru')[0];
+        $uns_text = \App\Models\UserMessage::query()->orderBy('id')->first()
+            ?->translate($notifiable->preferredLocale() ?: 'ru', 'ru');
+        if (trim((string) ($uns_text?->uns_text ?? '')) === '') {
+            throw \Illuminate\Validation\ValidationException::withMessages(['line' => 'Не задан текст отписки UserMessage.uns_text.']);
+        }
 
-        $unsubscribe_link = "<br><a href='{$base_url}/user/{$notifiable->id}/unsubscribe'>{$uns_text['uns_text']}</a>";
+        $unsubscribe_link = '<br><a href="'.e($base_url.'/user/'.$notifiable->id.'/unsubscribe').'">'.e($uns_text->uns_text).'</a>';
 
         return (new MailMessage())
 
@@ -97,9 +110,9 @@ class AdminMailNotification extends Notification implements ShouldQueue
 
             ->line(new HtmlString($this->line))
 
-            ->line(new HtmlString($unsubscribe_link));
+            ->line(new HtmlString($unsubscribe_link))
+            ->salutation($this->salutation);
 
-        // ->salutation($this->salutation);
     }
 
     /**

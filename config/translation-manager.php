@@ -14,7 +14,7 @@ return [
         'prefix'     => 'admin/translations',
         'middleware' => [
             'web',
-            'auth',
+            \App\Http\Middleware\TranslationManagerAccess::class,
 
         ],
     ],

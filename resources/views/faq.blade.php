@@ -35,7 +35,7 @@
             <p>{!! $faq_desc['desc'] !!}</p>
         </div>
         <div class="faq-content clearfix">
-            <img src="{{ asset('img/faq-img1.png') }}" alt="" class="faq-img1">
+            <img src="{{ asset('img/faq-img1.png') }}"  class="faq-img1" @frontendAlt('faq.blade.php', (asset('img/faq-img1.png')), '', '')>
             <div class="accordion" id="accordion">
                 @if($faqs)
                     @foreach ($faqs as $faq)
@@ -49,7 +49,7 @@
             <p style="text-align:center;">
                 {!! $faq_desc['bot_text'] !!}
             </p>
-            <img src="{{ asset('img/faq-img2.png') }}" alt="" class="faq-img2">
+            <img src="{{ asset('img/faq-img2.png') }}"  class="faq-img2" @frontendAlt('faq.blade.php', (asset('img/faq-img2.png')), '', '')>
         </div>
     </section>
 

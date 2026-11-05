@@ -1,6 +1,6 @@
 <div class="ellipse">
-	<img src="https://viarcanvas.com/images/icon/ellipse-whete.svg" alt="img" loading="eager" width="1374"
-		height="99">
+	<img src="https://viarcanvas.com/images/icon/ellipse-whete.svg"  loading="eager" width="1374"
+		height="99" @frontendAlt('theme/viar/pages/gallery/item-card_part-order-stage.blade.php', 'https://viarcanvas.com/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 <div class="order-stage">
 	<div class="section-frame">
@@ -31,7 +31,7 @@
                             <source srcset="{{ asset(env('THEME').'images') }}/mcard/11.webp" type="image/webp">
 							<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/11.jpg" type="image/jpeg">
 							<img width="242" height="242" src="{{ asset(env('THEME') . 'images') }}/mcard/11.jpg" loading="lazy"
-								alt="">
+								 @frontendAlt('theme/viar/pages/gallery/item-card_part-order-stage.blade.php', (asset(env('THEME') . 'images')) . '/mcard/11.jpg', '', '')>
 						</picture>
 					</div>
 					<div class="os-title">
@@ -47,7 +47,7 @@
 							 <source srcset="{{ asset(env('THEME').'images') }}/mcard/12.webp" type="image/webp">
 							<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/12.jpg" type="image/jpeg">
 							<img width="242" height="242" src="{{ asset(env('THEME') . 'images') }}/mcard/12.jpg" loading="lazy"
-								alt="">
+								 @frontendAlt('theme/viar/pages/gallery/item-card_part-order-stage.blade.php', (asset(env('THEME') . 'images')) . '/mcard/12.jpg', '', '')>
 						</picture>
 					</div>
 					<div class="os-title">
@@ -63,7 +63,7 @@
 							 <source srcset="{{ asset(env('THEME').'images') }}/mcard/13.webp" type="image/webp">
 							<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/13.jpg" type="image/jpeg">
 							<img width="242" height="242" src="{{ asset(env('THEME') . 'images') }}/mcard/13.jpg" loading="lazy"
-								alt="">
+								 @frontendAlt('theme/viar/pages/gallery/item-card_part-order-stage.blade.php', (asset(env('THEME') . 'images')) . '/mcard/13.jpg', '', '')>
 						</picture>
 					</div>
 					<div class="os-title">
@@ -78,7 +78,7 @@
 						<picture>
 							 <source srcset="{{ asset(env('THEME').'images') }}/mcard/14.webp" type="image/webp">
 							<source srcset="{{ asset(env('THEME') . 'images') }}/mcard/14.jpg" type="image/jpeg">
-							<img width="242" height="242" src="{{ asset(env('THEME') . 'images') }}/mcard/14.jpg" alt="">
+							<img width="242" height="242" src="{{ asset(env('THEME') . 'images') }}/mcard/14.jpg"  @frontendAlt('theme/viar/pages/gallery/item-card_part-order-stage.blade.php', (asset(env('THEME') . 'images')) . '/mcard/14.jpg', '', '')>
 						</picture>
 					</div>
 					<div class="os-title">

@@ -88,7 +88,7 @@ class WebToPay extends Controller{
      *
      * @throws WebToPayException on data validation error
      */
-    public static function redirectToPayment($data, $exit = false) {
+    public static function buildPaymentUrl($data): string {
         if (!isset($data['sign_password']) || !isset($data['projectid'])) {
             throw new WebToPayException('sign_password or projectid is not provided');
         }
@@ -98,8 +98,12 @@ class WebToPay extends Controller{
         unset($data['projectid']);
 
         $factory = new WebToPay_Factory(array('projectId' => $projectId, 'password' => $password));
-        $url = $factory->getRequestBuilder()
+        return $factory->getRequestBuilder()
             ->buildRequestUrlFromData($data);
+    }
+
+    public static function redirectToPayment($data, $exit = false) {
+        $url = self::buildPaymentUrl($data);
 
         if (headers_sent()) {
             echo '<script type="text/javascript">window.location = "' . addslashes($url) . '";</script>';

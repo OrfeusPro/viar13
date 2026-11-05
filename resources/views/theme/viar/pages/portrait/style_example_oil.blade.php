@@ -35,7 +35,7 @@
 										<picture>
 											<source media="(max-width: 576px)" srcset="{{ $image->src }}" type="image/webp">
 											<source srcset="{{ $image->src }}">
-											<img width="315" height="451" src="{{ $image->src }}" alt="">
+											<img width="315" height="451" src="{{ $image->src }}"  @frontendAlt('theme/viar/pages/portrait/style_example_oil.blade.php', ($image->src), '', '')>
 										</picture>
 
 										<a href="#" class="default-btn js-image-calc"

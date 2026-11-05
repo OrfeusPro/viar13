@@ -29,4 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class VrNumber extends Model
 {
+    protected $table = 'vr_numbers';
+
+    protected $guarded = [];
 }

@@ -312,6 +312,11 @@ class OpenAiVisionClient
         $absolutePath = isset($payload['absolute_path']) ? (string) $payload['absolute_path'] : '';
         $path = isset($payload['path']) ? (string) $payload['path'] : '';
 
+        if (($payload['image']['source_type'] ?? null) === 'frontend'
+            && preg_match('#^data:image/(?:png|jpeg|webp|gif);base64,#', $publicUrl)) {
+            return $publicUrl;
+        }
+
         if ($publicUrl !== '' && $this->isPublicHttpUrl($publicUrl)) {
             return $publicUrl;
         }

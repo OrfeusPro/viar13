@@ -76,10 +76,10 @@
         <div class="gift-card-content">
             <div class="card clearfix">
                 <div class="card-item">
-                    <img src="{{ asset('img/front_') . app()->getLocale() . '.png' }}" alt="">
+                    <img src="{{ asset('img/front_') . app()->getLocale() . '.png' }}"  @frontendAlt('stylization-paintings.blade.php', (asset('img/front_') . app()->getLocale() . '.png'), '', '')>
                 </div>
                 <div class="card-item">
-                    <img src="{{ asset('img/back_') . app()->getLocale() . '.png' }}" alt="">
+                    <img src="{{ asset('img/back_') . app()->getLocale() . '.png' }}"  @frontendAlt('stylization-paintings.blade.php', (asset('img/back_') . app()->getLocale() . '.png'), '', '')>
                 </div>
             </div>
             <a href="{{ route('gift_card') }}"><span>{!! $data['gift_order'] !!}</span></a>

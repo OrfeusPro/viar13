@@ -7,7 +7,7 @@
             <div class="text">
                 {!! $canv_bot['up_left_text'] !!}
             </div>
-            <img src="{{ asset('img/packaging-img.png') }}" alt="" class="packaging-img">
+            <img src="{{ asset('img/packaging-img.png') }}"  class="packaging-img" @frontendAlt('partials/collage-constructor/packing.blade.php', (asset('img/packaging-img.png')), '', '')>
         </div>
         <div class="package-size clearfix">
             <h4>{!! $canv_bot['up_def_title'] !!}</h4>

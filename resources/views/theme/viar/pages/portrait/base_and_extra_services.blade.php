@@ -12,12 +12,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service1Min.webp') }}" type="image/webp">
                                 <source srcset="{{ ver_asset('images/sharj/service1.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service1.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service1.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service1.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service2Min.webp') }}" type="image/webp">
                                 <source srcset="{{ ver_asset('images/sharj/service2.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service2.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service2.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service2.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -64,12 +64,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service3Min.webp') }}" type="image/webp">
                                 <source srcset="{{ ver_asset('images/sharj/service3.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service3.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service3.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service3.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service4Min.webp') }}" type="image/webp">
                                 <source srcset="{{ ver_asset('images/sharj/service4.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service4.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service4.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service4.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -116,12 +116,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service5Min.webp') }}" type="image/webp">
                                 <source srcset="{{ ver_asset('images/sharj/service5.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service5.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service5.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service5.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service6Min.webp') }}" type="image/webp">
                                 <source srcset="{{ ver_asset('images/sharj/service6.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service6.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service6.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service6.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -170,12 +170,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service1Min.webp') }}" type="image/webp"> -->
                                 <source srcset="{{ ver_asset('images/sharj/service7.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service7.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service7.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service7.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service2Min.webp') }}" type="image/webp"> -->
                                 <source srcset="{{ ver_asset('images/sharj/service8.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service8.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service8.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service8.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -193,12 +193,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service3Min.webp') }}" type="image/webp"> -->
                                 <source srcset="{{ ver_asset('images/sharj/service9.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service9.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service9.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service9.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service4Min.webp') }}" type="image/webp"> -->
                                 <source srcset="{{ ver_asset('images/sharj/service10.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service10.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service10.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service10.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -216,12 +216,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service5Min.webp') }}" type="image/webp"> -->
                                 <source srcset="{{ ver_asset('images/sharj/service11.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service11.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service11.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service11.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="{{ ver_asset('images/sharj/service6Min.webp') }}" type="image/webp"> -->
                                 <source srcset="{{ ver_asset('images/sharj/service12.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service12.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ ver_asset('images/sharj/service12.webp') }}"  @frontendAlt('theme/viar/pages/portrait/base_and_extra_services.blade.php', (ver_asset('images/sharj/service12.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">

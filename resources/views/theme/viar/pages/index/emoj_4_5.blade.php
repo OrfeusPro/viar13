@@ -65,7 +65,7 @@
                                     <source srcset="{{ $webpSrc }}" type="image/webp">
                                 @endif
                                 <source srcset="{{ asset('storage/' . $bot_form_step1_default->image) }}" type="image/jpeg">
-                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step1_default->image) }}" data-stock="1" class="stock-photo lozad" alt="img">
+                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step1_default->image) }}" data-stock="1" class="stock-photo lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('storage/' . $bot_form_step1_default->image)), 'img', '')>
                             </picture>
                         @endif
                     </div>
@@ -129,7 +129,7 @@
                                     <source srcset="{{ $webpSrc }}" type="image/webp">
                                 @endif
                                 <source srcset="{{ asset('storage/' . $bot_form_step1_default->image) }}" type="image/jpeg">
-                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step1_default->image) }}" data-stock="1" class="stock-photo lozad" alt="img">
+                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step1_default->image) }}" data-stock="1" class="stock-photo lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('storage/' . $bot_form_step1_default->image)), 'img', '')>
                             </picture>
                         @endif
                     </div>
@@ -143,7 +143,7 @@
                                 <source srcset="{{ asset('images/kviz/kviz-1.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-1.png') }}">
                                 <img loading="lazy" class="lozad"
-                                    src="{{ asset('images/kviz/kviz-1.png') }}" alt="img">
+                                    src="{{ asset('images/kviz/kviz-1.png') }}"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-1.png')), 'img', '')>
                             </picture>
                         </div>
                         <div class="stock-item">
@@ -152,7 +152,7 @@
                                 <source srcset="{{ asset('images/kviz/kviz-2.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-2.png') }}">
                                 <img loading="lazy" class="lozad"
-                                    src="{{ asset('images/kviz/kviz-2.png') }}" alt="img">
+                                    src="{{ asset('images/kviz/kviz-2.png') }}"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-2.png')), 'img', '')>
                             </picture>
                         </div>
                         <div class="stock-item">
@@ -161,7 +161,7 @@
                                 <source srcset="{{ asset('images/kviz/kviz-3.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-3.png') }}">
                                 <img loading="lazy" class="lozad"
-                                    src="{{ asset('images/kviz/kviz-3.png') }}" alt="img">
+                                    src="{{ asset('images/kviz/kviz-3.png') }}"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-3.png')), 'img', '')>
                             </picture>
                         </div>
                     </div>
@@ -180,7 +180,7 @@
                                 @endif
                                 <source srcset="{{ asset('storage/' . $bot_form_step2_default->image) }}" type="image/jpeg">
                                 <img loading="lazy" src="{{ asset('storage/' . $bot_form_step2_default->image) }}"
-                                    data-stock="2" class="stock-photo lozad" alt="img">
+                                    data-stock="2" class="stock-photo lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('storage/' . $bot_form_step2_default->image)), 'img', '')>
                             </picture>
                         @endif
                     </div>
@@ -221,7 +221,7 @@
                                     <source srcset="{{ $webpSrc }}" type="image/webp">
                                 @endif
                                 <source srcset="{{ asset('storage/' . $bot_form_step1_default->image) }}" type="image/jpeg">
-                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step1_default->image) }}" data-stock="1" class="stock-photo lozad" alt="img">
+                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step1_default->image) }}" data-stock="1" class="stock-photo lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('storage/' . $bot_form_step1_default->image)), 'img', '')>
                             </picture>
                         @endif
                     </div>
@@ -234,8 +234,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/kviz/kviz-1.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-1.png') }}">
-                                <img loading="lazy" src="{{ asset('images/kviz/kviz-1.png') }}" alt="img"
-                                    class="lozad">
+                                <img loading="lazy" src="{{ asset('images/kviz/kviz-1.png') }}"
+                                    class="lozad" @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-1.png')), 'img', '')>
                             </picture>
                         </div>
                         <div class="stock-item">
@@ -243,8 +243,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/kviz/kviz-2.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-2.png') }}">
-                                <img loading="lazy" src="{{ asset('images/kviz/kviz-2.png') }}" alt="img"
-                                    class="lozad">
+                                <img loading="lazy" src="{{ asset('images/kviz/kviz-2.png') }}"
+                                    class="lozad" @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-2.png')), 'img', '')>
                             </picture>
                         </div>
                         <div class="stock-item">
@@ -252,8 +252,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/kviz/kviz-3.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-3.png') }}">
-                                <img loading="lazy" src="{{ asset('images/kviz/kviz-3.png') }}" alt="img"
-                                    class="lozad">
+                                <img loading="lazy" src="{{ asset('images/kviz/kviz-3.png') }}"
+                                    class="lozad" @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-3.png')), 'img', '')>
                             </picture>
                         </div>
                     </div>
@@ -271,7 +271,7 @@
                                     <source srcset="{{ $webpSrc }}" type="image/webp">
                                 @endif
                                 <source srcset="{{ asset('storage/' . $bot_form_step3_default->image) }}" type="image/jpeg">
-                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step3_default->image) }}" data-stock="1" class="stock-photo lozad" alt="img">
+                                <img loading="lazy" src="{{ asset('storage/' . $bot_form_step3_default->image) }}" data-stock="1" class="stock-photo lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('storage/' . $bot_form_step3_default->image)), 'img', '')>
                             </picture>
                         @endif
                     </div>
@@ -301,7 +301,7 @@
                                                         type="image/jpeg">
                                                     <img loading="lazy"
                                                         src="{{ asset('images/kviz-full/kviz-1.jpg') }}"
-                                                        class="lozad" alt="img">
+                                                        class="lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz-full/kviz-1.jpg')), 'img', '')>
                                                 </picture>
                                                 {!! $item->getTranslatedAttribute('tooltip') !!}
                                             </div>
@@ -327,7 +327,7 @@
                             <source srcset="{{ asset('images/kviz-full/kviz-1.webp') }}" type="image/webp">
                             <source srcset="{{ asset('images/kviz-full/kviz-1.jpg') }}" type="image/jpeg">
                             <img loading="lazy" src="{{ asset('images/kviz-full/kviz-1.jpg') }}" data-stock="1"
-                                class="stock-photo lozad" alt="img">
+                                class="stock-photo lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz-full/kviz-1.jpg')), 'img', '')>
                         </picture>
                     </div>
                     <p class="stock-list__title">{!! $bot_form['after_end_got'] !!}</p>
@@ -339,8 +339,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/kviz/kviz-1.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-1.png') }}">
-                                <img loading="lazy" src="{{ asset('images/kviz/kviz-1.png') }}" alt="img"
-                                    class="lozad">
+                                <img loading="lazy" src="{{ asset('images/kviz/kviz-1.png') }}"
+                                    class="lozad" @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-1.png')), 'img', '')>
                             </picture>
                         </div>
                         <div class="stock-item">
@@ -348,8 +348,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/kviz/kviz-2.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-2.png') }}">
-                                <img loading="lazy" src="{{ asset('images/kviz/kviz-2.png') }}" alt="img"
-                                    class="lozad">
+                                <img loading="lazy" src="{{ asset('images/kviz/kviz-2.png') }}"
+                                    class="lozad" @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-2.png')), 'img', '')>
                             </picture>
                         </div>
                         <div class="stock-item">
@@ -357,8 +357,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/kviz/kviz-3.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/kviz/kviz-3.png') }}">
-                                <img loading="lazy" src="{{ asset('images/kviz/kviz-3.png') }}" alt="img"
-                                    class="lozad">
+                                <img loading="lazy" src="{{ asset('images/kviz/kviz-3.png') }}"
+                                    class="lozad" @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/kviz/kviz-3.png')), 'img', '')>
                             </picture>
                         </div>
                     </div>
@@ -369,7 +369,7 @@
                     <source srcset="{{ asset('images/bg/kviz-finish.webp') }}" type="image/webp">
                     <source srcset="{{ asset('images/bg/kviz-finish.png') }}">
                     <img loading="lazy" src="{{ asset('images/bg/kviz-finish.png') }}" class="kviz-finsh-photo lozad"
-                        alt="img" >
+                          @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/bg/kviz-finish.png')), 'img', '')>
                 </picture>
                 <div class="kviz-content">
                     <div class="kviz-step">
@@ -390,8 +390,8 @@
                             <div class="form-send__item">
                                 <div class="form-send__input-item">
                                     <input type="text" id="phone" name="phone" class="form-send__input phone">
-                                    <img loading="lazy" src="{{ asset('img/icons/phone.svg') }}" alt=""
-                                        class="img-svg img-svg__posa lozad">
+                                    <img loading="lazy" src="{{ asset('img/icons/phone.svg') }}"
+                                        class="img-svg img-svg__posa lozad" @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('img/icons/phone.svg')), '', '')>
                                 </div>
                             </div>
                         </div>
@@ -541,7 +541,7 @@
             <div class="kviz-item kviz-thanks__parent" data-step="5">
                 <div class="kviz-thanks">
                     <img loading="lazy" src="{{ asset('images/icon/check-done.svg') }}"
-                        class="kviz-thanks__icon lozad" alt="img">
+                        class="kviz-thanks__icon lozad"  @frontendAlt('theme/viar/pages/index/emoj_4_5.blade.php', (asset('images/icon/check-done.svg')), 'img', '')>
                     <div class="kviz-thanks__title">
                         <div class="h3_old">{!! $bot_form['succ_thx'] !!}</div>
                         <p> {!! $bot_form['succ_text'] !!}</p>

@@ -634,7 +634,7 @@ TEXT,
 
     'auto_observer' => env('ALT_GEN_AUTO_OBSERVER', false),
 
-    'daily_call_limit' => 2000,
+    'daily_call_limit' => 30000,
 
     'exclude' => [
         'path_prefixes' => [
@@ -1233,6 +1233,13 @@ TEXT,
             ],
             'url_resolver' => [PublicUrlResolver::class, 'reviewWhenActive'],
             'language' => 'orig_locale',
+        ],
+        \App\Models\FrontendImage::class => [
+            'enabled' => true,
+            'image_fields' => ['image_path'],
+            'gallery_fields' => [],
+            'html_fields' => [],
+            'context' => [],
         ],
     ],
 ];

@@ -11,14 +11,14 @@ $was_act_img = 0;
 				@php
 					$imgSrc = order_image_url($img);
 				@endphp
-				<img src="{{ $imgSrc }}">
+				<img src="{{ $imgSrc }}" @frontendAlt('theme/viar/cart/cart_item_image.blade.php', ($imgSrc), '', '')>
 
                 <span class="zoom-icon" data-action="zoom"></span>
                 <div class="popup-basket-image popup p__mod">
                     <span class="close-popup"></span>
                     <div class="popup-content">
                         <span class="close-content" style="display: flex; justify-content: center;">
-                            <img class="popup-img" src="{{ $imgSrc }}" alt="">
+                            <img class="popup-img" src="{{ $imgSrc }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', ($imgSrc), '', '')>
                         </span>
                     </div>
                 </div>
@@ -37,7 +37,7 @@ $was_act_img = 0;
 		@endforeach
 	@endif
 @elseif (isset($product['basketType']) && $product['basketType'] == 5)
-	<img class="two" src="{{ asset(env('THEME') . 'images/gift/cart') }}/{{  Config::get('app.locale') }}.png" alt="">
+	<img class="two" src="{{ asset(env('THEME') . 'images/gift/cart') }}/{{  Config::get('app.locale') }}.png"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', (asset(env('THEME') . 'images/gift/cart')) . '/' . (Config::get('app.locale')) . '.png', '', '')>
 
     {{-- <span class="zoom-icon" data-action="zoom"></span>
     <div class="popup-basket-image popup p__mod">
@@ -56,13 +56,13 @@ $was_act_img = 0;
                 $was_act_img = 1;
             @endphp
 
-            <img src="{{ $src }}" alt="">
+            <img src="{{ $src }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', ($src), '', '')>
 		@else
             @php
                 $src = order_image_url($product['savedImage'] ?? null);
             @endphp
 
-            <img src="{{ $src }}">
+            <img src="{{ $src }}" @frontendAlt('theme/viar/cart/cart_item_image.blade.php', ($src), '', '')>
 		@endif
 
         <span class="zoom-icon" data-action="zoom"></span>
@@ -70,7 +70,7 @@ $was_act_img = 0;
             <span class="close-popup"></span>
             <div class="popup-content">
                 <span class="close-content" style="display: flex; justify-content: center;">
-                    <img class="popup-img" src="{{ $src }}" alt="">
+                    <img class="popup-img" src="{{ $src }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', ($src), '', '')>
                 </span>
             </div>
         </div>
@@ -86,14 +86,14 @@ $was_act_img = 0;
 		</div>
 	</div>
 @elseif (isset($product['image_uploads']))
-	<img class="two" src="{{ order_image_url($product['activeImage'] ?? null) }}" alt="">
+	<img class="two" src="{{ order_image_url($product['activeImage'] ?? null) }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', (order_image_url($product['activeImage'] ?? null)), '', '')>
 
     <span class="zoom-icon" data-action="zoom"></span>
     <div class="popup-basket-image popup p__mod">
         <span class="close-popup"></span>
         <div class="popup-content">
             <span class="close-content" style="display: flex; justify-content: center;">
-                <img class="popup-img" src="{{ order_image_url($product['activeImage'] ?? null) }}" alt="">
+                <img class="popup-img" src="{{ order_image_url($product['activeImage'] ?? null) }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', (order_image_url($product['activeImage'] ?? null)), '', '')>
             </span>
         </div>
     </div>
@@ -116,7 +116,7 @@ $was_act_img = 0;
 						$activeSrc = order_image_url($product['activeImage']);
 					@endphp
 					<a href="{{ $activeSrc }}">
-						<img class="two" src="{{ $activeSrc }}" alt="">
+						<img class="two" src="{{ $activeSrc }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', ($activeSrc), '', '')>
 					</a>
 
                     <span class="zoom-icon" data-action="zoom"></span>
@@ -124,7 +124,7 @@ $was_act_img = 0;
                         <span class="close-popup"></span>
                         <div class="popup-content">
                             <span class="close-content" style="display: flex; justify-content: center;">
-                                <img class="popup-img" src="{{ $activeSrc }}" alt="">
+                                <img class="popup-img" src="{{ $activeSrc }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', ($activeSrc), '', '')>
                             </span>
                         </div>
                     </div>
@@ -149,14 +149,14 @@ $was_act_img = 0;
 			@endif
 		@else
 			{{-- <a href="{{ Voyager::image($product['activeImage']) }}"> --}}
-				<img class="two" src="{{ order_image_url($product['activeImage'] ?? null) }}" alt="">
+				<img class="two" src="{{ order_image_url($product['activeImage'] ?? null) }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', (order_image_url($product['activeImage'] ?? null)), '', '')>
 
                 <span class="zoom-icon" data-action="zoom"></span>
                 <div class="popup-basket-image popup p__mod">
                     <span class="close-popup"></span>
                     <div class="popup-content">
                         <span class="close-content" style="display: flex; justify-content: center;">
-                            <img class="popup-img" src="{{ order_image_url($product['activeImage'] ?? null) }}" alt="">
+                            <img class="popup-img" src="{{ order_image_url($product['activeImage'] ?? null) }}"  @frontendAlt('theme/viar/cart/cart_item_image.blade.php', (order_image_url($product['activeImage'] ?? null)), '', '')>
                         </span>
                     </div>
                 </div>

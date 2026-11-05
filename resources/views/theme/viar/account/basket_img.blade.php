@@ -2,7 +2,7 @@
 
 @if (isset($product['image_uploads']))
     @php $true_image = true; @endphp
-    <img class="def_img image_offset" style="max-width: 100%;" src="{{ order_image_url($product['activeImage'] ?? null) }}" alt="">
+    <img class="def_img image_offset" style="max-width: 100%;" src="{{ order_image_url($product['activeImage'] ?? null) }}"  @frontendAlt('theme/viar/account/basket_img.blade.php', (order_image_url($product['activeImage'] ?? null)), '', '')>
 @else
     @if (isset($product['activeImage']))
         @php
@@ -23,7 +23,7 @@
             @if ($svgLocal && file_exists($svgLocal))
                 @php $true_image = true; @endphp
                 <a style="position:relative;display:block;" href="javascript:void(0);" data-file="{{ $file }}">
-                    <img class="def_img_some" style="max-width: 100%;" src="{{ $activeSrc }}" alt="">
+                    <img class="def_img_some" style="max-width: 100%;" src="{{ $activeSrc }}"  @frontendAlt('theme/viar/account/basket_img.blade.php', ($activeSrc), '', '')>
                     @php
                         try {
                             $svg_file = file_get_contents($svgLocal);
@@ -37,16 +37,16 @@
                 </a>
             @else
                 @php $true_image = true; @endphp
-                <img alt="" class="def_img_some" style="max-width: 100%;" src="{{ $activeSrc }}">
+                <img  class="def_img_some" style="max-width: 100%;" src="{{ $activeSrc }}" @frontendAlt('theme/viar/account/basket_img.blade.php', ($activeSrc), '', '')>
             @endif
         @else
             @php $true_image = true; @endphp
             @if (isset($product['savedImage']) && $product['savedImage'] && !$product['activeImage'])
-                <img class="def_img" style="max-width: 100%;" src="{{ $savedSrc }}" alt="">
+                <img class="def_img" style="max-width: 100%;" src="{{ $savedSrc }}"  @frontendAlt('theme/viar/account/basket_img.blade.php', ($savedSrc), '', '')>
             @else
                 @if($product['activeImage'])
                     @isset($product['savedImage'])<a href="{{ $savedSrc }}">@endisset
-                        <img class="def_img" style="max-width: 100%;" src="{{ $activeSrc }}" alt="">
+                        <img class="def_img" style="max-width: 100%;" src="{{ $activeSrc }}"  @frontendAlt('theme/viar/account/basket_img.blade.php', ($activeSrc), '', '')>
                     @isset($product['savedImage'])</a>@endisset
                 @endif
             @endif
@@ -56,12 +56,12 @@
 
     @isset($product['is_gift_card'])
         @php $true_image = true; @endphp
-        <img alt="Gift" style="max-width: 100%;" class="def_img card__img" src="{{ asset('img/benefits-img1.png') }}"
-             alt="">
+        <img  style="max-width: 100%;" class="def_img card__img" src="{{ asset('img/benefits-img1.png') }}"
+              @frontendAlt('theme/viar/account/basket_img.blade.php', (asset('img/benefits-img1.png')), 'Gift', '')>
     @endisset
 @endif
 
 
 @if($true_image == false)
-    <img class="def_img" style="max-width: 100%;" src="{{ order_image_placeholder() }}" alt="">
+    <img class="def_img" style="max-width: 100%;" src="{{ order_image_placeholder() }}"  @frontendAlt('theme/viar/account/basket_img.blade.php', (order_image_placeholder()), '', '')>
 @endif

@@ -18,7 +18,7 @@ class BlogCategory extends Model
     protected $fillable = [];
     protected $translatable = ['meta_title', 'meta_desc', 'title', 'seo'];
 
-    public function getSlugOptions()
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('title')

@@ -28,7 +28,7 @@
             @if(!empty($canvasHeaderDesktopSources['src']) && !empty($canvasHeaderDesktopSources['type']))
                 <source srcset="{{ $canvasHeaderDesktopSources['src'] }}" type="{{ $canvasHeaderDesktopSources['type'] }}">
             @endif
-            <img src="{{ $canvasHeaderDesktopSources['src'] }}" alt="">
+            <img src="{{ $canvasHeaderDesktopSources['src'] }}"  @frontendAlt('partials/canvas_new/header.blade.php', ($canvasHeaderDesktopSources['src']), '', '')>
         </picture>
     </div>
 </div>

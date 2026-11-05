@@ -6,15 +6,15 @@
             </div>
             <div class="prices-cintant">
                 <h5>{{ $canvas_price['sub_title'] }}</h5>
-                <img src="{{ asset('img/prices-img1.png') }}" alt="" class="prices-img1">
+                <img src="{{ asset('img/prices-img1.png') }}"  class="prices-img1" @frontendAlt('partials/canvas/price_3_block.blade.php', (asset('img/prices-img1.png')), '', '')>
                 {!! $canvas_price['top_text'] !!}
                 <h5>{!! $canvas_price['sub_title3'] !!}</h5>
-                <img src="{{ asset('img/prices-img2.png') }}" alt="" class="prices-img2">
+                <img src="{{ asset('img/prices-img2.png') }}"  class="prices-img2" @frontendAlt('partials/canvas/price_3_block.blade.php', (asset('img/prices-img2.png')), '', '')>
                 {!! $canvas_price['sub_title3_desc'] !!}
                 <a href="{{ $canvas_price['goto_gall_link'] }}"><span>{{ $canvas_price['goto_gall'] }}</span></a>
                 <h3>{{ $canvas_price['price_title'] }}</h3>
                 <div class="list clearfix">
-                    <img src="{{ asset('img/prices-img3.png') }}" alt="" class="prices-img3">
+                    <img src="{{ asset('img/prices-img3.png') }}"  class="prices-img3" @frontendAlt('partials/canvas/price_3_block.blade.php', (asset('img/prices-img3.png')), '', '')>
                     {!! $canvas_price['price_list'] !!}
                 </div>
             </div>

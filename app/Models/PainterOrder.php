@@ -40,4 +40,9 @@ class PainterOrder extends Model
     protected $table = 'painter_orders';
 
     protected $fillable = ['order_id', 'user_id'];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

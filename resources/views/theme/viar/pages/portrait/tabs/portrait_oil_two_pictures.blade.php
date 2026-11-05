@@ -8,7 +8,7 @@
 		<div class="about__block-types-row">
 			<div class="two_tab_left">
 				<div class="flex">
-					<img width="40" height="40" src="{{ ver_asset('images/sharj/i1.svg') }}" alt="">
+					<img width="40" height="40" src="{{ ver_asset('images/sharj/i1.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset('images/sharj/i1.svg')), '', '')>
 					<p>
 						@lang('pages.portrait_oil.tab_two_pictures_tab.t13')
 					</p>
@@ -21,7 +21,7 @@
 					<picture>
 						<source media="(max-width: 1200px)" srcset="https://viarcanvas.com/images/sharj/v1.svg?1691276006">
 						<source srcset="https://viarcanvas.com/images/sharj/v1.svg?1691276006 ">
-						<img src="https://viarcanvas.com/images/sharj/v1.svg?1691276006" width="69" height="98" alt="">
+						<img src="https://viarcanvas.com/images/sharj/v1.svg?1691276006" width="69" height="98"  @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', 'https://viarcanvas.com/images/sharj/v1.svg?1691276006', '', '')>
 					</picture>
 				</div>
 
@@ -30,8 +30,8 @@
 						<div>
 							<picture>
 								<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_1.webp') }}" type="image/webp">
-								<img width="85" height="85" src="{{ ver_asset(env('THEME') . 'images/oil/t2_1.png') }}" alt=""
-									class="hb_material">
+								<img width="85" height="85" src="{{ ver_asset(env('THEME') . 'images/oil/t2_1.png') }}"
+									class="hb_material" @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_1.png')), '', '')>
 							</picture>
 						</div>
 						<div>
@@ -42,8 +42,8 @@
 						<div>
 							<picture>
 								<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_2.webp') }}" type="image/webp">
-								<img width="85" height="85" src="{{ ver_asset(env('THEME') . 'images/oil/t2_2.png') }}" alt=""
-									class="hb_material">
+								<img width="85" height="85" src="{{ ver_asset(env('THEME') . 'images/oil/t2_2.png') }}"
+									class="hb_material" @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_2.png')), '', '')>
 							</picture>
 						</div>
 						<div>
@@ -54,8 +54,8 @@
 						<div>
 							<picture>
 								<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_3.webp') }}" type="image/webp">
-								<img width="85" height="85" src="{{ ver_asset(env('THEME') . 'images/oil/t2_3.png') }}" alt=""
-									class="hb_material">
+								<img width="85" height="85" src="{{ ver_asset(env('THEME') . 'images/oil/t2_3.png') }}"
+									class="hb_material" @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_3.png')), '', '')>
 							</picture>
 						</div>
 						<div>
@@ -69,7 +69,7 @@
 				<picture>
 					<source media="(max-width: 1200px)" srcset="https://viarcanvas.com/images/sharj/v1.svg?1691276006">
 					<source srcset="https://viarcanvas.com/images/sharj/v1.svg?1691276006 ">
-					<img src="https://viarcanvas.com/images/sharj/v1.svg?1691276006" width="69" height="98" alt="">
+					<img src="https://viarcanvas.com/images/sharj/v1.svg?1691276006" width="69" height="98"  @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', 'https://viarcanvas.com/images/sharj/v1.svg?1691276006', '', '')>
 				</picture>
 			</div>
 
@@ -78,7 +78,7 @@
 					<source media="(max-width: 576px)" srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_4.webp') }}"
 						type="image/webp">
 					<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_4.webp') }}" type="image/webp">
-					<img width="313" height="460" src="{{ ver_asset(env('THEME') . 'images/oil/t2_3.png') }}" alt="">
+					<img width="313" height="460" src="{{ ver_asset(env('THEME') . 'images/oil/t2_3.png') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_3.png')), '', '')>
 				</picture>
 			</div>
 		</div>
@@ -94,7 +94,7 @@
 
 			<div class="two_tab_left width488">
 				<div class="flex">
-					<img width="40" height="40" src="{{ ver_asset('images/sharj/i1.svg') }}" alt="">
+					<img width="40" height="40" src="{{ ver_asset('images/sharj/i1.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset('images/sharj/i1.svg')), '', '')>
 					<p>
 						@lang('pages.portrait_oil.tab_two_pictures_tab.t21')
 					</p>
@@ -104,7 +104,7 @@
 				</div>
 
 				<div class="pt-3 checked">
-					<img src="{{ ver_asset(env('THEME') . 'images/oil/checked.svg') }}">
+					<img src="{{ ver_asset(env('THEME') . 'images/oil/checked.svg') }}" @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/checked.svg')), '', '')>
 					<div>
 						@lang('pages.portrait_oil.tab_two_pictures_tab.t23')
 					</div>
@@ -117,16 +117,16 @@
 				<div class="two_tab_2_images">
 					<picture>
 						<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_b4.webp') }}" type="image/webp">
-						<img width="480" height="344" src="{{ ver_asset(env('THEME') . 'images/oil/t2_b4.jpg') }}" alt="">
+						<img width="480" height="344" src="{{ ver_asset(env('THEME') . 'images/oil/t2_b4.jpg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_b4.jpg')), '', '')>
 					</picture>
 					<picture>
 						<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_b3.webp') }}" type="image/webp">
-						<img width="480" height="344" src="{{ ver_asset(env('THEME') . 'images/oil/t2_b3.jpg') }}" alt="">
+						<img width="480" height="344" src="{{ ver_asset(env('THEME') . 'images/oil/t2_b3.jpg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_b3.jpg')), '', '')>
 					</picture>
 				</div>
 
 				<div class="pt-3 checked">
-					<img src="{{ ver_asset(env('THEME') . 'images/oil/checked.svg') }}">
+					<img src="{{ ver_asset(env('THEME') . 'images/oil/checked.svg') }}" @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/checked.svg')), '', '')>
 					<div>
 						@lang('pages.portrait_oil.tab_two_pictures_tab.t25')
 					</div>
@@ -138,7 +138,7 @@
 
 
 				<div class="pt-3 checked">
-					<img src="{{ ver_asset(env('THEME') . 'images/oil/checked.svg') }}">
+					<img src="{{ ver_asset(env('THEME') . 'images/oil/checked.svg') }}" @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/checked.svg')), '', '')>
 					<div>
 						@lang('pages.portrait_oil.tab_two_pictures_tab.t27')
 					</div>
@@ -152,7 +152,7 @@
 					<picture>
 						<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_b5.webp') }}" type="image/webp">
 						<img width="488" height="236" src="{{ ver_asset(env('THEME') . 'images/oil/t2_b5.jpg') }}"
-							alt="">
+							 @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_b5.jpg')), '', '')>
 					</picture>
 					<picture>
 				</div>
@@ -165,7 +165,7 @@
 						type="image/webp">
 					<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_bg2.webp') }}" type="image/webp">
 					<img width="313" height="460" src="{{ ver_asset(env('THEME') . 'images/oil/t2_bg2.png') }}"
-						alt="">
+						 @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_bg2.png')), '', '')>
 				</picture>
 			</div>
 		</div>
@@ -175,7 +175,7 @@
 					type="image/webp">
 				<source srcset="{{ ver_asset(env('THEME') . 'images/oil/t2_bg2.webp') }}" type="image/webp">
 				<img width="313" height="460" src="{{ ver_asset(env('THEME') . 'images/oil/t2_bg2.png') }}"
-					alt="">
+					 @frontendAlt('theme/viar/pages/portrait/tabs/portrait_oil_two_pictures.blade.php', (ver_asset(env('THEME') . 'images/oil/t2_bg2.png')), '', '')>
 			</picture>
 		</div>
 

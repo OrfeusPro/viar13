@@ -1,5 +1,10 @@
 # 64. Центр управления задачами миграции
 
+> **АРХИВ с 2026-08-13.** Этот control center относится к отменённому
+> направлению с отдельным target. Актуальная основа — текущий репозиторий
+> `G:\OSPanel\home\viar13`; активный журнал — корневой
+> `MIGRATION_PROGRESS.md`. Записи ниже сохранены только как история/evidence.
+
 Этот файл — **единственная оперативная точка входа** для продолжения миграции в новой задаче Codex или Git-ветке. Полный нормализованный список из 131 исполняемой задачи находится в [65-migration-executable-task-catalog.md](65-migration-executable-task-catalog.md), проверка покрытия 124 технических источников — в [66-full-document-task-traceability-audit.md](66-full-document-task-traceability-audit.md), исходный технический backlog — в [15-task-checklist.md](15-task-checklist.md), а порядок Stage 0 — в [54-filament-stage0-execution-pack.md](54-filament-stage0-execution-pack.md).
 
 ```text

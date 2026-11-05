@@ -7,7 +7,6 @@ use URL;
 use Auth;
 use File;
 use Hash;
-use Mail;
 use Session;
 use Storage;
 use Eloquent;
@@ -17,6 +16,7 @@ use App\Models\OrderUserImages;
 use App\Models\OrderUserComments;
 use App\Models\OrderPainterImages;
 use App\Services\SynvolveWebhookService;
+use App\Services\BestEffortMailService;
 use Illuminate\Support\Facades\DB;
 use App\Mail\SendUserYourOrderGiven;
 use App\Repositories\BasketRepository;
@@ -132,9 +132,50 @@ class Orders extends Model
     ];
     private $basketRepository;
 
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
+        parent::__construct($attributes);
         $this->basketRepository = resolve(BasketRepository::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function painterAssignment()
+    {
+        return $this->hasOne(PainterOrder::class, 'order_id');
+    }
+
+    public function printingAssignment()
+    {
+        return $this->hasOne(PrintingOrder::class, 'order_id');
+    }
+
+    public function vrNumber()
+    {
+        return $this->hasOne(VrNumber::class, 'order_id');
+    }
+
+    public function adminChats()
+    {
+        return $this->hasMany(AdminChats::class, 'orders_id');
+    }
+
+    public function saMessages()
+    {
+        return $this->hasMany(SaMessage::class, 'orders_id');
+    }
+
+    public function saConversations()
+    {
+        return $this->hasMany(SaConversation::class, 'orders_id');
     }
 
     // This function is used to get a delivery data form orders table
@@ -148,6 +189,19 @@ class Orders extends Model
         {
             return json_decode($delivery, true)[$data];
         }
+    }
+
+    /** The order recipient can have a different phone from the current account. */
+    public static function getShippingRecipientPhone(array $delivery, $user = null): string
+    {
+        foreach (['phone', 'payer_phone'] as $field) {
+            $phone = trim((string) ($delivery[$field] ?? ''));
+            if ($phone !== '') {
+                return $phone;
+            }
+        }
+
+        return is_object($user) ? trim((string) ($user->phone ?? '')) : '';
     }
 
     // This function is used to add bonus to a user
@@ -248,6 +302,11 @@ class Orders extends Model
         return $this->hasMany(OrderUserComments::class, "order_id");
     }
 
+    public function order_painter_comments()
+    {
+        return $this->hasMany(OrderPainterComment::class, 'order_id');
+    }
+
     public function order_payment_requests()
     {
         return $this->hasMany(OrderPaymentRequest::class, 'order_id');
@@ -327,6 +386,27 @@ class Orders extends Model
 
 
     public function saveOrder($basket, $checkoutParams)
+    {
+        $notifications = [];
+        if ((int) ($basket['coupon_id'] ?? 0) > 0) {
+            $result = DB::transaction(function () use ($basket, $checkoutParams, &$notifications) {
+                return $this->saveOrderWithConfirmedCoupon($basket, $checkoutParams, $notifications);
+            });
+        } else {
+            $result = $this->saveOrderWithConfirmedCoupon($basket, $checkoutParams, $notifications);
+        }
+        foreach ($notifications as $notification) {
+            try { $notification(); } catch (\Throwable $exception) {
+                \Log::error('Order post-persistence action failed', [
+                    'order_id' => is_numeric($result) ? (int) $result : null,
+                    'exception' => get_class($exception),
+                ]);
+            }
+        }
+        return $result;
+    }
+
+    private function saveOrderWithConfirmedCoupon($basket, $checkoutParams, array &$notifications)
     {
 
         if(isset($checkoutParams['phone']))
@@ -417,9 +497,9 @@ class Orders extends Model
                 $checkoutParams['phone'] = str_replace("-","", $checkoutParams['phone']);
             }
 
-            $checkoutParams->validate([
+            Validator::make($checkoutParams, [
                 'phone' => 'required|min:7|regex:/^\+?[0-9\s()-]+$/'
-            ]);
+            ])->validate();
 
             $user = new User();
             $user->password = $pass;
@@ -443,10 +523,21 @@ class Orders extends Model
 
             Auth::login($user);
 
-            $sended = Mail::to($user->email)->send(new SendUserRegister($user, $random_pass));
+            $notifications[] = function () use ($user, $random_pass) {
+            app(BestEffortMailService::class)->send(
+                $user->email,
+                new SendUserRegister($user, $random_pass),
+                'checkout_user_registration',
+                ['user_id' => $user->id]
+            );
+            };
 
             $user_email = $checkoutParams['email'];
 
+        }
+
+        if ((int) ($basket['coupon_id'] ?? 0) > 0) {
+            $basket = app(\App\Services\CheckoutCouponService::class)->confirm($basket, $user);
         }
 
         // картинка в заказе
@@ -635,6 +726,8 @@ class Orders extends Model
 
         $z = 0;
         foreach ($basket as $okey => $itm) {
+            // For coupon orders leave source files intact until the transaction commits.
+            if ((int) ($basket['coupon_id'] ?? 0) > 0) { continue; }
             if (isset($basket[$okey]['savedImage'])) {
                 $z++;
                 $basket[$okey]['savedImage'] = $this->renameAndRemoveImage($basket[$okey]['savedImage'], $z);
@@ -698,10 +791,20 @@ class Orders extends Model
             'use_bonus' => $use_bonus
         ]);
 
-        self::renameUploadsPhoto($order_id);
-
-        Mail::to($user_email)->send(new SendUserYourOrderGiven($basket, $user, $order_id, $user->preferredLocale()));
-        app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order_id, 'site_order_created');
+        $notifications[] = function () use ($order_id) {
+            self::renameUploadsPhoto($order_id);
+        };
+        $notifications[] = function () use ($user_email, $basket, $user, $order_id) {
+            app(BestEffortMailService::class)->send(
+                $user_email,
+                new SendUserYourOrderGiven($basket, $user, $order_id, $user->preferredLocale()),
+                'checkout_order_confirmation',
+                ['order_id' => $order_id, 'user_id' => $user->id]
+            );
+        };
+        $notifications[] = function () use ($order_id) {
+            app(SynvolveWebhookService::class)->notifyOrderSnapshotById((int) $order_id, 'site_order_created');
+        };
 
         if (isset($basket['coupon_id']) && $basket['coupon_id'] >0) {
 
@@ -756,13 +859,13 @@ class Orders extends Model
                 'created_at' => now()
             ]);
 
-            if( $basket['coupon_type']!="friend" && $basket['coupon_type']!="universal"  && $basket['coupon_type']!="free_delivery") {
-                DB::table('coupons')->where('id', $basket['coupon_id'])->delete();
-            }
+            app(\App\Services\CheckoutCouponService::class)->consume($basket);
 
         }
 
         Session::forget('basket');
+        Session::forget('coupon_provisional');
+        Session::forget('coupon_error');
         Session::forget('is_coupon_def');
         Session::forget('sale_dated');
         Session::forget('phone_rec');
@@ -778,11 +881,7 @@ class Orders extends Model
         $user->is_coupon_dates = null;
         $user->save();
 
-        $orders = $this->getOrdersByUserId($user->id);
-
-        $orders = (array) $orders[0];
-
-        return $orders['id'];
+        return $order_id;
     }
 
     public static function renameUploadsPhoto($orderId)

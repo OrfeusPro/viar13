@@ -1,6 +1,433 @@
 # План реализации интеграции CRM <-> SA
 
+## ADM-AUD-13G — Итоговая матрица приёмки заказов, 2026-10-29
+
+**DONE для актуализации матрицы; ADM-AUD-13 остаётся IN PROGRESS.**
+Актуальная очередь находится в `docs/admin_orders_parity_2026-10-16.md`,
+раздел «Очередь оставшихся проверок, актуализация 29 октября».
+Эта сводка заменяет прежние указания «следующий шаг» в исторических записях.
+
+Подтверждено на 28–29 октября:
+
+- ADM-AUD-13A — список: восемь колонок, 11 товарных веток и пять SVG,
+  данные и превью на desktop/mobile; цены скрыты у printing.
+- ADM-AUD-13B — фильтры/вкладки: непустые ветки, сортировка, сброс,
+  граничные даты, пять совместных фильтров; роли проверены по указанной матрице.
+- ADM-AUD-13C/D — редактирование и создание: PNG/JPEG reject→recovery→save,
+  настоящий OS drop JPEG в attach; вручную создан заказ109 с10товарами/10фото.
+  Заказ108 с60фото создан сервисом, не выдаётся за60ручных загрузок.
+- ADM-AUD-13E — документы: browser generate/download обычного и длинного
+  счёта60позиций, три подарочных сертификата50/50/25; SHA скачанных файлов совпал.
+- ADM-AUD-13F — чаты и исполнители: четыре окна×две роли desktop/mobile,
+  назначение/замена/снятие обоих исполнителей, пять статусов и даты истории.
+- ADM-AUD-13G — права/дизайн: printing/lite_manager список и полная карточка,
+  разрешения открытых действий, карточка клиента35BREADполей+язык,
+  email/review/Venipak open/cancel, исправлен mobile SA/footer overlap.
+
+Конкретные остатки: быстрое переключение чатов; полный save загрузок на Apache
+и сравнение превью спорных форматов с оригиналом; системная вставка платёжной
+ссылки; успешный Venipak browser flow с fake перевозчика; финальная доступность
+media/правых колонок/полей фирмы/картинок подарочного письма; заключительный
+regression после необходимых исправлений. Полное декартово произведение всех
+данных/ролей не вводится как новая бесконечная задача.
+
+**ADM-AUD-13F — Быстрое переключение окон чатов: DONE 29 октября.**
+Исправлен перехват клика закрывающимся overlay, проверены16переходов по двум
+ролям/ширинам; подробности в результате ниже. Следующая задача:
+**ADM-AUD-13C/D — Загрузки в целевом серверном окружении.**
+
+По решению пользователя улучшения удобства создания товаров **DEFERRED**:
+текущую форму оставляем. Outlook/Gmail и реальные вызовы перевозчика не входят
+в эту локальную проверку и не добавляются как обязательное новое требование.
+Нет изменений runtime/API/БД/SA-контрактов; lead_id остаётся orders.id.
+
 Документ ведется как рабочий: решения, этапы, вопросы, статус.
+
+## ADM-AUD-13B/E/G — Итоги вкладок и mobile, 2026-10-28
+
+- Source/browser подтверждён scope суммы страницы express/printing/sent_today,
+  перенесён в heading; count всей выборки. Actual browser page1 77/839,
+  page2 77/764.56 совпали с original. Данные/API/lead_id/SA mappings не менялись.
+- Mobile390:таблица в своём scroll-container; payment modal18451 пустая сумма,
+  Cancel; фирма8полей раскрыта без Save. Viewport reset, временная вкладка закрыта.
+- Regression58/976 PASS, Pint/diff-check PASS;4PHPэкспортированы без.md/SHA256 OK.
+  Далее: остальные role/product/modal сценарии; весь ADM-AUD-13 IN PROGRESS.
+
+## ADM-AUD-13B/E — Парная сверка заказов и платёжной формы, 2026-10-28
+
+- Original/new browser selection совпала для текущих, production, unpaid, sent,
+  тестового клиента и телефона. Payment request initial state приведён к original:
+  amount/purpose пустые, сумма обязательна и вводится менеджером.
+- API, схема БД, lead_id/orders.id и SA mappings не менялись. В браузере окна
+  только открывались/отменялись; сохранения/отправки не выполнялись.
+- Далее: остальные role/product/mobile окна на изолированном стенде. Временный
+  viewport сброшен, Computer Use остановлен защитой определения URL.
+- Исправление initial state проверено53tests/812assertions PASS (isolated),
+  три PHP-файла экспортированы без .md с SHA256. Новый browser-render пока открыт.
+
+## ADM-FIL-010 — Значения новых позиций и переключение скидок
+
+- 2026-09-05: перенесено поведение оригинального Blade Laravel 6: defaults
+  новых позиций и взаимное обнуление скидок EUR/%. Используются уже существующие
+  коды оформления, новые источники данных/mappings не добавлялись.
+- Livewire тесты production fields: 2/16, exit 0; HTTP запрещён, mail fake.
+  API/БД/lead_id и механизм отправок не менялись, реальных клиентов не затрагивали.
+- Далее: доставка по стране, бонусы и приёмка формы; ADM-FIL-010 в работе.
+- Подшаг DONE: targeted 19/133, exit 0; full 420/2929, 6 skips, без failures,
+  exit 1 из-за прежних 11 discovery warnings. Pint/diff-check OK.
+
+## ADM-FIL-010 — Производственные имена исходников
+
+- 2026-09-05: новые исходники manager order получают итоговые имена через
+  `Orders::generateImageName`, сверенный с настоящим оригиналом Laravel 6.
+  Существующие remote URL не меняются и не скачиваются. Новых mappings нет.
+- Контракты API, БД и `orders.id`/`lead_id` не менялись; итоговые orig_images
+  остаются URL в каталоге orders. Targeted 17/117, exit 0; fake mail/storage,
+  HTTP запрещён, подтверждён rollback заказа/бонусов/нового файла.
+- Следующее действие: приёмка формы, без реальных отправок клиентам.
+- Подшаг новых загрузок DONE. Full PHPUnit 418/2913, 6 skips, без failures,
+  exit 1 из-за прежних 11 discovery warnings. Весь ADM-FIL-010 ещё IN PROGRESS.
+
+## ADM-FIL-010 — Соответствие копирования заказа бизнес-логике Voyager
+
+- Read-only сверка 2026-09-05 выполнена с настоящим оригиналом Laravel 6
+  `C:\OSPanel\domains\asoft\viar`: client-only prefill и fallback подтверждены.
+  Этот подшаг завершён, коммит `4abb352`. Full 417/2903, 6 skips, без failures,
+  exit 1 из-за 11 прежних discovery warnings; ADM-FIL-010 в целом ещё в работе.
+
+- 2026-09-05: client-only prefill вместо ранее предположенного полного клонирования.
+  Новый заказ не наследует paid state, использованные бонусы, скидки и позиции.
+  Телефон получателя и нового клиента использует подтверждённый legacy fallback.
+- API, БД и `orders.id`/`lead_id` не менялись; новых static mappings нет.
+  Targeted: 16/107, exit 0, HTTP запрещён и Mail fake. Реальных отправок нет.
+- Далее: итоговые production filenames и визуальная приёмка формы; ADM-FIL-010
+  остаётся IN PROGRESS. Ранние записи о полном copy-prefill считаются заменёнными.
+
+## ADM-FIL-010 — Безопасное сохранение исходников при создании заказа
+
+- 2026-09-05: устранена перезапись исходников разных позиций при совпадении
+  имён. Изменён только порядковый индекс файла; `orders.id`/`lead_id`, API,
+  схема БД и формат `orig_images` не менялись. Новых static mappings нет.
+- Isolated tests: 9 / 58 assertions; проверены rollback файлов/заказа/бонусов
+  и отказ для `.php`. HTTP запрещён, mail fake; внешние отправки не выполнялись.
+- Подзадача DONE. Full PHPUnit: 416 tests / 2892 assertions / 6 skips,
+  без failures, exit 1 из-за 11 warnings о старых классах без обнаруженных тестов;
+  восстановление test discovery вынесено в MIGRATION_PLAN.md.
+- Осталось: приёмка формы и сверка бизнес-семантики копирования с Voyager;
+  следующим шагом проверить предзаполнение оплаты/бонусов и production filename.
+
+## ADM-FIL-010 — Создание заказа менеджером и CRM snapshot
+
+- IN PROGRESS (2026-09-01): Filament создаёт manager order через отдельный
+  валидируемый транзакционный сервис; `orders.id`/`lead_id` контракт не менялся.
+- Legacy `admin_order_created` Synvolve snapshot сохранён, но вместе с двумя
+  email защищён opt-in `ADMIN_ORDER_CREATION_NOTIFICATIONS_ENABLED=false`.
+  При выключенном флаге ни HTTP, ни mail не вызываются.
+- Browser UAT создал только временную копию №18452 из тестового №18451. Voyager
+  прочитал order/items/delivery без адаптеров; затем №18452 удалён и DB counter
+  восстановлен. SA conversations/messages/bot state №18451 не изменялись.
+- Следующее CRM/SA-действие: после общей приёмки формы отдельно включать webhook
+  только в fake/mock test; production вызов до согласованного UAT запрещён.
+- Regression: targeted 25/127, full 402/2860 с 6 baseline skips. Browser UAT
+  подтвердил suppression notification; реального CRM/SA HTTP не было.
+
+## ADM-FIL-003 — Колонка «Заказ»: статусы, сроки и действия
+
+- DONE (2026-09-01): lifecycle/status/delivery/delete перенесены из Voyager в
+  защищённые Filament actions. CRM/SA endpoints, `lead_id`, conversation/bot
+  state, schema и message streams не менялись.
+- Legacy email на статусах `sended`/`send_lubanas` сохранён, но до отдельной UAT
+  включается только `ADMIN_ORDER_STATUS_NOTIFICATIONS_ENABLED=true`; текущий
+  runtime false. Статусный browser-test №18451 не вызывал внешних операций.
+- После UAT №18451 восстановлен: `status=pegging`, status timestamps null,
+  `delivery.when_send=2026-08-12`. Delete не запускался; SA row не менялся.
+- Изменение статуса пока не добавляет новый CRM webhook: legacy `changeOrder`
+  отправлял только два email. Следующее — финальная приёмка ADM-FIL-003;
+  CRM-SA API остаётся без изменений. Full suite: 392/2807, 6 baseline skips.
+
+## ADM-FIL-003 — Колонка «Художник»: данные, назначения и действия
+
+- DONE (2026-09-01): legacy artist/printing assignments, deadline, paid flag,
+  artwork visibility/previews/statuses перенесены в защищённый Filament action.
+- CRM/SA API, `lead_id`, conversation/bot state и schema не менялись. Email при
+  назначении/показе сохранён, но UAT закрыт opt-in флагом; две реальные операции
+  №18451 попали только в suppression log, Mail/HTTP/WhatsApp не вызывались.
+- После парного Filament/Voyager UAT точный baseline №18451 восстановлен:
+  assignments/images `0/0/0`, deadline/paid null, show=1. Full suite 387/2769,
+  6 прежних skips. Далее — колонка «Заказ»; CRM-SA изменений нет.
+
+## ADM-FIL-003 — Колонка «Комментарии»: финальная визуальная приёмка
+
+- DONE (2026-09-01): обычная ячейка и client modal №18451 сверены в открытых
+  Voyager/Filament после reload. Полные previews, четыре действия и `(2)`
+  совпадают; Filament не обрезает поток.
+- Существующие client rows `3992`/`3993` (`test`/`test2`) использованы только для
+  read-only проверки и сохранены. External send, read mutation и bot commands не
+  выполнялись; production SA row также не менялся.
+- Filament modal дополнительно показывает delivery/read state; это безопасное
+  расширение над Voyager, API/schema/lead_id и bot mode не изменяет.
+- Page screenshot evidence сохранён в ignored storage; modal screenshot capture
+  получил timeout, live DOM/accessibility подтвердили автора, даты, две строки и
+  composer. Колонка принята; далее проверяется «Художник».
+
+## ADM-FIL-003 — Чаты: browser-UAT заполненных веток на №18451
+
+- DONE (2026-09-01): заполненные Voyager/Filament чаты сравнены на общей БД и
+  только №18451. Временные 29 client + 4 painter + 2 internal + 2 image records
+  удалены по точным ID; marker отсутствует, baseline/hash полностью восстановлены.
+- Внешние отправки не вызывались. Существующий SA-диалог проверен read-only:
+  Filament показывает реальный conversation mode `PAUSED`; legacy берёт пустой
+  `orders.sa_bot_mode` и показывает `N/A`. Send/bot commands не запускались.
+- Explicit client read затронул только временную строку `3963`; после cleanup она
+  удалена вместе с остальными UAT fixtures. Production SA message сохранён.
+- UI parity fix: колонка Filament показывает полные client/painter/internal
+  preview streams вместо последних трёх. Targeted chat tests 113/999; общий suite
+  381 passed / 2738 assertions / 6 existing skips, без failed tests.
+- Дальше: пользовательская визуальная приёмка колонки после reload; API, auth,
+  lead_id, bot control и SA schema этим подэтапом не менялись.
+
+## ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения
+
+- DONE (2026-09-01): POST `/api/sa/webhooks/messages` атомарно сохраняет receipt,
+  conversation/order fields, sa_message, client mirror и status. Receipt `processed`
+  ставится после persist; rollback оставляет событие доступным для retry.
+- Dedupe: event_id и scoped idempotency_key; 200 duplicate для обоих, legacy receipt
+  совместим. Ошибка persist: 503, `PERSISTENCE_ERROR`, единый JSON error envelope.
+- Lock order order → conversation общий с Filament commands; manager read ждёт
+  ingress и валидирует snapshot после commit. MariaDB two-process: 1/11, stale
+  подтверждён, unread не потерян; временная БД удалена.
+- Вложения скачиваются до lock, attempt paths уникальны; rollback/duplicate cleanup
+  удаляет только новый файл. Ошибка удаления логируется без секретов.
+- SQLite atomicity: 9/132; targeted SA 42/408; regression 236 passed / 1564
+  assertions / 1 legacy skip (237 total). Http/Mail fake, рабочая БД не менялась.
+- API request/success/duplicate, X-Api-Key, lead_id, schema и mappings неизменны.
+- Далее: ADM-FIL-003 — browser-UAT заполненных веток на тестовом №18451;
+  общая функциональная приёмка чатов ещё IN PROGRESS.
+
+## ADM-FIL-003 — Чаты: приёмка прочтения и авторов
+
+- DONE автоматизированный подэтап (2026-08-31), не полная приёмка. End-to-end SA
+  ingress/stale read/fresh read/duplicate на SQLite, заполненные client image/general
+  ветки, 120 сообщений, закрытые статусы, авторы и PDF/PSD: 13 новых cases.
+- Regression: 227 passed / 1432 assertions / 1 прежний skip (228 total).
+  Targeted: 60 tests / 644 assertions. Внешние операции fake/mock, общая БД не использовалась.
+- Проверяется существующий POST /api/sa/webhooks/messages, X-Api-Key, success/duplicate
+  200; stale snapshot не снимает unread, fresh read не меняет клиентский mirror или
+  статус доставки. API/schema/lead_id и статические mappings не менялись.
+- Риск по коду: `persistMessagePayload` обновляет conversation до sa_messages без
+  общей транзакции; `isDuplicateEvent` сохраняет receipt/processed_at до persist.
+  Возможны lost-unread при конкурентном read и unrecoverable duplicate после ошибки.
+  Последовательные tests не являются проверкой конкурентных MySQL блокировок.
+- Далее: **ADM-FIL-003 — SA: атомарность входящих сообщений и прочтения**: единая
+  транзакция receipt/state/message/mirror, downloads вне lock, rollback/retry и
+  отдельный MySQL concurrency test. Populated browser/mobile ещё не приняты.
+
+## ADM-FIL-003 — Чаты: внешний вид и поведение попапов
+
+- DONE UI-подблок (2026-08-31), не полная parity: Voyager-like shell и layout
+  для четырёх Orders chats; SA toolbar сверху, поле ответа снизу; commands log
+  в details. Существующий защищённый service flow сохраняется.
+- API, lead_id, schema, mode-after-send и статические mappings не меняются.
+- Client/painter read по клику/клавиатуре требует прежних permissions; внутренний
+  автор показывает имя+email. XSS escaping и UAT guards сохранены.
+- Проверки: 214 passed / 1100 assertions / 1 legacy skip (215 total). Парные
+  Chrome screenshots всех окон: `storage/app/chat-popup-20260831` (вне git).
+  №18451: draft SA пережил polling, затем очищен; пустой painter send отклонён.
+  Hash/counts и два SA events прежние, внешние отправки отключены. Реальные
+  send/read/bot не вызывались. Фактическая доставка этим этапом не принимается.
+- Далее — ADM-FIL-003 — Чаты: приёмка прочтения и авторов; ingress/read race,
+  populated image threads, длинная история/mobile и финальная parity ещё открыты.
+
+## ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки
+
+- DONE реализация (2026-08-31): отдельное обновление открытой истории SA каждые
+  5 секунд, новые сообщения/статусы/unread/bot mode без автоматического read/send.
+- lead_id = orders.id, X-Api-Key, API/schema, статические mappings неизменны.
+- Isolate/Locked context + повторная panel/view authorization; acknowledge
+  требует edit и прежний snapshot, уведомляет родительскую таблицу о read.
+  Draft дочернего composer сохраняется. Mode-after-send не менялся.
+- 17 новых cases; regression 213 passed / 1081 assertions / 1 legacy skip.
+  Chrome №18451: несколько тиков таймера с неизменным draft, очистка без send;
+  order hash/counts и 2 SA events прежние, флаги отправок false.
+- HTTP(S) client linkify безопасен для HTML/атрибутов; публичный frontend,
+  данные и пути вложений не менялись. Внешняя доставка этим шагом не принималась.
+- Далее: ADM-FIL-003 — Чаты: приёмка прочтения и авторов. Ingress/read race,
+  populated browser, длинная история/нагрузка и internal read-only права открыты.
+
+## ADM-FIL-003 — Чаты: ответ рядом с историей и доступные команды SA
+
+- DONE UI-подблок (2026-08-31): inline Livewire composer для client/painter/SA, видимые команды
+  бота с подтверждением. Текущие сервисы отправки и UAT-защита неизменны.
+- Без новых API/schema; lead_id = orders.id. SA без Handoff сохраняет режим
+  как до этого UI-подблока; согласование legacy active остаётся открытым.
+- Проверено: 8 новых Livewire-тестов; общий admin/invoice/chat API набор
+  196 passed / 939 assertions / 1 legacy skip. Browser №18451: inline формы,
+  пустая отправка отклонена, режим PAUSED и старый UAT текст рядом с ответом.
+  Новых сообщений/SA events, внешних запросов и изменений order row нет.
+- Locked context + прежний авторизующий сервис; после успешного UAT/accepted
+  форма очищается, после неопределённого результата draft сохранён и повтор
+  блокируется. Bot-команда не стирает draft. Другие composer имеют stable keys.
+- Статические mappings, X-Api-Key, API response/error contracts, schema и
+  lead_id = orders.id не менялись. Архивные hidden modal actions пока сохранены.
+- Далее — ADM-FIL-003 — Чаты: автообновление SA и кликабельные ссылки;
+  populated browser-проверка обновления истории/draft, callbacks и read-race.
+
+## ADM-FIL-003 — Сравнение всех чатов с оригиналом (2026-08-31)
+
+- DONE browser audit, НЕ DONE функциональная parity. Только заказ 18451,
+  четыре order chats, open/form/cancel; никаких отправок/read/bot mutations.
+  Матрица и локальные снимки: `docs/crm-sa/10_orders_chat_browser_comparison.md`.
+- Выявлены дополнительные формы вместо inline ответа (client/painter/SA),
+  пустой обязательный выбор изображения, отсутствие SA polling и client linkify,
+  отличия авторов внутреннего чата. Последние три подтверждены кодом,
+  не сквозным populated browser test на пустом тестовом заказе.
+- SA режим Voyager N/A из order mirror против Filament PAUSED из UAT conversation;
+  это подтверждённое отличие источника, не повреждение данных. Без Handoff
+  legacy send задаёт active, новый сохраняет режим: требуется явное согласование.
+- Counts и order hash до/после прежние; нет новых SA events. Код/API/schema,
+  X-Api-Key, статические mappings и данные не менялись. Permissions для всех
+  ролей, вложения, callback и одновременный ingress/read этим аудитом не приняты.
+- Следующее действие — ADM-FIL-003 — Чаты: ответ рядом с историей и доступные
+  команды SA; затем live refresh/read и безопасные populated fixtures.
+
+## ADM-FIL-003 — WhatsApp/SA: отправка и управление ботом (2026-08-31)
+
+- Реализованы Filament reply, pause/resume/handoff и handoff после ответа.
+  Мутации требуют `edit_orders`, защищённый токен содержит автора, order_id,
+  conversation row/id, телефон, исходный режим, UUID и срок действия.
+  Несовпадение владельца возвращает 403; устаревшая форма/невалидные поля —
+  validation error без частичных записей. Новых HTTP API нет; X-Api-Key
+  существующих входящих API не менялся, panel actions используют auth/CSRF.
+- `sa_events` — журнал команды и idempotency: scoped dedupe_key + event_id,
+  fingerprint action/text/handoff. Повтор возвращает сохранённый статус без
+  повторного внешнего вызова, изменённый payload с тем же токеном отклоняется.
+  Новых таблиц/миграций нет. Незавершённый dispatching блокирует следующую
+  команду диалога до выяснения результата; automatic retry отсутствует.
+- Внешний transport сохраняет Synvolve payload manager_message / bot_status_changed,
+  но берёт телефон из выбранного связанного WhatsApp-диалога (не из доставки).
+  Контекст: order_id/lead_id, conversation_id, manager_id, event_id, message_id,
+  idempotency_key; добавлен HTTP Idempotency-Key. Только HTTPS с проверкой TLS.
+  Логи содержат ID/HTTP status/type ошибки без текста, телефона, токенов и URL.
+- Статусы новых сообщений: pending → queued при 2xx или delivery_unknown при
+  неподтверждённом результате. 2xx — приём интеграцией, не доставка WhatsApp.
+  Уже полученные callback statuses не понижаются. Принятый текст зеркалируется
+  в order_user_comments один раз с legacy read flags. Bot mode меняется после
+  принятой команды в conversation и основном order mirror, не затирая
+  конкурирующую смену состояния. Ошибка Handoff после принятого текста — partial.
+- UAT: `ADMIN_SA_COMMANDS_ENABLED=false` по умолчанию. Статус uat_suppressed,
+  без transport, client mirror и смены bot mode. Дополнительно prefix
+  `ADM-FIL-UAT-` жёстко блокирует dispatch даже при включённом флаге.
+- Проверки: 20 новых SQLite/Livewire/HTTP-fake тестов / 161 assertions;
+  admin/invoice/API regression — 188 passed / 870 assertions / 1 прежний skip.
+  Истёкшая форма показывает видимое предупреждение без записей/dispatch.
+  Targeted Pint и Blade view:cache прошли.
+- Browser UAT завершён только на указанном пользователем заказе 18451,
+  в новом тестовом диалоге ADM-FIL-UAT-18451 (row 39), не на реальных диалогах:
+  ответ с Handoff (message 140/event 147) и Resume (event 148) uat_suppressed.
+  История и журнал обновляются; bot mode остаётся paused, unread 0,
+  client-chat count 0, hash order row не изменился. Тестовые записи оставлены.
+  Runtime external flag false; никаких WhatsApp/webhook/email отправок.
+- Открыто до production enable: подтвердить сквозной delivery callback и
+  идемпотентность на стороне Synvolve; сверка uncertain/dispatching вручную.
+  Ранее найденная неатомарность legacy ingress/read остаётся отдельным TODO
+  до итоговой приёмки. Статические mappings и публичный frontend не менялись.
+  Следующая задача: ADM-FIL-003 — Приёмка чатов и синхронизация прочтения.
+
+## ADM-FIL-003 — WhatsApp/SA-чат: история и прочтение (2026-08-31)
+
+- Реализовано (полный browser UAT остаётся IN PROGRESS): Filament история по диалогам, sender
+  client/bot/system/manager, даты и delivery status. Режим бота берётся из
+  `sa_conversations.bot_mode`, не из потенциально устаревшего order mirror.
+- Прочтение менеджером меняет только `sa_conversations.unread_for_manager`:
+  `edit_orders`, транзакция, проверка orders_id и защищённого snapshot истории.
+  Уже появившиеся после открытия сообщения отклоняют stale read. Статусы
+  WhatsApp и зеркальный `order_user_comments` не меняются. Новых API нет.
+- Отображаются `attachments_json.local_path` (реальный API) и legacy `path`.
+  Ссылки старых файлов идут на production без скачивания; входящий API-контракт
+  локального хранения не меняется. Rejected/source_url не превращаются в ссылки.
+- Восстановлены 19 API-тестов PHPUnit 12: SQLite schema из существующих SA
+  миграций + минимальный orders/users/client-chat fixture; mail/webhook fake/mock,
+  cache/limiter array. Проверены API-key, validation, duplicate и read semantics.
+- 16 новых service/Livewire/media тестов. Совместный admin/invoice/API regression:
+  168 passed / 709 assertions / 1 прежний skipped. Реальных отправок не было.
+- Далее: исходящий ответ, pause/resume/handoff. Сохранённые legacy риски:
+  sent выставляется до подтверждения доставки; фиктивные адресаты CONV-*/+0000000;
+  изменение bot mode в conversation может расходиться с order mirror.
+  Входящий legacy webhook обновляет conversation и message неатомарно: строгую
+  гарантию против одновременного ingress/read нужно закрыть в следующем
+  интеграционном подблоке. API/статические mappings/lead_id пока не менялись.
+- Browser data blocker: 38 conversations / 139 messages, JOIN по orders_id с
+  существующими orders возвращает 0. Реальные связи не менялись; пустая история
+  проверяется на 18380, populated history/read — в Livewire fixtures. Для полной
+  browser приёмки нужен согласованный связанный тестовый диалог или snapshot.
+
+## ADM-FIL-003 — Чат с художником: история, ответы и прочтение (2026-08-31)
+
+- Общий ответ в `orders_chats` перенесён в Filament через транзакционный сервис;
+  `lead_id = orders.id`, таблицы и входящие API не изменены. Мутации требуют
+  `edit_orders`, чтение истории — `read_orders`.
+- После сохранения используется существующий `notifyManagerMessageForOrder`:
+  source `orders_chats`, trigger `filament_admin_orders_chat`, message_id,
+  image_type null. Сохранён legacy-маршрут webhook по заказу, без изменения
+  выбора телефона внутри сервиса. Email адресуется текущему назначенному
+  художнику, а не клиенту. Оба канала выключены по умолчанию через
+  `ADMIN_PAINTER_CHAT_NOTIFICATIONS_ENABLED=false`.
+- 15 SQLite/service/Livewire проверок, 88 assertions: mock внешних сервисов,
+  права, targeted/idempotent read, сохранение при ошибках mail/webhook,
+  перевод темы письма и актуальное назначение. Реальных сообщений не отправлено.
+- Статические mappings, SA bot control и API не менялись. В реальной таблице
+  нет image FK; исторические flags показываются, общие ответы не создают
+  вымышленных привязок. Публичный image-specific handler вынесен в отдельный
+  TODO-аудит. Далее — вернуть legacy SA API-тесты в PHPUnit 12 и сверить
+  действия SA-чата; до этого SA modal остаётся read-only.
+
+## ADM-FIL-003 — Список и фильтры заказов: production media (2026-08-31)
+
+- По подтверждённому правилу пользователя legacy-файлы картин/эскизов в админке
+  читаются с `viarcanvas.com`. В клиентском чате URL/preview восстановлены без
+  локального зеркала, DB writes или server-side downloads. Browser UAT №18380
+  подтвердил загрузку трёх изображений. Admin/invoice: 92 tests / 334 assertions /
+  1 skip; отдельные media-тесты проверяют отсутствие PHP HTTP-запросов.
+- Это правило legacy order artwork не меняет отдельный API-контракт входящих
+  CRM/SA вложений и их локального хранения. API, mappings и lead_id не менялись;
+  внешние отправки остаются выключены. Далее — painter chat в ADM-FIL-003.
+
+## ADM-FIL-003 — Список и фильтры заказов: поиск и данные клиента (2026-08-31)
+
+- Восстановлен поиск по ID в видимой колонке; источник языка Voyager
+  `users.settings.locale` снова доступен через compatibility getter. Пустой
+  client_status отображается как первый option без записи default в БД.
+- Контракты CRM/SA, mappings, lead_id, таблицы и API не изменены. Внешние
+  уведомления по-прежнему отключены UAT-флагами. Изменение getter покрыто
+  проверками admin/invoice/auth/delay (93 tests / 424 assertions / 1 skip).
+- Путь изображений №7356–7358 проверен: локальных файлов нет в обеих копиях,
+  legacy chat использует viarcanvas.com. Следующий шаг остаётся в ADM-FIL-003:
+  восстановление media links, затем функции painter/SA без включения внешних
+  отправок на реальных заказах.
+
+## ADM-FIL-003 — Список и фильтры заказов: клиентский чат (2026-08-31)
+
+- Перенесены общий ответ и ответы по существующим изображениям в Filament.
+  Источник остаётся `order_user_comments`, `lead_id = orders.id`; схема БД,
+  публичные frontend routes и API-контракты не менялись.
+- После сохранения сообщения используется существующий
+  `SynvolveWebhookService::notifyManagerMessageForOrder` с `message_id` и
+  trigger `filament_admin_order_chat`. На период UAT email и webhook выключены
+  `ADMIN_CLIENT_CHAT_NOTIFICATIONS_ENABLED=false`; запись в реальный клиентский
+  чат для тестов не выполняется. Ошибка уведомления не теряет сохранённый текст.
+- Мутации требуют `edit_orders`; read state меняется явно и только в пределах
+  заказа. Проверено 22 SQLite/service/Livewire тестами (101 assertions), внешние
+  операции fake/mock. Новых интеграционных endpoint'ов нет.
+- Статические CRM/SA mappings не изменялись; SA modal пока read-only.
+  Дополнительный API regression run двух legacy-файлов
+  `CrmWebhooksSendMessageTest`/`SaWebhooksMessagesTest` вернул `No tests found`:
+  требуется заменить старые `@test` на PHPUnit 12 attributes до SA-подблока.
+  Следующий CRM-шаг: перенести SA send/read/bot-control с отдельной авторизацией
+  и изоляцией API; полный inbox остаётся задачей ADM-FIL-020.
+
+> Примечание от 2026-08-13: записи ниже о старом отдельном Laravel 13 target
+> сохранены как история. Актуальный план frontend-first миграции текущего
+> репозитория находится в корневом `MIGRATION_PROGRESS.md`.
 
 Источники ТЗ:
 - `ТЗ на дорвботку СРМ (рус).pdf`
@@ -9104,3 +9531,1560 @@ Extra checks:
 - Next exact action: repeat the existing-email checkout flow in the Telegram
   in-app browser and in mobile Chrome/Safari, confirming the card appears in
   view after pressing the delivery button.
+
+## 259. Update Log 2026-08-21 (Synvolve inactive workflow diagnosis)
+
+- Production checkout exposed an external delivery failure: both the configured
+  named `POST .../webhook/NewOrder` endpoint and the former UUID endpoint return
+  `404` with Synvolve's explicit workflow-not-registered/not-active response.
+  No speculative endpoint replacement was made.
+- An outbox/retry implementation was initially added outside the requested
+  scope, then fully removed. Its migration was rolled back and the temporary
+  table was deleted; the existing Synvolve payload and delivery flow remain
+  unchanged.
+- Still external: Synvolve must activate the production `NewOrder` workflow or
+  provide its current URL. Next exact action: repeat the existing application
+  call after activation and verify HTTP `2xx` in the application log.
+
+## 260. Update Log 2026-08-27 (Synvolve test-contract classification)
+
+- The final Laravel 13 regression initially reproduced five failures only in
+  `tests/Unit/SynvolveWebhookServiceTest.php`; no frontend/account regression
+  was involved.
+- The active manager-message-by-order test now owns its minimal SQLite
+  `users/orders` schema and passes, confirming that the saved order phone takes
+  precedence over a fallback payload phone.
+- Four tests describe conversation bot-status and lead-update methods that are
+  not present in the currently rolled-back `SynvolveWebhookService`. They are
+  conditionally skipped with explicit reasons instead of failing with
+  undefined-method errors. No missing integration behavior was invented or
+  restored during the frontend migration.
+- Full-suite evidence is `180 passed / 1226 assertions`, `5 skipped`,
+  `0 failed`. The fifth skip remains the intentionally disabled admin payment
+  request route until the Filament 5 stage.
+- Still external/static: production Synvolve workflow availability and the
+  rolled-back conversation/lead-update contracts. Next exact action remains a
+  separately approved CRM/SA stage, not a frontend release requirement.
+
+# IN PROGRESS — ADM-AUD-03: SA inbox (2026-10-08)
+- Перенести standalone список/карточку диалога, поиск, фильтры unread/unlinked/awaiting/recent, глобальный polling счётчика, историю и локальные вложения.
+- Использовать существующие sa_conversations/sa_messages/sa_events и права browse_orders/read_orders/edit_orders/add_orders; новых статических role IDs не вводить.
+- Привязка/создание заказа: транзакция, блокировка conversation, запрет конфликтующей связи, перенос сообщений/escalations/bot controls и клиентского mirror без дублей. Создание через существующий createLead business flow.
+- Ответы и bot controls: расширить существующий OrderSaCommandService для standalone, сохранив signed token/idempotency/UAT guard/transport. Read — явный snapshot, без изменения unread при открытии страницы.
+- Проверки на SQLite :memory: с fake HTTP/mail. В Chrome только просмотр; рабочие сообщения/заказы/read flags/картинки не менять. Следующее действие: сервисы, страницы и изолированные тесты.
+
+## ADM-AUD-03 — IN PROGRESS: сервисы и UI реализованы (2026-10-08)
+- Добавлены standalone Filament resource, список/карточка, polling 10s, фильтры, история, локальные вложения и глобальный badge. Просмотр не сбрасывает unread, snapshot read отклоняет устаревшую историю.
+- bind/create используют существующие таблицы и createLead business flow. История зеркалируется с dedupe sa_message_id, запрещён rebind/conflict; неподтверждённые и UAT исходящие не попадают в клиентский mirror. unread не сбрасывается привязкой.
+- OrderSaCommandService расширен nullable order для standalone без копирования transport. Signed token/expiry/conversation guard, idempotency, UAT и uncertain outcome сохранены. Standalone bot client_id берётся из conversation_id, адресат — телефон выбранного диалога.
+- 32 tests / 271 assertions PASS: новый inbox и прежние OrderSaCommandTest, SQLite :memory:, fake HTTP/mail. Рабочие данные не менялись. Следующее: отрицательные сценарии, регрессия и Chrome без сохранения/отправки.
+
+# 2026-10-08 — DONE: ADM-AUD-03, SA inbox
+- /filament/sa-conversations и /filament/sa-conversations/{record}: поиск клиента/телефона/диалога/заказа; фильтры unread/unlinked/awaiting_reply/recent/channel/bot_mode; карточка с историей, компактными локальными вложениями, явным snapshot read, bind/create order, reply/bot и журналом команд. История/таблица/badge обновляются каждые 10 секунд. Глобальный SA badge и выключенный по умолчанию звук включаются из верхней панели.
+- Auth: Filament session/CSRF и существующие browse_admin+browse_orders+read_orders; изменения требуют edit_orders, создание дополнительно add_orders. Права проверяются повторно на query/render/actions, токены проверяют выбранный conversation, автора, срок, phone/mode/order. Новых интеграционных API endpoints нет, X-Api-Key контракты не менялись.
+- DB: новых таблиц/колонок/миграций нет. Используются sa_conversations/sa_messages/sa_events/sa_bot_controls/sa_escalations/orders/order_user_comments. bind/create транзакционны, запрещают конфликтующую связь и не сбрасывают unread. История зеркалируется по sa_message_id без дублей и без UAT/неподтверждённых исходящих; createLead вызывается внутри сервиса, HTTP loopback не требуется. Повтор create возвращает уже связанный заказ.
+- Commands: общий OrderSaCommandService поддерживает standalone nullable order, прежние order actions сохранены; идентичный signed command возвращает duplicate без повторной отправки. UAT guard, pending/accepted/uncertain/partial/state_conflict, отсутствие автоматического resend и безопасные логи сохранены. Для standalone bot client_id=conversation_id, phone выбранного диалога; для заказа контракт прежний.
+- Проверки: 11 новых inbox tests; SaInbox+OrderSaChat+OrderSaCommand+BreadMenuNavigation 59 tests/513 assertions PASS. Общая BREAD/SEO/roles/navigation/SA регрессия 113 tests/1011 assertions PASS (PHP 8.3.30, CLI memory_limit=512M). Дополнительная проверка отзыва прав на открытой странице — 1 test/8 assertions PASS. PHP lint, view:cache, diff-check PASS. SQLite :memory:, fake HTTP/mail; никакой реальной отправки.
+- Первый совмещённый прогон с лимитом CLI 128M: 111 passed/2 crop tests failed из-за штатной memory guard при 120M накопленного расхода. С CLI 512M все 113 PASS; приложение и лимиты web runtime не менялись.
+- Chrome: 39 диалогов/38 unread; карточка standalone №35 и bind modal без сохранения, unread остаётся 38. Карточка существующего UAT №39; мобильная ширина 390 px, устранено наложение badge на avatar, overflow нет, desktop viewport восстановлен. Evidence: storage/app/testing/sa-inbox-after-2026-10-08.png и sa-inbox-mobile-2026-10-08.png.
+- Рабочие сообщения/заказы/read flags/изображения не изменялись. Реальная отправка в окружении выключена admin_migration.sa_commands_enabled=false; config/.env не менялись. Live bind/create/send/bot, реальный звук и provider callbacks требуют отдельной UAT при разрешённой отправке. Не обнаруживаемые PHPUnit12 старые API annotation tests вынесены в MIG-TEST-SA-LEGACY; не считаются выполненными.
+- Следующее точное действие: ADM-AUD-04 — массовая Email Рассылка; ADM-AUD-05..12 и MIG-TEST-SA-LEGACY остаются открыты.
+
+## 2026-10-08 — ADM-DES-02: оформление SA inbox
+- Список согласован с BREAD: объединённые колонки, видимые фильтры, выделение unread и закреплённые действия. В карточке компактные сообщения слева/справа, постоянный composer и inline bot controls.
+- Новые UI методы sendReply/newReply/controlBot используют прежний OrderSaCommandService; signed token/CSRF/права/idempotency/UAT сохраняются. Locked replyToken не обновляется polling; uncertain/partial сохраняют токен/черновик, чтобы повтор не отправил сообщение ещё раз. Подтверждённый ответ очищает форму, явная новая форма сбрасывает черновик.
+- API/auth X-Api-Key/схема БД не менялись, новых endpoints и миграций нет. Статическим остаётся только прежняя конфигурация транспорта/отключение live отправки; новые роли/модели не захардкожены.
+- Проверки: регрессия 92 tests/821 assertions, итоговый inbox 15 tests/127 assertions PASS (SQLite :memory:, fake HTTP/mail); PHP lint/Blade cache/diff-check PASS. Chrome desktop/mobile390 без отправки, read38 сохранён, overflow нет, viewport восстановлен.
+- Следующее точное действие SA: согласованный UAT реальной отправки и callback в тестовом контуре. admin_migration.sa_commands_enabled=false не менялся. Следующая задача админки ADM-AUD-04.
+
+# DONE — ADM-AUD-03: повторный аудит кода SA inbox (2026-10-08)
+- Матрица сверки legacy/new: docs/sa_inbox_functionality_audit_2026-10-08.md. Проверены список/фильтры/карточка/создание и bind заказа/отправка/bot/read/attachments/права/idempotency.
+- Исправлены статус заказа, original_name и fallback имени вложения, локальные public-disk URL для сохранённых новых файлов, обновление активности accepted send без перезаписи более позднего callback, snapshot read именно показанной истории. Modal Reply/Bot скрыты на non-WhatsApp.
+- 6 новых regression tests. Inbox + общие command/chat: 67 tests / 587 assertions PASS, SQLite :memory:, HTTP/mail/storage fakes. PHP lint, view:cache, diff-check PASS. Рабочие данные и live отправка не менялись.
+- Осталось внешнее SA UAT send/callback/delivery/bot и проверка MySQL concurrency/production transport; MIG-TEST-SA-LEGACY и ADM-AUD-11 simulator остаются открыты. Следующая задача админки ADM-AUD-04 — массовая Email Рассылка.
+# Обновление ADM-AUD-03: глобальная кнопка SA (2026-10-08)
+
+- Реализовано: заметная оранжевая SA-диалоги во всех страницах Filament при наличии прав; вертикальный drag mouse/touch Pointer Events, сохранение позиции, ограничение границами viewport и блокировка клика после drag. Poll 10s, toast при росте unread count, сохраняемая настройка звука.
+- Счётчик берётся из реальных sa_conversations.unread_for_manager; статических новых данных нет. Схема БД, API/auth/idempotency и transport не менялись.
+- Chrome подтвердил drag/reload/межстраничное сохранение, переход в inbox и сохранение настройки звука; мобильная ширина 375 px без выхода кнопки за окно. Badge/revocation: 2 tests / 16 assertions PASS; view:cache PASS. Реальные записи и read flags не изменялись.
+- Следующее точное действие: UAT с согласованным тестовым входящим для toast/beep и touch на физическом устройстве; production send/callback/transport и MySQL concurrency остаются открытыми.
+## DONE — ADM-AUD-03: исправление свободного drag SA (2026-10-08)
+- Исправлена причина прерывания drag: нативное перетаскивание ссылки браузером. Добавлены draggable=false и dragstart.prevent. Убран повторный pointer capture/lostpointercapture; движение и завершение отслеживаются на window.
+- Предыдущая проверка движения на 17 px была недостаточной: она подтверждала начало движения, но не свободное перетаскивание.
+- Chrome после исправления: полный drag вверх 425 → 128 px (−297), вниз 128 → 300 px (+172), reload сохраняет 300 px, URL roles не меняется. Blade view:cache PASS. Screenshot storage/app/testing/sa-floating-drag-fixed-2026-10-08.png.
+- БД/API/transport не менялись, новых статических данных нет. Осталось ранее отмеченное UAT реального входящего toast/beep и физический touch.
+## ADM-AUD-03 — повторная проверка полноты SA (2026-10-08)
+Статус всей задачи: IN PROGRESS; исправления ниже DONE. Ранее DONE относилось к отдельным блокам, не полной приёмке SA.
+- Исправлены модальные Reply/Bot в inbox и чате заказа: при uncertain/partial/state_conflict/ошибке token форма остаётся открытой с прежним ключом и черновиком. Повтор не создаёт вторую внешнюю отправку. Добавлены 2 Livewire regression tests на uncertain retry обеих форм.
+- В карточку возвращены дата последнего сообщения (fallback из истории, если last_message_at пуст), номер заказа у сообщения, явный текст пустого сообщения и подтверждение bot control, как в оригинале.
+- Проверки: Inbox + OrderSaCommand + OrderSaChat 69 tests / 616 assertions PASS; PHP lint, Blade view:cache PASS. Chrome: UAT-card /sa-conversations/39, сведения и confirmation dialog проверены, подтверждение отменено. Screenshot storage/app/testing/sa-card-completeness-2026-10-08.png. Внешних отправок и изменений live сообщений/read flags нет.
+- Read-only текущая БД: 39 conversations / 140 messages; 1 связь с существующим заказом (UAT), 4 orders_id с отсутствующими orders. Это состояние локального снимка, а не основание для исправления production данных. Связи не менялись.
+- Runtime config sa_commands_enabled=false: настоящая отправка/bot отключены. Настройки не изменялись. SA Simulator не перенесён (ADM-AUD-11).
+- Старый TODO атомарного ingress устарел: SaMessageIngressService уже обеспечивает receipt и business writes в транзакции, контроллер блокирует order/conversation. Остаётся MySQL concurrency UAT; mock/SQLite не подтверждают production provider.
+- Осталось: (1) повторный read-only аудит связей после импорта базы прода; (2) согласованный тестовый live send/callback/delivery/bot и входящее с toast/beep; (3) touch на физическом телефоне; (4) отдельный перенос нужных сценариев SA Simulator. Следующий шаг — SA UAT на тестовом контакте с проверкой настройки и endpoint, до перехода к Email Рассылке.
+## DONE — ADM-AUD-11: перенос SA Simulator (2026-10-08)
+- Страница /filament/sa-simulator, меню и ссылки из списка/карточки SA. Все 34 legacy presets, editor, docs/cURL, response/validation details; defaults из существующего DB resolver. API key server-only, URL allowlist, повтор сохраняет idempotency keys, POST/PATCH с подтверждением.
+- Исполнение через существующие API handlers + VerifyIntegrationApiKey, без loopback HTTP. Права перепроверяются; Blog writes требуют отдельные разрешения. Текущий выключатель внешних SA-команд сохранён, ADM-FIL-UAT outgoing блокируются всегда.
+- SaSimulatorTest 6 tests / 38 assertions PASS. Совместный Simulator/Inbox/OrderSaCommand до дополнительного guard test 52 tests / 452 assertions PASS. Lint/view:cache PASS. Chrome GET catalog 200 и переключение presets/editor/docs, JS errors 0. Рабочие POST/PATCH не запускались.
+- Evidence/ограничения: docs/sa_simulator_migration_2026-10-08.md; storage/app/testing/sa-simulator-2026-10-08.png. Multipart Blog media остаётся cURL, как в оригинале. Схема БД/API контракты не менялись, новых статических mappings нет; legacy sample payloads/docs сохранены.
+- Следующее: согласованный SA live UAT на тестовом контакте (ingress/reply/callback/delivery/bot), звук/touch и связи после импорта production DB. ADM-AUD-03 целиком остаётся IN PROGRESS; реализация Simulator завершена.
+# 2026-10-08 — ADM-AUD-11: локальная проверка write presets (DONE)
+- Настоящие payloads всех 23 write presets выполнены в отдельной локальной MySQL со справочниками и синтетическими clients/orders/chats. Рабочая БД/картинки не менялись; HTTP/Synvolve/Mail/Queue/Storage fake. 23 PASS, 11 invalid requests HTTP 400/422 без изменения снимков бизнес-таблиц; pause/resume PASS. Тестовые схемы удалены.
+- Изменён POST /api/crm/webhooks/pipeline-changed: опциональный data.bot_control.mode реально сохраняется в orders.sa_bot_mode, sa_conversations.bot_mode и sa_bot_controls через существующий обработчик. Auth X-Api-Key, JSON request/response/ошибки и event_id/idempotency_key duplicate прежние; схема БД не менялась. Регрессия persistence + duplicate: PASS.
+- Simulator 7 tests / 47 assertions PASS; релевантный общий запуск 86 tests / 795 assertions, 1 legacy skipped (не создаёт SQLite fixture). Evidence и воспроизведение: docs/sa_simulator_local_write_audit_2026-10-08.md; storage/app/testing/sa-simulator-local/report.json.
+- Открыт ADM-SA-UPDATE-01: PATCH /api/sa/leads/{id} поля/теги/заметки отражаются в ответе и event payload, но не применяются в бизнес-данные. Что остаётся статическим: legacy sample payloads и прежние CRM example links, никаких новых mappings не добавлено. Следующий точный шаг: проверить реальные источники хранения и разрешённые field mappings, затем транзакционное применение с тестами persistence/duplicate/rollback. Общий SA IN PROGRESS; внешняя доставка и MySQL concurrency UAT не подтверждены этим запуском.
+# 2026-10-08 — ADM-SA-UPDATE-01: PATCH persistence (DONE)
+- PATCH /api/sa/leads/{id} реально сохраняет fields/tags/notes и stage. Auth X-Api-Key прежний; JSON и ISO-8601 UTC; 200 ok/duplicate, 400 validation, 404 unknown lead, 503 rollback/retry. Размер/тип/имена fields, tags и notes проверяются. Подробный контракт/источники: docs/sa_lead_update_persistence_2026-10-08.md.
+- БД: новые таблицы/колонки/миграции не нужны; metadata хранится в orders.delivery.sa_lead, контакты — в существующих delivery keys, notes append в orders.admin_comment. Телефон клиента синхронизируется с orders.sa_client_phone/связанным conversation. Users профиль остаётся общим и не перезаписывается; lookup отдаёт обновлённые значения конкретного заказа и metadata через delivery.raw.
+- Receipt sa_events + business writes атомарны, order lock, старый dedupe namespace совместим, failed writes не расходуют ключ. Ошибки/отклонения логируются без секретов/payload. Исторические неоднозначные receipts не сбрасываются автоматически.
+- Проверки: 18 API tests / 152 assertions PASS, с Simulator 25 / 199 PASS; общая регрессия до дополнительных cases 101 / 928, 1 legacy skipped. Local isolated MySQL: 23 presets, validation и новые write+duplicate+lookup/SQL rollback+retry PASS. Рабочие данные/картинки не менялись, внешних отправок нет.
+- Что осталось статическим: прежние sample payloads/example CRM links; новых catalog/status mappings нет. Следующий точный шаг: независимые SA live transport/callback/concurrency UAT, только после разрешения соответствующих внешних проверок. Общий SA IN PROGRESS, данный пробел закрыт.
+# 2026-10-08 — MIG-TEST-SA-LEGACY-01: проверки без реальных вызовов (DONE)
+- Восстановлены SaLeadsUpdateTest (10) / SaEscalationsCreateTest (8): Test attributes для PHPUnit 12 и CreatesSaChatSchema в SQLite :memory:. Проверяется запись delivery/email/city/budget/tags/notes и прежние API success/validation/duplicate/auth.
+- SaConversationBotControlTest больше не skipped и не зависит от реальной схемы: 4 сценария действующего OrderSaCommandService для conversation без order, fake HTTP, повтор без второй отправки и suppressed transport. Старый тест ссылался на legacy controller и ожидал notification, которой тот не выполнял для conversation без order; runtime Filament проверяется напрямую.
+- Evidence: общий запуск 10 SA test files — 136 tests / 1198 assertions PASS, 0 skipped. PHP lint PASS. HTTP/Mail/Synvolve fake, никаких реальных API/БД/UAT запусков; schema/request/response/mappings приложения не менялись.
+- Общий MIG-TEST-SA-LEGACY остаётся IN PROGRESS: SaLeadsCreateTest, SaServicesCatalogTest, SaOrdersLookupTest, SaServiceSizesTest используют недетектируемые /** @test */. Что остаётся статическим: прежние sample payloads/example CRM links. Следующее точное действие — offline fixtures и discovery lookup/catalog/sizes, затем расширенный create. Внешние SA UAT отложены по явной просьбе пользователя, общая приёмка SA IN PROGRESS.
+
+# MIG-TEST-SA-LEGACY-02 — результаты офлайн проверки (2026-10-08)
+- Восстановлены PHPUnit 12 attributes и синтетические SQLite :memory: fixtures для create, lookup, catalog, sizes. При отсутствии обязательных данных create/lookup падают, вместо скрытого skip. HTTP заблокирован для непредусмотренных запросов, Mail/Synvolve подменены.
+- Первичный запуск четырёх suites: 81 tests / 886 assertions PASS, 0 skipped. Купоны/бонусы, доставка/оплата, company billing, canvas/collage/modular/gallery/gift/family, express production проверены на синтетических данных.
+- Найден и исправлен runtime дефект GET /api/sa/orders/lookup: товары SA-корзины с именованными ключами пропускались. Добавлены create → lookup regression и проверка шести типов корзины с исключением coupon/delivery/totals metadata; service_id читается из SA item.id. Старые числовые ключи совместимы.
+- Контракт endpoint не менялся: GET, X-Api-Key, прежний JSON/HTTP формат; запись и idempotency для lookup не требуются. Бизнес-схема/миграции/данные/изображения не менялись. Новые статические mappings не добавлены; синтетические цены существуют только в тестах.
+- В работе: общий SA regression и lint. Внешний transport/callback, MySQL concurrency, touch и итоговая приёмка SA остаются открыты; реальные отправки/UAT не запускать по просьбе пользователя. После изолированных проверок — ADM-AUD-04 Email Рассылка.
+- Итог MIG-TEST-SA-LEGACY-02: DONE. Общая регрессия 14 SA suites — 217 tests / 2084 assertions PASS, 0 skipped (storage/app/testing/sa-regression.xml и sa-regression.log). PHP lint семи изменённых файлов и git diff --check PASS. Недоступных /** @test */ в Sa* API suites больше нет. MIG-TEST-SA-LEGACY закрыт по восстановлению этих suites; это не завершение внешней приёмки SA.
+- Следующее точное действие: ADM-AUD-04 — сравнить код Email Рассылки с исходной админкой и зафиксировать недостающий функционал. Реальные рассылки и SA-вызовы не запускать. Внешние SA transport/callback/concurrency и touch остаются открытыми.
+
+### 2026-10-12 — ADM-AUD-03: mobile floating inbox badge
+Mobile position uses separate browser storage saConversationsFloatingTopMobile and defaults to bottom20; desktop legacy position retained. Breakpoint switch/resize clamp implemented. Node positioning checks15 assertions PASS; isolated badge permission/polling2tests16assertionsPASS; Chrome desktop drag/reload/list link PASS. No API/DB/schema/auth/idempotency changes, no outbound messages. Mobile visual/touch test remains TODO because Chrome viewport override did not change actual width; next action verify390px rendering and touch drag. API/static mappings unchanged.
+
+## ADM-AUD-03 — mobile layout/browser drag DONE, 2026-10-12
+Повторная Chrome проверка успешна: новый agent tab, viewport set ПОСЛЕ goto дал фактические390x844 (ранние попытки override на claimed tabs не меняли ширину). Initial badge top781/bottom824 (20px bottom gap), breadcrumb96..116.79, document overflowfalse. Screenshot визуально подтверждает свободный header. Browser drag top781→743.5 не открыл ссылку, reload восстанавливает743 (целочисленное original storage). Обычный click открывает /filament/sa-conversations, heading SA-диалоги, top743 сохраняется, unread38. Override reset: width1711, desktoptop70 — независимость позиции подтверждена. Evidence storage/app/audit/sa-badge-position-mobile.jpg (после drag/reload).
+Source сверён именно в C:/OSPanel/domains/asoft/viar/resources/views/vendor/voyager/master.blade.php: vertical pointer drag/clamp/persist и legacy key сохранены в новом desktop варианте; mobile default намеренно перенесён вниз для устранения перекрытия. Физический touch на телефоне не проверен, browser drag здесь мышью на мобильной ширине. Предыдущий mobile visual TODO закрыт, device-touch остаётся дополнительной проверкой; не заявлять его PASS. Код в этом шаге не менялся, прошлые isolated tests15 JS assertions и PHPUnit2/16PASS сохраняют evidence. Сообщения/записи/БД/images не изменялись, commit не создан. Следующий этап — ADM-AUD-08 generic таблицы по активному backlog.
+
+### ADM-AUD-03 — глобальная кнопка SA, 2026-10-13
+Мобильная390px сверка с original пройдена для vertical drag/reload/clamp и открытия списка. Исправлен badge URL: передаёт Filament filters[scope][value]=unread, как original scope=unread. Node actual Alpine mouse/touch handler testsPASS; isolated PHPUnit4tests38assertionsPASS; никаких outbound вызовов/рабочих SA writes. Статические mappings/каталог/API/БД не менялись. Physical touch input не предоставлен инструментом и остаётся TODO. Evidence и ограничения viewport reset — в MIGRATION_PROGRESS.md. Следующий точный шаг: при доступном touch input проверить настоящий жест, затем production snapshot BREAD/media audit по ADM-AUD-06G.
+
+### 2026-10-19 — локальная проверка SA из строки заказа (ADM-AUD-13F)
+На отдельном ListOrders/SQLite проверены открытие history и acknowledgement фиктивного ADM-FIL-UAT диалога. Изменился только unread_for_manager1→0; status сообщения delivered, bot_mode paused и даты остались прежними, sa_events0. Внешние команды и письма не отправлялись; API/auth/идемпотентность не менялись. OrderSaChatTest+OrderSaCommandTest:47tests414assertionsPASS. Общая миграционная приёмка Orders ещё открыта; дальнейшие проверки только на изолированных данных.
+
+### 2026-10-19 — ADM-AUD-13, локальные поля списка заказов
+Статусы заказа/оплаты/предоплата/счёт и параметры клиента снова сохраняются непосредственно в колонках через существующие сервисы; статусы каждого наброска/картины также в строке. Контракты CRM/SA и endpoint не менялись, миграций нет. Browser UAT использовал отдельную SQLite, HTTP blocked/Mail fake; штатные webhook/уведомления не отправлялись. Другие заказы/users/назначения/байты изображений сохранены. Текущий gate 62 tests / 944 assertions PASS. Следующее точное действие ADM-AUD-13: оставшиеся документы/этикетка и drag/drop, затем обновление общей матрицы; полная проверка SA/Orders не объявлена завершённой.
+
+2026-10-26, ADM-AUD-13: браузерное сохранение реквизитов→настоящий PDF проверено на отдельной SQLite/public_path, только PDF-флаги/ссылка/updated_at fixture42; HTTPblocked/Mailfake. Раскладка create/edit согласована с original без изменения сервисов/state paths/CRM-SA контрактов. 77tests1164assertionsPASS; общий auditINPROGRESS. Далее раскрытые delivery/company/item upload UI и Venipak/drag-drop; рабочие данные не записывать.
+
+
+## Перенос Blog API из 5fa03e77 на Laravel 13 — 2026-10-27
+
+Статус: DONE локальная реализация и автоматическая проверка; production rollout/browser QA не выполнены. Подробные evidence: MIGRATION_PROGRESS.md, BLOG-5FA03E77.
+
+- GET /api/blog/categories, /api/blog/authors, /api/blog/posts: meta.pilot_contract=3, story_image=true, alt_storage=image_alt_suggestions. Posts возвращают revision/content_revision, external_id/idempotency_key, media_sha256, story_alt_mode, image_user; ALT и present_fields возвращаются по фактически сохранённым локалям. Native поля blog_posts — EN (voyager.multilingual.default); другие локали без fallback.
+- POST /api/blog/posts: image_user и translations.*.{image_alt,image_preview_alt,image_user_alt}; automation_contract=3 требует draft, шесть полных de/ee/en/lt/lv/ru с разными slug, idempotency_key/external_id, пять проверенных локальных файлов media_sha256 и story_alt_mode. Decorative image_user_alt должен быть пустым, descriptive — непустым. ALT сохраняются как applied в существующую image_alt_suggestions, новые таблицы/колонки не добавлены. Ответ201 status=ok; точный повтор200 status=duplicate; изменённый/непроверяемый payload с тем же ключом409 CONFLICT. Fingerprint в api_payload._creation_sha256 переживает PATCH; уникальный индекс защищает гонку.
+- PATCH /api/blog/posts/{id}: обязательны expected_revision (64hex из GET) и expected_status; сравнение внутри DB transaction после lockForUpdate статьи/переводов/категорий/ALT. Отсутствующая revision428 PRECONDITION_REQUIRED; устаревшая revision/status409 CONFLICT. Успех200 с новой revision. Счётчик просмотров не меняет revision. EN обязателен при передаче translations, чужой язык не подставляется в native поля.
+- POST /api/blog/media: прежние MIME/size ограничения сохранены; путь blog/api/<SHA256>.<MIME extension>, повтор файла использует тот же путь.
+- Auth прежний X-Api-Key из .env/config services.sa_integration.api_key. Нет нового CRM/SA webhook/event_id контракта: blog использует idempotency_key; CRM/SA event_id и orders/чаты не менялись.
+- Ошибки: прежний совместимый JSON status=error,error={code,message,details};400 VALIDATION_ERROR для обычной валидации,422 VALIDATION_ERROR для семантики контракта/ALT/хешей,409 CONFLICT,428 PRECONDITION_REQUIRED,503 AUTOMATION_UNAVAILABLE если auto_observer включён;401 auth/404 неизвестная статья прежние. Отклонения логируются без API key/токенов/тела статьи; ошибки обработки остаются в штатном exception logging.
+- БД: migration 2026_10_09_180000_unique_blog_idempotency.php добавляет blog_posts_idempotency_unique. На duplicates останавливается без изменения данных; nullable keys допускаются. Локальная MySQL: duplicate_groups0, применена, индекс подтверждён. На сервере выполнить php artisan migrate --path=database/migrations/2026_10_09_180000_unique_blog_idempotency.php --force после доставки файла.
+- Что осталось статическим: только исходные translation PHP arrays и локализованные контентные строки; ALT API пишет реальные existing records, не вызывает платный генератор. Slider subtitle остаётся в canvas_slider/translations.
+- Проверки:69PHPtests506assertions и3JS PASS, Blade/PHP lint/diffcheck PASS. Следующий шаг: серверная миграция/Blade cache; обновить PATCH-клиентов для revision, затем browser QA статьи и симулятора. Hardcoded Voyager edit для записи82 не нужен в Filament; транзакции/lock BREAD уже реализованы.
+
+## ADM-AUD-13F — Сверка окон чатов тестового заказа №18451, 2026-10-28
+
+DONE для read-only поднабора; общий ADM-AUD-13F остаётся IN PROGRESS.
+В Chrome парно сверены оригинальная Voyager и новая Filament: client — test/test2,
+автор и обе даты совпадают; internal/painter — пустая история и формы ответа,
+тип переписки художника «Общий»; SA — одно прежнее UAT-сообщение, команды
+Resume/Pause/Handoff, поле ответа и выключенный Handoff после отправки.
+Новая панель показывает понятный статус suppressed и время сообщения.
+На ширине390px визуально проверены все четыре новых окна: заголовки/закрытие,
+поля/кнопки в пределах окна, внутренняя прокрутка SA до формы ответа и checkbox.
+Это проверка браузера с узким viewport, не физического телефона/экранной клавиатуры.
+
+SA original N/A против Filament PAUSED объяснён кодом и read-only данными:
+orders.sa_bot_mode и sa_conversation_id пусты, связанный conversation39
+ADM-FIL-UAT-18451 имеет bot_mode=paused. Original sa_chat/getMessages читает
+зеркало заказа, original conversation page — conversation; Filament читает
+conversation. Данные не переписывались ради совпадения устаревшего зеркала.
+Статические подстановки не добавлены; API/auth/idempotency/схема БД не менялись.
+
+Проверки: PHP8.4/PHPUnit12 — 106tests/992assertions PASS: OrderClientChatTest,
+OrderPainterChatTest, OrderAdminChatServiceTest, OrderSaChatTest, OrderSaCommandTest.
+JUnit: storage/logs/adm-aud-13f-chat-20261028.xml. Browser: сообщения не отправлялись,
+команды бота/ручное прочтение не выполнялись; рабочие заказы не редактировались.
+Исправлений кода не потребовалось. Изменены только Markdown-журналы, поэтому
+по правилу выгрузки non-md файлов для C:\OSPanel\domains\viar\viar13 нет;
+копирование/SHA256 не применяются. Коммит текущей ветки без push.
+
+Следующее точное действие: оставшиеся populated artist/media ветки на
+изолированных fixtures с fake интеграций; полную приёмку всех ролей/вложений
+и всей ADM-AUD-13 этим прогоном не объявляем.
+## ADM-AUD-13F — Чаты художника и вложения: проверка оставшихся сценариев, 2026-10-28
+
+DONE для автоматического поднабора; общий ADM-AUD-13F IN PROGRESS.
+Original resources/views/admin/order_chat.blade.php: активен только «Общий»;
+варианты набросок/картина закомментированы, labels старых сообщений отображаются.
+Original VoyagerAdminController::update_order_chat_ajax сохраняет orders_chats,
+адресует уведомление текущему назначенному художнику. Новая логика сохранена,
+бизнес-код не менялся; интерфейс загрузки вложений в общий painter chat не добавлялся.
+
+Добавлены regression проверки в OrderClientChatTest: sketch/painter ×
+удаление/перенос в другой заказ/изменение типа изображения после открытия composer.
+Во всех шести случаях отправка отвергается, draft сохраняется, новые комментарии
+и событие chat-updated отсутствуют. OrderPainterChatTest проверяет заполненную
+историю: хронология и ID при одинаковом времени, авторы/типы, корректные read targets,
+полная неизменность всех orders_chats строк после открытия окна.
+Все изменения данных выполнены PHPUnit/Livewire в SQLite :memory:, Mail fake,
+webhook mock запрещает отправку. Рабочая БД/клиенты не затронуты.
+
+Проверки:63tests/636assertions PASS (OrderClientChatTest + OrderPainterChatTest),
+Pint выбранных двух PHP PASS, git diff --check PASS.
+JUnit: storage/logs/adm-aud-13f-media-20261028.xml.
+Два изменённых test PHP скопированы в C:\OSPanel\domains\viar\viar13 с сохранением
+структуры; оба SHA256 совпали, Markdown не копировался, посторонние файлы сохранены.
+Коммит в текущей ветке без push. API/auth/idempotency/схема БД не менялись;
+статические замены не добавлялись. Browser populated-media прогон в этой задаче
+не выполнялся: автоматические проверки не считаем его заменой.
+Следующее точное действие: изолированный browser просмотр заполненных media
+threads desktop/mobile и оставшиеся upload/drag ветки. Полная ADM-AUD-13 не закрыта.
+## ADM-AUD-13F — Заполненные чаты с изображениями: визуальная проверка на компьютере и телефоне, 2026-10-28
+
+DONE для browser read-only поднабора. Chrome, настоящий ListOrders/Livewire,
+синтетический заказ42 на отдельной SQLite-копии, loopback127.0.0.1:8788.
+Client: общий чат, картина903 и набросок901 с раздельной историей клиента/ответа
+администратора, своими composer и read targets; оба PNG loaded (naturalWidth>0),
+ссылки ведут на локальный стенд. Desktop окно просмотрено; на390x844 проверена
+доступность обеих image reply форм, кнопок и внутренней прокрутки.
+Painter: три сообщения (общий/набросок/картина), метки и даты в порядке истории;
+desktop и390x844 просмотрены, доступен единственный активный тип «Общий», как
+original order_chat.blade.php. Ответы и кнопки прочтения не нажимались.
+Это узкий browser viewport, не проверка физического телефона/его клавиатуры.
+
+Изоляция: отдельные DB/disks/sessions/views, Http preventStrayRequests, Mail/Notification
+fake. Runtime стенд обновлён для актуального invoice partial mock и CSS/JS копий;
+первые500 из-за устаревшей подмены/отсутствия CSS устранены только в стенде,
+production code не менялся. Media base стенда переключён на loopback;
+рабочая настройка production media URL сохранена. Панель успешно отвечала200.
+Read-only verifier: orders3, order_painter_images2, order_user_comments5,
+orders_chats3 полностью совпали с before.json; SHA256 обоих PNG совпали.
+Evidence: storage/app/audit/chat-media-20261028/{before.json,verified.json,requests.jsonl}.
+Скриншоты просмотрены в tool output, отдельные PNG evidence не сохранялись.
+Стенд остановлен после проверки. Рабочая БД/клиенты не затронуты.
+
+Исправлений production кода не потребовалось; новые автотесты не добавлялись,
+предыдущий gate63tests636assertions остаётся evidence автоматической проверки.
+API/auth/idempotency/БД-схема и статические mappings не менялись.
+Изменена только Markdown-документация; non-md файлов для обязательной выгрузки
+в C:\OSPanel\domains\viar\viar13 нет, export/SHA256 выгрузки не применяются.
+Коммит текущей ветки без push. Общая ADM-AUD-13 остаётся IN PROGRESS.
+Следующее точное действие: оставшиеся browser upload/drag сценарии на изолированном
+стенде. Эта проверка не закрывает все роли, форматы/ошибки загрузок и внешний delivery.
+## ADM-AUD-13D — Ошибка загрузки и восстановление формы вложений, 2026-10-28
+
+DONE для chooser recovery. Первоначально в commentary указан13G; по активной
+матрице исправлено на13D (13G — роли). Отдельный loopback8789, SQLite-копия
+синтетического attach стенда; actual OrderItemsForm/OrderItemActions/Livewire,
+локальные disks, Mail fake/Http preventStrayRequests, invoice mock.
+Browser: synthetic rejected.exe44bytes отклонён «Файл неверного типа»; файл
+удалён только из очереди. Затем recovery.png177bytes выбран в том же окне,
+загрузка завершилась, submit «Добавить фото» показал «Фото добавлены» и превью
+во второй позиции. Рабочие DB/файлы/клиенты не затронуты. Стенд остановлен.
+
+Verifier: SHA256 persisted PNG совпал с input; первая позиция, остальные поля
+второй позиции, все прочие orders полностью сохранены; changed order columns
+только items/updated_at. orig_images сохраняет URL согласно действующему сервису.
+Evidence storage/app/audit/upload-recovery-20261028/{before.json,verified.json,requests.jsonl,saved.png}.
+Screenshot сохранён и просмотрен; browser submit подтверждён UI и БД.
+
+Открытый вопрос: заметная пауза до _startUpload на этом стенде, потом
+_startUpload/upload-file/_finishUpload и submit200. Причина не установлена;
+не считать нормой/исправлением и не приписывать без доказательств production.
+Предыдущие audit записи также отмечали паузы очереди. Следующий точный шаг:
+воспроизвести/локализовать задержку до начала транспорта на isolated стенде.
+OS file drag/drop не подтверждён: documented extension API предоставляет chooser,
+но не file-drag API; подмена DOM событиями не выполнялась. Порядок файлов/drag
+этим запуском не проверен.
+
+Проверки:28tests340assertions PASS — OrderItemEditorTest + OrderMediaFormTest,
+JUnit storage/logs/adm-aud-13d-recovery-20261028.xml; git diff --check PASS.
+Production код/API/auth/idempotency/DB schema не менялись, статические замены
+не добавлялись. Изменена только Markdown-документация; non-md файлов для выгрузки
+в C:\OSPanel\domains\viar\viar13 нет, копирование/SHA256 выгрузки не применяются.
+Коммит текущей ветки без push. ОбщийADM-AUD-13/13D остаётсяINPROGRESS.
+## ADM-AUD-13D — Задержка перед началом загрузки файлов, 2026-10-28
+
+DONE для диагностики паузы на isolated стенде. Временный probe добавлен только
+в ignored router: видимые input/FilePond event timestamps и rAF heartbeat;
+никаких production изменений, скрытых browser API/изменений Chrome flags.
+Без предварительной ошибки файла PNG: addfile12:27:00.924→process12:28:26.981
+=86.057s, processfile12:28:32.996 (=6.015s передачи/завершения). Во втором
+замере rAF было5кадров/5s, document.hidden=false; process также завершился,
+серверные _startUpload/upload-file/_finishUpload200, без сохранения в order.
+
+После ручного вывода Chrome пользователем на передний план (ответ «Вкладка видна,
+можно проверять»): rAF обычно270–299кадров/5s, тот же PNG/input177bytes.
+input12:36:59.321, addfile12:36:59.774, process12:37:01.458 (=1.684s),
+finish12:37:08.414 (=6.956s). Это подтверждает влияние фонового замедления
+rendering браузера на наблюдавшуюся очередь FilePond. Сервис orders не добавляет
+такой таймер; нормальная отправка на этом PHP CLI стенде занимает~7s с bootstrap.
+Не обобщать время на production/все форматы/большие файлы. Фоновый режим Chrome
+не меняли, vendor FilePond не патчили. Обход в production не требуется по этому тесту.
+
+Окно отменено после временной загрузки, submit добавления фото не выполнялся.
+Verifier подтвердил прежний один сохранённый PNG, SHA256 и неизменность первой
+позиции/остальных полей/прочих orders; этот запуск новых вложений в order не создал.
+Mail/HTTP fake, рабочая БД/диски/клиенты не затронуты. Стенд остановлен.
+Evidence storage/app/audit/upload-recovery-20261028/timing-first.txt,
+timing-foreground.txt, timing-foreground.png, requests.jsonl, verified.json.
+Скриншот успешной временной загрузки сохранён/просмотрен. Предыдущий native-window
+вызов был остановлен защитой определения URL; повторять/обходить его не пытались,
+переключение окна выполнил пользователь. Проверка завершена extension API.
+
+Новые автотесты не добавлялись: бизнес-код не менялся, релевантный предыдущий
+28tests340assertions PASS остаётся baseline, browser timing и verifier PASS.
+API/auth/idempotency/DB schema/статические mappings прежние. Только Markdown
+в tracked diff; non-md для выгрузки C:\OSPanel\domains\viar\viar13 нет,
+SHA256 выгрузки не применяется. Коммит текущей ветки без push.
+Общий13D/ADM13 IN PROGRESS: OS drag/drop ещё требует отдельного browser evidence;
+следующее действие — оставшаяся матрица приёмки, без повторения закрытой паузы.
+## ADM-AUD-13D — Настоящее перетаскивание файла в форму заказа, 2026-10-28
+
+IN PROGRESS, ожидается фактический ручной OS drop. Подготовлены isolated8789,
+fixture904/вторая позиция, drag-before.json и синтетический80x60PNG drag-test.png.
+SHA256 BA11C8BE34B15417B4995C143C8414C6AE84107C7D9FC28D1CDB88B3EA390DBF.
+В открытом пользователем IAB обновлена форма, открыто attach окно второй позиции.
+В ignored probe добавлена видимая метка drop/isTrusted/files; chooser не вызывался,
+DOM drop events не имитировались. Пользователю отправлена инструкция для переноса
+только этого synthetic файла из Проводника; ответ/фактический drop пока не получен.
+Ничего не сохранялось, send/notifications не запускались. Рабочая DB/файлы прежние.
+
+Подготовлен verifier drag-verify-20261028.php: ожидает ровно один новый orig_images,
+сохраняет старые пути и SHA256, проверяет остальные items/поля/прочие orders.
+Verifier не запускался до actual drop/save — утверждать успешный drag нельзя.
+Evidence readiness: storage/app/audit/upload-recovery-20261028/drag-ready.png.
+Стенд оставлен запущенным для ожидаемого действия пользователя, вкладка handoff.
+При продолжении: прочитать drop trace/UI, дождаться finish, submit attach,
+запустить verifier, сохранить screenshot, остановить стенд и обновить статус.
+
+Обновлена очередь в docs/admin_orders_parity_2026-10-16.md: учтены ранее
+закрытые batch30/форматы/отказ-recovery/foreground timing/populated chats,
+они больше не перечисляются в очереди как полностью непроверенные.
+Production изменений нет, новые автотесты не добавлялись; git diff --check PASS.
+Только Markdown в tracked diff, non-md для выгрузки C:\OSPanel\domains\viar\viar13
+нет. Коммит текущей ветки без push. API/auth/schema/static mappings прежние.
+Общий13D/ADM13 IN PROGRESS; ручное действие остаётся обязательным evidence.
+## ADM-AUD-13D — Настоящее перетаскивание файла в форму заказа, 2026-10-28
+
+DONE для single JPEG attach сценария. Пользователь подтвердил ручной перенос,
+в DOM probe trusted drop=true, 11029bytes. Фактически выбран JPEG вместо
+подготовленного synthetic PNG; не заявляем проверку drag-test.png.
+Drop12:55:55.356→FilePond addfile12:55:55.447→process12:55:57.298→finish12:56:04.741.
+Старт обработки1.851s, завершение7.443s; upload-file/_finishUpload HTTP200.
+Полученный temporary JPEG сохранён как local audit reference до submit,
+затем настоящий attach action добавил его во вторую позицию fixture904.
+Без chooser/имитации drop событий. В UI два превью появились без reload.
+
+Verifier PASS: ровно одно новое вложение; SHA256 temporary→stored
+fa8e0ee5cdde8e08fda3b763426c71024f37610b1f5cb5c57681a16dec4758dd.
+Исходный файл на компьютере пользователя отдельно не хешировался — это не
+end-to-end disk→transport hash. Прежний PNG/порядок его пути сохранён, первая
+позиция/остальные поля второй/все прочие orders неизменны. Order metadata
+меняет только items/updated_at. Рабочая DB/disks/клиенты не затронуты,
+Mail/HTTP fake. Стенд остановлен после проверки.
+
+Evidence storage/app/audit/upload-recovery-20261028/drag-events.txt,
+drag-before.json, drag-verified.json, drag-saved.png и requests.jsonl.
+Скриншот сохранён/просмотрен. После browser.user unavailable восстановление
+cua runtime reset вернуло доступ к той же IAB вкладке без reload/потери формы.
+Production code/API/auth/idempotency/schema/static mappings не менялись.
+Новые автотесты не добавлялись: предыдущий28tests340assertions остаётся
+baseline; текущий gate — actual manual drop + browser submit + verifier PASS.
+git diff --check PASS. Только Markdown в tracked diff, non-md для выгрузки
+C:\OSPanel\domains\viar\viar13 нет; копирование/SHA256 выгрузки не применяются.
+Коммит текущей ветки без push. Общий13D/ADM13 IN PROGRESS: singleJPEG не закрывает
+все drag форматы/create/batch; следующий шаг — оставшаяся browser role матрица13G.
+## ADM-AUD-13G — Заказы под ролями печатника и менеджера, 2026-10-28
+
+DONE для read-only full ListOrders поднабора printing/lite_manager.
+Original orders.blade.php guards: printing исключён из totals/header create,
+основных current/completed/unpaid вкладок, express подписан «Все текущие заказы»;
+lite_manager исключён только из heading totals. Original orders/payment/items
+скрывают финансовое редактирование/цены у printing. Не вводили дополнительных
+ограничений, которых в оригинале нет; бизнес-код не менялся.
+
+Отдельный8790/SQLite/disks/sessions, synthetic users1/10/11, fake Mail/HTTP,
+partial invoice mock; настоящие ListOrders/Livewire components.
+Printing:8колонок,6видимых вкладок; нет heading count/sum/header create/courier,
+payment edit/prepayment amount/product prices/assign-remove controls скрыты.
+Payment status/Venipak labels/printing/picture status доступны. Root выборка
+сохраняет current как в оригинале; переход «У печатника1» дал только order42.
+Lite_manager:8колонок/9вкладок, header create/courier, payment/prepayment,
+product prices и штатные row actions доступны при fixture permissions;
+heading count/sum скрыты. Рабочие роли не переключались/не редактировались.
+
+Desktop и390x844 визуально просмотрены; printing mobile «У печатника» и
+manager payment controls. Document375px приviewport390, tabs/table имеют
+собственную горизонтальную прокрутку, сужения всей страницы не обнаружено.
+Это не поколоночная mobile приёмка всех скрытых за scroll controls.
+В fixture painter image частично отображён placeholder; доказательство загрузки
+всех artist thumbnails этим прогоном не заявляем. Original browser под реальными
+ролями не переключался — ограничения сверены с read-only исходным Blade.
+
+Gate33tests829assertions PASS: OrderListRolePresentationTest,
+OrderRecordActionPermissionsTest, OrderListTabsTest. JUnit
+storage/logs/adm-aud-13g-roles-20261028.xml. Verifier9tables unchanged:
+orders/users/roles/permission_role/painter_orders/printing_orders/
+order_painter_images/order_user_comments/orders_chats. Стенд остановлен.
+Evidence storage/app/audit/roles-20261028/{before.json,verified.json,
+printing-desktop.png,printing-mobile.png,manager-desktop.png,
+manager-right-desktop.png,manager-mobile.png,manager-mobile-start.png}.
+Скриншоты сохранены/просмотрены. Все действия read-only, API/auth/idempotency/
+schema/static mappings не менялись; git diff --check PASS.
+Tracked diff толькоMarkdown; non-md для выгрузки C:\OSPanel\domains\viar\viar13
+нет, SHA256 выгрузки не применяется. Коммит текущей ветки без push.
+Общий13G/ADM13 IN PROGRESS. Следующее: оставшиеся комбинации вкладок/фильтров
+под этими ролями и edit/action состояния на fixtures с fake интеграций.
+## ADM-AUD-13G — Фильтры и действия под ролями печатника и менеджера, 2026-10-28
+
+DONE для указанного поднабора. Найден и исправлен пропуск авторизации:
+часть hidden financial Livewire actions проверяла только update/edit_orders,
+хотя original printing UI не разрешает финансовые операции. Добавлена ability
+OrdersPolicy::updateFinances = edit_orders AND role.name!=printing. Подключены
+record actions create/manage VR, payment status/prepayment, invoice firm/generate/
+approve, shared payment request form и дубли financial column actions.
+Обычный update gate для производственных операций не менялся; lite_manager
+с edit_orders сохраняет финансовые возможности. Данные/роли/permissions не мигрировались.
+
+Regression расширен provider двумя случаями: отзыв edit_orders и смена роли
+на printing после открытия формы при сохранённом edit_orders. Для8действий
+mount/fill→access change→callMountedAction/direct mount: финансовые сервисы
+не вызываются, action недоступен, orders/VR прежние, Mail/HTTP ничего не отправляют.
+Первый red test выявил пропуск, после полного подключения gate проверки зелёные.
+Это проверка Filament authorization/отсутствия side effects; не утверждаем,
+что каждый отказ при mount возвращает HTTP403 (Filament может не открыть action).
+Inline printing forbidden403 остаётся в существующем regression.
+
+Browser8790/isolatedSQLite: printing «У печатника»→42; ID43 без оплаты→43,
+поскольку original OrdersController order_filter заменяет ветку вкладки,
+это не баг/не дополнительное пересечение. ID43+not_payed→No results,
+ID42+not_payed→42; sent tab→43 и applied/deferred filters очищены.
+Lite_manager completed→44; ID42+price999→No results; price100→42;
+click completed→44/reset. Рабочие orders/roles не менялись.
+Snapshot verifier: все9business tables неизменны. Стенд остановлен.
+Evidence storage/app/audit/roles-20261028/printing-filter-empty.png,
+manager-filter-42.png, verified.json, requests.jsonl. Снимки сохранены.
+
+Gate73tests1242assertions PASS: record action permissions, list role presentation,
+tabs, payment/invoice/VR services; JUnit storage/logs/adm-aud-13g-finance-gate-20261028.xml.
+Pint4изменённыхPHP PASS; git diff --check PASS. Новых routes/API/DB schema нет,
+auth существующий Filament/Voyager permissions; static mappings не менялись.
+Четыре изменённыхPHP (policy/table/payment request form/regression test)
+скопированы в C:\OSPanel\domains\viar\viar13, все SHA256 совпали;
+Markdown исключён, посторонние файлы не удалялись. Коммит текущей ветки без push.
+Общий13G/ADM13 IN PROGRESS. Следующее точное действие: оставшиеся edit/action
+состояния под printing/lite_manager, затем полная итоговая матрица незакрытых сценариев.
+## ADM-AUD-13G — Редактирование заказа под ролями печатника и менеджера, 2026-10-28
+
+DONE автоматический поднабор, browser часть IN PROGRESS. Original отдельная
+order.blade.php и edit_admin_order/update_admin_order не имеют printing/
+lite_manager field guards; ограничения финансов в строке списка не перенесены
+самовольно на full edit. Полная новая форма использует прежний edit_orders.
+Это уточняет границу предыдущего финансового gate: updateFinances ограничивает
+перечисленные actions, не означает общего запрета любого финансового поля full edit.
+
+Добавлены provider tests printing/lite_manager на настоящей EditOrders с полной
+fixture schema; общий setup вынесен из существующего full-edit regression в helper.
+Для каждой роли с edit_orders: mount успешен, комментарий сохранён; price,
+sale_price/payment status/method/items/client images/painter images/status прежние,
+адрес сохранён, таблицы media/comments неизменны. После удаления edit_orders
+уже открытый page save403 и fresh mount403; весь saved order snapshot прежний.
+Mail fake/Http preventStrayRequests, SQLite :memory:, реальные клиенты не затронуты.
+Production логика не менялась. Это проверка одного разрешённого save/revocation,
+не всех полей/всех смен ролей и не визуальной идентичности.
+
+57tests916assertions PASS: OrderArtistServiceTest, OrderDetailsFormTest,
+UpdateOrderServiceTest, OrderRecordActionPermissionsTest. JUnit
+storage/logs/adm-aud-13g-full-edit-gate-20261028.xml. Pint testPHP PASS после
+одного исправления пустой строки; git diff --check PASS. Один изменённый testPHP
+скопирован в C:\OSPanel\domains\viar\viar13, SHA256 совпал; Markdown исключён,
+посторонние файлы не менялись. Коммит текущей ветки без push.
+API/auth/idempotency/schema/static mappings не менялись.
+
+Browser попытка full edit8790 остановлена ответом «Local browser use is disabled
+in Work settings»; визуальные desktop/mobile результаты не заявляем.
+Стенд остановлен, обход отключённого инструмента не предпринимался.
+Следующее точное действие: визуально сверить full edit под обеими fixture ролями
+после восстановления browser access. Общий13G/ADM13 остаётсяINPROGRESS.
+## ADM-AUD-13G — Полная карточка: смена роли в открытой форме, 2026-10-28
+
+DONE автоматический поднабор actual EditOrders. Добавлены два role-transition
+сценария printing→lite_manager и lite_manager→printing при сохранённом edit_orders:
+page открыт до смены роли, draft комментария сохраняется после смены, items прежние.
+Это сохраняет исходный контракт full edit, не переносит список role guards
+на всю карточку. Отдельный shared footer payment request gate остаётся строже.
+
+Actual schema action createPaymentRequest/paymentRequests: manager открывает
+форму/вводит сумму, затем роль становитсяprinting при сохранённомedit_orders.
+callMountedAction не вызывает замоканный createForOrder, не создаёт requests,
+не пишет order/комментарий, draft формы сохранён. Fresh printing page не показывает
+«Создать платёж», direct mount оставляет mountedActions пустым. Filament при этом
+может молча не открыть action; HTTP403 для этого footer не заявляем.
+Начальные assertions hidden/action resolution не соответствовали Filament schema
+API, скорректированы на фактический контракт неоткрытия/отсутствия side effects.
+Production исправлений не потребовалось, существующий updateFinances работает.
+
+42tests789assertions PASS: OrderArtistServiceTest + OrderRecordActionPermissionsTest.
+JUnit storage/logs/adm-aud-13g-open-edit-role-change-20261028.xml.
+SQLite :memory:, Mail fake/HTTP preventStrayRequests, клиентам ничего не отправлено.
+Pint testPHP и git diff --check PASS. API/auth/schema/idempotency/static mappings
+не менялись. Один testPHP скопирован в C:\OSPanel\domains\viar\viar13,
+SHA256 совпал; Markdown исключён, посторонние файлы сохранены.
+Коммит текущей ветки без push. Браузер в этом шаге не использовался:
+предыдущий ответ инструмента сообщил отключение browser use в Work settings.
+Общий13G/ADM13 IN PROGRESS; следующий точный шаг — visual full edit desktop/mobile
+при доступном браузере. Не считать эти автоматические проверки заменой visual UAT.
+## ADM-AUD-13G — Визуальная сверка полной карточки заказа, 2026-10-28
+
+Browser access восстановлен, read-only subset DONE. Actual EditOrders42 на
+isolated8790/SQLite, lite_manager и printing; Mail/HTTP fake, без submit/изменений.
+Desktop две колонки с данными слева и gallery/items справа; manager footer
+Обновить/Отмена доступен. Mobile390x844 одна колонка, document375px, общего
+горизонтального overflow нет. Manager payment footer открывает modal с пустыми
+amount/purpose; поля/кнопки в пределах экрана, окно закрыто без создания заявки.
+Printing payment button count0, ordinary save enabled; картинки901/903 загружены,
+mobile gallery/товарные поля/footer просмотрены. Viewport восстановлен.
+
+Найден отдельный визуальный дефект: плавающий SA badge частично перекрывает
+кнопку Отмена в нижнем mobile footer. Не считаем всю visual UAT закрытой.
+Задача TODO ADM-AUD-13G — Мобильный индикатор SA и кнопки формы добавлена в план;
+следующее действие — исправить размещение/свободное место и повторить390px footer.
+Оригинальный full edit в этом прогоне не открывался, исходные role guards
+подтверждены ранее кодом; полного pixel parity не заявляем.
+
+Snapshot verifier всех9business tables PASS unchanged. Стенд остановлен.
+Evidence storage/app/audit/roles-20261028/edit-manager-desktop.png,
+edit-manager-footer.png,edit-manager-mobile.png,edit-manager-payment-mobile.png,
+edit-printing-desktop.png,edit-printing-mobile-media.png,edit-printing-mobile-footer.png.
+Скриншоты сохранены/просмотрены. Новых автоматических тестов не добавлялось,
+предыдущие57tests916assertions/42tests789assertions остаются baseline;
+current gate browser read-only+snapshot PASS, git diff --check PASS.
+Production code/API/auth/schema/static mappings не менялись. ТолькоMarkdown,
+non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Коммит без push.
+## ADM-AUD-13G — Мобильный индикатор SA и кнопки формы, 2026-10-29
+
+- DONE для дефекта перекрытия footer: на экранах до 640px добавлен нижний
+  отступ 96px + safe-area только при наличии доступной ссылки SA.
+- Проверено в actual EditOrders на изолированном SQLite fixture42:
+  printing 390x844, lite_manager 320x700 и desktop. В конце страницы кнопки
+  «Обновить»/«Отмена» выше индикатора (зазор >65px); на 320px scrollWidth=clientWidth=305.
+  На desktop padding-bottom=0, badge top=70. Перетаскивание/звук/переход и бизнес-логика не менялись.
+- Read-only browser, все девять business tables неизменны; внешние вызовы
+  заблокированы fixture, сервер остановлен. Скриншоты sa-footer-*-fixed.png:
+  storage/app/audit/roles-20261028. git diff --check PASS.
+- Изменён только public/css/filament-admin-workflows.css; non-md экспорт
+  в C:/OSPanel/domains/viar/viar13 с совпадением SHA256. Коммит без push.
+- Общий ADM-AUD-13 остаётся IN PROGRESS: это закрытие мобильного дефекта,
+  полная приёмка всех окон/типов товаров/комбинаций ролей не заявляется.
+  Следующий шаг — продолжить сверку оставшихся окон и действий с оригиналом.
+## ADM-AUD-13G — Окна email и запроса отзыва под ролями, 2026-10-29
+
+- DONE для read-only browser поднабора: original user_data.blade.php показывает
+  «Написать email» без printing guard; items.blade.php скрывает «Запрос отзыва»
+  при printing. Actual ListOrders fixture42 повторяет эту видимость.
+- Printing email desktop/390px и manager email390px: пользователь заказа
+  fixture2@example.test, четыре поля, исходные заполненные тема/приветствие/прощание,
+  пустой основной текст. Manager review confirmation desktop/390px показывает
+  номер42 и email того же пользователя. Окна помещаются, Cancel закрывает:
+  remainingDialogs=0/remainingConfirmations=0. Ни одна отправка не нажималась.
+- 13tests307assertions PASS (role presentation + customer action permission
+  revocation); все9business tables fixture unchanged. HTTP/Mail fakes, рабочие
+  заказы и роли не менялись. Сервер остановлен, viewport reset.
+- Evidence: storage/app/audit/roles-20261028/email-printing-{desktop,mobile}.png,
+  email-manager-mobile.png, review-manager-{desktop,mobile}.png.
+- Production code не менялся: для экспорта non-md файлов нет. Только документы,
+  коммит текущей ветки без push. Общий ADM-AUD-13/13G остаётся IN PROGRESS.
+- Следующее точное действие: ADM-AUD-13G — форма этикетки Venipak под printing
+  и lite_manager: сверить доступ и поля с original, открыть/отменить desktop/mobile
+  на isolated fixture без вызова перевозчика и без изменения labels.
+## ADM-AUD-13G — Форма этикетки Venipak под ролями, 2026-10-29
+
+- DONE для browser opening/cancel поднабора: original payment.blade.php
+  create/print вне printing guard; actual ListOrders42 printing/lite_manager
+  открывают форму. Сверены source form__label.blade.php и новые основные блоки:
+  документ, получатель/отправитель, комментарии, сроки, указания, страховка, упаковки.
+- Desktop paired sections и mobile390 single column просмотрены; footer
+  «Отменить»/«Внести данные» доступен. Printing: address→pickup показывает
+  город/пункт вместо address fields; обратное переключение восстанавливает улицу.
+- Fixture без активных данных отправителя/справочника: поля отправителя пусты,
+  pickup явно сообщает о недоступном/пустом списке. Выбор реального пункта
+  и positive provider path этим browser прогоном не подтверждены.
+- Временный draft printing: вес1.25 → добавленная посылка тоже1.25;
+  страховая стоимость1000 → расчёт3 EUR. После Cancel и открытия manager:
+  одна упаковка, вес пустой. Это form state, не создание отправления.
+- 24tests186assertions PASS: OrderVenipakActionsTest, OrderVenipakLabelServiceTest,
+  VenipakPickupCatalogTest. Все9business tables неизменны (включая orders.labels).
+  Submit/create/print не запускались, HTTP/Mail заблокированы, рабочие данные
+  не менялись. Dialog0, viewport reset, тестовый сервер остановлен.
+- Evidence storage/app/audit/roles-20261028/venipak-*.png. Production code
+  не менялся; non-md файлов для экспорта нет. Документы коммитить без push.
+- Общий ADM-AUD-13/13G IN PROGRESS. Следующий точный шаг:
+  ADM-AUD-13G — История статусов и просмотр клиента под обеими ролями:
+  открыть/закрыть на fixture desktop/mobile, сверить original, без смены статусов.
+## ADM-AUD-13G — История статусов и просмотр клиента под ролями, 2026-10-29
+
+- DONE browser read-only поднабор: actual ListOrders42 printing/lite_manager
+  desktop/390px. История раскрывает одинаковые watching/pegging/send dates:
+  19.10.2026 18:19 /17:55 /17:48. Источник — те же legacy status date columns;
+  порядок стадий сохраняется, даты форматируются, блок сворачивается details.
+- Клиентская modal обеих ролей показывает user2, имя, email/телефон и3заказа;
+  просмотрена desktop/mobile, закрыта без сохранения. Это только краткая карточка.
+- FOUND/TODO ADM-AUD-13G — Полная карточка клиента из заказа:
+  original orders.blade.php:865 ведёт /admin/users/{user_id}, новая кнопка
+  viewOrderClient показывает5полей без перехода к полному BREAD read. Поэтому
+  соответствие «Просмотр клиента» НЕ принято. Следующий точный шаг: восстановить
+  переход к существующему users BREAD read с его permissions, сверить доступ
+  read_users/browse_users и поведение отсутствующего клиента; не расширять права.
+- 8tests77assertions PASS (OrderLifecycleServiceTest). Все9fixture business tables
+  unchanged. Статусы/клиенты/письма не менялись. Viewport reset, сервер остановлен.
+- Evidence: storage/app/audit/roles-20261028/history-{printing,manager}-{desktop,mobile}.png,
+  client-{printing,manager}-{desktop,mobile}.png. Production code не менялся;
+  non-md файлов для копирования нет. Документы коммитить без push.
+- Общий ADM-AUD-13/13G IN PROGRESS; новая найденная разница остаётся в этом блоке,
+  к другому модулю не переходить до решения.
+## ADM-AUD-13G — Полная карточка клиента из заказа, 2026-10-29 — DONE
+
+- Закрыто найденное расхождение навигации: краткое окно сохраняется и содержит
+  «Полная карточка клиента» при разрешённом BREAD read. Новый прямой маршрут
+  GET /filament/bread/{type}/{record}/view использует существующие BREAD read
+  поля, модель и permissions, включая Voyager UserPolicy для собственного профиля.
+- Read-доступ не требует browse: нельзя искусственно закрывать оригинальный
+  read_users пользователю без browse_users. Read проверяется при mount/hydrate
+  и чтении полей; без read ссылка отсутствует/route403; missing record404.
+  Без edit_users openEdit запрещён; рабочие права/таблицы не менялись.
+- Browser actual ListOrders42→краткая карточка→полная users2 под printing и
+  lite_manager PASS; desktop/390px просмотрены. Fixture использует8настроенных
+  read-полей; production состав определяется существующей data_rows, не этим fixture.
+  Все9business tables после подготовки изолированного снимка unchanged.
+- 13tests129assertions PASS: BREAD read/policy/read-only5tests52assertions,
+  lifecycle8tests77assertions. Дополнены settings только в3HTTP test fixtures:
+  прежний неполный SQLite users ломал sidebar, production schema не менялась.
+  Pint2PHP/diff-check PASS. Browser viewport reset, fixture server stopped.
+- Evidence: storage/app/audit/client-read-20261029/client-full-*.png и verified.json.
+- Скопировано5non-md файлов в C:/OSPanel/domains/viar/viar13, все SHA256 совпали.
+  Target commit48d1c00 в текущей main, без push. Основной коммит включает
+  документацию и правило двойного commit в AGENTS.md; Markdown не копировался.
+- Общий ADM-AUD-13 ещё IN PROGRESS. Следующий конкретный поднабор13G:
+  четыре chat окна (клиент/внутренний/SA/художник) × printing/lite_manager,
+  visible controls/read-only desktop/mobile на isolated fixture. После него
+  обновить оставшуюся матрицу13A–13F; не объявлять все роли/типы принятыми автоматически.
+## ADM-AUD-13G — Карточка клиента: переход и данные как в оригинале, 2026-10-29 — DONE для указанного поднабора
+
+- Original users/read.blade.php и SELECT-only data_types/data_rows сверены:
+ 35configured readRows в исходном порядке + custom «Язык» из user.locale.
+  Никаких пользовательских данных из общей БД в fixture не копировали.
+- При разрешённом users read «Просмотр клиента» теперь непосредственно ведёт
+  на полную страницу; промежуточная modal убрана из этого разрешённого сценария.
+  При отсутствии полного доступа прежний краткий просмотр сохранён без расширения прав.
+- Все35полей продолжают браться из data_rows; добавлен оригинальный нижний
+  «Язык» (settings.locale), сохранены отношения/опции/изображения. Пользовательские
+  read-блоки разделены отступами/линиями. Header edit/delete/list возвращены по
+  существующим permissions; delete использует существующий BREAD обработчик.
+- Browser fixture с35реальными определениями полей, но синтетическим user2:
+  rendered36labels EXACT ordered match metadata35+Язык. Printing desktop/390,
+  lite_manager direct link/390: dialogs0, нижняя кнопка и язык доступны.
+  Это подтверждение структуры/данных средствами Filament, не pixel-копия Voyager.
+- 16tests168assertions PASS: BREAD7/89 + lifecycle9/79. Read-only header hides,
+  allowed header visible, stale delete after revoke does not delete client;
+  direct-link HTML regression и locale regression PASS. Pint/diffcheck PASS.
+- Все9fixture business tables unchanged после подготовки schema/metadata;
+  реальные клиенты/статусы/файлы не менялись, внешних отправок нет.
+  Viewport reset; fixture server stopped. Evidence client-original-*.png и
+  client-read-metadata-20261029.json в storage/app/audit (только local ignored).
+- 6non-md файлов скопированы в C:/OSPanel/domains/viar/viar13, SHA256 совпали.
+  Target commit7ff88a0 в main без push. Основной commit включает эти журналы.
+- Общий ADM-AUD-13 открыт. Далее13G: четыре chat окна × printing/lite_manager,
+  затем оставшаяся матрица13A–13F по согласованному списку.
+## ADM-AUD-13G — Чаты под печатником и менеджером, 2026-10-29 — DONE для матрицы 4окон×2роли
+
+- Original admin/{client_chat,admin_chat,order_chat,sa_chat}.blade.php:
+  дополнительных printing/lite_manager guards нет. Новые окна обеих ролей
+  сохраняют общие read_orders/edit_orders gates для просмотра/reply/read/bot.
+- Actual ListOrders42: client general+painting903+sketch901 (5messages/3forms,
+  оба PNG loaded), painter3typed messages/general composer, internal empty
+  и2synthetic author messages, SA PAUSED/history/bot controls/reply/handoff.
+  Desktop/mobile390 просмотрены; клиентское окно343px без overflow, остальные
+  поля/кнопки доступны. Все8окон открыты/закрыты без send/read/bot commands.
+- Для positive internal history отдельно добавлены2synthetic fixture comments,
+  затем новый baseline. После browser прохода все190SQLite tables unchanged,
+  включая order_admin_comments/sa_messages/sa_conversations/sa_events.
+- 88tests844assertions PASS: client/painter/SA/admin chat suites. Рабочая БД,
+  реальные клиенты/исполнители/внешние провайдеры не менялись. Viewport reset,
+  fixture server stopped. Evidence chats-*.png/chat-roles-verified.json в
+  storage/app/audit/client-read-20261029; подготовка и снимки только ignored.
+- Два быстрых переключения сразу после закрытия не открыли следующее окно;
+  после завершения запроса закрытия оба открылись. Причину этим проходом
+  не доказали; не заявлять приёмку быстрого переключения/не менять core вслепую.
+- Production code не менялся, копировать/коммитить non-md в C: нечего;
+  целевая main чистая. В G: только журналы, commit без push.
+- Общий ADM-AUD-13 IN PROGRESS. Следующий блок согласованного списка:
+  ADM-AUD-13A — браузерная сверка типов товаров и превью (портрет, конструктор,
+  canvas/modular/collage/gallery/manual/oil/gift), с original source и isolated данными.
+## ADM-AUD-13A — Типы товаров и превью, 2026-10-29 — DONE для 11веток
+
+- Source original voyager/orders/items.blade.php и shared all_basket_order_items
+  сверены. Actual ListOrders42 fixture: portrait/constructor/canvas/modular/
+  collage/gallery0/1/2/manual/oil/gift; исходные условия preview сохранены.
+- Browser branch matrix:5SVG (constructor,canvas,modular,gallery1,oil),
+  secondary portrait/gallery0/gallery2/gift; collage/manual secondary скрыт.
+  SVG композиция из2локальных PNG видна в sandbox iframe. Oil promo отдельно
+  загружается из oil_header; gift icon и все raster images loaded.
+- Подтверждены portrait count/shape/type/originals/reference, modular wall/picture
+  dimensions, finishing/canvas/package и gift sender/recipient/date/greeting/code/
+  hide_nom/gift marker. Printing11веток/5SVG без «Цена:», подробности/код сохранены.
+- Desktop и390px: column235=scrollWidth235, document375=scrollWidth375;
+  картинки/данные/ссылки помещаются в горизонтально прокручиваемой таблице.
+  Это source+synthetic actual-browser проверка; live парный pixel compare
+  и доступность каждого реального production файла этим проходом не заявляются.
+- 39tests502assertions PASS (OrderProductPreviewTest/OrderListRolePresentationTest).
+  Все190fixture tables unchanged после подготовки11items+oil promo;3media SHA256
+  unchanged. Рабочая DB/storage/реальные файлы не менялись. Viewport reset,
+  server stopped. Evidence products-*.png,product-visual-evidence.json,
+  product-types-expectations.json в storage/app/audit/client-read-20261029.
+- Production code без изменений: копировать/коммитить non-md в C: нечего,
+  target main чистая. Документы коммитить в G: без push.
+- Общий ADM-AUD-13 открыт. Далее ADM-AUD-13B — финальные непустые комбинации
+  фильтров/вкладок в браузере. Недоступные реальные media остаются в общей
+  приёмке, не считать существование полного набора production файлов доказанным.
+## ADM-AUD-13B — Непустые вкладки и комбинации фильтров, 2026-10-29 — DONE для указанной матрицы
+
+- Actual ListOrders synthetic101–106: sent_today=[103], production=[102,101],
+  recent=[106,105,103,102,101] (включая completed105), completed=[105,44].
+  Source original app/Http/Controllers/OrdersController.php подтверждает predicates/sort.
+- СтранаLV+художник3+менеджер11+размер40x60+период29Oct→30Oct=[101].
+  until29Oct→0: original upper boundary00:00 сохранена. Смена на completed
+  сбрасывает size/from/until и остальные applied/deferred фильтры.
+- С completed фильтрprice101→[101]: original order_filter заменяет tab branch.
+  Printing tab безфильтров=[101,42]; number cycle desc[101,42]→asc[42,101]
+  →default[101,42]. Admin+LT→0; Admin+LV→[106]; Reset→printing[101,42].
+- Mobile390: форма и нижний apply доступны, просмотрены screenshots
+  filters-{combined-desktop,combined-mobile,footer-mobile}.png в
+  storage/app/audit/client-read-20261029. Browser write только фильтров/session.
+- 20tests273assertions PASS (OrderListTabsTest/OrderListSummaryTest), включая
+  nonempty tab/sort matrix3roles и сброс pending/applied. Все190fixture tables
+  unchanged после подготовки6synthetic заказов. Рабочие заказы не менялись,
+  provider calls не выполнялись. Viewport reset, fixture server stopped.
+- Production code без изменений: target main чистая, non-md для выгрузки и
+  commit в C: нет. Журналы в G: commit без push; diff-check PASS.
+- Общий ADM-AUD-13 IN PROGRESS. Следующий пункт согласованного списка:
+  ADM-AUD-13C/D — создание заказа с несколькими файлами и восстановление
+  формы после отказа загрузки; различать full create/save и уже проверенный attach.
+## ADM-AUD-13C/D — Полное создание с пакетной загрузкой после отказа, 2026-10-29 — DONE для PNG/JPEG сценария
+
+- Actual CreateOrders browser: unsupported.exe отклонён FilePond; заполненные
+  данные сохранены, после удаления invalid файла без reload загрузились2PNG/JPEG
+  первой позиции и1PNG второй. Первую временную вкладку потеряли между turns,
+  повторили весь reject→recovery→create в новой форме, не выдавая старый draft за save.
+- Создан только isolated order107 для fixture client2:2позиции25+35=60EUR,
+  watching/not_payed. JSON orig_images:2файла первой/1второй, все3SHA256 совпали
+  с input. Повторное открытие EditOrders107: все фото loaded.
+- Verifier подтверждает190таблиц: все прежние записи неизменны, добавлен ровно
+  один orders row; users прежние.7старых media SHA прежние, ровно3новых файла.
+  Legacy имя N107-2 содержит count товара, не номер позиции; соответствие позиции
+  проверялось JSON orig_images/размером/хешами, не ошибочной трактовкой filename.
+- Добавлен actual CreateOrders regression: invalid upload no orders/users/media,
+  тот же Livewire component recovery с2позициями/3файлами, byte SHA и isolation.
+  29tests344assertions PASS (creation service/full page + create form).
+- Рабочие заказы/клиенты не затронуты, Mail/HTTP fake; fixture server stopped.
+  Evidence create-rejected-exe.png/create-recovery-saved-order.png и
+  create-recovery-verified.json в storage/app/audit/client-read-20261029.
+- Изменён только testPHP, скопирован без.md в C:/OSPanel/domains/viar/viar13,
+  SHA256 совпал. Target main commit9d5f2b8 без push; production код прежний.
+- Общий ADM-AUD-13 открыт. Этот gate не закрывает OS drag всех форматов,
+  HEIC decoding или полный100MiB Filament save под Apache. Далее ADM-AUD-13E:
+  финальный browser generate/download документов на isolated fixture, внешние
+  email/payment/Venipak calls не выполнять.
+## ADM-AUD-13E — Browser генерация и скачивание настоящего PDF, 2026-10-29 — DONE для одностраничного счёта
+
+- Actual ListOrders fixture42 generateInvoice→confirm→настоящий InvoiceService/
+  DynamicPDFController/Dompdf, без mock. ИсходногоPDFне было, появился42.pdf931192bytes.
+  Ссылка «Счет» скачана browser downloadMedia; generated/download SHA256 совпали.
+- PDF1page просмотрена через pdftoppm: номерVR001, synthetic seller/customer,
+  товарUAT filter canvas, немецкая локаль из users.pdf_locale, итог94.00EUR.
+  pypdf text/page assertions PASS. Текст сохранён invoice-text.txt.
+- Snapshot190tables: только orders42.has_pdf/pdf_link/updated_at изменились;
+  pdf_approved0, остальные order/user/chat/SA/role данные прежние. Approve/email,
+  payment/Venipak не вызывались; Mail/HTTP fake. Fixture server stopped.
+- Две ошибки подготовки fixture: отсутствовали CSS для filemtime и order_strings1.
+  После первой generator failure состояние не сохранилось; добавлены assets и
+  прежние synthetic invoice texts из firm-pdf fixture, повторный generate успешен.
+  Production код не менялся; ошибки стенда не выдаются за дефекты приложения.
+- 25tests357assertions PASS (InvoiceDocumentTest/OrderInvoiceServiceTest).
+  Evidence storage/app/audit/invoice-browser-20261029/{verified.json,invoice-page1.png,
+  invoice-text.txt,public/storage/pdf/42.pdf}. Download local Downloads/42.pdf.
+- Только журналы: export non-md/commit C: не требуется, target main чистая;
+  основной commit без push. Diff-check PASS.
+- Общий ADM-AUD-13E/ADM13 IN PROGRESS: browser длинный/подарочный документ
+  этим сценарием не закрыт (их controller/render gates записаны ранее).
+  Следующий точный шаг — actual browser генерация длинного счёта с60позициями,
+  скачать/проверить обе страницы без реальных отправок, затем gift documents.
+## ADM-AUD-13E — Длинный счёт через Chrome, 2026-10-29 — DONE для60позиций
+
+- По просьбе пользователя Chrome extension: actual ListOrders fixture42,
+  Generate→confirm→real InvoiceService/Dompdf→download «Счет». Никаких
+  invoice mocks/реальных заказов. PDF935967bytes, Chrome Downloads/42 (1).pdf
+  SHA25611372aeeb81492d75a5358729b2251533b63a2f5a13af2b06b6d0679a0e85864
+  совпал с generated файлом.
+- pypdf:2pages, LONG-ITEM001..060 каждый ровно1раз, итог730.00EUR=726+4delivery.
+  Обе страницы отрендерены/просмотрены: page1items1–34,page2items35–60,
+  итог/НДС/сумма прописью вмещаются, строки не теряются на разрыве.
+- 1targeted long invoice test68assertions PASS; предыдущий invoice suite25/357
+  уже прошёл без production изменений. Snapshot190tables: только order42
+  has_pdf/pdf_link/updated_at изменились, pdf_approved0/прочие данные прежние.
+  Approve/email/payment/Venipak не запускались, HTTP/Mail fake; server stopped.
+- Evidence storage/app/audit/invoice-browser-20261029/long-page-{1,2}.png,
+  long-text.txt,chrome-long-generated.png,verified.json. Текущий42.pdf overwritten
+  только в ignored fixture public; production storage не затронут.
+- Код не менялся: только4журнала, non-md для копирования/commit в C: нет.
+  Основной commit без push. Далее ADM-AUD-13E — подарочные документы через
+  Chrome (реальный download/render, без отправки клиентам). ОбщийADM13 открыт.
+## ADM-AUD-13C/D — Заказ с фотографиями: проверка 2026-10-29
+
+- Проверенный сценарий DONE: отдельный synthetic order №108 создан штатным
+  AdminOrderCreationService: 60 позиций PHOTO-ITEM-001..060, у каждой один PNG.
+  Это service-level UploadedFile, а не 60 загрузок через browser file chooser.
+- Одна синтетическая синяя картинка сохранена в 60 отдельных файлах; уникальность
+  путей и SHA256 каждого файла проверены. В Chrome EditOrders показаны все
+  60 позиций; загружены все 60 уникальных URL, ошибок изображений нет.
+  120 img включают дубликаты галереи/позиций; 4 offscreen lazy-дубликата pending.
+- После браузера повторно проверены 190 таблиц: все существовавшие строки прежние,
+  добавлен только order108. Счёт без фотографий оставлен без изменений.
+  SQLite/storage изолированы; Mail/HTTP fake, никаких отправок клиентам.
+- Evidence (ignored): storage/app/audit/invoice-browser-20261029/
+  sixty-photos-created.json, sixty-photos-before.json,
+  chrome-sixty-photos-gallery.png, chrome-sixty-photos-last.png;
+  storage/app/audit/sixty-photos-final-check.php: PASS. Сервер остановлен.
+- Runtime-код не менялся; текущая сдача — документация в основном репозитории.
+  Non-md файлов для копирования/коммита в C: нет; target working tree чистое.
+  ADM-AUD-13 в целом остаётся открытым. Следующий шаг: ADM-AUD-13E —
+  браузерная приёмка подарочных документов без отправок клиентам.
+
+## ADM-AUD-13D — Ручное создание 10 товаров с фото, 2026-10-29: результат
+
+- DONE для сценария: через Chrome CreateOrders выбран fixture2@example.test,
+  кнопкой «Добавить позицию» последовательно добавлены 10 товаров, названия
+  «Ручной товар 01»..«Ручной товар 10», цены 10..19 EUR, размер 40x60.
+  В каждой карточке фото отдельно выбрано через видимую ссылку «выберите» и
+  штатный file chooser; сервис напрямую/Livewire evaluate не использовались.
+- Перед нажатием «Добавить» все 10 загрузок завершились; итог формы 145 EUR.
+  UI подтвердил «Заказ №109 создан. Внешние уведомления отключены для UAT».
+  Повторно открыт EditOrders109: все 10 названий, 10 уникальных фото загружены,
+  ошибок изображений нет (20 img = галерея + отдельные позиции).
+- Фото — один синтетический PNG, выбранный отдельно десять раз. Проверены
+  10 отдельных путей и SHA256 каждого файла, сумма orders.price=145.
+  manual-ten-check.py PASS: существовавшие строки всех190tables не изменились.
+  SQLite/storage изолированы, уведомления отключены, HTTP fake; реальных
+  клиентов и production DB/storage не затрагивали. Счёт не создавали.
+- UX: длинные развёрнутые карточки требуют прокрутки и повторного ввода размера.
+  Локальный однопоточный PHP server отвечал с задержками и очередью Livewire:
+  это наблюдение окружения, не доказательство задержек целевого сервера.
+  Прямой клик инструмента по file input не сработал; видимая ссылка «выберите»
+  успешно открыла все10 chooser, дефект приложения не подтверждён.
+- TODO ADM-AUD-13D — Удобство повторного ввода: сравнить с оригиналом возможность
+  дублирования позиции/общих параметров и компактного списка, согласовать
+  улучшение без изменения расчётов и бизнес-логики. В этой проверке UI не менялся.
+- Evidence ignored: storage/app/audit/invoice-browser-20261029/
+  manual-ten-before.sqlite, manual-ten-verified.json,
+  chrome-manual-ten-before-save.png, chrome-manual-ten-saved.png, requests.jsonl;
+  verifier storage/app/audit/manual-ten-check.py. Сервер остановлен после проверки.
+- Runtime изменений нет: только4журнала в source commit без push; non-md файлов
+  для выгрузки/коммита в C: нет. ADM-AUD-13 целиком остаётся открытым.
+
+## ADM-AUD-13E — Подарочные документы через Chrome, 2026-10-29: результат
+
+- DONE для browser-generation/download subset: isolated SQLite copy,
+  synthetic order110:2offline50+1online25. Через реальный ListOrders inline select
+  «Статус оплаты заказа №110» выбран payed; штатный OrderPaymentService создал
+  3купона/3настоящих PDF. В браузере после reload статус payed.
+- Coupon values50/50/25, offline1/1/0, три разных кода. pypdf: каждый1page,
+  код/номинал совпадают с coupon. Render Poppler50/25 просмотрен: оформление,
+  поворот, номинал и код читаются. Для второго50 отдельная visual не заявляется.
+- Mail fake перехватил GiftCard и Payment_successful; gift render содержит3ссылки
+  только order110. Chrome открыл локальный render реального письма; по всем3
+  ссылкам скачаны Downloads/110_2_{1,2,3}.pdf, SHA256 каждого совпал с generated.
+  download-event для target=_blank иногда timeout, но обычные клики скачали
+  файлы; проверены реальные Downloads. ПервыйPDF также downloadMedia.
+- Шаблон mail.giftcard и фонgiftcard.png SHA256 идентичны originalLaravel6;
+  метод getGiftCardHtml от private до конца файла совпадает после normalizeLF.
+  Это проверка business/render/download, не приёмка Outlook/Gmail.
+- В локальном browser preview заменены только src origin на localhost; отсутствуют
+  mail декоративные/промо картинки, поэтому полную визуальную приёмку письма
+  не заявляем. Промо2синтетические строки+RUtranslations для original template.
+- Первый export hook упал на пустых promo данных fixture после успешного action.
+  Данные fixture дополнены, SQLite восстановлена из before и browser action
+  повторён: в финальной fixture ровно3купона. Invoice-only assertSentCount
+  в ignored router убран: gift workflow перехватывает2типа письма, это не
+  production exception. Runtime-код не менялся.
+- check-gift-browser.py PASS:190tables сверены с snapshot; разрешённые изменения
+  order110 payment_status/use_bonus/updated_at, user2 bonuses/updated_at и3новых
+  coupons. Прочие строки/поля прежние. Внешние уведомления выключены, Mail fake,
+  HTTPpreventStrayRequests, Location fake. Производственные данные не затронуты.
+- GiftCardDocumentTest+OrderPaymentServiceTest:32tests352assertions PASS,
+  PHP8.4.1,77.97s. Код после тестов не менялся; diffcheck PASS.
+- Evidence ignored: storage/app/audit/gift-browser-20261029/verified.json,
+  before.sqlite, gift-mail-raw.html, gift-mail-preview.html, gift-{50,25}.png,
+  chrome-paid.png, chrome-gift-mail.png, public/storage/pdf-gift-card/110_2_*.pdf.
+  Сервер остановлен. Только4журнала source commit без push; non-md для C:нет,
+  target working tree чистое. Общий ADM13/13E открыт.
+- Уточнение пользователя: ADM-AUD-13D удобство формы отложено; текущую форму
+  товаров оставляем, ручное создание10сфото работает.
+- Следующая задача: ADM-AUD-13F — оставшиеся браузерные сценарии назначения
+  исполнителя и смены статусов на тестовых данных, с original business logic.
+
+## ADM-AUD-13F — Замена исполнителей и цикл статусов, 2026-10-29: результат
+
+- DONE для browser subset: Chrome actual ListOrders isolated order111.
+  UI путь художника: нет→3→снять→12→снять; печатника нет→10→снять→13→снять.
+  Замена выполняется через снятие и новое назначение, как в original row UI;
+  отдельный popup/новая функция замены не добавлялись.
+- Промежуточные snapshots подтверждают сохранность соседнего назначения:
+  3/10→нет/10→12/10→12/нет→12/13→нет/13→нет/нет.
+  Во всех snapshots неизменны painter_endtime2026-11-15, painter_payed1,
+  is_show_painter_images1; чужие order/assignments не менялись.
+- Через select статуса111 выполнены pegging→in_production→sended→send_lubanas→
+  completed. Все5дат выставлены, status_date/updated_at сохранены.
+  После completed строка исчезла из текущих; вкладка Завершённые показала111,
+  история в раскрытой строке содержит все даты. Переключение вкладки сбрасывает
+  поиск и показывает все3завершённых fixture, поэтому история открыта именно111.
+- Printing browser111: нет controls назначения художника/печатника и оплаты;
+  статус completed виден. Роль получена в test-only router, production auth
+  не менялась. Запреты прямых actions проверены автоматическими permission tests,
+  браузерного поддельного запроса не было.
+- Original OrdersController:update_order_painter/update_printing_order,
+  status handler1845+: те же источники painter_orders/printing_orders,
+  orders.status и отдельные даты; внешние письма на assignment/sended/lubanas
+  соответствуют существующим notification branches. Legacy баги update result
+  вместо model и возможные дубли assignment не воспроизводились заново:
+  уже существующий service сохраняет одиночное назначение и транзакцию.
+- OrderArtistServiceTest+OrderLifecycleServiceTest+OrderRecordActionPermissionsTest:
+  51tests868assertions PASS, PHP8.4.1,48.38s. Production код не менялся.
+  check-lifecycle-browser.py final PASS:190tables, разрешены только111 status/date
+  и его assignment rows; остальное точно совпало со before.sqlite.
+  Mail assertNothingSent, HTTPpreventStrayRequests, все notification flagsfalse.
+  Реальных клиентов/исполнителей/провайдеров не затрагивали; server stopped.
+- Evidence ignored: storage/app/audit/lifecycle-browser-20261029/
+  before.sqlite,snapshots.jsonl,verified.json,chrome-replaced.png,
+  chrome-completed.png,chrome-printing.png; check-lifecycle-browser.py.
+- Сдача:4журнала source commit без push; нет runtime/non-md файлов текущей задачи
+  для C:копирования и target commit. Target working tree чистое.
+- Следующий шаг ADM-AUD-13G — актуализировать итоговую матрицу приёмки Orders:
+  объединить фактические проверки28–29октября, убрать устаревшие pending для
+  уже проверенных сценариев и выделить конкретные оставшиеся browser gates.
+  ОбщийADM13 не объявлен DONE этим частичным проходом.
+
+### Проверка актуализации матрицы, 2026-10-29
+
+- Проверены датированные записи28–29октября и наличие6JSON evidence по чатам,
+  товарам, create recovery, ручному create10, подаркам и жизненному циклу.
+- Обновлены7строк матрицы и6конкретных remaining gates, исправлен путь к original
+  OrdersController. Название текущей задачи одинаково во всех4журналах.
+- Предыдущий общий831test gate явно помечен историческим; targeted результаты
+  не складываются и не выдаются за новый общий прогон. Runtime-код не менялся,
+  тесты приложения заново не запускались: задача документальная. Diff-check PASS.
+- Документы коммитятся в текущей source ветке без push; non-md для копирования
+  в C:/OSPanel/domains/viar/viar13 нет, target commit не требуется.
+
+## ADM-AUD-13F — Быстрое переключение окон чатов, 2026-10-29: DONE
+
+- Воспроизведён lost click: client close→admin click, admin close→SA click;
+  новый mountTableAction не отправлялся. Test-only event log показал закрытое
+  окно без fi-modal-open, но display:block/pointer-events:auto во время Alpine
+  leave transition. Следующий клик попадал в прозрачный закрывающийся overlay.
+- Исправлен public/css/filament-order-chats.css: только modal с adm-chat-modal
+  без fi-modal-open и его потомки получают pointer-events:none. Открытое окно
+  по-прежнему pointer-events:auto. Vendor/Livewire/action handlers не менялись.
+  Правило охватывает client/admin/SA/painter, не остальные модальные окна.
+- Actual Chrome ListOrders42 fixture: цепочка client→admin→SA→painter→client
+  проверена lite_manager и printing на desktop и390x844 (16переходов).
+  Между close и click не добавляли sleep; открытие каждой цели по одному клику,
+  подтверждено заголовками окон и logs. Медленный server может ждать завершения
+  последовательных запросов close/open, повторное нажатие больше не требуется.
+- Запуск draft send/read/bot отсутствовал; сохранение черновиков после закрытия
+  не обещаем и не меняем. Обычная логика закрытия Filament сохранена.
+- 88tests844assertions PASS: OrderClientChatTest/OrderPainterChatTest/
+  OrderSaChatTest/OrderAdminChatServiceTest, PHP8.4.1,31.21s. Отдельный тест CSS,
+  зеркалящий правило, не добавлялся: defect→fix подтверждён actual browser.
+- check-chat-switch.py PASS: все190таблиц совпали с before.sqlite, включая
+  messages/read-state/bot/orders/permissions. Mail assertNothingSent/HTTP blocked,
+  все notification flagsfalse. Реальных клиентов/данных не касались.
+- Evidence ignored: storage/app/audit/chat-switch-20261029/verified.json,
+  manager-desktop-events.json,manager-all-events.json,printing-all-events.json,
+  manager-{desktop,mobile}.png,printing-{desktop,mobile}.png,requests.jsonl.
+  Debug event listeners существовали только в ignored local router.
+  Viewport reset выполнен, тестовый сервер остановлен после проверки.
+- Только1CSS скопирован с сохранением структуры в C:/OSPanel/domains/viar/viar13;
+  SHA256 F44DA52ACDBF389747985AF3D74DE6006F8DF0E478A0FAE86C4AB8132200353B совпал.
+  Target main commit b184fe8 без push, Markdown не копировался.
+- Пункт1 актуальной очереди закрыт. Далее ADM-AUD-13C/D — Загрузки в целевом
+  серверном окружении: проверить возможность безопасного isolated Apache save,
+  лимиты/отказ/recovery и preview только в рамках original behavior.
+  ОбщийADM-AUD-13 остаётся IN PROGRESS.
+
+## ADM-AUD-13F — Визуальная и функциональная сверка окон чатов с оригиналом, 2026-10-29
+
+- DONE для текущей сверки; общий ADM-AUD-13 остаётся IN PROGRESS.
+- Original reference: C:/OSPanel/domains/asoft/viar/resources/views/admin/
+  client_chat.blade.php, admin_chat.blade.php, order_chat.blade.php,
+  sa_chat.blade.php; actual Chrome https://viarcanvas.loc/admin/orders и
+  https://viar13.loc/filament/orders, один тестовый заказ18451. На общей БД
+  только просмотр/открытие/закрытие, без send/read/bot commands.
+- В браузере сопоставлены истории и controls всех четырёх чатов:
+  client test/test2, пустые internal/painter, одно UAT SA сообщение.
+  Клиентский и SA popup имеют ширину1100, внутренний600; оформление не pixel-perfect.
+  Filament добавляет заголовок с order id, подписи полей, read/status metadata;
+  изменены отступы и положение handoff checkbox/кнопок. Фиксированная высота
+  истории и пустое пространство перед composer существуют и в original.
+- В исходном painter select реально активен только «Общий»: варианты sketch/
+  painting закомментированы. Новый general-only reply соответствует оригиналу;
+  legacy typed history продолжает отображаться. Read в original вызывается
+  отдельным кликом сообщения, открытие само по себе не означает прочтение.
+- Новые четыре окна проверены визуально desktop и390px в isolated fixture42:
+  composer/кнопки доступны, client/SA требуют scroll; при прокрутке длинного
+  окна заголовок/close могут уходить выше viewport. Это наблюдение удобства,
+  не подтверждённая новая регрессия относительно original mobile.
+- Важно: original-painter-mobile.png и original-sa-mobile.png фактически имеют
+  desktop dimensions (override применился к другой вкладке). Не использовать
+  имена файлов как evidence мобильной parity. Полная парная mobile сверка
+  original/new всех четырёх окон остаётся TODO перед общей приёмкой.
+- Actual browser positive write только isolated order42: одно внутреннее
+  сообщение «ADM-FIL-UAT визуальная и функциональная сверка 2026-10-29» отuser11;
+  после send видно в колонке и при повторном открытии popup. Остальные
+  изменяющие сценарии подтверждены автоматическими feature/Livewire тестами,
+  а не новой ручной отправкой во все четыре чата.
+- Fresh PHP8.4.1: OrderClientChatTest + OrderPainterChatTest + OrderSaChatTest +
+  OrderAdminChatServiceTest: 88 passed/844 assertions,24.85s.
+  OrderSaCommandTest + SaConversationBotControlTest:29 passed/257 assertions,9.16s.
+  Итого117tests1101assertions PASS. Проверяются thread binding, explicit/idempotent
+  read, permissions/403, revocation, stale snapshot, general painter reply,
+  SA send/handoff, bot modes, uncertain outcome и отсутствие повторной отправки.
+  Внешние операции fake/mock, фактическая доставка WhatsApp не проверялась.
+- Isolated router: Mail::fake/Notification::fake/Http::preventStrayRequests,
+  после каждого ответа Mail::assertNothingSent и Http::assertNothingSent.
+  check-chat-visual.py:190 таблиц проверено,189 без изменений; только одна
+  ожидаемая новая строка order_admin_comments(orders_id42,user_id11).
+  Read state/bot/orders/client/painter messages без изменений.
+- Evidence ignored storage/app/audit/chat-switch-20261029:
+  visual-{client,admin,painter,sa}-desktop.png, visual-*-mobile*.png,
+  original-*-desktop.png, new-live-client-desktop.png,
+  new-live-admin-desktop.png, new-live-sa-desktop.png,
+  new-live-painter-mobile.png, functional-admin-saved.png,
+  visual-functional-verified.json. Viewport reset выполнен.
+- Runtime код в этой сверке не изменялся. Выгрузка в C:/OSPanel/domains/viar/viar13
+  и target commit не нужны: изменяются только Markdown, исключённый правилом
+  пользователя. Предыдущий CSS уже доставлен commit b184fe8; push не выполняется.
+- Следующее точное действие: завершить парную mobile сверку чатов с original,
+  затем вернуться к пункту2 очереди ADM-AUD-13C/D — effective server upload
+  limits/recovery. Визуальные отличия не объявлять исправленными.
+
+## ADM-AUD-13F — Парная мобильная сверка четырёх чатов, 2026-10-29
+
+- DONE для парной visual проверки original/new order18451 при390x844.
+  Actual Chrome, https://viarcanvas.loc/admin/orders и
+  https://viar13.loc/filament/orders; innerWidth390 подтверждён отдельно
+  в обеих вкладках. Pillow подтвердил размеры всех9 screenshots390x844;
+  фактический формат JPEG, несмотря на расширение .png от audit helper.
+- Клиент: те же test/test2, авторы/даты сохранены. В original composer
+  сжат горизонтальным layout до узкого поля, есть горизонтальная прокрутка.
+  Новый composer вертикальный, textarea и Add comment помещаются.
+- Internal: обе истории пусты; textarea/Отправить/close доступны.
+  Filament добавляет order title и обязательную подпись поля.
+- Painter: обе истории пусты, dropdown только «Общий»; форма/отправка/close
+  помещаются. Новый popup выше из-за заголовка/подписей/UAT explanation.
+- SA: тот же UAT message; Resume/Pause/Handoff присутствуют в обеих версиях.
+  Original reply/checkbox/send сжаты в строку, send уходит вправо; new controls
+  помещаются по ширине, нижняя форма достигается прокруткой. Actual click
+  пустого textarea и Tab переводит focus на send, без отправки/ввода текста.
+  Screenshot нижней формы подтверждает textarea/button/handoff checkbox.
+- Обнаруженное различие индикатора SA объясняется источником в Blade:
+  original sa_chat.blade.php берёт orders.sa_bot_mode с fallback n/a;
+  new resources/views/filament/tables/modals/order-sa-chat.blade.php берёт
+  conversation.bot_mode. Для18451 видим N/A vs PAUSED. Это не evidence смены
+  режима при просмотре: bot commands не вызывались. Принудительную синхронизацию
+  или подмену источника ради визуального совпадения не добавляли.
+- Оформление не1в1; различия зафиксированы. Этот проход закрывает прежний TODO
+  парного mobile сравнения этих четырёх popup, не всю приёмку orders и не
+  проверку физической клавиатуры телефона/реального мобильного устройства.
+- Только read-only UI: открытие/закрытие, focus/Tab. Send/read/bot actions
+  не нажимались; тестовые сообщения/данные не создавались. Runtime не менялся,
+  повтор тестов не требовался: ближайший gate e05b2cf —117tests1101assertions PASS.
+- Evidence ignored storage/app/audit/chat-switch-20261029/
+  pair-{old,new}-{client,admin,painter,sa}-390.png и
+  pair-new-sa-composer-390.png; все9 изображений просмотрены. Временные вкладки
+  закрыты, viewport reset. Markdown в C:/OSPanel/domains/viar/viar13 не копируется;
+  non-md изменений и target commit в этом проходе нет, push не выполняется.
+- Далее ADM-AUD-13C/D — effective server upload limits/recovery:
+  определить безопасный isolated full Filament save на Apache и проверить
+  реальную границу размера, отказ и восстановление. ОбщийADM-AUD-13 IN PROGRESS.
+
+## ADM-AUD-13F — Компактное оформление чатов по оригиналу: результат, 2026-10-30
+- DONE для текущей CSS правки; общий ADM-AUD-13F visual parity IN PROGRESS.
+- public/css/filament-order-chats.css: повторные заголовки Filament, подпись
+  внутреннего textarea и painter reply визуально скрыты через clipping; label/id
+  и accessible dialog heading сохранены. Close вынесен в верхний угол, content
+  padding15px, внутренние textarea wrapper/button компактнее. CSS scoped chats.
+- Actual Chrome original/new order18451 desktop: четыре пары screenshots,
+  внутренний popup600x266.33 против original600x271. Истории/action labels прежние;
+  только open/close/focus/Tab, send/read/bot commands не вызывались.
+- New390x844: client/admin/painter screenshots проверены; SA composer доступен
+  через focus+Tab, send/checkbox помещаются, close видим после scroll.
+  new-sa-mobile.jpg снят во время перехода, НЕ evidence финального внешнего вида;
+  использовать new-sa-mobile-composer.jpg. Первый отдельный tab зависал и закрыт;
+  проверки продолжены в рабочей вкладке. Viewport reset, оба user popup закрыты.
+- Evidence ignored storage/app/audit/chat-layout-20261030: old/new-*-desktop.jpg,
+  new-{client,admin,painter}-mobile.jpg, new-sa-mobile-composer.jpg.
+- Fresh PHP8.4.1: OrderClientChatTest/OrderPainterChatTest/OrderSaChatTest/
+  OrderAdminChatServiceTest:88tests844assertions PASS,125.21s. API/services/schema
+  и настройки отправок не менялись; новые зеркалящие CSS тесты не добавлялись.
+- Скопирован только CSS в C:/OSPanel/domains/viar/viar13 с сохранением структуры;
+  SHA256 обеих копий845EE5D3C66118C8601C173CBEEAF8CE7F58AA8CEDB4976BD7354AA03B404A5B.
+  Markdown не копировался; target commit указан в итоговом ответе. Без push.
+- Осталось в этой задаче: детализация полей/подписей/отступов composer и SA,
+  включая конфликт глобального filament-form-controls.css с локальными textarea
+  (border/radius); не заявлять pixel-perfect или завершение всего дизайна.
+  Read-state/UAT/подтверждения команд сохранять. До этого к uploads не переходить.
+
+## ADM-AUD-13F — Разные сообщения на общем заказе18451: результат, 2026-10-30
+- DONE для тестового наполнения/desktop сравнения, visual parity IN PROGRESS.
+  Явное разрешение пользователя на рабочую общую БД только тестового18451.
+- Через actual Filament Chrome отправлены8сообщений: short+long в каждый из
+  client/internal/painter/SA. Маркер [UAT-18451-3010], текст синтетический:
+  RU/UK/EN, emoji, абзацы,144символа без пробелов, example.test ссылка.
+  Сообщения оставлены в базе для дальнейшей парной приёмки.
+- Перед send прочитана runtime config G: и C:: client/painter notifications=false,
+  sa_commands=false. UI help подтверждает suppression. SA external id
+  ADM-FIL-UAT-18451 имеет дополнительный hard transport lock в сервисе.
+  Отправки сделаны только из Filament; legacy send endpoints не вызывались.
+- Read-only before/after snapshot18451: orders и saConversations полностью
+  совпали, все прежние строки четырёх потоков совпали. Ровно2новых в каждом:
+  order_user_comments3994/3995; order_admin_comments187/188;
+  orders_chats2857/2858; sa_messages141/142 (uat_suppressed).
+  Это сверка данного заказа, не snapshot всей общей БД. SA events создаются
+  штатным сервисом; бот/Handoff/read actions не вызывались.
+- Actual Chrome original/new одного18451: все4истории открыты и просмотрены,
+  счётчики client4/internal2/painter2, SA3; оба новых маркера доступны в DOM.
+  Для быстрой загрузки при задержках Chrome временные вкладки отфильтрованы
+  original ?order_filter=1&order_id=18451, new filters[order_id][value]=18451.
+- На наполнении видны remaining differences: new сохраняет абзацы/переносит
+  строки и добавляет read/UAT metadata; original internal/painter схлопывает
+  пробелы/переносы, дата internal стоит иначе. Ширина600/1100 и схема
+  history→composer сохранены. Полное визуальное совпадение не заявляется.
+- TODO в ADM-AUD-13F: на наполненных чатах довести отступы/поля/подписи и
+  провести mobile сверку длинных сообщений. Длинные комментарии делают строку
+  списка высокой в обеих версиях; проверить превью отдельно, без потери текста.
+- Evidence ignored storage/app/audit/working-chat-20261030-{before,after,verified}.json;
+  storage/app/audit/chat-layout-20261030/populated-{old,new}-{admin,client,painter,sa}.jpg,
+  populated-new-client-bottom.jpg. Все screenshots просмотрены. CSS/runtime
+  в этом проходе не менялись, поэтому повтор regression suite не запускался;
+  функциональное evidence — actual8UI sends + DB assertions, предыдущий gate88/844.
+- Только Markdown коммитится в source; кодовых файлов для копирования и
+  отдельного коммита в C:/OSPanel/domains/viar/viar13 нет. Без push.
+  Следующее действие остаётся ADM-AUD-13F: довести оформление на этом наполнении.
+
+## ADM-AUD-13F — Поля ответа и длинные сообщения: результат, 2026-10-30
+- DONE для текущих полей/подписей, общий visual parity остаётся IN PROGRESS.
+- filament-form-controls.css: исключение .adm-chat-modal из общего !important
+  border/radius правила custom controls; остальные BREAD/формы прежние.
+  Локальные стили теперь работают: client/SA textarea transparent border0/radius0,
+  painter textarea/select прямоугольные; admin Filament wrapper radius0.
+- Painter dropdown «Общий» компактный и слева, подпись «Тип переписки» визуально
+  скрыта, aria-label сохранён. Кнопка «Отправить», как в original order_chat.
+  wire:model/send, maxlength, error/help, permissions и business services прежние.
+- Reference: source original admin/client/order/sa_chat Blade и наполненные
+  original desktop screenshots populated-old-*.jpg текущего18451.
+  Actual new Chrome все4окна desktop и390x844, 8сохранённых тестовых сообщений.
+  Поля/close/send помещаются. Read-state/UAT и keyboard focus outline сохранены.
+- DOM widths mobile (clientWidth==scrollWidth): client history283/textarea299,
+  painter/internal history313, SA history288/textarea253; длинный текст не
+  создаёт горизонтальную прокрутку. Desktop client history1005/1005.
+  Mobile End не довёл историю к нижней строке, screenshots history показывают
+  начало/середину; не объявляем их evidence чтения последней строки. Доступность
+  SA composer отдельно проверена focus/Tab, без отправки.
+- PHP8.4.1 OrderClientChatTest/OrderPainterChatTest/OrderSaChatTest/
+  OrderAdminChatServiceTest:88tests844assertions PASS,50.70s; diffcheck PASS.
+  Новых зеркалящих CSS тестов нет, проверка оформлений actual browser+computed styles.
+- Read-only DB compare с snapshot после предыдущих8send: orders18451, все строки
+  client/internal/painter/SA и saConversations полностью без изменений.
+  client/painter/SA notification flagsfalse. Новых send/read/bot действий нет.
+- Evidence ignored chat-layout-20261030/fields-{client,painter,admin,sa}-desktop.jpg,
+  fields-{client,painter,admin}-mobile.jpg, fields-sa-mobile-{history,composer}.jpg;
+  все просмотрены. Viewport reset, временная вкладка закрыта.
+- Скопированы только3файла текущей задачи в C:/OSPanel/domains/viar/viar13,
+  SHA256 всех трёх совпали; Markdown не копировался. Target commit см. итог.
+  Код и документация source коммитятся отдельно от target, без push.
+- Осталось: парная mobile приёмка наполненных original/new и окончательная
+  сверка отступов/метаданных; не переходить к uploads до закрытия этого блока.
+  Сохранение абзацев и статусов прочтения — действующая новая функциональность,
+  не удалять ради сокращения истории до размеров original.
+
+## ADM-AUD-13F — Парная mobile приёмка наполненных чатов: результат, 2026-10-30
+- DONE для проверяемого поднабора: original/new18451, четыре popup,390x844.
+  Общий ADM-AUD-13 не закрыт; pixel-perfect не заявляется.
+- Original/new внутренний и painter: history300px, composer отдельно, close/send
+  доступны. New actual wheel bottom: internal top356.67+300~657; painter396+300=696.
+  client bottom1021.33+188~1210, width283==scrollWidth283.
+- Original client/SA при длинной строке scrollWidth1312 приclientWidth288;
+  original client composer сжимается до75px, SA textarea до20px. Эти дефекты
+  не переносились. New сохраняет абзацы/переносы, read-state и UAT help.
+- New SA actual scroll по AX region: top1229.33+219~1449, ширина288==scrollWidth288.
+  final-new-sa-mobile-bottom.jpg захвачен до стабильной перерисовки (пустая область),
+  не использовать как evidence текста; final-new-sa-mobile-composer.jpg показывает
+  последнюю строку TEST18451, example.test ссылку, uat_suppressed label и textarea/
+  send/handoff. Focus/Tab без ввода, send/read/bot не вызывались.
+- Reference screenshots final-old-{admin,client,painter,sa}-mobile.jpg и
+  final-old-{admin,client,sa}-mobile-bottom.jpg; new соответствующие start/bottom
+  и SA composer в storage/app/audit/chat-layout-20261030 (ignored).
+- Read-only snapshot сверка18451 с before-fields PASS: поля заказа, прежние и
+  восемь тестовых сообщений четырёх потоков, saConversations без изменений.
+  Runtime не менялся, новый regression прогон не нужен; последний88/844 PASS.
+- Временная новая вкладка закрыта, её viewport reset. Этот проход docs-only:
+  non-md для копирования в C:/OSPanel/domains/viar/viar13 нет, target commit
+  не создаётся; source docs commit без push.
+- Оставшиеся известные отличия visual: RU labels против original user locale,
+  дополнительные read/UAT/SA metadata, дата/имя internal и отступы с учётом
+  этих данных. Не удалять сведения или нарушать business logic ради совпадения.
+  Проверка реального телефона с системной клавиатурой не выполнялась.
+- Следующий незакрытый поднабор заказов: ADM-AUD-13C/D effective server upload
+  limits/recovery; прежде чем объявлять весь visual DONE, учитывать перечисленные
+  отличия. Новых дефектов, требующих изменения кода, в этом проходе не найдено.
+
+## ADM-AUD-13E — Платёжная ссылка: копирование и вставка из буфера, 2026-10-30
+- IN PROGRESS: проверить существующую OPR-000043 тестового заказа18451 через Chrome: copy → Ctrl+V в отдельное локальное поле, точное совпадение URL; без создания заявки, открытия оплаты и отправок.
+- Уточнение очереди: создание/редактирование и PNG/JPEG recovery уже проверены; повтор всего ADM-AUD-13C/D не требуется. Проверку загрузок целевого сервера отложили по уточнению пользователя; локальный Apache не считается production acceptance.
+
+## ADM-AUD-13E — Платёжная ссылка: копирование и вставка из буфера, результат 2026-10-30
+- DONE только для автоматизированного browser clipboard сценария; весь ADM-AUD-13E/13 остаётся IN PROGRESS. Системный буфер Windows отдельно НЕ подтверждён и не подменяется этим результатом.
+- Chrome, существующая OPR-000043 заказа18451: повторный штатный click дал «Ссылка скопирована»; clipboard.readText78символов точно совпал с URL кнопки. Ctrl+V в отдельную local textarea без формы/JS обработчиков вставил те же78символов. Буфер инструмента не заполнялся вручную через writeText/fill.
+- Первое фоновое копирование вернуло ручной fallback; повтор после восстановления browser binding успешен. Ошибка предыдущего native Windows URL detection не считается дефектом приложения. Причина задержки первого clipboard Promise не доказана, исправлений по предположению нет.
+- Read-only DOM original Laravel6: для той же заявки совпадают /lv/payment-request/ и токен; отличается только origin viarcanvas.loc/viar13.loc. Original bot_scripts.blade.php1922+ копирует data-copy-link через execCommand; новый helper поддерживает Clipboard API, legacy fallback и ручное поле. Попытка нажатия original через browser tool завершилась timeout, original paste не подтверждён.
+- node --test tests/js/payment-request-copy.test.cjs:5tests PASS,0fail/skip,219.923ms. Проверены modern success, missing API, permission rejection, false/throw legacy failure. Новые тесты и runtime правки не требовались.
+- Evidence ignored storage/app/audit/payment-copy-20261030/{verified.json,pasted.jpg}; снимок просмотрен. URL оплаты не открывался, заявки/заказы/сообщения не создавались, отправки не запускались. Изолированный localhost Apache11332 остановлен после проверки; рабочий Apache не затронут. Временная textarea tab закрыта.
+- SHA256 helper JS и двух Blade совпадают между G: и C:/OSPanel/domains/viar/viar13. Изменены только4Markdown журнала; non-md для копирования/нового target commit нет, target working tree чистое. Source docs commit в текущей ветке без push.
+- CRM/SA API, auth, идемпотентность, БД и статические mappings этим шагом не менялись; lead_id=orders.id. Серверные загрузки отложены до целевого окружения по уточнению пользователя, уже пройденные create/edit не повторять.
+- Следующая задача: ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика, на изолированных данных без реального вызова API/писем. Native Windows paste остаётся отдельным неподтверждённым пунктом, общий модуль не объявлять DONE.
+
+## ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика, 2026-10-30
+- IN PROGRESS: полный ListOrders isolated SQLite42 → actual create action → сохранённый номер → print/download. Ранее успешный submit проверялся в отдельном action harness; сейчас закрываем интеграцию с настоящим списком. Реальные HTTP/уведомления запрещены fake/stray guard, original code read-only.
+
+## ADM-AUD-13E — Успешный Venipak browser flow с fake перевозчика: результат, 2026-10-30
+- DONE для address create→номер в настоящем ListOrders→print/download; общий ADM-AUD-13E/13 остаётся IN PROGRESS. Проверка выполнялась только на isolated SQLite42, fake HTTP, Mail/Notification fake; рабочая страница viar13.loc и production API не изменялись.
+- Найден реальный дефект колонки «Оплата»: wire click вызывал callTableAction, отсутствующий в Filament5 (500 до provider call). Исправлена только привязка на существующий mountTableAction с record key и label. Проверки права update, принадлежности label заказу и бизнес-сервис сохранены.
+- Actual Chrome: открыли форму из строки42, doc UAT42-3010, вес2.5кг/объём0.1; штатные sender/recipient defaults. Submit закрыл окно, success «Этикетка Venipak создана», в колонке появился FIXTURE-LABEL/«На печать». После fix кнопка отправила print с этим номером и скачала PDF619bytes.
+- Browser download event инструмента timeout/kernel reset; скачивание подтверждено новым C:/Users/Валентин/Downloads/FIXTURE-LABEL (1).pdf от30октября15:45, не старым FIXTURE-LABEL.pdf от17октября. SHA256 5fcfce4d121a03bef72249ab8ce6d6413e2404364b2c4df68d8d0e243db23276 совпал с fake provider-label.pdf. Это специально синтетический PDF, не приёмка дизайна настоящей этикетки перевозчика.
+- Сверка190таблиц с before.sqlite PASS: только orders42.labels/updated_at изменены; платежи, позиции, клиенты, чаты, роли/permissions прежние. Provider journal ровно create+print, failurefalse; payload содержит вес/объём/doc и pack_no FIXTURE-LABEL. preventStrayRequests не допускает иной HTTP, Mail::assertNothingSent выполняется после каждого запроса.
+- Original read-only VinepakApiController.create_label349+ сохраняет номера ответа в orders.labels; print_label726+ передаёт выбранный label_code как pack_no и отдаёт attachment PDF с no-cache. Новый поток сохраняет эту бизнес-логику; реальный provider не вызывался.
+- Добавлен regression test: настоящая ViewColumn payment в Livewire table harness, метод/label извлекаются из отрендеренного wire handler; callback получает выбранный заказ/номер, assertFileDownloaded подтверждает PDF. Прежний action-only harness не ловил сломанную кнопку таблицы. Полный ListOrders дополнительно проверен actual browser.
+- OrderVenipakActionsTest+OrderVenipakLabelServiceTest+OrderListRolePresentationTest:28tests408assertions PASS,13.84s PHP8.4.1; Pint/diff-check PASS. Первый новый тест упал из-за XPath namespace в парсере теста; заменён обходом DOM buttons, после этого весь targeted gate PASS.
+- Ошибки подготовки стенда: исходный router сначала сохранил путь к прежней isolated client-read SQLite (GET500 из-за отсутствующего gallery_boxes для прежнего тестового товара); исправлен путь на venipak-list, собственная копия ограничена42 до baseline. Рабочая DB не использовалась. CLI preconnections/долгие запросы мешали browser navigation; для изоляции выбран отдельный local-only Apache/PHP8.3 на8797 без изменения production vhost/ini/лимитов. Это подготовка UAT, не приёмка prod сервера.
+- Evidence ignored storage/app/audit/venipak-list-20261030/{before.sqlite,verified.json,provider.jsonl,provider-label.pdf,created.jpg,requests.jsonl}; screenshot просмотрен. Изолированные CLI35604 и Apache38724 остановлены. Временные routers/fakes/config остаются только ignored, не поставляются.
+- Скопированы только2non-md текущей задачи: order-payment.blade.php и OrderVenipakActionsTest.php; SHA256 совпали в G: и C:/OSPanel/domains/viar/viar13. Target main commit3ea9b4f без push, Markdown не копировался. Source code+4журнала коммитятся в текущей ветке без push.
+- CRM/SA API/БД/статические mappings не менялись, lead_id=orders.id. Серверные upload проверки остаются отложенными до целевого окружения, native Windows payment-link paste отдельно не подтверждён.
+- Следующая задача: ADM-AUD-13G — Поля фирмы и медиа: финальная проверка доступности на desktop/mobile по original; общий список приёмки не закрывать этим шагом.
+
+## ADM-AUD-13G — Поля фирмы и медиа: доступность на компьютере и телефоне, 2026-10-30
+- IN PROGRESS: read-only original/new18451 восемь реквизитов совпали по именам/значениям, кнопка сохранения доступна. Далее mobile/focus и правая колонка.
+- Найден дефект media: original18425 показывает remote viarcanvas.com/orders/sketch, новая колонка художника вызывает общий order_image_url с local file_exists и подставляет no_image. Исправляем только admin artist links через существующий OrderMediaUrl; никаких local копий/download/cache. Пользователь30октября повторно подтвердил хранение изображений на проде.
+
+## ADM-AUD-13G — Поля фирмы и медиа: доступность на компьютере и телефоне, результат 2026-10-30
+- DONE для восьми реквизитов18451 и проверяемых remote media/правых колонок18425; общий ADM-AUD-13/полный media inventory не объявляется DONE. Подарочное письмо остаётся отдельным пунктом этой очереди.
+- Original/new18451: восемь полей name/reg_num/addr/bank/vat_num/bank_code/office_addr/acc_num совпали byte-for-byte по значениям; исходный mapping Банк/Банк VAT сохранён. New desktop/mobile inputs180px, все восемь подписей и кнопка Обновить доступны. Без ввода/submit. Original js_firm раскрывает форму, new details раскрывает ту же группу данных; pixel-perfect не заявляется.
+- Chrome actual390x844: documentWidth375 без общего горизонтального overflow, input180x25. После Tab из Номер аккаунта focus на Обновить, rect left20/right92.92/top444.45/bottom469.24 внутри viewport. На screenshot firm-mobile-bottom видны все8полей и кнопка. Первый mobile capture оказался desktop2560: не использован, снимки перезаписаны после явного DOM подтверждения390x844. Original mobile screenshot также390x844; viewport обоих возвращён к обычному размеру, раскрытые формы закрыты.
+- Исправлен order-artist.blade.php: раньше общий order_image_url проверял local file_exists, из-за отсутствующих локальных файлов подставлял no_image и вsrc, и вhref. Теперь DBoriginal/thumbnail, legacy sketch/painting иclient_images используют существующий admin OrderMediaUrl с настроенным prod base, безопасные абсолютные URL сохраняются; пустые/небезопасные пути дают placeholder. Public frontend helper не менялся. Права/статусы/порядок групп и назначений прежние.
+- User30октября явно подтвердил: media должны вести на прод, локально не загружать. Нет серверных HTTP probes, скачиваний, кэша, копирования artwork или записей DB/storage. Обычная загрузка img браузером с prod разрешена этим сценарием.
+- Original/new18425: два sketch URL совпали, naturalWidth830/754; new painting remote naturalWidth1676. Все3изображения complete/loadedtrue, src viarcanvas.com/orders, href ведёт на оригинал. Это PASS для проверенной выборки, не утверждение доступности всех production файлов.
+- Mobile artist205px, три media status selects128.67px, остальные controls193px; artwork превью/статусы доступны в прокручиваемой таблице. Правая колонка: статус, history, дата/Обновить видны на screenshot order-right-mobile. SA floating widget перекрывает нижний край текущего viewport; нижние действия требуют вертикальной прокрутки, отдельного изменения widget в этой задаче нет. Физический touch/экранная клавиатура не проверялись.
+- Regression: OrderMediaUrlTest+OrderMediaFormTest+OrderArtistServiceTest53tests437assertions PASS,36.54s PHP8.4.1. Два новых теста проверяют реальный artist Blade для remote original/thumbnail/status/date и legacy/client/unsafe URL; Http::assertNothingSent. Первый прогон нового теста выявил guard title в тестовой модели, fixture исправлен forceFill, production model не менялась. Pint/diff-check PASS.
+- Evidence ignored storage/app/audit/firm-media-20261030/{verified.json,firm-desktop.jpg,firm-original.jpg,firm-mobile-top.jpg,firm-mobile-bottom.jpg,artist-desktop.jpg,artist-mobile.jpg,order-right-mobile.jpg}. Mobile три снимка просмотрены, временная вкладка закрыта, viewport reset проверен для original2560x1249. Сохранений форм/статусов, send/read/bot и вызовов перевозчика не было.
+- Экспорт только2non-md в C:/OSPanel/domains/viar/viar13: order-artist.blade.php и OrderMediaUrlTest.php, SHA256 совпали. Target main commit0402926 без push; source code+4журнала коммитятся в текущей ветке без push. Markdown в выгрузку не входит.
+- CRM/SA API/auth/идемпотентность/DB/mappings не менялись; lead_id=orders.id. Из остатка данного visual/media пункта следующий точный шаг: ADM-AUD-13E — Подарочное письмо: изображения и оформление в браузере без отправки клиенту. Общие native Windows clipboard, целевой upload environment, pickup/courier browser fake и финальный regression остаются в своей очереди, не вычёркиваются этим шагом.
+
+## ADM-AUD-13E — Подарочное письмо: изображения и оформление в браузере, 2026-10-30
+- IN PROGRESS: giftcard Blade SHA256 совпал с Laravel6 original. Проверяем сохранённый actual GiftCard render110 без повторного payment/send; src остаются prod. Старые synthetic promo fixture.jpg не считать дефектом runtime: подставим в preview только реальные read-only catalog image paths, без копирования artwork.
+
+## ADM-AUD-13E — Подарочное письмо: изображения и оформление в браузере, результат 2026-10-30
+- DONE для browser visual/media subset RU письма. giftcard.blade.php SHA2567775C028742B490C7EEDB5816F5661BC8C796732789802850B848FC916C94BF8 побайтово совпал с оригиналом Laravel6; production код не менялся.
+- Использован сохранённый actual GiftCard render isolated order110 от29октября (3купона, ранее подтверждённый payment/generation/download flow). Повторного изменения оплаты/генерации/send не выполняли. Имена, цены и названия двух промопредложений остаются synthetic fixture, а не actual production pricing acceptance.
+- Для полноты visual только в ignored preview заменены2несуществовавших src storage/fixture.jpg на реальные пути a_mail_top_sale и localhost origin3PDF ссылок с8792 на8798. Каталог прочитан единственным SELECT с localeRU join translations внутри MySQL SET TRANSACTION READ ONLY, затем rollback; исходная DB не изменена. Порядок2id выбран детерминированно для UAT, runtime RAND не менялся.
+- Chrome desktop и390x844:18/18 img complete/naturalWidth>0, включая оба Logo, gift/cart/ru.png,3download icons,2promo, phone/WhatsApp/email/location/social icons. Из них16src viarcanvas.com,2иконки размеров остаются исходным wasabisys URL. Prod изображения не скачивались на сервер/не копировались в storage; загрузка только обычным браузером.
+- Mobile documentWidth375 приviewport390x844, общего horizontal overflow нет. Gift image330px, promo315px в одну колонку;3ссылки «Скачать подарочную карту» шириной219px, текст/номера1/2/3 и контакты/подвал читаются. Desktop2promo в две колонки; снимки полного письма просмотрены.
+- Локальный GET-only static router обслуживал готовый HTML и только3ранее созданных PDF110_2_[123]; Laravel/SMTP/payment/SA не загружались. CSP default-src none, только исходные img hosts иinline CSS, no form/script, Referrer-Policy no-referrer. PDF ссылки в этом шаге не нажимались: реальный download/SHA каждого уже проверен29октября.
+- Evidence ignored storage/app/audit/gift-mail-20261030/{preview.html,promo-source.json,verified.json,desktop.jpg,mobile.jpg}. Временный сервер31016 остановлен, test tab закрыта, viewport reset. Проверка реальных Outlook/Gmail не выполнялась и не входит в согласованную локальную приёмку.
+- Runtime/tests/DB схемы не менялись; новый regression run ради static preview не нужен. Последний relevant GiftCardDocumentTest+OrderPaymentServiceTest32tests352assertions PASS от29октября остаётся историческим baseline, не выдаётся за новый прогон. Текущие checks:original SHA compare/browser18images/layout/diff-check PASS.
+- CRM/SA API/auth/idempotency/static mappings не менялись, lead_id=orders.id. Изменены только4Markdown журнала; non-md для выгрузки/target commit нет, C:/OSPanel/domains/viar/viar13 working tree чистое. Source docs commit в текущей ветке без push.
+- Пункт5 очереди закрыт в записанном объёме4visual gates: remote artwork выборка, правые колонки/статусы,8реквизитов, gift-mail visual. Не означает полного inventory всех production файлов или всех почтовых клиентов.
+- Следующая задача: ADM-AUD-13E — Venipak: отделение и вызов курьера с fake API. Address create→print/download закрыт30октября; remaining pickup/courier browser branches не закрывались этим письмом. Native Windows clipboard отдельно не подтверждён, целевой upload gate отложен по решению пользователя; общий ADM-AUD-13 остаётся IN PROGRESS.
+
+## ADM-AUD-13E — Venipak: отделение и вызов курьера с fake API, 2026-10-30
+- IN PROGRESS: на отдельной SQLite42 проверить ListOrders pickup city/point→create/print, затем courier error→исправление→success без автоматических повторов. Address flow ранее закрыт; реальные провайдер/письма запрещены fake/stray guard. Runtime пока без изменений.
+
+## ADM-AUD-13E — Venipak: отделение и вызов курьера с fake API, результат 2026-10-30
+- DONE для оставшихся desktop browser pickup/courier веток. Настоящий ListOrders/production actions/services, отдельная SQLite42, synthetic sender/catalog, Http::preventStrayRequests + точечные fake endpoints, Mail::assertNothingSent. Рабочую страницу viar13.loc и реального перевозчика для изменения данных не использовали.
+- Pickup order default «На отделение»/Rīga корректен. Actual searchable city выбрали Liepāja, dependent point автоматически сменился на Fixture point2; открыли его список и явно подтвердили пункт. DocPICKUP-UAT-42, вес3.5/объём0.2, submit закрыл форму/показал success, labels PICKUP-LABEL. Wait инструмента не успел увидеть toast в одном вызове, последующий DOM подтвердил успех; submit не повторялся.
+- «На печать» скачала новый Downloads/PICKUP-LABEL.pdf619bytes. SHA2565fcfce4d121a03bef72249ab8ce6d6413e2404364b2c4df68d8d0e243db23276 совпал с fake provider-label.pdf. Fake PDF специально не настоящая транспортная этикетка; дизайн carrier PDF не принимается по этому файлу.
+- Courier из header:12.5кг/0.3/0паллет, дата2026-10-31,09:00–17:00, примечание с <&> иUnicode. DocFAIL-UAT-42 вызвал fake provider error; persistent «Ошибка Venipak», форма осталась, вес12.5/дата/примечание сохранились. Изменили только doc наCOURIER-UAT-42 и вручную нажали Отправить: форма закрылась, «Вызов курьера принят / №: COURIER-UAT-42». Старый persistent error закрыли вручную; окончательный DOM priorErrorVisiblefalse/successVisibletrue.
+- Provider journal ровно4запроса: createfalse,printfalse,couriertrue,courierfalse. Повторов автоматически нет. XML parsed: consignee Liepāja/Fixture point2/FIXTURE-LIEPAJA, pack3.5/0.2; courier descriptiontype3,12.5/0.3/0,2026/10/31,09:00–17:00,doc и исходное примечание с безопасно escaped <&> совпали.39app requests HTTP200; fake каталог учитывается отдельно, не выдаётся за4общих сетевых запроса.
+- Snapshot190tables PASS: только orders42.labels/updated_at изменены, остальные поля/строки/клиенты/права/чаты прежние. Courier не меняет business DB какoriginal. Рабочая DB/SMTP/API/storage artwork не затрагивались. Fixture artwork ссылки отсутствуют локально; их broken thumbnails не входят в данную проверку (реальные prod media уже проверены отдельной задачей).
+- Original read-only VinepakApiController.send_courier254+/generate_courier_xml294+ сверены: тот же descriptiontype3, sender/weight/volume/pallets/date_y/m/d/hour/min/comment/doc_no, multipart import, показ error/confirmation. Pickup original buildLabelPayload595+/resolvePickupContext680+ и новый payload сохраняют выбранные реквизиты отделения. Runtime не менялся.
+- Targeted PHP8.4.1: VenipakCourierTest/VenipakPickupCatalogTest/VenipakLabelDestinationTest/OrderVenipakLabelServiceTest/OrderVenipakActionsTest33tests279assertions PASS,23.32s. Тесты включают roles/validation/error branches; новые зеркалящие UI тесты без изменения кода не добавлялись.
+- Evidence ignored storage/app/audit/venipak-pickup-20261030/{before.sqlite,verified.json,provider.jsonl,provider-label.pdf,pickup-created.jpg,courier-error.jpg,courier-success.jpg,requests.jsonl}. Error/success screenshots просмотрены; final success перезаписан после leave transition старой ошибки. Test tab закрыта; отдельный Apache17328 остановлен, рабочий Apache не затронут. Mobile/physicaltouch повторно в этом desktop subset не проверялись.
+- Изменены только4Markdown журнала. Non-md для копирования/target commit нет, C:/OSPanel/domains/viar/viar13 working tree чистое; source docs commit в текущей ветке без push. CRM/SA API/auth/idempotency/DB/static mappings без изменений, lead_id=orders.id.
+- Пункт4 актуальной очереди закрыт в записанном fake browser объёме (address/pickup create/print, courier error→manual recovery→success). Следующее: ADM-AUD-13G — Итоговая приёмка заказов: общий regression и перечень ограничений. Native Windows clipboard отдельно не подтверждён; целевой upload gate DEFERRED по решению пользователя. Общий ADM-AUD-13 ещё IN PROGRESS, не объявлять DONE до финального gate/решения по ограничениям.
+
+## ADM-AUD-13G — Итоговая приёмка заказов: общий regression и перечень ограничений, 2026-10-30
+- IN PROGRESS: единый gate Admin+Invoice+OrderPaymentRequest на текущем HEAD50db8aa, отдельно JS. Сохраняем JUnit/stdout, явно фиксируем skipped/непроверенные пункты. Уже закрытые browser cases не повторяем. Native Windows clipboard открыт; целевой upload gate отложен пользователем.
+
+## ADM-AUD-13G / ADM-AUD-13E — Проверка ссылки18451 и статус общего regression, 2026-10-30
+- Системный clipboard DONE по явной ручной проверке пользователя: по запросу нажал Copy18451 и вставил в чат ссылку; все78символов совпали с existing OPR-000043/publicUrl, включая /lv/payment-request/ и токен. Прежнее native Windows TODO закрыто этим human evidence, а не виртуальным clipboard.
+- Пользователь отдельно попросил открыть ту же ссылку. Chrome сначала показывал HTTPS privacy warning; агент его не обходил, пользователь самостоятельно открыл страницу и подтвердил. После этого actual DOM: title Apmaksa pēc saites, OPR-000043, order18451, Gaida apmaksu,22.00EUR, email заявки;5buttons e-bank/card/GooglePay/ApplePay/PayPal. Сумма совпадает с ранее проверенной заявкой админки.
+- Read-only проверка Blade show: методы оплаты являются POST forms route payment_request.start сCSRF/payment key. Ни одну кнопку не нажимали, gateway не открывали/оплату не проводили, заявки не создавали. Purpose smoke-test не выведен в полученном main DOM, это наблюдение, не новый дефект без сверки требований. Скриншот/geometry inspection не завершился из-за повторных Chrome CDP deadlines и kernel reset; visual/mobile по этой ссылке не объявлять PASS. Содержимое страницы прочитано успешно одним полным DOM snapshot. User tab оставлена открытой.
+- Общий Admin+Invoice+OrderPaymentRequest gate стартовал наHEAD50db8aa (PHP8.4.1/SQLite:memory/mailarray), объявлено900tests. Процесс исчез после756/900, final JUnit0bytes, stdout содержит1E/6F до остановки. Причина остановки не доказана; результата всего900 нет, PASS не заявлять. Evidence storage/logs/adm-aud-13-final-20261030.{txt,xml} (xmlпустой).
+- Повтор diagnostic stop-on-error/stop-on-failure завершён:41tests420assertions,1error,02:22.772,116MB. ClientsTest::test_clients_match_legacy_role_and_show_all_fields_and_exact_order_filter:Undefined array key all, tests/Feature/Admin/ClientsTest.php55 (getTabs()['all']). JUnit diagnostic15479bytes/stdout сохранены storage/logs/adm-aud-13-diagnostic-20261030.{xml,txt}. Нельзя автоматически менять бизнес-вкладки ради устаревшего теста: сначала сверить current all query behavior и намерение original, затем классифицировать/исправить. Остальные6F первого прерванного gate ещё требуют отдельных завершённых diagnostic запусков.
+- JS текущий прогон всех4файлов tests/js:15tests PASS,0fail/skip,649.1574ms (payment-copy/filter-reset/menu-tree/media-upload). Это отдельный gate, не замена PHPregression. Runtime/test код в этом шаге не менялся; рабочие DB/media/permissions/платежи/чаты не редактировались.
+- ADM-AUD-13G остаётся IN PROGRESS. Следующий точный шаг: диагностировать/исправить ClientsTest all-tab compatibility и оставшиеся failures, затем завершённый общий PHP gate; public payment visual при восстановлении browser responsiveness. Целевой upload gate DEFERRED пользователем, прочие принятые UAT не повторять.
+- Только4Markdown журнала: non-md для C:/OSPanel/domains/viar/viar13 нет, target working tree чистое, source docs commit без push. CRM/SA API/DB/static mappings не менялись, lead_id=orders.id.
+
+## ADM-AUD-13G — Исправление regression: Clients all-tab, 2026-10-30
+- IN PROGRESS: getTabs all намеренно удалена (OrderListTabsTest иoriginal parity); client URL сохраняет compatibility tab=all сuser_id filter. modifyQueryWithActiveTab для активных фильтров не применяет status scope, включая completed. Исправляем устаревший тест: проверять реальный filter branch/отсутствие status predicate иточныйuser_id, не возвращать UI вкладкуall ради теста. Runtime без изменений; далее остальные failures/полный gate.
+
+## ADM-AUD-13G — Regression: причины и локальные исправления, 2026-10-30
+- ClientsTest PASS4tests40assertions15.471s: removed all-tab ожидание заменено вызовом actual modifyQueryWithActiveTab сuser_id filter, отсутствием status predicate иточным клиентским count. UI вкладки/URL/runtime не менялись.
+- Diagnostic6BREAD завершился6failures/6assertions: все6HTTPGET500 вызваны MenuPreferences.read JSON decode; минимальный fixture users не имел settings, SQLite SELECT quoted missing column вернул строковый литералsettings. Это дефект test schema, не JSON рабочих пользователей. В6affected тестах добавлено nullable jsonsettings до HTTP layout render, как реальная schema ипрежние full-layout fixtures.
+- Fixed diagnostic6BREAD PASS6tests104assertions27.764s96MB. PHP lint обоих файлов/diff-checkPASS. No runtime/permission/SQLoperation logic changes. Общий r2 запуск остановлен агентом перед targeted diagnostics, не выдаётся за завершённый результат. R3 полный900test gate запущен после этих исправлений; результат ожидается.
+
+## ADM-AUD-13G — Итоговая приёмка: завершённый общий gate и исправление fixtures, 2026-10-30
+- DONE для разбора и устранения всех найденных в этом прогоне regression failures; общий ADM-AUD-13 не объявляется полностьюDONE автоматически. Production runtime без изменений, изменены только2тестовых файла. Исходные бизнес-правила/права сохраняются.
+- Полный r3 Admin+Invoice+OrderPaymentRequest завершился:900tests11256assertions,0errors,1failure,1skip;20:27.429/284MB,PHP8.4.1. Независимый JUnit top suite900/11256/errors0/failures1/skipped1/time1226.783622. Это898успешных+1failure+1skip, не900PASS. stdout/JUnit storage/logs/adm-aud-13-final-r3-20261030.{txt,xml}.
+- Единственный failure полногоr3:VoyagerBreadTest.test_compass_resources_preserve_original_icon_catalogue_and_filter_without_writes. Та же причина, что6предыдущихHTTPGET500: отсутствие users.settings в минимальнойSQLite test schema →MenuPreferences.read json_decode('settings'). Добавлено nullable jsonsettings только вэтот тест. Ни MenuPreferences runtime, ни production settings не менялись, malformedJSON не подавлялся.
+- После последней правки targeted7affectedBREAD сценариев PASS7tests121assertions11.942s98MB, JUnit storage/logs/adm-aud-13-bread-fixed-r2-20261030.xml. Предыдущий clients targeted PASS4tests40assertions15.471s. Все найденные8initial+late failures устранены:1Clients error+7BREAD errors. Эти частичные прогоны не складываются в новый clean900 suite.
+- Единственный skip:OrderPaymentRequestTest.test_admin_can_create_payment_request_for_order, guard отсутствующего legacy admin.order_payment_requests.store; Voyager routes намеренно отключены. Новый Filament payment action/service/public link проверены другими тестами/UAT. Skip не является непроверенным новым Filament action.
+- R2 full был остановлен агентом для точной диагностики, initial full завершённого report не дал; оба не подменяют r3. Чистый полный900 после последней test-only schema правки не запускался повторно. Основание остановить расширение: последний дефект ограничен fixture одного теста, все7affected теперь повторноPASS, runtime не менялся. Если для formal signoff нужен единый all-passJUnit, это явно остаётся отдельным gate, а не скрытым выполнением.
+- Кодовые проверки:lint2tests/diff-checkPASS. Ранее наэтой ревизии runtime JS4файла15testsPASS649.1574ms, новыхJSизмененийнет. Проверки работают SQLite:memory, внешниеHTTP/notifications не запускаются; никаких productionSQL/table/permission/file operations.
+- Test diff:ClientsTest проверяет actual filter branch сuser_id иотсутствиемstatuspredicate вместо удалённойalltab. VoyagerBreadTest7affected full-layout HTTP tests имеютsettings какреальнаяusers schema; это согласуется с существовавшими fixtures sidebar. Production navigation/client lookup не ослаблялись.
+- Export только2non-md вC:/OSPanel/domains/viar/viar13, SHA256совпали:ClientsTest012D5FCC31F78DF7A92BCE6A20EEF242565CFC06F4F4AEED2F5CDB0523797490;VoyagerBreadTest577C7DC3192049A51C2B80EB12A22985056E4FA453E8BE1C2CCB4FEEC5539AE3. Target main commitf5b4543 безpush;Markdown не копировался. Source2tests+4журнала commit в текущейветке безpush.
+- Оставшиеся ограничения:целевойupload gateDEFERRED пользователем; публичнаяpayment link content/nativeclipboardPASS, visual/mobile screenshot не завершён из-за browser timeouts; realSMTP/provider/physicaltouch иpixel-perfect не входят в локальныйUAT. CRM/SA API/DB/mappings не менялись,lead_id=orders.id.
+- Следующее точное действие:проверить внешний вид публичнойpayment-request страницы desktop/mobile после восстановления Chrome, затем зафиксировать решение о приёмке заказов с этими ограничениями. Не возвращать завершённые create/edit/chats/media/Venipak сценарии вTODO.
+
+
+## ADM-AUD-13E — Публичная платёжная страница: парная проверка, 2026-11-02
+- DONE для read-only desktop/mobile проверки existing OPR-000043 / order18451. Открыты actual viar13.loc и viarcanvas.loc с одинаковым токеном; main text совпал: pending,22.00EUR, email заявки и5методов. Ни один payment POST не выполнялся; заявка/заказ/шлюз не изменялись.
+- Desktop screenshot обеих страниц просмотрен. Блок заявки слева, сумма/email справа, одинаковые методы/логотипы. Desktop email примыкает к label ивoriginal; новый дефект миграции не выявлен. git diff --no-index Blade show.blade.php пустой: содержимое одинаково, raw SHA отличается из-за line endings.
+- Mobile390x844 обе страницы: documentWidth384, каждая из5кнопок x35,width314,height98; длинное название e-bank переносится, сумма/email ниже списка. Четыре изображения payment methods complete/naturalWidth>0 на новой странице. Снимки mobile обеих версий просмотрены, horizontal overflow отсутствует.
+- Общий промокупон перекрывает нижние способы оплаты в обеих версиях. Нажатие штатного a[data-dismiss=dismiss] переводит offer в offer-hidden в обеих. Снимки сразу после клика ещё содержат transition: не выдаём их за полностью закрытое состояние. Позднейший desktop screenshot и DOM новой страницы подтвердили offer-hidden. Это исходное поведение публичного frontend; в рамках admin parity его не меняли.
+- Responsive override при повторной попытке применился к другой активной вкладке: final current metrics1747px — desktop, не второй mobile PASS. Исходные390px observations выше достоверны; verified.json отдельно хранит original390/current1747 иsameMain=true, sameButtons=false из-за разных ширин. Не трактовать это как layout mismatch. Временный viewport reset выполнен; original вернули кorders, новую кdashboard.
+- Evidence ignored storage/app/audit/payment-public-20261102/: desktop.jpg, mobile.jpg, original-desktop.jpg, original-mobile.jpg, original-metrics.json, verified.json иmobile-closed-final.jpg(desktop после reset/фокуса). По именам файлов без geometry нельзя заключать viewport.
+- Production runtime/tests не менялись. Использована computer-use skill для browser проверки. Только Markdown результаты; для C:/OSPanel/domains/viar/viar13 non-md нет, mirror проверен чистым, копирование/target commit не требуются. CRM/SA API/auth/DB/mappings без изменений, lead_id=orders.id.
+- ADM-AUD-13G IN PROGRESS: запущен единый900test gate PHP8.4.1 после последней fixture правки, stdout/JUnit storage/logs/adm-aud-13-final-20261102.{txt,xml}; результат пока ожидается. Не объявлять весь ADM-AUD-13DONE до завершения gate. Upload target gate остаётся DEFERRED по решению пользователя.
+
+
+## ADM-AUD-09 — EXIF-превью JPEG1–8, 2026-11-02
+- IN PROGRESS: восстановлена отдельная fixture media-exif-20261102 (копия synthetic SQLite и11public files, включая8JPEG Orientation1–8). Свои sessions/views/logs/tmp, localhost8800, DB isolation guard, Http::preventStrayRequests иMail::fake. Production DB/storage не подключаются.
+- Browser openCrop→preview DOM/transform/screenshot→cancel для8ориентаций, безcrop/save; затем сравнить11SHA исходников иsnapshotDB. Ранее unit raw-pixel contract проверен; это отдельная оставшаяся visual UAT, не новая автокоррекция EXIF. Pinch/touch/upload/media decode этим сценарием не закрываются.
+
+
+## ADM-AUD-09 / ADM-AUD-13G — Продолжение проверки, 2026-11-02
+- EXIF browser gate не завершён: два перехода кlocalhost8800 черезChrome не подтвердились; вкладка осталась наdashboard. Native screenshot fallback остановлен Computer Use URL-confidence safety guard. После этого UI input прекращён, защиту не обходили. Статус09 IN PROGRESS; это не доказанный дефект медиатеки.
+- Отдельный fixture server остановлен Ctrl-C.11/11 synthetic public SHA256 неизменны, report media-exif-20261102/after-hashes.json. Production images/DB не затрагивались; crop/save не нажимались. Следующее действие09: после восстановления управления открыть тестовую медиатеку ипроверить8EXIF preview/cancel.
+- ADM-AUD-13G: JS15testsPASS,0fail/skip,212.4886ms; общий900PHP gate всё ещё выполняется, session6279. Final JUnit не подменяется промежуточными dots. Следующее действие13G: опросить этот же живой процесс до terminal результата, не запускать дублирующий suite.
+- ТолькоMarkdown результаты иignored fixture helpers. Non-md runtime/tests дляC:/OSPanel/domains/viar/viar13 нет; mirror clean. Commit документации в source безpush; актуальная верхняя матрица очищена от уже закрытых historical TODO.
+
+
+## ADM-AUD-09 — EXIF-превью: результат 2026-11-02
+
+- **DONE для EXIF desktop preview/cancel.** Во встроенном браузере открыта настоящая `/filament/media` на отдельной SQLite/public fixture. Chrome/native ввод после прежнего safety stop не использовался. Проверены все восемь JPEG320×240 с Orientation1–8; просмотрены восемь снимков окон обрезки.
+- Отображение Cropper: 1 — исходное; 2 — scaleX(-1); 3 — rotate(-180deg); 4 — scaleY(-1); 5 — rotate(90deg)+scaleY(-1); 6 — rotate(90deg); 7 — rotate(90deg)+scaleX(-1); 8 — rotate(-90deg). Цветные квадранты/надпись TOP LEFT на снимках соответствуют этим преобразованиям.
+- Поля исходной области: orientations1–4 — x32/y24/w256/h192, orientations5–8 — x24/y32/w192/h256. Полотно/выделение и четыре числовых поля видны; для portrait-вариантов область меняет ориентацию. Методы Cropper через evaluate не вызывались: только штатное openCrop, DOM чтение и отмена.
+- На каждом файле нажата «Отмена обрезки». В итоговом состоянии cancelVisible=false, Файлов11. Ни `cropImage(false)`, ни `cropImage(true)`, ни замена/создание файла не выполнялись. Не выдаём preview за проверку нового серверного auto-orientation: сохранён прежний raw-pixel crop contract оригинала.
+- Original manager.blade.php использует new Cropper(croppingImage, {crop:...}) с default orientation handling; новая библиотека также1.5.11, прежний source audit сохранён. Парный оригинальный browser crop на этих fixture не запускался; вывод относится к восьми актуальным preview новой панели и сверке исходного контракта.
+- Snapshot15tables после первого preview и до последних семи сравнён с финалом: DB unchanged.11/11 SHA public-файлов совпали с baseline до первого браузерного открытия. Собственная auth fixture/users.settings добавлена до проверки; рабочая DB/storage не затронуты. Http::preventStrayRequests/Mail::fake остаются guard стенда.
+- Evidence: ignored storage/app/audit/media-exif-20261102/{preview-results.json,verified.json,db-before.json,before-hashes.json,exif-1.jpg...exif-8.jpg,closed-final.jpg}. Несколько locator waits получили stale-element на смене Livewire DOM; повторная read-only observation подтвердила нужный файл, submit не повторялся. Это не трактуется как доказанный дефект приложения.
+- Вкладка закрыта, server session49840 штатно остановлен Ctrl-C. Изменений runtime/tests нет, нового regression ради read-only визуальной проверки не добавляли. В C:/OSPanel/domains/viar/viar13 non-md для копирования нет; target commit не требуется. Source документы коммитятся без push. CRM/SA API/auth/DB/mappings без изменений, lead_id=orders.id.
+- **ADM-AUD-09 остаётся IN PROGRESS:** физический pinch/touch, audio/video decoding и browser upload/drop/progress/cancel ещё открыты. Следующее точное действие09 — полный upload/recovery на этой изолированной медиатеке; проверенные EXIF preview повторно в TODO не возвращать. ADM-AUD-13G общий900test gate продолжает выполняться, по последнему наблюдению819/900 безfail markers; final report ещё ожидается.
+
+
+## ADM-AUD-13G — Итоговая регрессия заказов: результат 2026-11-02
+
+- **DONE.** Завершён единый прогон `tests/Feature/Admin tests/Feature/Invoice tests/Feature/Payment/OrderPaymentRequestTest.php`: **900tests,11272assertions,0errors,0failures,1skipped**, exit0, PHP8.4.1,16:58.082,282MB. Top JUnit independently parsed: tests900/assertions11272/errors0/failures0/skipped1/time1017.588321. Не складывается с targeted runs.
+- Единственный skipped: OrderPaymentRequestTest.test_admin_can_create_payment_request_for_order — проверяет отключённый legacy admin.order_payment_requests.store. Guard/причина подтверждены исходником; Filament actions/service/public payment проверяются действующими другими сценариями. Legacy route ради зелёного теста не включался.
+- В этот прогон вошли все исправленные Clients/BREAD fixtures. Между запуском наec79a07 и завершением менялась только Markdown документация; runtime/tests сохранились. Новый контрольный baseline заменяет прежний900/1failure и831test baseline для этой области. Полный public frontend/CRM API suite этим прогоном не заявляется.
+- JS текущий gate2ноября:15testsPASS,0fail/skip,212.4886ms. Артефакты ignored storage/logs/adm-aud-13-final-20261102.{txt,xml}; JUnit304319bytes. Рабочие роли/таблицы/платежи/письма не изменялись.
+- Итог локальной приёмки заказов: пункты1,3,4,5,6 активной очереди DONE; public payment desktop/mobile такжеDONE2ноября. Пункт2 target uploads остаётся **DEFERRED** по решению пользователя; не объявляем выполненным. Повторно открывать уже принятые create10photos/chats/PDF/assignments/media/Venipak ветки без нового дефекта не требуется.
+- Общий ADM-AUD-13: локальная приёмка согласованного объёма завершена; отложенный target upload gate остаётся отдельным обязательством перед соответствующим целевым развёртыванием. Это не закрытие остальных модулей админки, dashboard/cutover/Voyager cleanup и не разрешение реальных provider/SMTP операций.
+- Следующая задача — ADM-AUD-09: browser upload/reject/recovery в isolated медиатеке. EXIF preview1–8 закрыты2ноября; audio/video decoding иphysicaltouch ещё открыты. Остальной согласованный список админки сохраняется, цель всего чата не объявляется завершённой.
+- Изменена только документация. Non-md дляC:/OSPanel/domains/viar/viar13 нет, mirror clean; повторного copy/target commit нет. Source docs commit безpush; CRM/SA API/auth/DB/mappings без изменений, lead_id=orders.id.
+
+
+## ADM-AUD-09 — Медиатека: browser upload/reject/recovery, 2026-11-02
+- IN PROGRESS. Отдельная media-upload-20261102 fixture: собственные SQLite/public/tmp/views/sessions, baseline11files/15tables, Http::preventStrayRequests иMail::fake. Проверить chooser oversized отказ→server forbidden-extension отказ→valid PNG/PDF recovery/save/SHA; затем отмену передачи с fixture-only8s response delay, безподмены JSкомпонента.
+- Production DB/media не использовать.8EXIF preview/cancel ужеDONE, ихнеповторять. Настоящий OS drag/drop иphysicalpinch остаются отдельными пунктами; chooser заdragневыдавать. Runtime пока без изменений; после результата обновить планы/коммитбезpush, non-md exportтолькоприproduct/testизменениях.
+
+
+## ADM-AUD-09 — Browser upload/reject/cancel/recovery: результат 2026-11-02
+
+- **DONE для chooser upload/recovery/cancel desktop.** Actual mediaLibraryUpload/WithFileUploads/uploadFiles на изолированном localhost8800, SQLite/public/tmp. Runtime JS/PHP не подменялись; рабочие БД/файлы/SMTP/HTTP integrations не затрагивались.
+- File chooser открывался штатным input; multiple=true. Oversize PNG11536540bytes (>10MiB) немедленно показал «До20файлов,до10МБкаждый», public остался11files. Synthetic blocked.php содержит только безвредный текст: реальный backend запретил расширение сообщением «Недопустимое имя или тип файла», UI не сообщил успех/public11.
+- Первый transport failure оказался дефектом fixture: APP_ENVtesting переключает Livewire disk наtmp-for-tests, он не был настроен. Исправлен только ignored router — local disk сroot fixture/tmp. После повторного выбора actual forbidden extension достиг server validation. Этот500 не объявляется исправлением production upload; продуктовый код не менялся.
+- После отказа в той же форме выбраны valid uat-upload.png + uat-upload.pdf. Actual transfer→save→«Загрузка завершена», alerts пусты, count13. PDF45bytes byte-for-byte совпал сinput. PNG640×480 штатно перекодирован: rawSHA отличается, RGBA pixels/dimensions совпадают полностью. Это не потеря фото; исходное image processing поведение сохраняется.
+- Cancel: только fixture router задержал ответ upload-file на8секунд. Видимые progress100 и «Отменить передачу» подтверждены; штатный click дал «Передача отменена». При этом public13 иcancel-upload.png отсутствовал: uploadFiles не создал постоянный файл. Это response-wait cancellation после передачи bytes, не physical slow-wire partial-byte сценарий.
+- Задержка снята. Тот же cancel-upload.png выбран повторно черезchooser: «Загрузка завершена», alerts[], public14. Размер/пиксели второго PNG совпали сinput; SHA обоих сохранённыхPNG одинаковыйd4f097229bd00e64b259f6858191f15d926b2fd4f81ee269b3bd758848fba93e. Отмена не повредила следующий upload.
+- Проверка15tables unchanged;11/11 исходных publicSHA неизменны. Только3ожидаемых новых постоянных файла:uat-upload.png/uat-upload.pdf/cancel-upload.png. Oversize/blocked вpublicотсутствуют; проверкаassert прошла. Temporary upload files остаются вisolated tmp, не врабочемstorage; этот шагнепроверяетTTLcleanup.
+- Evidence ignored media-upload-20261102/{verified.json,requests.jsonl,before-hashes.json,db-before.json,oversize-rejected.jpg,forbidden-rejected.jpg,recovery-success.jpg,cancel-progress.jpg,cancelled.jpg,retry-after-cancel.jpg}. Снимки отказов/успеха/отмены просмотрены. Форма штатно закрыта, вкладка закрыта, server49062 остановлен Ctrl-C.
+- Код/tests продукта не менялись; новых implementation-mirroring tests не добавляли. Общий900/11272/1legacy skip gate иJS15PASS завершены вэтотдень, runtimeпослених прежний. Source docs commit безpush; non-md дляC:/OSPanel/domains/viar/viar13 нет, mirrorclean, targetcommitне требуется. CRM/SA API/auth/DB/static mappings безизменений,lead_id=orders.id.
+- **ADM-AUD-09 всё ещё IN PROGRESS:** физическийOSdrop, pinch/touch иactualaudio/video decode остаются открыты. Chooser иcancel-response не выдаются зафизическийdrop/partial-wire cancellation. Следующее09 — browser audio/video preview накоротких synthetic files, затемоставшиеся device gestures; остальные задачи админки/DEVauth/cutoverне закрыты этим шагом.
+
+
+## ADM-AUD-09 — Аудио/видео: browser decode, 2026-11-02
+- IN PROGRESS: отдельная media-playback-20261102 SQLite/public fixture. Созданы3секундные silent PCM WAV иVP8 WebM160×96/10fps/30frames, безproduction media. Собственныеsessions/views/logs/tmp, Http::preventStrayRequests иMail::fake; browser открытие сведений→штатныйplay→currentTime/ended/error/dimensions→сменафайла. Затем2SHA/15tables snapshot.
+- Original manager имеетnative controls/load дляaudio/video; новаяпанель сохраняетnative controls сподстановкойactual MIME. Вызовыplay/loadчерезevaluateнеиспользовать, толькоUIkeyboard/button. MP4/AAC, другие codecs/deviceaudiooutput иphysicalgestures этимнеобъявлятьпройденными.
+
+
+## ADM-AUD-09 — Аудио/видео: результат 2026-11-02
+
+- **DONE для actual browser decode WAV/VP8 WebM.** На настоящей медиатеке отдельной fixture открыты сведения двух synthetic файлов. Native audio play черездоступнуюкнопку: pausedfalse/currentTime0.471715/duration3/readyState4/errornull, затем endedtrue/currentTime3. WAV silent PCM16000Hzmono,96044bytes; это decode/timeline, анепроверка физических колонок/слышимости.
+- При выбореWebM previousaudio исчез:audioCount0. Video metadata160×96/duration3/readyState4/errornull; штатныйSpaceнаcontrols запустилplay (pausedfalse,currentTime0.1973), затемendedtrue/currentTime3/errornull. Screenshot показывает последнийкадр анимации/3из3секунд; decoded-frame counter вэтойсреде недоступен(null), нечистое число30неприписываетсябраузеру.
+- WebM созданOpenCVVP8:30frames/10fps,2950bytes; creationwarningFOURCC контейнера не сталотказомencoder —writeropened иVideoCapture30frames проверены отдельно. ПоддержкаMP4/H264/AAC/прочихcodecs невыводитсяизодногоWebM.
+- Штатное закрытиесведенийудаляетобаmediaelements:audioCount0/videoCount0. Доступкplay/load черезevaluateнеиспользовался, толькокнопка/Space/выбор/закрытие. Original manager.blade.php154–168/519–522такжеnativecontrols сloadпривыборе; новыйsourceиспользуетactualMIMEвместоисходногоспискавозможныхтипов. Парныйoriginalbrowserplayэтихfixtureневыполнялся.
+-2/2SHApublicфайлов и15tablesunchanged. Evidence ignored media-playback-20261102/{verified.json,playback-results.json,audio-ended.jpg,video-ended.jpg}; снимкипросмотрены. Вкладказакрыта, server46542остановленCtrl-C. Runtime/tests/DBсхема/CRM-SAконтрактыбезизменений,lead_id=orders.id; текущий900/11272/1legacy skip иJS15PASSостаютсяbaselineбезповторногопрогона.
+- ТолькоMarkdown; non-md дляC:/OSPanel/domains/viar/viar13нет, mirrorcommitнет, sourcedocscommitбезpush. **ADM-AUD-09остаетсяINPROGRESS:** физическийOSdrop иpinch/touchещёоткрыты. Подготовленновыйisolatedgestureстенд, дляреальногожестаизПроводниканужнодействиепользователя; chooserнеподменяетdrop.
+
+
+## ADM-AUD-09 — Физические жесты: решение пользователя 2026-11-02
+- Pinch/touch **DEFERRED до целевого устройства** по явному ответу пользователя: «Нет, отложить сенсорную проверку до целевого устройства». Это неPASS и неотказотфункции; desktop wheel/pan уже проверены ранее. Не блокировать текущуюлокальнуюприёмкунаотсутствующемсенсорномоборудовании.
+- Physical OSdrop **IN PROGRESS**: actual isolated медиатека открыта справа http://127.0.0.1:8800/filament/media, областьuploadраскрыта. Дано конкретное ручное действие: изПроводника перетащить media-gestures-20261102/input/drag-test.png. Auto-save только вsynthetic public; browser tab4 markHandoff, server95746 жив.
+- Baselinepublic gesture-crop.png и15tables записаны. После ответапользователя проверить actual newfile/DOMsuccess/PNGpixels/oldSHA/DB; доэтогоdropнеобъявлятьвыполненным. Другиеmedia gates EXIF/chooser/reject/cancel/recovery/WAV/WebM ужеDONE.
+
+
+## ADM-AUD-09 / ADM-AUD-10E — Решение и следующий шаг, 2026-11-02
+- Пользователь явно указал: «по перетаскивания пропусти». Physical OSdrop **SKIPPED по решению пользователя**, неPASS. Pinch/touch ранееDEFERRED доцелевогоустройства. Все остальные записанные media checks завершены; локальный ADM-AUD-09 принят воставшемсясогласованномобъёме. Физическиежестынеобъявляютсяпроверенными.
+- Gesture server95746 остановлен, тестовыхdrop/uploadsпередskipнебыло, publicтолькоgesture-crop.png. Вкладказакрывается. Исходникиproductionнеизменны.
+- **ADM-AUD-10E IN PROGRESS**: отдельный settings-media-20261102 localhost8801, synthetic SQLite settings9types/public, tmp-for-testsнастроенвнутриfixture, Http::preventStrayRequests/Mail::fake. Проверитьsingleimageиfile replacement→save→reopen, oldfileskept/paths/contracts; далееjointsaveеслинеобходимодляоставшейсяUAT. Сначалаbaseline15tables/11files; workingDB/storageнеиспользовать.
+
+
+## ADM-AUD-10E — Замена изображения и файла: результат 2026-11-02
+
+- **DONE для оставшейся browser UAT замены media в single и joint settings editor.** Проверка выполнена перед паузой; после возобновления повторно сверены текущие SQLite values, файл, пиксели PNG, 11 исходных SHA и шесть ожидаемых новых файлов. Повторный browser save не требовался.
+- В single image выбран replacement.png через видимую ссылку FilePond «выберите», завершена временная загрузка, выполнен Save. До Save прежнее значение audit.png сохранялось. Reopen показал новый settings/November2026 PNG, actual preview complete=true,640×480; пиксели совпали с input. Старый audit.png сохранён.
+- В single file выбран replacement.txt; Save→reopen сохранил исходное имя и JSON download_link/original_name, новая ссылка отображается. Содержимое файла побайтово совпало с input. Старый audit.pdf сохранён.
+- В joint editor выбраны bulk-file.txt и bulk-image.png; обе загрузки завершились до «Сохранить настройки». До Save база совпадала со snapshot после single save. Reopen общей формы показал новый file link и image preview640×480. Изменены только settings8.value и9.value; остальные семь настроек, metadata/group/order и остальные14tables прежние.
+-11/11 старых public SHA совпали; single-save файлы также остались после joint replacement. Новые файлы: дваTXT, дваPNG и два штатных companion WebP640×480. Первоначальный verifier ожидал четыре файла, затем сверка BreadImageUpload::store подтвердила обязательные WebP companions; итоговый точный expected set из шести файлов PASS, лишних файлов нет. Это уточнение verifier, не изменение runtime.
+- Первая попытка chooser по accessibility role скрытого input не дала filechooser и сбросила REPL. После fresh DOM использована видимая .filepond--label-action; chooser/setFiles сработали. Product FilePond/JS/Blade не менялись. Настройки runtime не ослаблялись ради теста.
+- Evidence ignored storage/app/audit/settings-media-20261102/{verified.json,settings-before.json,single-saved-settings.json,joint-saved-settings.json,db-before.json,before-hashes.json,image-reopened.jpg,file-reopened.jpg,joint-file-reopened.jpg,joint-image-reopened.jpg}. Четыре снимка просмотрены; server54942 остановлен при паузе. Рабочая DB/storage и внешние интеграции не затронуты.
+- Source contract сохранён: replacement создаёт новый путь и оставляет прежний файл, как original ContentTypes/File/Image. SQL failure/rollback/retry ранее проверены feature tests; этот browser success subset не выдаётся за новое browser SQL fault injection. Общий baseline2ноября900tests/11272assertions/0errors/0failures/1legacy skip иJS15PASS остаётся актуальным: runtime/tests не менялись.
+- Только Markdown: non-md дляC:/OSPanel/domains/viar/viar13 нет, mirror working tree чистое, повторное копирование/target commit не требуются. Source docs commit в текущей ветке безpush. CRM/SA API/auth/DB/static mappings без изменений, lead_id=orders.id.
+- Следующая задача: **ADM-AUD-10H — Родительский пункт меню: browser подтверждение удаления и сохранность детей** на отдельной synthetic DB. Общий ADM-AUD-10 пока IN PROGRESS; другие модули админки не закрываются этим шагом.
+
+
+## ADM-AUD-10H — Удаление родителя меню: browser UAT, 2026-11-02
+
+- IN PROGRESS. Отдельная disposable fixture menu-parent-20261102 наlocalhost8801: parent1→child2→grandchild3, переводы иothermenu2/item4. ИсходнаяSQLite иsnapshot15tables сохранены длявосстановления; publicкопииизображенийтолькотестовые. Http::preventStrayRequests/Mail::fake иDBguard; рабочихmenu/permissionsнет.
+- Original VoyagerMenuController.delete_menu удаляет переводы title выбранного пункта ивыбраннуюстроку, некаскаддетей. Новаяверсия должна сохранитьchild.parent_id=1/grandchild.parent_id=2 ипереводыдетей; orphanchild становитсявидимымнаверхнемуровне ссообщениемосвязи.
+- Browser: открытьподтверждение→отмена/snapshotunchanged; повторнооткрыть→удалитьтолькотестовыйparent→проверитьsuccess/tree/reload иexactSQLdiff. Не выполнятьdeleteрабочихменю. Полномочия/rollback/stale casesранееfeaturetested; новыйсценарийзакрываетоставшийсяbrowserbranch.
+
+
+## ADM-AUD-10B — Удаление целого меню: browser UAT, 2026-11-02
+
+- IN PROGRESS. После успешного parent-delete10H на тойжеdisposablefixture проверить меню1 сorphanchild2/grandchild3: открытьmodal→отмена/snapshotunchanged, затемconfirm «Удалить меню и пункты». Ожидаетсяудалениеmenu1/items2,3/ихпереводов; menu2/item4/переводы/settings/остальныетаблицысохраняются. Snapshot before-menu-delete.json записан; before.sqliteдлявосстановления остаётся.
+- Это удаление толькоодноразовыхsyntheticкопий; реальныеменю/права/productionDBнеподключены. Runtimeбезизменений, локальныйbrowserCRUDдополняетпрежниеSQLite rollback/permissiontests.
+
+
+## ADM-AUD-10H / ADM-AUD-10B — Browser приёмка удаления меню: результат 2026-11-02
+
+- **ADM-AUD-10H DONE.** На одноразовой menu-parent-20261102 fixture открыт modal выбранного parent1; явно показано предупреждение, что дочерние пункты сохранятся. Cancel не изменил ни одну из15tables. После повторного открытия штатно подтверждено удаление только parent1: удалены одна строка menu_items и два её title translations.
+- Child2 и grandchild3, их поля/parent_id/переводы полностью прежние; menu2/item4 и остальные13tables неизменны. После reload actual DOM:child2 наверхнемуровне ссообщением оботсутствующем parent1; grandchild3 вложенвchild2. Это fallback представления безобнуленияparent_id: сохранение данных совпадает с original VoyagerMenuController.delete_menu22–30. Старый Voyager могнепоказыватьorphans; это ранееописанноеотличиеUI, не изменение дочернихзаписей.
+- **ADM-AUD-10B DONE для оставшейся browser ветки удаления целого меню.** Modal назвалaudit_disposable_menu/пункты/переводы; cancel сохранил все15tables. Затем «Удалить меню и пункты» удалило menu1 иоставшиесяitems2,3/дваихперевода, включая orphanchild. В меню2/item4/его переводах иостальныхтаблицах измененийнет. Exact snapshotdiff PASS.
+- После deleteMenu панельавтоматическивыбралаaudit_other_menu; reload подтвердилoldMenu=false/otherItem=true. Короткие success toast небылипойманы наблюдением: успехподтверждёндеревом/modalclosed/SQL, неприписываемtoast скриншотам. Таблицы/действияпродукта не подменялись, rawDELETEчерезshellвместоbrowserнеиспользовался.
+-17/17 publicфайловfixture SHA совпали сисходнойкопией. РабочиеDB/menu/permissions/media не подключались; auth/senderданытолькоfixture, Http::preventStrayRequests/Mail::fake. before.sqlite иsnapshots сохраняютвосстановимуюкопию одноразовыхданных.
+- Evidence ignored storage/app/audit/menu-parent-20261102/{before.sqlite,before.json,cancel-verified.json,verified.json,before-menu-delete.json,menu-delete-verified.json,parent-confirm.jpg,parent-deleted.jpg,menu-confirm.jpg,menu-deleted.jpg}. Снимкиподтверждения/дерева/оставшегосяменюпросмотрены. Testtabзакрыта, server85988штатноостановленCtrl-C.
+- Runtime/testsне менялись. Полныйbaseline2ноября900tests/11272assertions/0errors/0failures/1legacy skip иJS15PASS сохранён; повторныхпроверокбезновогокоданет. Permissions/stale/rollback остаютсявсуществовавшихfeaturetests. ТолькоMarkdownжурналы: mirrorclean, non-mdexport/targetcommitнет; sourcedocscommitбезpush. CRM/SA API/auth/DB/mappingsбезизменений,lead_id=orders.id.
+- Следующаязадача: **ADM-AUD-10D — Настройки: browser создание, очистка значения, порядок и удаление** наотдельнойsyntheticкопии. ОбщийADM-AUD-10ещёINPROGRESS; новыеuserfields/roles/productionoperationsэтимнепринимались.
+
+
+## ADM-AUD-10D — Настройки: browser управление записями, 2026-11-02
+
+- IN PROGRESS. Отдельная settings-control-20261102 SQLite/public fixture наlocalhost8801; добавлены add/delete_settings тольковsyntheticrole1 доsnapshot, неправарабочихпользователей.15tables/17files/before.sqliteсохранены; Http::preventStrayRequests/Mail::fake/DBguard.
+- Browser create text setting→edit value→up/down/boundarynoop→clear/cancel/confirm→delete/cancel/confirm. Дополнительно clear существующихsyntheticimage/file: image pathудаляется,ordinaryfileостаётсякакoriginal delete_value. СверитьexactDB/filesdiff, UIreload иoldvalues/metadataнеизменность.
+- Original VoyagerSettingsController.store/move_up/move_down/delete_value сверены: group slug prefix, empty value, lastorder+1, swapвнутригруппы, image-onlyphysicaldelete. Нереализованныепроизвольныеновыесценариине добавлять. ПослеэтогоактуализироватьостатокобщегоADM-AUD-10.
+
+
+## ADM-AUD-10D — Browser управление настройками: результат 2026-11-02
+
+- **DONE для оставшейся desktop browser UAT.** Через actual VoyagerSettings на отдельной settings-control-20261102 fixture создана UAT Disposable setting:text/groupSite/keyaudit_control_uat. Backend сохранил id10/keysite.audit_control_uat/valueempty/order10 (исходныйmaxorder9), как original store. Затем через edit/save сохранено Browser control value.
+- Кнопка «Выше» поменяла order10:10→9 иorder1:9→10; «Ниже» вернула точный snapshot всех10строк. Повторный «Ниже» накраю не изменилDB; actual toast «Настройка уже на краю списка» наблюдался. При одинаковыхисходныхorder9 выбрандетерминированный соседid1, существующийtiebreak сохранён.
+- Очистка text: modal/cancel сохранили все строки; confirm изменил толькоvalue наempty, записьосталась. Удаление text: modal/cancel сохранили10строк; confirm удалил толькоid10. Послеэтого все9исходныхsettings совпали сbaseline до последующихclearimage/file. Это создание/удаление толькоодноразовойtestrow, нерабочихнастроек.
+- Image clear: modal явно предупредил «Файл изображения также будет удалён». После confirm settings9.valueempty иточныйPNGпутьудалён. File clear: settings8.valueempty, ordinaryTXTфизическисохранён. СопутствующийWebPизображениятакжеоставлен: original delete_value удаляеттолькоуказанныйimagepath, новуюмассовуюочисткуневыдумывали.
+- Послеreload «Файл не задан»/«Изображение не задано» видимы, удалённойUATsettingнет. ExactDBdiff15tables PASS: толькоsettings8/9.valueempty итехническийsqlite_sequence.settings9→10послеtestinsert; остальныестроки/metadata/order/праваснимка неизменны. Счётчикавтоинкрементанеоткатывалирадификтивнойнеизменности.
+- Exactfilediff: из17исходныхtestpublicфайловудалёнтолькоPNGsettings9;16остальныхSHAсовпали, новыхфайловнет. РабочиеDB/storage/permissionsнеподключались. Add/delete_settingsданытолькоsyntheticroleдоbaseline, Http::preventStrayRequests/Mail::fake/DBguardсохранены.
+- Evidence ignored storage/app/audit/settings-control-20261102/{before.sqlite,before.json,before-hashes.json,created.json,value-saved.json,up.json,text-cleared.json,verified.json,delete-setting-confirm.jpg,image-clear-confirm.jpg,final-cleared.jpg}. Итоговыйснимокпросмотрен. Testtabзакрыта; server29822штатноостановленCtrl-C.
+- Код/testsпродуктанеменялись; нетновогоendpoint/схемы/permissionrules. Общий900/11272/0errors/0failures/1legacy skip иJS15PASSbaseline2ноябрясохранёнбезненужногоповторногопрогона. SourceMarkdowncommitбезpush; non-mdдляC:/OSPanel/domains/viar/viar13нет, mirrorclean/targetcommitнет. CRM/SA API/auth/idempotency/staticmappingsбезизменений,lead_id=orders.id.
+- **ADM-AUD-10 — локальнаяприёмкасогласованныхdesktopоперацийDONE.** A/B/F/G/Cdesktop провереныпредыдущимишагами, H/E/D browserостаткизакрыты2ноября. Сенсорныежестынацелевомустройствеостаютсянепроверенными; физическийdropпользовательпопросилпропустить, userdeferredtouchневыдаётсязаPASS. SQLfailure/rollback/permissionbranchesподтверждаютсяавтотестами, неbrowserfaultinjection.
+- Следующаязадача: **ADM-FIL-022/029 — Контент и каталог: специальные BREAD-поля, используемые metadata и остаточные media/links.** Сначала актуальныйinventory/исходныеконтракты; неоткрыватьзановопроизвольныеисторическиеTODO, неиспользоватьархивupgrade-laravel13-filament5какactiveplan. ОстальныеSEO/ALT/tools/DEVauth/dashboard/cutoverзадачисохраняются, цельвсегочатанеобъявляетсязавершённой.
+
+
+## ADM-FIL-022/029 — Актуальные metadata и специальные поля, 2026-11-02
+
+- IN PROGRESS. Обновить реальный read-only inventory data_types/data_rows/model/schema, выделить фактическивключённыеspecialtypes/options/customhandlers иmissing-modelentries. УсловныестарыеPARTIALнепревращатьвновыезависимостибезmetadata/sourceподтверждения.
+- SQLтольковreadonlytransaction/rollback, HTTP/mailfake; никакихstore/update/delete/BREADmetadatawrites. СохранитьignoredJSONsnapshot исводкубезсекретов/персональныхданных. Затемвыбратьточныйподтверждённыйпробелилиоставшийсяbrowsergate.
+
+
+## ADM-FIL-029 — Найдены отсутствующие модели тестового BREAD, 2026-11-02
+
+- Inventory текущей MySQL:135 data_types/2014 data_rows,19 field types, malformed details0; metadata hash до/после совпал. Включённых custom views/inline/List/tinymceOptions/coordinates/callable defaults не найдено; controller/policy adapters поддерживают текущие значения.
+-4model/schema exceptions: legacy canvas/Canva иa_collag_faq/ACollagFaq безтаблиц; правильный a_collage_faq/ACollageFaq существует, самовольный rename metadata недопустим. Ещё2 — adm_browser_cycle_items/categories: таблицыесть, App Models отсутствуют. Журнал12октября подтверждает ихсоздание черезUI иинструкциюоставитьтестовыеданные; это неповодудалятьтаблицы.
+- IN PROGRESS: восстановить2пустыеEloquentмодели ровнопоштатномушаблону DatabaseModelGenerationService. Не менятьтаблицы/записи/metadata/permissions. Затемповторитьread-onlyregistry/list/read/formsдляэтих2types, lint; export2PHP сSHA/commitsource+mirrorбезpush. Fullread-onlybread:auditужеидёт, дождатьсяегорезультатабезперезапуска.
+
+
+## ADM-FIL-029 — Исправление ложных ошибок дочерних связей в аудите, 2026-11-02
+
+- IN PROGRESS. После восстановления моделей targeted read-only audit открыл list/read/add/edit двух test BREAD, но ошибочно пометил hasOne/hasMany недоступными. Registry.childrenRows поддерживает эти связи; AuditVoyagerBreadCommand не включал их в validRelations.
+- Расширен существующий child relationship integration test вызовом actual bread:audit и проверкой сохранности дочерних записей. До исправления FAIL: exit1 вместо0. В command добавлены валидированные childrenRows для каждого browse/read/add/edit; не ослабляется validation или разрешение записи связей.
+- Проверяются существующие invalid relationship tests, child scopes/readonly forms и generator no-overwrite. Повтор targeted real read-only audit должен вернуть0; полный первоначальный135type audit ещё выполняется на загруженной до исправления версии command, не считать его финальным отчётом новой версии.
+
+
+## ADM-FIL-029 — Модели тестовых разделов и точность аудита: результат 2026-11-02
+
+- DONE для двух найденных отсутствующих моделей и исправления audit child relations. Восстановлены App Models AdmBrowserCycleItem/AdmBrowserCycleCategory, точный минимальный шаблон DatabaseModelGenerationService; таблицы/записи/metadata/права не менялись. Source generator no-overwrite test1/16PASS; общий targeted5tests/51assertionsPASS13.324s110MB.
+- AuditVoyagerBreadCommand добавляет childrenRows квалидированнымrelationships дляbrowse/read/add/edit. Новая проверка в существующем child scopes/readonly test воспроизвела exit1 доисправления; послеисправления auditPASS и child rowsunchanged. Невалидная связьпо-прежнемудаётexit1.
+- Реальный targetedread-onlyaudit:items2records/list10/read9/add6/edit6 иcategories3records/list5/read4/add1/edit1, обеadd/editformsOK,2types/0issues. SHA семитаблицдо/послесовпали; новыйsave/создание/удаление врабочейDBневыполнялись.
+- Общийinventory повторёнпослевосстановления:135types/2014rows,19fieldtypes, malformedJSON0, metadataunchanged. Остаются2историческихmissingtable/modeldefinitions canvas/Canva иa-collag-faq/ACollagFaq; правильныйa_collage_faq/ACollageFaqнеподменялся. Всеcontroller/policyvaluesподдержаны, callable defaults/customviews/coordinatesвsnapshotнеобнаружены.
+- Проверки4PHP lint/diffcheckPASS. Полный900testgateнеповторялся: текущийchangeузкоaudit+2пустыемодели, targetedcoversalteredpaths. Старый900/11272baselineневыдаётсязановыйпрогонпослеизменения. Первоначальный135typecommandостаётсяживsession13367; завершающийreportбудетразобранотдельно, недублироватьегоиз-затишиныstdout.
+-4non-mdфайласкопированывC:/OSPanel/domains/viar/viar13; SHA256совпали, списоквignoredexport-verified.json. Targetmaincommit327a994безpush; Markdownневыгружался. Sourcecode/tests/docsкоммитвтекущейветкебезpush. CRM/SA API/auth/DB/staticmappingsбезизменений,lead_id=orders.id.
+- Подробнаяактуальнаяматрица:docs/content_catalog_acceptance_2026-11-02.md. ОбщийADM-FIL-022/029INPROGRESS: дождатьсяfullreadonlyaudit, затемоставшиесяиспользуемыеспецполя/медиассылки. Цельвсегоэтапанезавершена.
+
+
+## ADM-FIL-022 — Legacy pivot-таблицы с пробелами, 2026-11-02
+
+- IN PROGRESS: завершённый135typeaudit обнаружил реальные неподдержанные связи gallery-items(size/box/color) иcollage-header. Read-only schema подтвердил4существующих pivotтаблицысASCIIпробеломвимени: gallery_items_ gallery_tag_sizes/gallery_boxes/gallery_tag_colors/collage_header. GalleryItem original иновыйкоднапрямуюиспользуютэтиимена, этоненеиспользуемыемetadata.
+- Причина BreadPivotKeys разрешаеттолькоalnumunderscore дляpivot_table. РасширитьтолькоправилоимениpivotтаблицынабезопасныегруппыидентификаторовсодиночнымASCIIпробелом; поля/keys/relatedtableостаютсястрогими, существованиеколонокобязательно. SQLстроитсяquerybuilderсquotedidentifiers, rawSQLнеиспользовать. Не переименовыватьтаблицы/metadata.
+- Добавить SQLite integration regression actualform/pivot sync/read/clear/otherownerpreservation + rejection SQLpunctuation. Затемtargetedrealauditgallery-items/collage-headerбезwrite, exportтекущихPHP/testsSHA/двакоммитабезpush.
+
+
+## ADM-FIL-022 — Legacy pivot names: результат 2026-11-02
+
+- **DONE для четырёх подтверждённых связей галереи/коллажей.** BreadPivotKeys разрешает в имени pivot_table группы ASCII identifier, разделённые одиночным пробелом; related table/columns/keys сохраняют прежние строгие правила. Schema::hasColumns по-прежнему обязательна. Query builder quoting не заменялся raw SQL. Таблицы иmetadata не переименовывались.
+- Regression воспроизведён доисправления: test_legacy_pivot_table_with_spaces... ERROR наvalidateRelationship. Послеисправления8tests/145assertionsPASS57.903s112MB, JUnit storage/logs/content-pivot-20261102.xml: actualeditload/sync/read/clear,otherownerpreservation,strictSQLpunctuationguards,customkeys/taggable/metadata/childrelations иinvalidrelationaudit. PHP lint2/diffcheckPASS.
+- Actual read-only gallery audit послеfix: collage-header list6/read33/edit31/editformOK; gallery-items1038records/list25/read70/add51/edit50/add+editformsOK;2types/0issues/exit0. Source version beforefix давал read32/read67 иrelationissues. Сравнение десятитаблицвнутриreadonlytransaction подтвердилонеизменностьgalleryrecords/fourpivots/metadata/permissions. Saveрабочихформневыполнялся.
+- Initialfull135typeauditзавершилсяexit1,6typeswithissues наcommandзагруженномдоchildfix. Targetedpostfixотдельнозакрылcategories,collage-header,gallery-items. Финальнаяклассификация: canvas/a-collag-faq — отсутствуютмодели/таблицы, payment-info —0data_rows/0records, записьзаблокированавместопустогоsave. Это3оставшихсяисторическихограниченияmetadata, не3новыхошибкиforms. Одинединыйpostfix135PASSreportневыдумывается; initialfull+targetedявноразделены.
+- Fullreport ignored content-inventory-20261102/read-report.md; relation-details.json подтверждает4реальныхspacedpivots/колонки, originalGalleryItem используеттежетаблицы. Postfixgallery-report.md/gallery-verified.json подтверждаютформы/нетwrites. Историческиеmissingdefinitionsнеудалялись/неперепривязывалиськпохожимтаблицам.
+-2PHPскопированывC:/OSPanel/domains/viar/viar13, SHA256совпали(pivot-export-verified.json); targetmain150e859безpush. SourcePHP/tests/docscommitвтекущейветкебезpush; MarkdownвC:некопировался. CRM/SA API/auth/DBschema/staticmappingsбезизменений,lead_id=orders.id.
+- ОбщийADM-FIL-022/029 **IN PROGRESS**: metadata/model/relationship пробелыэтойвыборкиустранены, ещёнужнаостаточнаяmedia/linkbrowserприёмкаиспользуемогоконтента. Полный900/11272baseline2ноябряпредшествуетэтойправке;8/145 — актуальныйtargetedgate, незаменаполного900. Следующееточное действие: проверитьgallery/catalogimage/fileURLнаproductionисточникахбезлокальногокопирования, затемзафиксироватьграницыконтентнойприёмки.
+
+## Production environment — 2026-11-02
+
+- По подтверждению пользователя включены обычные уведомления новой админки: счета, платежи, получатели, отзывы, client/painter chats, исполнители, статусы и создание заказа. Соответствующие flags могут разрешать существующие email/CRM side effects будущих обычных действий. Проверочные сообщения/команды не отправлялись.
+- ADMIN_BULK_EMAIL_ENABLED=false и ADMIN_SA_COMMANDS_ENABLED=false сохранены явно. Endpoints, auth middleware, idempotency, mappings и схема БД не менялись; lead_id=orders.id. Paysera production config восстановлен из старого controller в .env, значения в документацию не включены.
+- Worker использует новый env, active/running/NRestarts0. Runtime config проверен без отправки email или создания платежа. Это не внешняя CRM/SA UAT и не проверка доставки уведомлений.
+- Открытый вопрос: SA_API_KEY отсутствует в prod/dev .env, services.sa.api_key использует legacy test default. Следующее точное действие — согласовать со стороной SA реальный shared key и момент ротации, разместить его через server.env без передачи в чат и проверить существующий X-Api-Key контракт. До согласования одностороннюю замену не выполнять.
+## PROD-BULK-SA-20261102 — Флаги включены по явному запросу
+
+- DONE: пользователь прямо потребовал включить массовую рассылку и команды SA. В production .env от admin изменены только ADMIN_BULK_EMAIL_ENABLED=true и ADMIN_SA_COMMANDS_ENABLED=true. Предыдущий выбор false отменён этим указанием пользователя.
+- Effective config admin_migration.bulk_email_enabled и sa_commands_enabled проверен: оба true. Config cache отсутствует. Worker перезапущен; active/running/exit0/NRestarts0. Backup.env сохранён только на сервере private/enable-bulk-sa-20261102/production.env.before, режим0600; secrets в Git/чат не выводились.
+- Агент не запускал рассылку и не отправлял тестовые или рабочие команды во внешнюю SA. Включена доступность существующих действий в приложении, внешняя доставка этим шагом не проверена. API/схема/ключи интеграции не менялись. Открытый вопрос согласования SA_API_KEY из предыдущего аудита сохраняется отдельно и не используется как основание оставить явно разрешённые флаги false.
+- Source Markdown журналы актуализированы; source commit безpush, non-md export вC:нет. Новые runtime files/tests не требуются для двух envflags; проверены фактический config и worker.
+
+## 2026-11-03 — ADM-UI-01
+Убрано название старой панели из пользовательских текстов админки и пояснения симулятора SA. Контракты CRM/SA, обработчики и данные не изменялись. Lifecycle 9 тестов/79 проверок PASS; Compass 1/17 PASS. Следующее действие: продолжить приёмку контента ADM-FIL-022/029.

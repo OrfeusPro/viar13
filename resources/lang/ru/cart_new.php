@@ -131,7 +131,7 @@ return array (
   'alternative_size_subtitle' => 'Этот же размер картины доступен со скидкой',
   'current_size' => 'Текущий размер',
   'step_2_recipient_phone' => 'Номер получателя',
-  'cannot_remove_main_product' => 'Невозможно удалить основной товар, пока в корзине есть рекомендованные товары со скидкой',
+  'cannot_remove_main_product' => 'Чтобы удалить этот товар, сначала уберите рекомендованные товары со скидкой.',
   'step_3_cart_express_warning' => 'При сроке изготовления меньше 3 рабочих дней применяется экспресс-тариф: +5 €',
   'step_3_pickup_address' => 'Напишите ваш адрес',
   'step_3_courier_address' => 'Напишите ваш адрес',
@@ -142,4 +142,6 @@ return array (
   'existing_user_login_error' => 'Не удалось войти. Проверьте email и пароль.',
   'existing_user_reset_password' => 'Сбросить пароль',
   'existing_user_reset_error' => 'Не удалось отправить письмо для сброса пароля. Попробуйте ещё раз.',
+  'notice_title' => 'Не удалось удалить товар',
+  'notice_close' => 'Понятно',
 );

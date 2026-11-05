@@ -17,6 +17,10 @@ return [
 
     'admin_email' => env('ADMIN_MAIL', ''),
 
+    // Voyager is excluded from the Laravel 13 frontend runtime. Filament 5
+    // will be introduced later as a separate stage.
+    'admin_enabled' => false,
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment
@@ -168,7 +172,7 @@ return [
          */
         // Spatie\Sitemap\SitemapServiceProvider::class,
 
-        Mcamara\LaravelLocalization\LaravelLocalizationServiceProvider::class,
+        App\Providers\LaravelLocalizationServiceProvider::class,
 
         App\Providers\MenuServiceProvider::class,
         App\Providers\ServerDataServiceProvider::class,
@@ -183,6 +187,7 @@ return [
         App\Providers\AltGenerationServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
+        App\Providers\Filament\AdminPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
 
 //        App\Services\Localization\LocalizationServiceProvider::class,
@@ -190,7 +195,6 @@ return [
         // Barryvdh\Debugbar\ServiceProvider::class,
 
         Barryvdh\DomPDF\ServiceProvider::class,
-        'Barryvdh\TranslationManager\ManagerServiceProvider',
 
     ],
 
@@ -245,7 +249,8 @@ return [
         'Validator'           => Illuminate\Support\Facades\Validator::class,
         'View'                => Illuminate\Support\Facades\View::class,
         'LocalizationService' => \App\Services\Localization\LocalizationService::class,
-        'PDF'                 => Barryvdh\DomPDF\Facade::class,
+        'Voyager'             => TCG\Voyager\Facades\Voyager::class,
+        'PDF'                 => Barryvdh\DomPDF\Facade\Pdf::class,
         'Socialite'           => Laravel\Socialite\Facades\Socialite::class,
     ],
 

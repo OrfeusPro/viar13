@@ -1,7 +1,7 @@
 @isset($product['whom'])
     @if($product['whom'])
         <li>
-            <img src="/theme/viar/img/icons/gift.svg">
+            <img src="/theme/viar/img/icons/gift.svg" @frontendAlt('partials/all_basket_order_items.blade.php', '/theme/viar/img/icons/gift.svg', '', '')>
         </li>
     @endif
 @endisset

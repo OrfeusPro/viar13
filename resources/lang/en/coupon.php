@@ -16,7 +16,7 @@ return array (
   'hb_main_popup_coupon_t1' => 'Ekstra Sale',
   'hb_main_popup_coupon_t2' => 'Use the coupon: 10%',
   'hb_main_popup_coupon_t3' => 'In cart:',
-  'hb_main_popup_coupon_t4' => 'heat2026',
+  'hb_main_popup_coupon_t4' => 'AUTUMN10',
   'hb_main_popup_coupon_t5' => 'Active until:',
   'abandoned_basket' => 'Coupon used: Abandoned Cart',
   'giftcard' => 'Gift card used',

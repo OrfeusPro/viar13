@@ -8,11 +8,19 @@ use Tests\TestCase;
 
 class SaWebhooksMessagesTest extends TestCase
 {
+    use \Tests\Support\CreatesSaChatSchema;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->createSaChatSchema();
+    }
+
     private const ENDPOINT = '/api/sa/webhooks/messages';
     private const CREATE_LEAD_ENDPOINT = '/api/sa/leads';
     private const API_KEY = 'test-key';
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_001_message_created_valid_payload_returns_ok()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -24,7 +32,7 @@ class SaWebhooksMessagesTest extends TestCase
             ->assertJsonPath('status', 'ok');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_002_duplicate_event_id_returns_duplicate()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -40,7 +48,7 @@ class SaWebhooksMessagesTest extends TestCase
             ->assertJsonPath('status', 'duplicate');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_003_message_status_for_known_message_returns_ok()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -57,7 +65,7 @@ class SaWebhooksMessagesTest extends TestCase
             ->assertJsonPath('result.status_updated', true);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_004_message_created_without_lead_id_is_stored_without_order()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -90,7 +98,7 @@ class SaWebhooksMessagesTest extends TestCase
         }
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_005_invalid_datetime_returns_validation_error()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -106,7 +114,7 @@ class SaWebhooksMessagesTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_006_missing_api_key_returns_unauthorized()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -117,7 +125,7 @@ class SaWebhooksMessagesTest extends TestCase
         $this->assertContains($response->getStatusCode(), [401, 403]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_007_message_created_phone_is_sanitized_before_persist()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -140,7 +148,7 @@ class SaWebhooksMessagesTest extends TestCase
         $this->assertSame('+37129123456789', $storedPhone);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_008_message_created_overlong_phone_returns_validation_error()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -155,7 +163,7 @@ class SaWebhooksMessagesTest extends TestCase
             ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_009_create_lead_binds_preorder_messages_by_conversation()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -205,7 +213,7 @@ class SaWebhooksMessagesTest extends TestCase
         $this->assertSame($leadId, (int) $conversationOrderId);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_010_inbound_message_marks_conversation_as_unread_for_manager()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);
@@ -228,7 +236,7 @@ class SaWebhooksMessagesTest extends TestCase
         $this->assertSame(1, $unread);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function t01_011_bot_outbound_message_marks_conversation_as_unread_for_manager()
     {
         $this->skipIfRouteMissing('POST', self::ENDPOINT);

@@ -6,11 +6,11 @@
             </div>
             <div class="what-items clearfix">
                 <div class="what-item">
-                    <img src="{{ asset('img/modular-item-img1.png') }}" alt="">
+                    <img src="{{ asset('img/modular-item-img1.png') }}"  @frontendAlt('partials/module_pics/what_module.blade.php', (asset('img/modular-item-img1.png')), '', '')>
                     {!! $what_size['what_text1'] !!}
                 </div>
                 <div class="what-item">
-                    <img src="{{ asset('img/modular-item-img2.png') }}" alt="">
+                    <img src="{{ asset('img/modular-item-img2.png') }}"  @frontendAlt('partials/module_pics/what_module.blade.php', (asset('img/modular-item-img2.png')), '', '')>
                     {!! $what_size['what_text2'] !!}
                 </div>
                 <div class="what-item">

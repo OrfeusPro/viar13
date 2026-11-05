@@ -50,7 +50,7 @@
                 <ul class="social">
                     <li>
                         <a class="js_fb" href="{{ $b_data['fb_link'] }}" target="_blank">
-                            <img src="{{ asset('img/social-blog1.png') }}" alt=""></a>
+                            <img src="{{ asset('img/social-blog1.png') }}"  @frontendAlt('inner_blog.blade.php', (asset('img/social-blog1.png')), '', '')></a>
                     </li>
                 </ul>
                 <span style="margin-left:15px;font-size:15px;">{{ trans('gl.share_text') }}</span>

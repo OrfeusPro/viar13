@@ -5,6 +5,22 @@ RewriteEngine On
 #RewriteCond %{HTTPS} !=on
 #RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+
+# 1. Блокировка ботов по имени (Semrush, PetalBot)
+RewriteCond %{HTTP_USER_AGENT} SemrushBot [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} PetalBot [NC]
+RewriteRule .* - [F,L]
+
+# 2. Блокировка атаки на базу данных (Галерея + Фильтры)
+# Если ссылка содержит слово "gallery"
+RewriteCond %{REQUEST_URI} gallery [NC]
+# И при этом есть параметры color, order или size
+RewriteCond %{QUERY_STRING} (color=|order=|size=) [NC]
+# То отдаем 403 (Forbidden) и останавливаемся
+RewriteRule ^ - [F,L]
+
+
+
 #remove /home from url
 Redirect 301 /home https://viarcanvas.com/
 

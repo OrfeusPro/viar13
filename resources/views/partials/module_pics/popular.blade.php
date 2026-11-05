@@ -17,8 +17,8 @@
                 <div>
                     @if($item->images)
                     <div class="img">
-                        <img alt="{{ $item['name'] }}" title="{{ $item['name'] }}"
-                            src="{{ Voyager::image( json_decode($item->images)[0] ) }}">
+                        <img
+                            src="{{ Voyager::image( json_decode($item->images)[0] ) }}" @frontendAlt('partials/module_pics/popular.blade.php', (Voyager::image( json_decode($item->images)[0] )), ($item['name']), ($item['name']))>
                     </div>
                     @endif
                     <h5>{{ $item['name'] }}</h5>

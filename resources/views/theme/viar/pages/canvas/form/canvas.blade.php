@@ -10,7 +10,7 @@
                     <div class="kviz-radio js_canvas_type_item js-checkbox @if($item->default) kviz-radio_active @endif" data-stock="{{ $loop->iteration }}" data-price="{{ $item->price }}" data-id="{{ $item->id }}">
                             <div class="check"></div>
                             <label> <span>{{ $item->getTranslatedAttribute('name', app()->getLocale()) }} {{ $item->getTranslatedAttribute('density', app()->getLocale()) }}
-                                    <img src="{{ asset('images/icon/info.svg') }}" alt=""></span>
+                                    <img src="{{ asset('images/icon/info.svg') }}"  @frontendAlt('theme/viar/pages/canvas/form/canvas.blade.php', (asset('images/icon/info.svg')), '', '')></span>
                                 <input name="canvas_type" type="radio" @if($item->default) checked @endif
                                         class="js_canvas_type"
                                        data-name="{{ $item->getTranslatedAttribute('name', app()->getLocale()) }}"

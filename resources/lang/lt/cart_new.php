@@ -131,7 +131,7 @@ return array (
   'alternative_size_subtitle' => 'Toks pats paveikslo dydis yra prieinamas su nuolaida',
   'current_size' => 'Dabartinis dydis',
   'step_2_recipient_phone' => 'Gavėjo telefono numeris',
-  'cannot_remove_main_product' => 'Pagrindinio produkto negalima pašalinti, kol krepšelyje yra rekomenduojamų prekių su nuolaida',
+  'cannot_remove_main_product' => 'Norėdami pašalinti šią prekę, pirmiausia pašalinkite rekomenduojamas prekes su nuolaida.',
   'step_3_cart_express_warning' => 'Jei gamybos terminas trumpesnis nei 3 darbo dienos, taikomas ekspreso tarifas: +5 €',
   'step_3_courier_address' => 'Nurodykite savo adresą (Pik-up)',
   'step_3_pickup_address' => 'Nurodykite savo adresą',
@@ -142,4 +142,6 @@ return array (
   'existing_user_password' => 'Slaptažodis',
   'existing_user_reset_error' => 'Nepavyko išsiųsti slaptažodžio atkūrimo laiško. Bandykite dar kartą.',
   'existing_user_reset_password' => 'Atkurti slaptažodį',
+  'notice_title' => 'Prekės pašalinti nepavyko',
+  'notice_close' => 'Supratau',
 );

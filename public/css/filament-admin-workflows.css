@@ -1,0 +1,275 @@
+/* Shared BREAD appearance for the SEO and SA workflows. */
+.viar-sa-global { position:fixed; top:70px; right:20px; z-index:40; display:flex; align-items:center; gap:5px; user-select:none; touch-action:none; cursor:ns-resize; }
+.viar-sa-global-link { display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:5px; color:white; background:#f9a51a; white-space:nowrap; font-size:16px; line-height:24px; }
+.viar-sa-global-link:hover { background:#ed9510; }
+.viar-sa-global-link:focus-visible { outline:2px solid #2563eb; outline-offset:3px; }
+.viar-sa-global-link > .fi-icon { width:22px; height:22px; }
+.viar-sa-global-count { display:inline-flex; align-items:center; justify-content:center; min-width:27px; height:27px; padding-inline:6px; border-radius:999px; background:#ed7268; color:white; font-size:14px; font-weight:600; }
+.viar-sa-global-sound { padding:5px; color:#64748b; }
+@media(max-width:640px) {
+    /* Keep the final page actions above the floating SA controls when scrolled to the bottom. */
+    body:has(.viar-sa-global-link) .fi-main { padding-bottom:calc(96px + env(safe-area-inset-bottom, 0px)); }
+    .viar-sa-global { top:auto; bottom:20px; right:10px; gap:2px; }
+    .viar-sa-global-link { gap:6px; padding:8px 10px; font-size:14px; line-height:22px; }
+    .viar-sa-global-sound { padding:2px; }
+}
+.viar-seo-editor { min-width:280px; max-width:380px; white-space:normal; overflow-wrap:anywhere; }
+.viar-seo-field { display:grid; gap:3px; margin-bottom:8px; border-inline-start:2px solid #38bdf8; padding-inline-start:8px; }
+.viar-seo-field:last-child { margin-bottom:0; }
+.viar-seo-field label, .viar-seo-current-field > span { font-size:13px; font-weight:400; color:#64748b; }
+.viar-seo-field textarea { width:100%; height:54px; min-height:54px; font-size:13px; line-height:18px; border:1px solid #cbd5e1; border-radius:6px; background:white; color:#0f172a; padding:6px 8px; resize:vertical; }
+.viar-seo-field textarea:focus { outline:2px solid #2563eb; outline-offset:2px; }
+.viar-seo-field small, .viar-seo-row-action small { color:#64748b; font-size:12px; }
+.viar-seo-editor .is-too-long { color:#dc2626; }
+.viar-seo-current { min-width:240px; max-width:360px; white-space:normal; overflow-wrap:anywhere; }
+.viar-seo-current-field { border-inline-start:2px solid #e2e8f0; padding-inline-start:8px; margin-bottom:8px; }
+.viar-seo-current-field small { font-size:12px; }
+.viar-seo-row-action { display:grid; gap:8px; justify-items:end; }
+.viar-seo-row-action small { white-space:normal; text-align:end; max-width:170px; }
+.viar-seo-bulk { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:20px 24px; border-bottom:1px solid #e2e8f0; }
+.viar-seo-bulk-label { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.viar-seo-bulk select { max-width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 32px 8px 10px; background-color:white; color:#475569; font-size:13px; }
+.viar-seo-bulk small { color:#64748b; font-size:12px; }
+.viar-seo-table .viar-seo-native-bulk { display:none; }
+.viar-seo-table .fi-ta-row > .fi-ta-cell { vertical-align:top; padding-block:10px; }
+.viar-seo-table .fi-ta-row .fi-ta-text { padding-block:0; }
+.viar-seo-page-url { min-width:160px; max-width:320px; white-space:normal; overflow-wrap:anywhere; }
+.viar-seo-table .fi-ta-row > .fi-ta-cell:last-child .fi-ta-actions { align-items:flex-start; flex-direction:column; gap:10px; }
+.viar-seo-error { padding:10px; border-radius:8px; background:#fef2f2; color:#b91c1c; }
+.viar-admin-table { border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; }
+.viar-admin-table .fi-ta-header-toolbar { justify-content:flex-start; padding:20px 24px; gap:16px; }
+.viar-admin-table .fi-ta-header-toolbar > *:last-child { margin-inline-start:0; }
+.viar-admin-table .fi-ta-search-field { width: min(100%, 450px); }
+.viar-admin-table .fi-ta-table thead { background:#eef2f8; }
+.viar-admin-table .fi-ta-header-cell { background:#eef2f8; padding:16px 12px; color:#475569; }
+.viar-admin-table .fi-ta-actions-header-cell { background:#eef2f8; }
+.viar-admin-table .fi-ta-row > .fi-ta-cell:last-child { position:sticky; inset-inline-end:0; background:white; }
+.viar-admin-table .viar-sa-unread > .fi-ta-cell:last-child { background:#fffbeb; }
+.viar-admin-table .fi-ta-cell { border-bottom:1px solid #e2e8f0; }
+.viar-sa-table .fi-ta-text { padding-block:12px; }
+.viar-admin-table .fi-ta-filters-above-content-ctn { padding:20px 24px; background:#f8fafc; }
+.viar-admin-table .fi-ta-row.viar-sa-unread { background:#fffbeb; }
+.viar-admin-table .viar-sa-unread .fi-ta-cell:first-child { border-inline-start:3px solid #f59e0b; }
+.viar-admin-table a.fi-ta-text-item:hover { text-decoration:underline; }
+.fi-resource-seo-meta-suggestions .fi-wi-stats-overview-stat { padding:12px 16px; }
+.fi-resource-seo-meta-suggestions .fi-wi-stats-overview-stat-value { font-size:22px; }
+.fi-resource-seo-meta-suggestions .fi-tabs { margin-inline:0; justify-content:flex-start; max-width:100%; overflow-x:auto; }
+.viar-sa-message { width:fit-content; max-width:75%; padding:14px 18px; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow-wrap:anywhere; }
+.viar-sa-message.is-inbound { background:#f8fafc; justify-self:start; }
+.viar-sa-message.is-outbound { background:#eff6ff; border-color:#dbeafe; justify-self:end; }
+.viar-sa-reply { display:grid; gap:14px; margin-top:24px; padding-top:20px; border-top:1px solid #e2e8f0; }
+.viar-sa-reply textarea { width:100%; min-height:110px; border:1px solid #cbd5e1; border-radius:10px; padding:12px; background:white; color:#0f172a; }
+.viar-sa-reply textarea:focus { outline:2px solid #2563eb; outline-offset:2px; }
+.viar-sa-reply-actions { display:flex; align-items:center; flex-wrap:wrap; gap:16px; }
+@media(max-width:640px) {
+    .viar-admin-table .fi-ta-header-toolbar, .viar-admin-table .fi-ta-filters-above-content-ctn { padding:16px; }
+    .viar-sa-message { max-width:92%; }
+    .viar-seo-bulk { padding:16px; }
+    .viar-seo-row-action .fi-btn { font-size:0; gap:0; padding:8px; }
+    .viar-seo-row-action small { display:none; }
+}
+.dark .viar-admin-table .fi-ta-header-cell, .dark .viar-admin-table .fi-ta-filters-above-content-ctn { background:#1e293b; color:#cbd5e1; }
+.dark .viar-admin-table .fi-ta-row.viar-sa-unread { background:#422006; }
+.dark .viar-admin-table .fi-ta-row > .fi-ta-cell:last-child { background:#111827; }
+.dark .viar-admin-table .viar-sa-unread > .fi-ta-cell:last-child { background:#422006; }
+.dark .viar-seo-field textarea, .dark .viar-seo-bulk select { background:#111827; color:#e2e8f0; border-color:#475569; }
+.viar-sa-simulator .page-content { padding:0!important; }
+.viar-sa-simulator .page-title { display:none; }
+.viar-sa-simulator .row { display:flex; flex-wrap:wrap; gap:20px; }
+.viar-sa-simulator .col-md-12 { width:100%; }
+.viar-sa-simulator .col-md-4 { flex:1 1 290px; min-width:0; }
+.viar-sa-simulator .col-md-8 { flex:2 1 520px; min-width:0; }
+.viar-sa-simulator .panel { background:white; border:1px solid #e2e8f0; border-radius:12px; margin-top:20px; overflow:hidden; }
+.viar-sa-simulator .panel-heading { padding:16px 20px; background:#eef2f8; font-weight:600; }
+.viar-sa-simulator .panel-body { padding:20px; }
+.viar-sa-simulator .list-group { display:grid; gap:8px; max-height:75vh; overflow:auto; }
+.viar-sa-simulator .list-group-item { padding:12px; border-radius:6px; border:1px solid #e2e8f0; display:block; }
+.viar-sa-simulator a.list-group-item:hover { background:#eff6ff; border-color:#93c5fd; }
+.viar-sa-simulator .list-group-item-heading { font-weight:600; }
+.viar-sa-simulator .list-group-item-text,.viar-sa-simulator .text-muted { color:#64748b; font-size:13px; }
+.viar-sa-simulator .form-group { margin-bottom:20px; }
+.viar-sa-simulator label { display:block; font-weight:600; margin-bottom:8px; }
+.viar-sa-simulator .form-control { width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; background:white; }
+.viar-sa-simulator .btn { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:8px; background:#2563eb; color:white; }
+.viar-sa-simulator .btn-default { background:#f1f5f9; color:#334155; }
+.viar-sa-simulator .label { padding:3px 7px; border-radius:5px; background:#dbeafe; color:#1e40af; font-size:12px; }
+.viar-sa-simulator pre { overflow:auto; max-height:65vh; font-size:13px; }
+.viar-sa-simulator .sa-simulator-notice { padding:14px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; color:#92400e; }
+
+[data-bread-blog-editor] p.image-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+[data-bread-blog-editor] p.image-row > img { display:inline-block; max-width:100%; margin:0; }
+[data-bread-blog-editor] figure.image { display:table; max-width:100%; margin:12px 0; }
+[data-bread-blog-editor] figure.image > img { display:block; margin:0; max-width:100%; }
+[data-bread-blog-editor] figure.image > figcaption { display:table-caption; caption-side:bottom; text-align:center; padding-top:6px; }
+
+/* Venipak follows the original label form: compact labelled rows and paired panels. */
+.viar-venipak-modal .fi-modal-heading { font-size: 22px; font-weight: 500; }
+.viar-venipak-form { gap: 16px; }
+.viar-venipak-form .fi-section { border-radius: 2px; box-shadow: inset 0 0 0 1px #d5d9de; background: #f1f1f1; }
+.viar-venipak-form .fi-section-header { padding: 12px 16px; }
+.viar-venipak-form .fi-section-content { padding: 16px; }
+.viar-venipak-form .fi-sc { gap: 12px; }
+.viar-venipak-form .fi-section-header-heading { color: #66717b; font-size: 14px; font-weight: 700; }
+.viar-venipak-form .fi-fo-field-label-content { color: #66717b; font-size: 13px; font-weight: 700; }
+.viar-venipak-form .fi-input-wrp { border-radius: 4px; box-shadow: 0 0 0 1px #d5d9de; background: white; }
+.viar-venipak-form .fi-input { padding-top: 6px; padding-bottom: 6px; }
+@media (min-width: 640px) {
+    .viar-venipak-form .fi-input { padding-top: 3px; padding-bottom: 3px; }
+    .viar-venipak-form .fi-select-input { padding-top: 3px; padding-bottom: 3px; }
+    .viar-venipak-form .fi-sc { gap: 10px; }
+    .viar-venipak-form .fi-fo-field-has-inline-label { grid-template-columns: minmax(0, 44%) minmax(0, 1fr); align-items: center; gap: 12px; }
+    .viar-venipak-form .fi-fo-field-has-inline-label > .fi-fo-field-content-col { grid-column: span 1; }
+    .viar-venipak-document .fi-fo-field { max-width: 620px; }
+}
+@media (max-width: 639px) {
+    .viar-venipak-form .fi-section-content { padding: 12px; }
+}
+.dark .viar-venipak-form .fi-section { background: #18181b; }
+.dark .viar-venipak-form .fi-section-header-heading { color: #d4d4d8; }
+.dark .viar-venipak-form .fi-fo-field-label-content { color: #d4d4d8; }
+.dark .viar-venipak-form .fi-input-wrp { background: #27272a; box-shadow: 0 0 0 1px #52525b; }
+
+/* Orders: keep the original top filter compact without changing other tables. */
+.viar-orders-table .fi-ta-row > .fi-ta-cell { padding-block:10px; }
+.viar-orders-table .fi-ta-filters-above-content-ctn { padding:12px 16px; }
+.viar-orders-table .fi-ta-filters { row-gap:10px; }
+.viar-orders-table .fi-ta-filters .fi-sc.fi-sc-has-gap { gap:10px 12px; }
+.viar-orders-table .fi-ta-filters .fi-fo-field { row-gap:4px; }
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-content { font-size:12px; line-height:18px; }
+.viar-orders-table .fi-ta-filters .fi-input,
+.viar-orders-table .fi-ta-filters .fi-select-input-btn { padding-block:5px; font-size:13px; line-height:20px; }
+.viar-orders-table .fi-ta-filters .fi-ta-filters-heading { font-size:14px; line-height:20px; }
+.viar-orders-table .fi-ta-filters .fi-ta-filters-actions-ctn .fi-btn { padding-block:5px; font-size:13px; }
+@media (max-width:639px) {
+    .viar-orders-table .fi-ta-filters-above-content-ctn { padding:12px; }
+    .viar-orders-table .fi-ta-filters .fi-input,
+    .viar-orders-table .fi-ta-filters .fi-select-input-btn { min-height:40px; }
+}
+/* Native selects and searchable selects must match text/date inputs. */
+.viar-orders-table .fi-ta-filters { --viar-filter-control-height:32px; }
+.viar-orders-table .fi-ta-filters input.fi-input,
+.viar-orders-table .fi-ta-filters select.fi-select-input,
+.viar-orders-table .fi-ta-filters .fi-select-input-btn {
+    box-sizing:border-box;
+    height:var(--viar-filter-control-height);
+    min-height:var(--viar-filter-control-height);
+    padding-block:5px;
+    font-size:13px;
+    line-height:20px;
+}
+.viar-orders-table .fi-ta-filters .fi-select-input div[x-ref='select'] {
+    min-height:var(--viar-filter-control-height);
+}
+.viar-orders-table .fi-ta-filters .fi-select-input-value-ctn {
+    overflow:hidden;
+    white-space:nowrap;
+}
+.viar-orders-table .fi-ta-filters .fi-select-input-value-label,
+.viar-orders-table .fi-ta-filters .fi-select-input-placeholder {
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+@media (max-width:639px) {
+    .viar-orders-table .fi-ta-filters { --viar-filter-control-height:40px; }
+}
+
+/* Keep the create form close to Voyager's compact, single-column field rhythm. */
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-col,
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-ctn,
+.viar-orders-table .fi-ta-filters .fi-fo-field-label { min-width:0; max-width:100%; }
+.viar-orders-table .fi-ta-filters .fi-fo-field-label-content { display:block; min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.viar-order-filters-toggle { display:flex; flex:1; align-items:center; justify-content:space-between; gap:12px; min-height:36px; text-align:left; cursor:pointer; }
+.viar-order-filters-toggle .fi-icon { width:18px; height:18px; transition:transform 150ms; }
+.viar-order-filters-toggle .fi-icon.is-expanded { transform:rotate(180deg); }
+.viar-order-filters-toggle:focus-visible { outline:2px solid var(--primary-500); outline-offset:3px; border-radius:4px; }
+.viar-order-filters-body { display:grid; gap:16px; }
+.viar-order-heading { display:flex; align-items:center; flex-wrap:wrap; gap:12px 20px; }
+.viar-order-heading-totals { display:inline-flex; flex-wrap:wrap; align-items:center; gap:8px 16px; color:var(--gray-500); font-size:14px; font-weight:500; line-height:1.5; letter-spacing:normal; }
+.viar-order-heading-stat { display:inline-flex; align-items:center; gap:6px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.viar-order-heading-stat .fi-icon { width:18px; height:18px; color:var(--gray-400); }
+.dark .viar-order-heading-totals { color:var(--gray-400); }
+
+/* Share the compact filters row with the native search and column picker. */
+@media (min-width:1024px) {
+    .viar-orders-table .fi-ta-header-ctn { display:grid; grid-template-columns:minmax(0, 1fr) auto; }
+    .viar-orders-table .fi-ta-header-ctn > * { grid-column:1 / -1; }
+    .viar-orders-table .fi-ta-header-ctn > .fi-ta-filters-above-content-ctn { grid-row:2; }
+    .viar-orders-table .fi-ta-filters-header { padding-inline-end:350px; min-height:36px; }
+    .viar-orders-table .fi-ta-header-ctn > .fi-ta-header-toolbar { grid-row:2; grid-column:2; align-self:start; justify-self:end; padding:12px 16px 0; border:0; background:transparent; gap:0; }
+    .viar-orders-table .fi-ta-header-toolbar .fi-ta-search-field { width:240px; max-width:240px; }
+    .viar-orders-table .fi-ta-header-toolbar > .fi-ta-actions:empty { display:none; }
+}
+
+/* Quiet status colors; the active tab has a short accent instead of a frame. */
+.viar-order-tab--current, .viar-order-tab--production { --viar-tab-accent:#b77916; --viar-tab-fg:#805313; }
+.viar-order-tab--completed { --viar-tab-accent:#2885ac; --viar-tab-fg:#246982; }
+.viar-order-tab--express, .viar-order-tab--unpaid { --viar-tab-accent:#d35641; --viar-tab-fg:#aa4132; }
+.viar-order-tab--printing { --viar-tab-accent:#7b9838; --viar-tab-fg:#536d28; }
+.viar-order-tab--sent_today { --viar-tab-accent:#7b8490; --viar-tab-fg:#58616e; }
+.viar-order-tab--sent { --viar-tab-accent:#5689a0; --viar-tab-fg:#416b80; }
+.viar-order-tab--new_recently { --viar-tab-accent:#349364; --viar-tab-fg:#29744f; }
+.fi-tabs:has(> .viar-order-tab) { gap:6px; padding:4px; background:transparent; border:0; border-radius:0; box-shadow:none; --tw-ring-shadow:0 0 #0000; --tw-ring-inset-shadow:0 0 #0000; }
+.fi-tabs .fi-tabs-item.viar-order-tab { position:relative; flex-shrink:0; padding:10px 14px; background:color-mix(in srgb, var(--viar-tab-accent) 8%, white); color:var(--viar-tab-fg); border:0; border-radius:8px; transition:background-color 150ms; }
+.fi-tabs .fi-tabs-item.viar-order-tab .fi-tabs-item-label { color:inherit; font-weight:500; }
+.fi-tabs .fi-tabs-item.viar-order-tab:hover { background:color-mix(in srgb, var(--viar-tab-accent) 14%, white); }
+.fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"] { background:color-mix(in srgb, var(--viar-tab-accent) 18%, white); }
+.fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"] .fi-tabs-item-label { font-weight:600; }
+.fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"]::after { content:''; position:absolute; height:2px; bottom:0; inset-inline:14px; border-radius:2px; background:var(--viar-tab-accent); }
+.fi-tabs .fi-tabs-item.viar-order-tab:focus-visible { outline:2px solid var(--primary-600); outline-offset:2px; }
+.fi-tabs .fi-tabs-item.viar-order-tab .fi-badge { min-width:22px; padding:1px 6px; border-radius:6px; background:color-mix(in srgb, var(--viar-tab-accent) 12%, white); color:inherit; box-shadow:none; font-size:11px; }
+.dark .fi-tabs .fi-tabs-item.viar-order-tab { background:color-mix(in srgb, var(--viar-tab-accent) 13%, #18181b); color:color-mix(in srgb, var(--viar-tab-accent) 45%, white); }
+.dark .fi-tabs .fi-tabs-item.viar-order-tab:hover,
+.dark .fi-tabs .fi-tabs-item.viar-order-tab[aria-selected="true"] { background:color-mix(in srgb, var(--viar-tab-accent) 24%, #18181b); }
+.dark .fi-tabs .fi-tabs-item.viar-order-tab .fi-badge { background:color-mix(in srgb, var(--viar-tab-accent) 20%, #18181b); }
+
+.viar-order-create-form .fi-sc.fi-sc-has-gap { gap:14px; }
+.viar-order-create-form .fi-fo-field { row-gap:4px; }
+
+/* Creation form: Voyager's payment-status colors, scoped to this field. */
+select.viar-create-payment-status[data-payment-status="not_payed"] { background-color:#ff9d9d; color:#1e2533; }
+select.viar-create-payment-status[data-payment-status="prepayment"] { background-color:#c19300; color:#fff; }
+select.viar-create-payment-status[data-payment-status="payed"] { background-color:#2ba92b; color:#fff; }
+select.viar-create-payment-status option { background-color:#fff; color:#1e2533; }
+/* Order forms follow Voyager's two-panel, single-field-per-row layout. */
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-sc.fi-sc-has-gap { gap: 12px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section { border-radius: 4px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section-header { padding: 12px 16px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section-header-heading { font-size: 15px; font-weight: 500; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-section-content { padding: 16px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-field { row-gap: 4px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-field-label-content { font-size: 13px; font-weight: 400; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-input-wrp { border-radius: 3px; }
+:is(.viar-order-edit-form, .viar-order-create-form) :is(input.fi-input, select.fi-select-input) { min-height: 34px; padding-block: 5px; font-size: 13px; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-repeater-item { border-radius: 4px; }
+.viar-order-edit-form .viar-order-media-gallery { grid-template-columns: minmax(0, 1fr) !important; }
+.viar-order-edit-form .viar-order-media-gallery h3 { text-align: center; font-size: 18px; font-weight: 400 !important; }
+.viar-order-edit-form .viar-order-media-gallery section > div { justify-content: center; }
+.viar-order-edit-form .viar-order-media-gallery section > div > p { color: #6b7280; font-size: 12px; }
+/* Voyager highlights related order fields against white inputs and media panels. */
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted {
+    background: #fafafa;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    box-shadow: none;
+}
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted > .fi-section {
+    background: inherit;
+    border-radius: inherit;
+    box-shadow: none;
+}
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-section-header {
+    background: transparent;
+    border-bottom: 1px solid #e5e7eb;
+}
+:is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-input-wrp { background: #fff; }
+:is(.viar-order-edit-form, .viar-order-create-form) .fi-fo-repeater-item {
+    background: #fafafa;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    box-shadow: none;
+}
+.viar-order-edit-form .viar-order-sales-fields { padding: 14px; background: #fafafa; border: 1px solid #d9d9d9; border-radius: 8px; }
+.dark :is(.viar-order-edit-form, .viar-order-create-form) :is(.viar-order-panel-muted, .fi-fo-repeater-item, .viar-order-sales-fields) { background: #202024; border-color: #42424a; }
+.dark :is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-section-header { border-color: #42424a; }
+.dark :is(.viar-order-edit-form, .viar-order-create-form) .viar-order-panel-muted .fi-input-wrp { background: #18181b; }

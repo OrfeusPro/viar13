@@ -152,7 +152,7 @@
 							<div class="uploaded-image-styles">
 								<span></span>
 								<a href="{{ $imgSrc }}" target="_blank">
-									<img src="{{ $imgSrc }}" width="114" height="140" alt="">
+									<img src="{{ $imgSrc }}" width="114" height="140"  @frontendAlt('theme/viar/account/o_client_chat.blade.php', ($imgSrc), '', '')>
 								</a>
 							</div>
 							@endforeach

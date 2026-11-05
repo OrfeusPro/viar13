@@ -60,12 +60,12 @@
                 </div>
             </div>
             <div class="how-create__item-left image-block">
-                <img src="{{ ver_asset('img/how-create-1.svg') }}" alt="">
+                <img src="{{ ver_asset('img/how-create-1.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/six.blade.php', (ver_asset('img/how-create-1.svg')), '', '')>
             </div>
         </div>
         <div class="how-create__item">
             <div class="how-create__item-left image-block">
-                <img src="{{ ver_asset('img/how-create-2.svg') }}" alt="">
+                <img src="{{ ver_asset('img/how-create-2.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/six.blade.php', (ver_asset('img/how-create-2.svg')), '', '')>
             </div>
             <div class="how-create__item-right text-block">
                 <div class="how-create__item-title">
@@ -202,12 +202,12 @@
                 </ul>
             </div>
             <div class="how-create__item-left image-block">
-                <img src="{{ ver_asset('img/how-create-3.svg') }}" alt="">
+                <img src="{{ ver_asset('img/how-create-3.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/six.blade.php', (ver_asset('img/how-create-3.svg')), '', '')>
             </div>
         </div>
         <div class="how-create__item">
             <div class="how-create__item-left image-block">
-                <img src="{{ ver_asset('img/how-create-4.svg') }}" alt="">
+                <img src="{{ ver_asset('img/how-create-4.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/six.blade.php', (ver_asset('img/how-create-4.svg')), '', '')>
             </div>
             <div class="how-create__item-right text-block">
                 <div class="how-create__item-title">
@@ -293,12 +293,12 @@
                 </div>
             </div>
             <div class="how-create__item-left image-block">
-                <img src="{{ ver_asset('img/how-create-5.svg') }}" alt="">
+                <img src="{{ ver_asset('img/how-create-5.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/six.blade.php', (ver_asset('img/how-create-5.svg')), '', '')>
             </div>
         </div>
         <div class="how-create__item">
             <div class="how-create__item-left image-block">
-                <img src="{{ ver_asset('img/how-create-6.svg') }}" alt="">
+                <img src="{{ ver_asset('img/how-create-6.svg') }}"  @frontendAlt('theme/viar/pages/portrait/tabs/six.blade.php', (ver_asset('img/how-create-6.svg')), '', '')>
             </div>
             <div class="how-create__item-right text-block">
                 <div class="how-create__item-title">

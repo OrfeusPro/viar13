@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App;
 use App\Helpers\UserFormHelper;
 use App\Http\Controllers\Admin\OrdersController;
+use App\Http\Requests\LoginAjaxRequest;
+use App\Http\Requests\QuickOrderRequest;
 use App\Http\Requests\RegisterStoreRequest;
 use App\Mail\QuizSendToUser;
 use App\Mail\SendUserRegister;
@@ -59,7 +61,7 @@ class UserManageController extends Controller
         return response()->json(true);
     }
 
-    public function custom_login_ajax(Request $request)
+    public function custom_login_ajax(LoginAjaxRequest $request)
     {
         $credentials = $request->only('email', 'password');
 
@@ -75,6 +77,7 @@ class UserManageController extends Controller
         $cart = request()->session()->get('basket');
         $this->basketRepository->saveBasketToAbandonedCartModel($cart);
         session()->put('email', auth()->user()->email);
+        app(\App\Services\CheckoutCouponService::class)->refresh(['totalPrice' => 0]);
         return response()->json([
             'status' => true,
         ]);
@@ -156,7 +159,7 @@ class UserManageController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
         }
 
@@ -228,7 +231,7 @@ class UserManageController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
 
             if ( $request->screen=='free') {
@@ -271,7 +274,7 @@ class UserManageController extends Controller
     }
 
     // TODO: Функция быстрого заказа
-    public function send_photo_portrait_form(Request $request, OrdersController $adm_order_contr)
+    public function send_photo_portrait_form(QuickOrderRequest $request, OrdersController $adm_order_contr)
     {
         if(isset($request['phone']))
         {
@@ -280,13 +283,6 @@ class UserManageController extends Controller
             $request['phone'] = str_replace("(","", $request['phone']);
             $request['phone'] = str_replace("-","", $request['phone']);
         }
-
-        $request->validate([
-            'email' => 'required',
-            'phone' => 'required|min:7|regex:/^\+?[0-9\s()-]+$/',
-            'file' => 'required|array',
-            'file.*' => 'file|mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,heic,heif',
-        ]);
 
         $data = UserFormHelper::send_photo_portrait_form_helper($request);
         $request['basket_item'] = (array)"1";
@@ -544,7 +540,7 @@ class UserManageController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         if ($request->filled('email')) {
@@ -559,7 +555,7 @@ class UserManageController extends Controller
 
 
 
-    public function send_all_styles_form(Request $request, OrdersController $adm_order_contr)
+    public function send_all_styles_form(QuickOrderRequest $request, OrdersController $adm_order_contr)
     {
         $request['sumPrice'] = (array)0;
         $request['sumFormatedPrice'] =  (array)0;
@@ -581,13 +577,6 @@ class UserManageController extends Controller
             $request['phone'] = str_replace("(","", $request['phone']);
             $request['phone'] = str_replace("-","", $request['phone']);
         }
-
-        $request->validate([
-            'email' => 'required',
-            'phone' => 'required|min:7|regex:/^\+?[0-9\s()-]+$/',
-            'file' => 'required|array',
-            'file.*' => 'file|mimes:jpeg,jpg,png,gif,bmp,tiff,webp,pdf,heic,heif',
-        ]);
 
         $data = UserFormHelper::send_photo_portrait_form_helper($request);
 
@@ -647,7 +636,7 @@ class UserManageController extends Controller
         Mail::send([], [], function ($message) use ($data) {
             $message->to($data['to']);
             $message->subject($data['subject']);
-            $message->setBody($data['content'], 'text/html');
+            $message->html($data['content']);
         });
 
         return Redirect::route('thanks', ['order_id' => $analytic_params['order_id']]);
@@ -918,7 +907,7 @@ class UserManageController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['to']);
                 $message->subject($data['subject']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
 
             return response()->json([

@@ -1,7 +1,7 @@
     <!-- ellipse -->
 
     <div class="ellipse ellipse_black ellipse_top">
-      <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg" alt="img" loading="lazy">
+      <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"  loading="lazy" @frontendAlt('partials/collage_new/order_screen.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
     </div>
 
 
@@ -25,7 +25,7 @@
                 <picture>
                   <source media="(max-width: 700px)" srcset="{{ asset('images/collage/ord1M.svg') }}" type="image/jpeg">
                   <source srcset="{{ asset('images/collage/ord1.svg') }}" type="image/jpeg">
-                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord1.svg') }}" alt="">
+                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord1.svg') }}"  @frontendAlt('partials/collage_new/order_screen.blade.php', (asset('images/collage/ord1.svg')), '', '')>
                 </picture>
                 <p>{!! trans('collage_new.z2_order_screen_text1') !!}</p>
               </div>
@@ -33,7 +33,7 @@
                 <picture>
                   <source media="(max-width: 700px)" srcset="{{ asset('images/collage/ord2M.svg') }}" type="image/jpeg">
                   <source srcset="{{ asset('images/collage/ord2.svg') }}" type="image/jpeg">
-                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord2.svg') }}" alt="">
+                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord2.svg') }}"  @frontendAlt('partials/collage_new/order_screen.blade.php', (asset('images/collage/ord2.svg')), '', '')>
                 </picture>
                 <p>{!! trans('collage_new.z2_order_screen_text2') !!}</p>
               </div>
@@ -41,7 +41,7 @@
                 <picture>
                   <source media="(max-width: 700px)" srcset="{{ asset('images/collage/ord3M.svg') }}" type="image/jpeg">
                   <source srcset="{{ asset('images/collage/ord3.svg') }}" type="image/jpeg">
-                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord3.svg') }}" alt="">
+                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord3.svg') }}"  @frontendAlt('partials/collage_new/order_screen.blade.php', (asset('images/collage/ord3.svg')), '', '')>
                 </picture>
                 <p>{!! trans('collage_new.z2_order_screen_text3') !!}</p>
               </div>
@@ -49,7 +49,7 @@
                 <picture>
                   <source media="(max-width: 700px)" srcset="{{ asset('images/collage/ord4M.svg') }}" type="image/jpeg">
                   <source srcset="{{ asset('images/collage/ord4.svg') }}" type="image/jpeg">
-                  <img loading="lazy" width="255" height="433" src="{{ asset('images/collage/ord4.svg') }}" alt="">
+                  <img loading="lazy" width="255" height="433" src="{{ asset('images/collage/ord4.svg') }}"  @frontendAlt('partials/collage_new/order_screen.blade.php', (asset('images/collage/ord4.svg')), '', '')>
                 </picture>
                 <p>{!! trans('collage_new.z2_order_screen_text4') !!}</p>
               </div>
@@ -57,7 +57,7 @@
                 <picture>
                   <source media="(max-width: 700px)" srcset="{{ asset('images/collage/ord5M.svg') }}" type="image/jpeg">
                   <source srcset="{{ asset('images/collage/ord5.svg') }}" type="image/jpeg">
-                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord5.svg') }}" alt="">
+                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord5.svg') }}"  @frontendAlt('partials/collage_new/order_screen.blade.php', (asset('images/collage/ord5.svg')), '', '')>
                 </picture>
                 <p>{!! trans('collage_new.z2_order_screen_text5') !!}</p>
               </div>
@@ -65,7 +65,7 @@
                 <picture>
                   <source media="(max-width: 700px)" srcset="{{ asset('images/collage/ord6M.svg') }}" type="image/jpeg">
                   <source srcset="{{ asset('images/collage/ord6.svg') }}" type="image/jpeg">
-                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord6.svg') }}" alt="">
+                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord6.svg') }}"  @frontendAlt('partials/collage_new/order_screen.blade.php', (asset('images/collage/ord6.svg')), '', '')>
                 </picture>
                 <p>{!! trans('collage_new.z2_order_screen_text6') !!}</p>
               </div>
@@ -73,7 +73,7 @@
                 <picture>
                   <source media="(max-width: 700px)" srcset="{{ asset('images/collage/ord7M.svg') }}" type="image/jpeg">
                   <source srcset="{{ asset('images/collage/ord7.svg') }}" type="image/jpeg">
-                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord7.svg') }}" alt="">
+                  <img loading="lazy" width="415" height="433" src="{{ asset('images/collage/ord7.svg') }}"  @frontendAlt('partials/collage_new/order_screen.blade.php', (asset('images/collage/ord7.svg')), '', '')>
                 </picture>
                 <p>{!! trans('collage_new.z2_order_screen_text7') !!}</p>
               </div>
@@ -100,5 +100,5 @@
     <!-- ellipse -->
 
     <div class="ellipse ellipse_black">
-      <img src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg" alt="img" loading="lazy">
+      <img src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"  loading="lazy" @frontendAlt('partials/collage_new/order_screen.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
     </div>

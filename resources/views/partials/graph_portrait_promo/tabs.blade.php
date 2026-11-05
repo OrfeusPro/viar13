@@ -16,7 +16,7 @@
                         <div class="what-item">
                             @isset($is_oil)
                                 <img src="{{ asset('img/what-item-img20.png') }}" class=""
-                                     data-src="{{ asset('img/what-item-img20.png') }}" alt="">
+                                     data-src="{{ asset('img/what-item-img20.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/what-item-img20.png')), '', '')>
                             @endisset
                             @if($item['add_image3_inner'])
                                 @php
@@ -46,22 +46,22 @@
                         <h2>{{ $data['photo_req_title'] }}</h2>
                     </div>
                     <div class="requirements-text clearfix">
-                        <img src="{{ asset('img/requirements-img3.png') }}" alt="">
+                        <img src="{{ asset('img/requirements-img3.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/requirements-img3.png')), '', '')>
                         {!! $data['photo_req_text1'] !!}
                     </div>
                     <h3>{{ $data['photo_req_title2'] }}</h3>
                     <div class="requirements-items clearfix">
                         <div class="requirements-item">
                             {!! $data['photo_req_text2'] !!}
-                            <img src="{{ asset('img/requirements-item-img1.png') }}" alt="">
+                            <img src="{{ asset('img/requirements-item-img1.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/requirements-item-img1.png')), '', '')>
                         </div>
                         <div class="requirements-item">
                             {!! $data['photo_req_text3'] !!}
-                            <img src="{{ asset('img/requirements-item-img2.png') }}" alt="">
+                            <img src="{{ asset('img/requirements-item-img2.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/requirements-item-img2.png')), '', '')>
                         </div>
                         <div class="requirements-item">
                             {!! $data['photo_req_text4'] !!}
-                            <img src="{{ asset('img/requirements-item-img3.png') }}" alt="">
+                            <img src="{{ asset('img/requirements-item-img3.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/requirements-item-img3.png')), '', '')>
                         </div>
                     </div>
                     {!! $data['photo_req_text5'] !!}
@@ -78,7 +78,7 @@
                         <h2>{{ trans('gl.diff_sizes') }}</h2>
                     </div>
                     <div class="prices-content2">
-                        <img src="{{ asset('img/prices-content2.png') }}" alt="">
+                        <img src="{{ asset('img/prices-content2.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/prices-content2.png')), '', '')>
                         <div class="prices-slider">
                             {{-- sizes --}}
                             @php
@@ -362,31 +362,31 @@
                         <div class="components-items">
                             <div class="components-item">
                                 <div class="img">
-                                    <img src="{{ asset('img/components-item-img.png') }}" alt="">
+                                    <img src="{{ asset('img/components-item-img.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/components-item-img.png')), '', '')>
                                 </div>
                                 {!! $data['img_part_text1'] !!}
                             </div>
                             <div class="components-item">
                                 <div class="img">
-                                    <img src=" {{ asset('img/components-item-img2.png') }}" alt="">
+                                    <img src=" {{ asset('img/components-item-img2.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', ' ' . (asset('img/components-item-img2.png')), '', '')>
                                 </div>
                                 {!! $data['img_part_text2'] !!}
                             </div>
                             <div class="components-item">
                                 <div class="img">
-                                    <img src=" {{ asset('img/components-item-img3.png') }}" alt="">
+                                    <img src=" {{ asset('img/components-item-img3.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', ' ' . (asset('img/components-item-img3.png')), '', '')>
                                 </div>
                                 {!! $data['img_part_text3'] !!}
                             </div>
                             <div class="components-item">
                                 <div class="img">
-                                    <img src=" {{ asset('img/components-item-img4.png') }}" alt="">
+                                    <img src=" {{ asset('img/components-item-img4.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', ' ' . (asset('img/components-item-img4.png')), '', '')>
                                 </div>
                                 {!! $data['img_part_text4'] !!}
                             </div>
                             <div class="components-item">
                                 <div class="img">
-                                    <img src=" {{ asset('img/components-item-img5.png') }}" alt="">
+                                    <img src=" {{ asset('img/components-item-img5.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', ' ' . (asset('img/components-item-img5.png')), '', '')>
                                 </div>
                                 {!! $data['img_part_text5'] !!}
                             </div>
@@ -397,7 +397,7 @@
                             <h2>{!! $data['img_qual_title'] !!}</h2>
                         </div>
                         <div class="quality-content">
-                            <img src="{{ asset('img/quality-img.png') }}" alt="">
+                            <img src="{{ asset('img/quality-img.png') }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/quality-img.png')), '', '')>
                             <div class="quality-items">
                                 <div class="quality-item">
                                     {!! $data['img_qual_text1'] !!}
@@ -452,7 +452,7 @@
                                                 @endphp
                                                 <img class="lazy"
                                                      src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                                                     data-src="/storage/{{ $img  }}" alt="">
+                                                     data-src="/storage/{{ $img  }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', '/storage/' . ($img), '', '')>
                                             </div>
                                         @endforeach
                                     </div>
@@ -478,7 +478,7 @@
                                                 @endphp
                                                 <img class="lazy"
                                                      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAoMBgDTD2qgAAAAASUVORK5CYII="
-                                                     data-src="/storage/{{ $img }}" alt="">
+                                                     data-src="/storage/{{ $img }}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', '/storage/' . ($img), '', '')>
                                             </div>
                                         @endforeach
                                     </div>
@@ -503,39 +503,39 @@
                         </div>
                         <div class="service-items clearfix">
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img.png' )), '', '')>
                                 <p>{!! $canvas_work_serv['why1_title'] !!}</p>
                             </div>
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img2.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img2.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img2.png' )), '', '')>
                                 <p>{!! $canvas_work_serv['why2_title'] !!}</p>
                             </div>
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img3.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img3.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img3.png' )), '', '')>
                                 <p>{!! $canvas_work_serv['why3_title'] !!}</p>
                             </div>
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img4.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img4.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img4.png' )), '', '')>
                                 <p>{!! $canvas_work_serv['why4_title'] !!}</p>
                             </div>
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img5.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img5.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img5.png' )), '', '')>
                                 <p>{!! $canvas_work_serv['why5_title'] !!}</p>
                             </div>
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img6.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img6.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img6.png' )), '', '')>
                                 <p>
                                 <p>{!! $canvas_work_serv['why6_title'] !!}</p>
                                 </p>
                             </div>
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img7.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img7.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img7.png' )), '', '')>
                                 <p>
                                 <p>{!! $canvas_work_serv['why7_title'] !!}</p>
                                 </p>
                             </div>
                             <div class="service-item">
-                                <img src="{{ asset('img/service-item-img8.png' )}}" alt="">
+                                <img src="{{ asset('img/service-item-img8.png' )}}"  @frontendAlt('partials/graph_portrait_promo/tabs.blade.php', (asset('img/service-item-img8.png' )), '', '')>
                                 <p>
                                 <p>{!! $canvas_work_serv['why8_title'] !!}</p>
                                 </p>

@@ -77,6 +77,10 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Admin'], function () {
 
         Route::get('alt-suggestions', '\App\Http\Controllers\Voyager\AltSuggestionController@index')
             ->name('voyager.alt-suggestions.index');
+        Route::get('alt-suggestions/entity', '\App\Http\Controllers\Voyager\AltSuggestionController@entity')
+            ->name('voyager.alt-suggestions.entity');
+        Route::post('alt-suggestions/entity/apply', '\App\Http\Controllers\Voyager\AltSuggestionController@applyEntity')
+            ->name('voyager.alt-suggestions.entity.apply');
         Route::post('alt-suggestions/approve/{id}', '\App\Http\Controllers\Voyager\AltSuggestionController@approve')
             ->name('voyager.alt-suggestions.approve');
         Route::post('alt-suggestions/reject/{id}', '\App\Http\Controllers\Voyager\AltSuggestionController@reject')

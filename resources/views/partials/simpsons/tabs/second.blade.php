@@ -24,7 +24,7 @@
             <picture>
                 <source srcset="{{ ver_asset('images/about-m1.webp') }}" type="image/webp"/>
                 <source srcset="{{ ver_asset('images/about-m1.png') }}" type="image/png"/>
-                <img src="{{ ver_asset('images/about-m1.png') }}" alt=""/>
+                <img src="{{ ver_asset('images/about-m1.png') }}"  @frontendAlt('partials/simpsons/tabs/second.blade.php', (ver_asset('images/about-m1.png')), '', '')/>
             </picture>
         </div>
     </div>
@@ -37,7 +37,7 @@
                 <picture>
                     <source srcset="{{ ver_asset('images/fit-1.webp') }}" type="image/webp"/>
                     <source srcset="{{ ver_asset('images/fit-1.jpg') }}" type="image/jpg"/>
-                    <img src="{{ ver_asset('images/fit-1.jpg') }}" alt=""/>
+                    <img src="{{ ver_asset('images/fit-1.jpg') }}"  @frontendAlt('partials/simpsons/tabs/second.blade.php', (ver_asset('images/fit-1.jpg')), '', '')/>
                 </picture>
             </div>
         </div>
@@ -49,7 +49,7 @@
                 <picture>
                     <source srcset="{{ ver_asset('images/fit-2.webp') }}" type="image/webp"/>
                     <source srcset="{{ ver_asset('images/fit-2.jpg') }}" type="image/jpg"/>
-                    <img src="{{ ver_asset('images/fit-2.jpg') }}" alt=""/>
+                    <img src="{{ ver_asset('images/fit-2.jpg') }}"  @frontendAlt('partials/simpsons/tabs/second.blade.php', (ver_asset('images/fit-2.jpg')), '', '')/>
                 </picture>
             </div>
         </div>
@@ -61,7 +61,7 @@
                 <picture>
                     <source srcset="{{ ver_asset('images/fit-3.webp') }}" type="image/webp"/>
                     <source srcset="{{ ver_asset('images/fit-3.jpg') }}" type="image/jpg"/>
-                    <img src="{{ ver_asset('images/fit-3.jpg') }}" alt=""/>
+                    <img src="{{ ver_asset('images/fit-3.jpg') }}"  @frontendAlt('partials/simpsons/tabs/second.blade.php', (ver_asset('images/fit-3.jpg')), '', '')/>
                 </picture>
             </div>
         </div>

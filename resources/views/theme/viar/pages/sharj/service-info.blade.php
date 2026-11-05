@@ -18,12 +18,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service1Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service1.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service1.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service1.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service1.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service2Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service2.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service2.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service2.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service2.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -97,12 +97,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service3Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service3.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service3.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service3.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service3.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service4Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service4.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service4.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service4.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service4.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -171,12 +171,12 @@
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service5Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service5.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service5.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service5.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service5.webp')), '', '')>
                             </picture>
                             <picture>
                                 <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/service6Min.webp') }}" type="image/webp">
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service6.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service6.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service6.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service6.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -249,12 +249,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service1Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service7.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service7.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service7.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service7.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service2Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service8.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service8.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service8.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service8.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -281,12 +281,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service3Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service9.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service9.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service9.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service9.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service4Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service10.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service10.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service10.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service10.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">
@@ -313,12 +313,12 @@
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service5Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service11.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service11.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service11.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service11.webp')), '', '')>
                             </picture>
                             <picture>
                                 <!-- <source media="(max-width: 576px)" srcset="images/sharj/new/service6Min.webp" type="image/webp"> -->
                                 <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/service12.webp') }}" type="image/webp">
-                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service12.webp') }}" alt="">
+                                <img width="315" height="275" src="{{ asset(config('theme.current') . '/images/sharj/new/service12.webp') }}"  @frontendAlt('theme/viar/pages/sharj/service-info.blade.php', (asset(config('theme.current') . '/images/sharj/new/service12.webp')), '', '')>
                             </picture>
                         </div>
                         <div class="content">

@@ -8,6 +8,10 @@ use App\Services\Payment\PayPal\OneTimePayPalService;
 
 class ClientOrderPaymentService
 {
+    public function __construct(private readonly OrderPaymentAmountCalculator $amountCalculator)
+    {
+    }
+
     public function start(Orders $order, string $paymentMethod)
     {
         $delivery = json_decode($order->delivery, true) ?: [];
@@ -32,7 +36,7 @@ class ClientOrderPaymentService
         $discountedSubtotal = $this->resolveDiscountedSubtotal($order);
         $termsPrice = $this->resolveTermsPrice($items);
         $deliveryPrice = $this->toFloat($delivery['deliv_price'] ?? 0);
-        $total = round($discountedSubtotal + $termsPrice + $deliveryPrice, 2);
+        $total = $this->amountCalculator->inCents($order) / 100;
 
         $user = auth()->user();
 

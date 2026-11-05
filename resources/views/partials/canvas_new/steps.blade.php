@@ -14,7 +14,7 @@
                             <picture>
                                 <source srcset="{{ asset('images/photo.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/photo.png') }}">
-                                <img src="{{ asset('images/photo.png') }}" alt="" />
+                                <img src="{{ asset('images/photo.png') }}"   @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/photo.png')), '', '')/>
                             </picture>
                             <div class="stage-num">1</div>
                         </div>
@@ -28,7 +28,7 @@
                             <picture>
                                 <source srcset="{{ asset('images/conversation.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/conversation.png') }}">
-                                <img src="{{ asset('images/conversation.png') }}" alt="" />
+                                <img src="{{ asset('images/conversation.png') }}"   @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/conversation.png')), '', '')/>
                             </picture>
                             <div class="stage-num">2</div>
                         </div>
@@ -42,7 +42,7 @@
                             <picture>
                                 <source srcset="{{ asset('images/portrait.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/portrait.png') }}">
-                                <img src="{{ asset('images/portrait.png') }}" alt="" />
+                                <img src="{{ asset('images/portrait.png') }}"   @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/portrait.png')), '', '')/>
                             </picture>
                             <div class="stage-num">3</div>
                         </div>
@@ -56,7 +56,7 @@
                             <picture>
                                 <source srcset="{{ asset('images/canvas.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/canvas.png') }}">
-                                <img src="{{ asset('images/canvas.png') }}" alt="" />
+                                <img src="{{ asset('images/canvas.png') }}"   @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas.png')), '', '')/>
                             </picture>
                             <div class="stage-num">4</div>
                         </div>
@@ -70,7 +70,7 @@
                             <picture>
                                 <source srcset="{{ asset('images/delivery1.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/delivery1.png') }}">
-                                <img src="{{ asset('images/delivery1.png') }}" alt="" />
+                                <img src="{{ asset('images/delivery1.png') }}"   @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/delivery1.png')), '', '')/>
                             </picture>
                             <div class="stage-num">5</div>
                         </div>
@@ -91,11 +91,11 @@
             </div>
             <div class="work-time">
                 <div class="work-time__item">
-                    <img src="{{ asset('images/work/work-4.svg') }}" alt="img" loading="lazy" />
+                    <img src="{{ asset('images/work/work-4.svg') }}"  loading="lazy"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/work/work-4.svg')), 'img', '')/>
                     <p>{!! trans('homepage_new.how_we_work_express') !!}</p>
                 </div>
                 <div class="work-time__item">
-                    <img src="{{ asset('images/work/work-5.svg') }}" alt="img" loading="lazy" />
+                    <img src="{{ asset('images/work/work-5.svg') }}"  loading="lazy"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/work/work-5.svg')), 'img', '')/>
                     <p>{!! trans('homepage_new.how_we_work_standart') !!}</p>
                 </div>
             </div>
@@ -128,7 +128,7 @@
                         <div class="page-input__item phone-input">
                             <div class="banner__input-item">
                                 <input type="text" id="phone2" name="phone" class="banner__input phone" required>
-                                <img src="{{ asset('img/icons/phone.svg') }}" alt="" class="img-svg img-svg__posa">
+                                <img src="{{ asset('img/icons/phone.svg') }}"  class="img-svg img-svg__posa" @frontendAlt('partials/canvas_new/steps.blade.php', (asset('img/icons/phone.svg')), '', '')>
                             </div>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
                         <source media="(max-width: 550px)" srcset="{{ asset('images/canvas/advantagesMin.png') }}" type="image/png">
                         <source srcset="{{ asset('images/canvas/advantages.webp') }}" type="image/webp">
                         <source srcset="{{ asset('images/canvas/advantages.png') }}" type="image/png">
-                        <img src="{{ asset('images/canvas/advantages.png') }}" alt="">
+                        <img src="{{ asset('images/canvas/advantages.png') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/advantages.png')), '', '')>
                     </picture>
                 </div>
                 <div class="canvas-feature__content">
@@ -203,31 +203,31 @@
                     </div>
                     <ul>
                         <li>
-                            <img src="{{ asset('images/canvas/tree.svg') }}" alt="">
+                            <img src="{{ asset('images/canvas/tree.svg') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/tree.svg')), '', '')>
                             <p>{!! trans('canvas.photo_sec_step1') !!}</p>
                         </li>
                         <li>
-                            <img src="{{ asset('images/canvas/leaf.svg') }}" alt="">
+                            <img src="{{ asset('images/canvas/leaf.svg') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/leaf.svg')), '', '')>
                             <p>{!! trans('canvas.photo_sec_step2') !!}</p>
                         </li>
                         <li>
-                            <img src="{{ asset('images/canvas/brush.svg') }}" alt="">
+                            <img src="{{ asset('images/canvas/brush.svg') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/brush.svg')), '', '')>
                             <p>{!! trans('canvas.photo_sec_step3') !!}</p>
                         </li>
                         <li>
-                            <img src="{{ asset('images/canvas/shield.svg') }}" alt="">
+                            <img src="{{ asset('images/canvas/shield.svg') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/shield.svg')), '', '')>
                             <p>{!! trans('canvas.photo_sec_step4') !!}</p>
                         </li>
                         <li>
-                            <img src="{{ asset('images/canvas/picture.svg') }}" alt="">
+                            <img src="{{ asset('images/canvas/picture.svg') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/picture.svg')), '', '')>
                             <p>{!! trans('canvas.photo_sec_step5') !!}</p>
                         </li>
                         <li>
-                            <img src="{{ asset('images/canvas/clock.svg') }}" alt="">
+                            <img src="{{ asset('images/canvas/clock.svg') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/clock.svg')), '', '')>
                             <p>{!! trans('canvas.photo_sec_step6') !!}</p>
                         </li>
                         <li>
-                            <img src="{{ asset('images/canvas/package.svg') }}" alt="">
+                            <img src="{{ asset('images/canvas/package.svg') }}"  @frontendAlt('partials/canvas_new/steps.blade.php', (asset('images/canvas/package.svg')), '', '')>
                             <p>{!! trans('canvas.photo_sec_step7') !!}</p>
                         </li>
                     </ul>

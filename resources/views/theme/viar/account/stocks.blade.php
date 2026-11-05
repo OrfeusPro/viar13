@@ -63,7 +63,7 @@
 													<source srcset="{{ asset(config('theme.current') . '/images') }}/stock/sm1.webp" type="image/webp">
 													<source srcset="{{ asset(config('theme.current') . '/images') }}/stock/sm1.jpg" type="image/jpeg">
 													<img width="150" height="150" src="{{ asset(config('theme.current') . '/images') }}/stock/sm1.jpg"
-														alt="Viar">
+														 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(config('theme.current') . '/images')) . '/stock/sm1.jpg', 'Viar', '')>
 												</picture>
 											</div>
 											<div class="sm-title">
@@ -99,7 +99,7 @@
 													<source srcset="{{ asset(config('theme.current') . '/images') }}/stock/sm2.webp" type="image/webp">
 													<source srcset="{{ asset(config('theme.current') . '/images') }}/stock/sm2.jpg" type="image/jpeg">
 													<img width="150" height="150" src="{{ asset(config('theme.current') . '/images') }}/stock/sm2.jpg"
-														alt="Viar">
+														 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(config('theme.current') . '/images')) . '/stock/sm2.jpg', 'Viar', '')>
 												</picture>
 											</div>
 											<div class="sm-title">
@@ -143,7 +143,7 @@
 													<source srcset="{{ asset(config('theme.current') . '/images') }}/stock/sm3.webp" type="image/webp">
 													<source srcset="{{ asset(config('theme.current') . '/images') }}/stock/sm3.jpg" type="image/jpeg">
 													<img width="150" height="150" src="{{ asset(config('theme.current') . '/images') }}/stock/sm3.jpg"
-														alt="Viar">
+														 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(config('theme.current') . '/images')) . '/stock/sm3.jpg', 'Viar', '')>
 												</picture>
 											</div>
 											<div class="sm-title">
@@ -188,10 +188,10 @@
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b1.webp" type="image/webp">
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b1.jpg" type="image/jpeg">
 																<img width="144" height="186" src="{{ asset(env('THEME') . 'images') }}/stock/b1.jpg"
-																	alt="Viar">
+																	 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/b1.jpg', 'Viar', '')>
 															</picture>
 															<img width="120" height="150" src="{{ asset(env('THEME') . 'images') }}/stock/v1.svg"
-																alt="Viar">
+																 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/v1.svg', 'Viar', '')>
 														</div>
 													</div>
 													<div class="sb2-img">
@@ -204,7 +204,7 @@
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b2.webp" type="image/webp">
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b2.png" type="image/png">
 																<img width="195" height="217" src="{{ asset(env('THEME') . 'images') }}/stock/b2.png"
-																	alt="Viar">
+																	 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/b2.png', 'Viar', '')>
 															</picture>
 														</div>
 													</div>
@@ -257,10 +257,10 @@
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b3.webp" type="image/webp">
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b3.png" type="image/png">
 																<img width="215" height="327" src="{{ asset(env('THEME') . 'images') }}/stock/b3.png"
-																	alt="Viar">
+																	 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/b3.png', 'Viar', '')>
 															</picture>
 															<img width="120" height="150" src="{{ asset(env('THEME') . 'images') }}/stock/v2.svg"
-																alt="Viar">
+																 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/v2.svg', 'Viar', '')>
 														</div>
 														<p>
 															@lang('stock.text_7_2')
@@ -276,7 +276,7 @@
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b4.webp" type="image/webp">
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b4.png" type="image/png">
 																<img width="220" height="190" src="{{ asset(env('THEME') . 'images') }}/stock/b4.png"
-																	alt="Viar">
+																	 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/b4.png', 'Viar', '')>
 															</picture>
 														</div>
 													</div>
@@ -313,10 +313,10 @@
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b5.webp" type="image/webp">
 																<source srcset="{{ asset(env('THEME') . 'images') }}/stock/b5.png" type="image/png">
 																<img width="350" height="350" src="{{ asset(env('THEME') . 'images') }}/stock/b5.png"
-																	alt="Viar">
+																	 @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/b5.png', 'Viar', '')>
 															</picture>
 														</div>
-														<img src="{{ asset(env('THEME') . 'images') }}/stock/v3.svg" alt="Viar">
+														<img src="{{ asset(env('THEME') . 'images') }}/stock/v3.svg"  @frontendAlt('theme/viar/account/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/v3.svg', 'Viar', '')>
 														<div class="sb-abs">
 															<p>
 																@lang('stock.text_8_2')
@@ -352,7 +352,7 @@
 					</div>
 					<div class="cabinet-content__icon">
 						<img src="{{ asset(config('theme.current') . '/images') }}/cabinet/gift-card.svg" width="82"
-							height="82" alt="Viar Cabinet Peding Orders">
+							height="82"  @frontendAlt('theme/viar/account/stocks.blade.php', (asset(config('theme.current') . '/images')) . '/cabinet/gift-card.svg', 'Viar Cabinet Peding Orders', '')>
 					</div>
 				</div>
 			</div>

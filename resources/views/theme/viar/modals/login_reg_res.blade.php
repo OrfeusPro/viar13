@@ -174,7 +174,7 @@
 		<svg>
 			<use xlink:href="{{ asset(env('THEME') . 'sprite.svg#lock') }}"></use>
 		</svg>
-		<p>{!! trans('homepage_new_login_reg.create_acc_policy_text') !!}</p>
+		<p>{!! storefront_html(trans('homepage_new_login_reg.create_acc_policy_text')) !!}</p>
 	</div>
 		<div class="vz-art log-social">
 			<h3>
@@ -235,7 +235,7 @@
         <div class="vz-art kviz-input">
             <p class="vz-art kviz-input__title">{!! trans('homepage_new_login_reg.enter_email') !!}</p>
             <div class="vz-art page-input__item">
-                <input type="email" name="email" placeholder="E-mail" required="">
+                <input type="email" name="email" value="{{ session('email', '') }}" placeholder="E-mail" required="">
                 <svg class="vz-art kviz-input__icon">
                     <use xlink:href="{{ asset(env('THEME') . 'sprite.svg#mail') }}"></use>
                 </svg>

@@ -2,7 +2,7 @@
 
 
     <div class="ellipse el-desk ellipse-b-dbt">
-        <img src="{{ asset('images/icon/ellipse-whete.svg') }}" alt="img" loading="eager" >
+        <img src="{{ asset('images/icon/ellipse-whete.svg') }}"  loading="eager"  @frontendAlt('theme/viar/pages/collage/love_screen.blade.php', (asset('images/icon/ellipse-whete.svg')), 'img', '')>
     </div>
 
     <!-- love collage -->
@@ -27,7 +27,7 @@
                                 <source media="(max-width: 520px)" srcset="{{ asset('images/collage/11M.jpg') }}" type="image/jpeg">
                                 <source srcset="{{ asset('images/collage/11.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/collage/11.jpg') }}" type="image/jpeg">
-                                <img loading="lazy" width="377" height="586" src="{{ asset('images/collage/11.jpg') }}" alt="">
+                                <img loading="lazy" width="377" height="586" src="{{ asset('images/collage/11.jpg') }}"  @frontendAlt('theme/viar/pages/collage/love_screen.blade.php', (asset('images/collage/11.jpg')), '', '')>
                             </picture>
                         </div>
                     </div>
@@ -47,7 +47,7 @@
                                 <source media="(max-width: 520px)" srcset="{{ asset('images/collage/12M.jpg') }}" type="image/jpeg">
                                 <source srcset="{{ asset('images/collage/12.webp') }}" type="image/webp">
                                 <source srcset="{{ asset('images/collage/12.jpg') }}" type="image/jpeg">
-                                <img loading="lazy" width="377" height="586" src="{{ asset('images/collage/12.jpg') }}" alt="">
+                                <img loading="lazy" width="377" height="586" src="{{ asset('images/collage/12.jpg') }}"  @frontendAlt('theme/viar/pages/collage/love_screen.blade.php', (asset('images/collage/12.jpg')), '', '')>
                             </picture>
                         </div>
                     </div>
@@ -58,5 +58,5 @@
     </div>
 
     <div class="ellipse ellipse-b-ordbt">
-        <img loading="lazy" src="{{ asset('images/collage/ellipse-orb.svg') }}" alt="img" loading="eager" >
+        <img loading="lazy" src="{{ asset('images/collage/ellipse-orb.svg') }}"  loading="eager"  @frontendAlt('theme/viar/pages/collage/love_screen.blade.php', (asset('images/collage/ellipse-orb.svg')), 'img', '')>
     </div>

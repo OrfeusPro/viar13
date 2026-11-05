@@ -20,13 +20,13 @@
 								<a target="_blank" href="{{ $imgSrc }}">
 								<picture>
 									@if(!$imgExists)
-										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="{{ order_image_placeholder() }}" alt="">
+										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="{{ order_image_placeholder() }}"  @frontendAlt('theme/viar/account/o_chat_img_copy.blade.php', (order_image_placeholder()), '', '')>
 									@elseif($ext == 'psd')
-										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/psd.svg" alt="">
+										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/psd.svg"  @frontendAlt('theme/viar/account/o_chat_img_copy.blade.php', '/img/psd.svg', '', '')>
 									@elseif ($ext == 'pdf')
-										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/pdf.svg" alt="">
+										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="/img/pdf.svg"  @frontendAlt('theme/viar/account/o_chat_img_copy.blade.php', '/img/pdf.svg', '', '')>
 									@else
-										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="{{ $imgSrc }}" alt="">
+										<img width="180" height="200" style="max-width:100%;max-height:100%;" src="{{ $imgSrc }}"  @frontendAlt('theme/viar/account/o_chat_img_copy.blade.php', ($imgSrc), '', '')>
 									@endif
 								</picture>
 								</a>

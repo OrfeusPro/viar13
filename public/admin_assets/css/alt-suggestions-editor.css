@@ -1,0 +1,154 @@
+.alt-editor-global-button {
+    margin-right: 8px;
+}
+
+.alt-editor-field-button {
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.alt-editor-field-button .badge,
+.alt-editor-global-button .badge {
+    background: #22a7f0;
+    margin-left: 4px;
+}
+
+.adv-media-files-actions .js-alt-editor-media {
+    align-items: center;
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid #d6d6d6;
+    border-radius: 50%;
+    color: #22a7f0;
+    cursor: pointer;
+    display: flex;
+    font-size: 1.1em;
+    height: 24px;
+    justify-content: center;
+    margin: 0 5px 0 0;
+    transition: all .4s ease;
+    width: 24px;
+}
+
+.adv-media-files-actions .js-alt-editor-media:hover {
+    background: #fff;
+}
+
+#alt-suggestions-editor-modal .modal-dialog {
+    width: min(1180px, calc(100% - 30px));
+}
+
+#alt-suggestions-editor-modal .modal-body {
+    max-height: calc(100vh - 190px);
+    overflow-y: auto;
+}
+
+.alt-editor-summary {
+    color: #657481;
+    margin-bottom: 12px;
+}
+
+.alt-editor-item {
+    border: 1px solid #dfe5e8;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 180px minmax(0, 1fr);
+    margin-bottom: 12px;
+    padding: 12px;
+}
+
+.alt-editor-preview {
+    align-items: center;
+    background: #f7f9fa;
+    display: flex;
+    height: 180px;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.alt-editor-preview img {
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
+}
+
+.alt-editor-preview > i {
+    color: #a5b0b7;
+    font-size: 42px;
+}
+
+.alt-editor-content {
+    min-width: 0;
+}
+
+.alt-editor-heading {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.alt-editor-path {
+    color: #84919a;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.alt-editor-locales {
+    margin: 10px 0 12px;
+}
+
+.alt-editor-locales .btn {
+    min-width: 40px;
+}
+
+.alt-editor-fields {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr);
+}
+
+.alt-editor-fields .form-group {
+    margin: 0;
+}
+
+.alt-editor-status {
+    grid-column: 1 / -1;
+}
+
+.alt-editor-fields textarea {
+    resize: vertical;
+}
+
+.alt-editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+#alt-suggestions-editor-modal.is-busy .modal-content {
+    cursor: wait;
+    opacity: .78;
+}
+
+@media (max-width: 767px) {
+    #alt-suggestions-editor-modal .modal-dialog {
+        margin: 10px auto;
+        width: calc(100% - 20px);
+    }
+
+    .alt-editor-item {
+        grid-template-columns: 1fr;
+    }
+
+    .alt-editor-preview {
+        height: 220px;
+    }
+
+    .alt-editor-fields {
+        grid-template-columns: 1fr;
+    }
+}

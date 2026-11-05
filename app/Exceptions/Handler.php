@@ -2,8 +2,11 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\PostTooLargeException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -56,7 +59,7 @@ class Handler extends ExceptionHandler
      * @return void
 
      */
-    public function report(Exception $exception)
+    public function report(Throwable $exception): void
     {
         parent::report($exception);
     }
@@ -80,8 +83,23 @@ class Handler extends ExceptionHandler
      * @return \Symfony\Component\HttpFoundation\Response
 
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e)
     {
+        if ($request->is('api/blog/*') && $this->isHttpException($e)) {
+            $status = $e->getStatusCode();
+            $code = match ($status) {
+                409 => 'CONFLICT', 428 => 'PRECONDITION_REQUIRED',
+                503 => 'AUTOMATION_UNAVAILABLE', default => 'VALIDATION_ERROR',
+            };
+            \Illuminate\Support\Facades\Log::warning('Blog API request rejected', [
+                'path' => $request->path(), 'status' => $status, 'code' => $code,
+                'event_id' => $request->input('event_id'),
+            ]);
+            return response()->json(['status' => 'error', 'error' => [
+                'code' => $code, 'message' => $e->getMessage(), 'details' => [],
+            ]], $status);
+        }
+
         if ($this->isHttpException($e)) {
             $statusCode = $e->getStatusCode();
 

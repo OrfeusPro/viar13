@@ -7,16 +7,16 @@
             {{ $item['title'] }}
 
         </div>
-        <a href="{{ $item['link'] }}">
+        <a href="{{ storefront_url($item['link']) }}">
             <div class="arts__image arts__image_vertical">
 
                 <picture>
 
                     <source srcset="{{ asset('img/vertical.webp') }}" type="image/webp">
 
-                    <img data-src="{{ asset('img/vertical.webp') }}" src="{{ asset('img/load.png') }}" alt=""
+                    <img data-src="{{ asset('img/vertical.webp') }}" src="{{ asset('img/load.png') }}"
 
-                        class="arts__bg lazyload">
+                        class="arts__bg lazyload" @frontendAlt('partials/all_styles/top_items.blade.php', (asset('img/vertical.webp')), '', '')>
 
                 </picture>
 
@@ -37,7 +37,7 @@
                     @if(!empty($topItemImageSources['src']) && !empty($topItemImageSources['type']))
                         <source srcset="{{ $topItemImageSources['src'] }}" type="{{ $topItemImageSources['type'] }}">
                     @endif
-                    <img @if (!empty($topItemImageSources['src'])) src="{{ $topItemImageSources['src'] }}" @else src="{{ asset('img/load.png') }}" @endif alt="">
+                    <img @if (!empty($topItemImageSources['src'])) src="{{ $topItemImageSources['src'] }}" @else src="{{ asset('img/load.png') }}" @endif  @frontendAlt('partials/all_styles/top_items.blade.php', ($topItemImageSources['src']), '', '')>
 
                 </picture>
 
@@ -57,7 +57,7 @@
 
         </p>
 
-        <a class="arts__btn btn" href="{{ $item['link'] }}">
+        <a class="arts__btn btn" href="{{ storefront_url($item['link']) }}">
 
             {{ $data['order_btn_text'] }}
 

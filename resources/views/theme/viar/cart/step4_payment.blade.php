@@ -1,7 +1,7 @@
 <div class="vz-art cart-page-global">
 	<div class="section-frame">
 
-		@include(env('THEME_RESOURCES') . '.cart.bread', ['step' => 4])
+		@include(config('theme.resource') . 'cart.bread', ['step' => 4])
 
 		<div class="cart-page-global__wrapper">
 			<div class="cart-page-global__content">
@@ -55,7 +55,7 @@
                                             </div>
                                             @if($methodData['img'])
                                             <div class="cart-payments-page__item--img">
-                                                <img src="{{ asset(env('THEME') . $methodData['img']) }}" alt="">
+                                                <img src="{{ asset(env('THEME') . $methodData['img']) }}"  @frontendAlt('theme/viar/cart/step4_payment.blade.php', (asset(env('THEME') . $methodData['img'])), '', '')>
                                             </div>
                                             @endif
                                         </label>
@@ -72,7 +72,7 @@
                                             </div>
                                         </div>
 										<div class="cart-payments-page__item--img">
-                                            <img src="{{ asset(env('THEME') . 'img/icons/PayPal.svg') }}" alt="">
+                                            <img src="{{ asset(env('THEME') . 'img/icons/PayPal.svg') }}"  @frontendAlt('theme/viar/cart/step4_payment.blade.php', (asset(env('THEME') . 'img/icons/PayPal.svg')), '', '')>
                                         </div>
                                     </label>
                                     {{-- @endif --}}
@@ -100,7 +100,7 @@
                                             </div>
                                         </div>
                                         <div class="cart-payments-page__item--img">
-                                            <img src="{{ asset(env('THEME') . 'img/cart/prepaid2.png') }}" alt="">
+                                            <img src="{{ asset(env('THEME') . 'img/cart/prepaid2.png') }}"  @frontendAlt('theme/viar/cart/step4_payment.blade.php', (asset(env('THEME') . 'img/cart/prepaid2.png')), '', '')>
                                         </div>
                                     </label>
 
@@ -129,7 +129,7 @@
 				@php $total_item_counts = 0; @endphp
 			@endif
 
-			@include(env('THEME_RESOURCES') . '.cart.sidebar', [
+			@include(config('theme.resource') . 'cart.sidebar', [
 			    'basket' => $basket,
 			    'btn' => trans('cart_new.step_4_pay'),
 			    'btn_class' => 'cart_send_pay',

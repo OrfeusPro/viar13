@@ -55,8 +55,8 @@
 </div>
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async"
-        height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg" decoding="async"
+        height="99" width="1374" @frontendAlt('theme/viar/pages/stocks/stocks.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 @php
@@ -287,7 +287,7 @@
                                             src="{{ $bonusImages[1]['src'] }}" {!! $stockAttr($bonusImages[1]) !!}>
                                     </picture>
                                     <img width="120" height="150"
-                                        src="{{ asset(env('THEME') . 'images') }}/stock/v1.svg" alt="Viar">
+                                        src="{{ asset(env('THEME') . 'images') }}/stock/v1.svg"  @frontendAlt('theme/viar/pages/stocks/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/v1.svg', 'Viar', '')>
                                 </div>
                             </div>
                             <div class="sb2-img">
@@ -366,7 +366,7 @@
                                             src="{{ $bonusImages[3]['src'] }}" {!! $stockAttr($bonusImages[3]) !!}>
                                     </picture>
                                     <img width="120" height="150"
-                                        src="{{ asset(env('THEME') . 'images') }}/stock/v2.svg" alt="Viar">
+                                        src="{{ asset(env('THEME') . 'images') }}/stock/v2.svg"  @frontendAlt('theme/viar/pages/stocks/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/v2.svg', 'Viar', '')>
                                 </div>
                                 <p>
                                     @lang('stock.text_7_2')
@@ -433,7 +433,7 @@
                                         src="{{ $bonusImages[5]['src'] }}" {!! $stockAttr($bonusImages[5]) !!}>
                                 </picture>
                             </div>
-                                <img src="{{ asset(env('THEME') . 'images') }}/stock/v3.svg" alt="Viar">
+                                <img src="{{ asset(env('THEME') . 'images') }}/stock/v3.svg"  @frontendAlt('theme/viar/pages/stocks/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/v3.svg', 'Viar', '')>
                                 <div class="sb-abs">
                                     <p>
                                         @lang('stock.text_8_2')
@@ -487,13 +487,13 @@
                         <source srcset="{{ asset(env('THEME') . 'images') }}/stock/o1.webp" type="image/webp">
                         <source srcset="{{ asset(env('THEME') . 'images') }}/stock/o1.png" type="image/png">
                         <img width="120" height="86" src="{{ asset(env('THEME') . 'images') }}/stock/o1.png"
-                            alt="Viar">
+                             @frontendAlt('theme/viar/pages/stocks/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/o1.png', 'Viar', '')>
                     </picture>
                     <p>
                         @lang('stock.text_9_2')
                     </p>
                     <img width="90" height="88" src="{{ asset(env('THEME') . 'images') }}/stock/v4.svg"
-                        alt="Viar">
+                         @frontendAlt('theme/viar/pages/stocks/stocks.blade.php', (asset(env('THEME') . 'images')) . '/stock/v4.svg', 'Viar', '')>
                 </div>
             </div>
 
@@ -510,7 +510,7 @@
                                 {{--                            <source srcset="{{ asset(env('THEME') . 'images') }}/stock/o2.webp" type="image/webp"> --}}
                                 <source srcset="{{ $images_folder . $element->image }}" type="image/jpeg">
                                 <img width="120px" height="86px" src="{{ $images_folder . $element->image }}"
-                                    alt="Viar">
+                                     @frontendAlt('theme/viar/pages/stocks/stocks.blade.php', ($images_folder . $element->image), 'Viar', '')>
                             </picture>
                             <div class="sos-row">
                                 <div class="so-t">

@@ -597,7 +597,7 @@ class StaticPagesController extends Controller
                     ]
                 ]);
             }
-            $modals = view(env('THEME_RESOURCES') . 'pages.stocks.modals')   ->with([
+            $modals = view(config('theme.resource') . 'pages.stocks.modals')   ->with([
                 'invite_code' => $user_code,
             ]);
             $this->vars = Arr::add($this->vars, 'modals', $modals);
@@ -624,7 +624,7 @@ class StaticPagesController extends Controller
 
         $gallery = GalleryPage::first()->get()->translate(App::getLocale(), 'ru')[0];
 
-        $content = view(env('THEME_RESOURCES') . 'pages.stocks.stocks')
+        $content = view(config('theme.resource') . 'pages.stocks.stocks')
         ->with([
             'page' => $page,
             'head' => $head,

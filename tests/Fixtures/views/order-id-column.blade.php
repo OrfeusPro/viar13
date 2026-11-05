@@ -1,0 +1,1 @@
+<span>{{ $getRecord()->id }}</span>

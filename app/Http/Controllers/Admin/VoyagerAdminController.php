@@ -170,7 +170,7 @@ class VoyagerAdminController extends Controller
             Mail::send([], [], function ($message) use ($data) {
                 $message->to($data['user_email']);
                 $message->subject($data['subject_send']);
-                $message->setBody($data['content'], 'text/html');
+                $message->html($data['content']);
             });
         }
 

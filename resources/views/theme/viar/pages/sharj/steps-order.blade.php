@@ -53,11 +53,11 @@
 
 <div class="steps-order__top">
     <div class="steps-order__top-item">
-        <img width="100" height="100" src="{{ asset(env('THEME') . 'images') }}/sharj/new/express.svg" alt="">
+        <img width="100" height="100" src="{{ asset(env('THEME') . 'images') }}/sharj/new/express.svg"  @frontendAlt('theme/viar/pages/sharj/steps-order.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/express.svg', '', '')>
         <p>@lang("sharj.translate48")</p>
     </div>
     <div class="steps-order__top-item">
-        <img width="100" height="100" src="{{ asset(env('THEME') . 'images') }}/sharj/new/standart.svg" alt="">
+        <img width="100" height="100" src="{{ asset(env('THEME') . 'images') }}/sharj/new/standart.svg"  @frontendAlt('theme/viar/pages/sharj/steps-order.blade.php', (asset(env('THEME') . 'images')) . '/sharj/new/standart.svg', '', '')>
         <p>@lang("sharj.translate49")</p>
     </div>
 </div>

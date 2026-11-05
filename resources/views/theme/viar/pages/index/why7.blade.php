@@ -64,11 +64,11 @@
                         <source srcset="{{ $bgWebp }}" type="image/webp">
                     @endif
                     <source srcset="{{ $bgPng }}">
-                    <img src="{{ $bgPng }}" class="why-photo" alt="img"
-                        loading="lazy">
+                    <img src="{{ $bgPng }}" class="why-photo"
+                        loading="lazy" @frontendAlt('theme/viar/pages/index/why7.blade.php', ($bgPng), 'img', '')>
                 </picture>
                 <div class="why-gift">
-                    <img src="{{ asset('images/icon/gift.svg') }}" alt="img" loading="lazy">
+                    <img src="{{ asset('images/icon/gift.svg') }}"  loading="lazy" @frontendAlt('theme/viar/pages/index/why7.blade.php', (asset('images/icon/gift.svg')), 'img', '')>
                     <p>{!! trans('homepage_new.why_pic_gift_text') !!}</p>
                 </div>
             </div>

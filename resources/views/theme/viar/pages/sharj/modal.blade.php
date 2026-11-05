@@ -11,7 +11,7 @@
 
                             @lang("simpson.simpson-formalization.simpson-titleBlock")
 
-                            <img width="148" height="179" src="{{ asset(config('theme.current') . '{{ asset(env('THEME') . 'images') }}/sharj/new/simpson/formTitle1.webp') }}" alt="">
+                            <img width="148" height="179" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/formTitle1.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/formTitle1.webp')), '', '')>
                         </div>
 
                         <div class="formalization__col">
@@ -23,7 +23,7 @@
                                 <div class="formalization-item">
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
-                                            <img width="25" height="25" src="{{ asset(config('theme.current') . '{{ asset(env('THEME') . 'images') }}/sharj/new/format7.svg') }}" alt="">
+                                            <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format7.svg') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/format7.svg')), '', '')>
 
 
                                             @lang("simpson.formalization-items.formalization-item1.formalization-tab")
@@ -45,7 +45,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p1.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,7 +71,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p2.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -99,7 +99,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p3.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -126,7 +126,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p4.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -154,7 +154,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p5.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -182,7 +182,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p6.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -210,7 +210,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p7.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -238,7 +238,7 @@
                                                                 <picture>
                                                                     <source media="(max-width: 576px)" srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8Min.webp') }}" type="image/webp">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}" type="image/webp">
-                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}" alt="">
+                                                                    <img width="157" height="116" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/p8.webp')), '', '')>
                                                                 </picture>
                                                                 <div class="zoom-in">
                                                                     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -266,7 +266,7 @@
                                     <div class="formalization-prompt">
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
-                                                <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}" alt="" />
+                                                <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}"   @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/ficon1.webp')), '', '')/>
 
                                                 <p>
                                                     @lang("simpson.formalization-items.formalization-item1.formalization-prompt--inner.p")
@@ -285,7 +285,7 @@
                                 <div class="formalization-item">
                                     <div class="formalization-box">
                                         <div class="formalization-tab">
-                                            <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format1.svg') }}" alt="">
+                                            <img width="25" height="25" src="{{ asset(config('theme.current') . '/images/sharj/new/format1.svg') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/format1.svg')), '', '')>
 
                                             @lang("simpson.formalization-items.formalization-item3.formalization-tab")
 
@@ -311,7 +311,7 @@
 
                                                                 <picture class="kviz-image">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp') }}" type="image/webp">
-                                                                    <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp') }}" alt="">
+                                                                    <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/simpsonHolst.webp')), '', '')>
                                                                 </picture>
 
                                                             </label>
@@ -333,7 +333,7 @@
 
                                                                 <picture class="kviz-image">
                                                                     <source srcset="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp') }}" type="image/webp">
-                                                                    <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp') }}" alt="">
+                                                                    <img width="112" height="119" src="{{ asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp') }}"  @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/simpson/simpsonPaper.webp')), '', '')>
                                                                 </picture>
 
                                                             </label>
@@ -348,7 +348,7 @@
                                     <div class="formalization-prompt">
                                         <div class="formalization-prompt--wrapper">
                                             <div class="formalization-prompt--inner">
-                                                <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}" alt="" />
+                                                <img width="56" height="58" src="{{ asset(config('theme.current') . '/images/sharj/new/ficon1.webp') }}"   @frontendAlt('theme/viar/pages/sharj/modal.blade.php', (asset(config('theme.current') . '/images/sharj/new/ficon1.webp')), '', '')/>
 
                                                 <p>
                                                     @lang("simpson.formalization-items.formalization-item3.formalization-prompt--inner.p")

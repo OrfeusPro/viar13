@@ -15,6 +15,7 @@ use App\Models\CreepingLine;
 use App\Models\Locale as Loc;
 use App\Models\NewhomeWorkEx;
 use App\Models\NewhomeService;
+use App\Models\SiteImage;
 use App\Models\NewhomeTopWorkEx;
 use App\Models\WhyAreYouLeavingQuestion;
 use App\Models\HomepageOption as HomeData;
@@ -55,15 +56,22 @@ class IndexController extends Controller
 
     public function render_new()
     {
-        $home = HomeData::withTranslation(App::getLocale(), false)->select('page_title', 'meta_desc', 'all_styles', 'all_sizes')->first()->get();
+        $home = HomeData::all();
 
         $style = $this->get_styles_for_quiz(App::getLocale());
         $work_ex = NewhomeWorkEx::withTranslation(App::getLocale(), false)->orderBy('order', 'asc')->get();
 
+        $exampleIds = $work_ex->pluck('catid')->filter(fn ($id) => $id && $id != 1 && $id != 2)->unique()->values();
+        $exampleItems = $exampleIds->isEmpty()
+            ? collect()
+            : GalleryItem::whereIn('id', $exampleIds)->get()->keyBy('id');
+        $locales = Loc::all();
+        $this->vars['locales'] = $locales;
+
         foreach ($work_ex as $work) {
             //$work->catid
             if ($work->catid != 1 && $work->catid != 2 && $work->catid) {
-                $work->caturl = GalleryItem::getItemById($work->catid)->first()->meta_url."#generator";
+                $work->caturl = optional($exampleItems->get($work->catid))->meta_url."#generator";
             } else if ($work->catid == 1) {
                 $work->caturl = "https://viarcanvas.com/new/canvas#generator";
             } else if ($work->catid == 2) {
@@ -75,7 +83,8 @@ class IndexController extends Controller
 
         return view('index_new')->with(
             [
-                'locales' => Loc::all(),
+                'locales' => $locales,
+                'siteImages' => SiteImage::where('is_show', true)->get(),
                 'why_are_you_leaving_questions' => WhyAreYouLeavingQuestion::All()->where('is_show', 1)->translate(App::getLocale(), 'ru'),
                 'home' => $home[0],
                 'style' => $style,

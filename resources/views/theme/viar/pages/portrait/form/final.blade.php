@@ -20,7 +20,7 @@
                 <div class="check"></div>
                 <label>
                     <span>{{ $set->getTranslatedAttribute('name', app()->getLocale()) }}
-                        <img src="{{ asset('images/icon/info.svg') }}" alt="" /></span>
+                        <img src="{{ asset('images/icon/info.svg') }}"   @frontendAlt('theme/viar/pages/portrait/form/final.blade.php', (asset('images/icon/info.svg')), '', '')/></span>
                     <input class="js_set" @if($loop->last) checked @endif type="radio" name="equipment" data-id="{{ $set['id'] }}" value="{{ $set->price }}"/>
                 </label>
 

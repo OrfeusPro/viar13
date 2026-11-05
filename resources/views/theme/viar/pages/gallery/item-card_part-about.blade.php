@@ -184,7 +184,7 @@
 													<source loading="lazy" class="lozad" srcset="{{ $webpSrc }}" type="image/webp">
 												@endif
 												<source loading="lazy" class="lozad" srcset="{{ Voyager::image($item->img) }}" type="image/jpeg">
-												<img loading="lazy" class="lozad" width="545" height="310" src="{{ Voyager::image($item->img) }}" style="max-height:310px; width: auto;" alt="" loading="lazy">
+												<img loading="lazy" class="lozad" width="545" height="310" src="{{ Voyager::image($item->img) }}" style="max-height:310px; width: auto;"  loading="lazy" @frontendAlt('theme/viar/pages/gallery/item-card_part-about.blade.php', (Voyager::image($item->img)), '', '')>
 											</picture>
 										</div>
 										<div class="mreview-content">
@@ -194,7 +194,7 @@
 														<source loading="lazy" class="lozad" srcset="{{ $webpSrc }}" type="image/webp">
 													@endif
 													<source loading="lazy" class="lozad" srcset="{{ Voyager::image($item->avatar) }}" type="image/jpeg">
-													<img loading="lazy" class="lozad" width="70" height="70" src="{{ Voyager::image($item->avatar) }}" style="width: 70px; aspect-ratio: 1 / 1; border-radius: 35px;" alt="">
+													<img loading="lazy" class="lozad" width="70" height="70" src="{{ Voyager::image($item->avatar) }}" style="width: 70px; aspect-ratio: 1 / 1; border-radius: 35px;"  @frontendAlt('theme/viar/pages/gallery/item-card_part-about.blade.php', (Voyager::image($item->avatar)), '', '')>
 												</picture>
 												<div class="muser-info">
 													<p>{{ $item->name }}</p>

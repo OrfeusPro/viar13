@@ -59,8 +59,8 @@
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_catalog', ['category' => $category])
 
 <div class="ellipse ellipse_black ellipse_top">
-	<img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg" alt="img"
-		loading="lazy">
+	<img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg"
+		loading="lazy" @frontendAlt('theme/viar/pages/gallery/gallery_category.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-black.svg', 'img', '')>
 </div>
 
 <div class="module-about">
@@ -172,8 +172,8 @@
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_popular')
 
 <div class="ellipse">
-    <img alt="img" src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
-        decoding="async" loading="eager" height="99" width="1374">
+    <img  src="https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg"
+        decoding="async" loading="eager" height="99" width="1374" @frontendAlt('theme/viar/pages/gallery/gallery_category.blade.php', 'https://viarcanvas.com/theme/viar/images/icon/ellipse-whete.svg', 'img', '')>
 </div>
 
 @include((config('theme.resource') ?: 'theme.viar.') . 'pages.gallery.zpart_bestseller')

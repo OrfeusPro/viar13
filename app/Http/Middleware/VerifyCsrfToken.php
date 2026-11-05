@@ -19,15 +19,6 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-
         '/admin/upload/tinyimage',
-        'basket/add',
-        '*/basket/*', 
-        'cart/set_email',
-        '*/cart/set_email',
-        'cart',
-        '*/cart',
-        '/cart/*',
-        '*/cart/*',
     ];
 }

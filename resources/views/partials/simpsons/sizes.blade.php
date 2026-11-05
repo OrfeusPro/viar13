@@ -5,19 +5,19 @@
             <source media="(max-width: 43.75em)" srcset="{{ asset('images/sizes/size-bgM.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/size-bg.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/size-bg.jpg') }}" type="image/jpeg"/>
-            <img src="{{ asset('images/sizes/size-bg.webp') }}" alt="img"/>
+            <img src="{{ asset('images/sizes/size-bg.webp') }}"  @frontendAlt('partials/simpsons/sizes.blade.php', (asset('images/sizes/size-bg.webp')), 'img', '')/>
         </picture>
         <picture>
             <source media="(max-width: 500px)" srcset="{{ asset('images/sizes/10M.webp') }}" type="image/webp"/>
             <source media="(max-width: 500px)" srcset="{{ asset('images/sizes/10M.png') }}" type="image/png"/>
             <source srcset="{{ asset('images/sizes/10.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/10.png') }}" type="image/png"/>
-            <img class="boy" src="{{ asset('images/sizes/10.webp') }}" alt=""/>
+            <img class="boy" src="{{ asset('images/sizes/10.webp') }}"  @frontendAlt('partials/simpsons/sizes.blade.php', (asset('images/sizes/10.webp')), '', '')/>
         </picture>
         <picture>
             <source srcset="{{ asset('images/sizes/9.webp') }}" type="image/webp"/>
             <source srcset="{{ asset('images/sizes/9.png') }}" type="image/png"/>
-            <img class="girl" src="{{ asset('images/sizes/9.webp') }}" alt=""/>
+            <img class="girl" src="{{ asset('images/sizes/9.webp') }}"  @frontendAlt('partials/simpsons/sizes.blade.php', (asset('images/sizes/9.webp')), '', '')/>
         </picture>
         <div class="size-frame">
             <div class="section-frame">
