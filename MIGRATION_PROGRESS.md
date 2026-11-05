@@ -6485,3 +6485,10 @@ non-md для копирования C:\OSPanel\domains\viar\viar13 нет. Ко
 
 ## 2026-11-05 — MERGE-FRONTEND-MAIN — DONE
 По запросу пользователя codex/laravel13-frontend объединена в main в G:/OSPanel/home/viar13. Код совпадает с исходной веткой миграции, включая итоговое исправление коллажа. Конфликты add/add только в планах разрешены сохранением полного плана миграции и записей production hotfix из main. Проверки construct: 6 тестов, 23 assertions PASS. Git diff check сообщает ранее существовавшие пробелы в собранных JS и переводах, они не менялись в этом слиянии. Зеркало C:/OSPanel/domains/viar/viar13 остаётся main. Push не выполнялся.
+
+## 2026-11-05 — WEB-HOTFIX-02 — DONE — Изображения Canvas на production
+- Перед исправлением проверены250 адресов страницы:33 ответа404. Из них32 оригинала модели CanvasNew запрашивались из /storage/<id>/, хотя все32 файла существуют в storage/app/public/canvasnews/media/<id>/. Восстановлен custom path generator CanvasNew с fallback для новых файлов в стандартном каталоге. Таблицы и физические файлы не перемещались. Конверсии и responsive images используют прежние ID-каталоги.
+- Исправлена дополнительная мобильная ссылка target-box на отсутствующий canvasMin.webp: WebP подключается только при существовании, PNG получает абсолютный asset URL. Существующий PNG подтверждён на сервере.
+- Production /home/admin/web/viarcanvas.com/public_html обновлён, config/view cache очищены, резервные копии сохранены в приватном каталоге deployment. HTTP /new/canvas200, все61 текущие ссылки CanvasNew image/srcset вернули200. Ошибочный canvasMin.webp в HTML отсутствует. Браузерная проверка не состоялась из-за недоступности Chrome.
+- CanvasNewMediaPathTest и GalleryItemMediaPathTest:6tests/24assertions PASS. Проверены старые пути, стандартные загрузки, приоритет legacy, пути conversions и отсутствие перемещения данных.
+- Коммит production96dbf2c, зеркало main0462db9. В target-box каждой копии применён одинаковый точечный патч с сохранением её текущих ALT-атрибутов, остальные три файла совпадают по SHA256. Push не выполнялся.

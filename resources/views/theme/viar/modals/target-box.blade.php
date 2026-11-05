@@ -75,7 +75,10 @@
                     </div>
                     <div class="p-fit-img">
                         <picture>
-                            <source media="(max-width: 700px)" srcset="{{ asset('images/canvas/canvasMin.webp') }}" type="images/webp"> <source media="(max-width: 700px)" srcset="images/canvas/canvasMin.png">
+                            @if($mobileCanvasWebp = image_webp_url('images/canvas/canvasMin.png'))
+                                <source media="(max-width: 700px)" srcset="{{ $mobileCanvasWebp }}" type="image/webp">
+                            @endif
+                            <source media="(max-width: 700px)" srcset="{{ asset('images/canvas/canvasMin.png') }}" type="image/png">
                             <source srcset="{{ asset('images/canvas/canvas.webp') }}" type="images/webp">
                             <source srcset="{{ asset('images/canvas/canvas.png') }}">
                             <img loading="lazy" width="411" height="293" src="{{ asset('images/canvas/canvas.png') }}"  @frontendAlt('theme/viar/modals/target-box.blade.php', (asset('images/canvas/canvas.png')), '', '')>
