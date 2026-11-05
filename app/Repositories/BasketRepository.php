@@ -200,12 +200,13 @@ class BasketRepository
             $data['price_label'] = strtolower(request()->get('priceLabel'));
         }
 
-        unset($data['canvas_frame_quote']);
-        $frame = request()->filled('ram_id') && \Illuminate\Support\Facades\Schema::hasColumn('canvas_rams', 'price_per_meter')
+        unset($data['canvas_frame_quote'], $data['canvas_calculator']);
+        $newCalculator = request()->input('canvas_calculator') === 'v2';
+        $frame = request()->filled('ram_id') && ($newCalculator || \Illuminate\Support\Facades\Schema::hasColumn('canvas_rams', 'price_per_meter'))
             ? CanvasRam::find(request()->input('ram_id'))
             : null;
-        $quote = $frame?->price_per_meter !== null
-            ? \App\Services\CanvasOrderQuote::forMeterFrame(request()->input(), $frame)
+        $quote = $newCalculator || $frame?->price_per_meter !== null
+            ? \App\Services\CanvasOrderQuote::calculate(request()->input(), $frame)
             : [];
 
         if (! request()->hasFile('userImage')) {

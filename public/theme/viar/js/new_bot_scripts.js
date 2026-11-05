@@ -518,6 +518,9 @@
           }
 
           formData.append('basketType', '1');
+          if (document.querySelector('#generate.calculator-v2')) {
+              formData.append('canvas_calculator', 'v2');
+          }
 
           if ($('input[name="pid"]').length && $('input[name="pid"]').val()) {
               formData.append('pid', $('input[name="pid"]').val());

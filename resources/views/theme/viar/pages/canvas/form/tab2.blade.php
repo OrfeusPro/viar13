@@ -298,8 +298,9 @@
                 <label>
                     @php
                         $profileFrame = \App\Models\CanvasRam::find(16);
+                        $fixedFramePrice = (float) preg_replace('/\s+/', '', (string) ($profileFrame->price ?? 25));
                     @endphp
-                    <div data-id="16" data-price="25" class="ramu-item" data-frame-width-mm="{{ $profileFrame->profile_width_mm ?? 48 }}" data-frame-depth-mm="{{ $profileFrame->profile_depth_mm ?? 28 }}"
+                    <div data-id="16" data-price="{{ $fixedFramePrice }}" class="ramu-item" data-frame-width-mm="{{ $profileFrame->profile_width_mm ?? 48 }}" data-frame-depth-mm="{{ $profileFrame->profile_depth_mm ?? 28 }}"
                          data-src="{{ asset('images/canvas/ram1.jpg') }}"
                          data-width="10">
                         <input style="
@@ -327,14 +328,15 @@
                                      src="{{ asset('images/canvas/rama1.jpg') }}" @frontendAlt('theme/viar/pages/canvas/form/tab2.blade.php', (asset('images/canvas/rama1.jpg')), 'Белый', 'Белый')/>
                             </picture>
                         </div>
-                        <span class="price"> + 25 &euro; </span>
+                        <span class="price"> + {{ $fixedFramePrice }} &euro; </span>
                     </div>
                 </label>
                 <label>
                     @php
                         $profileFrame = \App\Models\CanvasRam::find(15);
+                        $fixedFramePrice = (float) preg_replace('/\s+/', '', (string) ($profileFrame->price ?? 25));
                     @endphp
-                    <div data-id="15" data-price="25" class="ramu-item" data-frame-width-mm="{{ $profileFrame->profile_width_mm ?? 33 }}" data-frame-depth-mm="{{ $profileFrame->profile_depth_mm ?? 22 }}"
+                    <div data-id="15" data-price="{{ $fixedFramePrice }}" class="ramu-item" data-frame-width-mm="{{ $profileFrame->profile_width_mm ?? 33 }}" data-frame-depth-mm="{{ $profileFrame->profile_depth_mm ?? 22 }}"
                          data-src="{{ asset('images/canvas/ram2.jpg') }}"
                          data-width="10">
                         <input style="
@@ -362,7 +364,7 @@
                                      src="{{ asset('images/canvas/rama2.jpg') }}" @frontendAlt('theme/viar/pages/canvas/form/tab2.blade.php', (asset('images/canvas/rama2.jpg')), 'Белый', 'Белый')/>
                             </picture>
                         </div>
-                        <span class="price"> + 25 &euro; </span>
+                        <span class="price"> + {{ $fixedFramePrice }} &euro; </span>
                     </div>
                 </label>
                 @if(config('canvas_ui.new_calculator') && \Illuminate\Support\Facades\Schema::hasColumns('canvas_rams', ['calculator_enabled', 'source_article', 'source_data', 'price_per_meter', 'profile_width_mm', 'profile_depth_mm']))

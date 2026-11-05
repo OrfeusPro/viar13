@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\View;
 
 class CanvasOrderQuote
 {
-    public static function forMeterFrame(array $input, CanvasRam $frame): array
+    public static function calculate(array $input, ?CanvasRam $frame): array
     {
         $invalid = fn () => abort(422, __('calculator.order_invalid'));
         $fields = [1 => 'sizes_30x40', 2 => 'sizes_38x38', 3 => 'sizes_40x30', 4 => 'sizes_60x30'];
         $field = $fields[$input['formId'] ?? 0] ?? null;
         $size = $input['sizeId'] ?? '';
-        if (! $frame->calculator_enabled || ! $field || ! preg_match('/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/D', $size, $dimensions)) {
+        if ((! empty($input['ram_id']) && ! $frame) || ($frame?->price_per_meter !== null && ! $frame->calculator_enabled) || ! $field || ! preg_match('/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)$/D', $size, $dimensions)) {
             $invalid();
         }
 
@@ -56,7 +56,10 @@ class CanvasOrderQuote
         $width = (float) $dimensions[1];
         $height = (float) $dimensions[2];
         $meters = 2 * ($width + $height) / 100;
-        $framePrice = round($meters * (float) $frame->price_per_meter, 2);
+        $rate = $frame?->price_per_meter;
+        $framePrice = $rate !== null
+            ? round($meters * (float) $rate, 2)
+            : (float) preg_replace('/\s+/', '', (string) $frame?->price);
         // The existing editor uses whole centimetres for decoration and exact dimensions for oil and frames.
         $decorArea = (int) $width * (int) $height / 10000;
         $coefficient = $decorArea <= .4 ? $decoration->coef_sm
@@ -75,7 +78,7 @@ class CanvasOrderQuote
             'price' => $total,
             'price_label' => $label,
             'terms_price' => $terms,
-            'canvas_frame_quote' => ['meters' => $meters, 'rate' => (float) $frame->price_per_meter, 'price' => $framePrice],
+            'canvas_frame_quote' => ['meters' => $rate !== null ? $meters : null, 'rate' => $rate !== null ? (float) $rate : null, 'price' => $framePrice],
         ];
     }
 }

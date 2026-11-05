@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class CanvasFrameBasketQuoteTest extends TestCase
 {
-    public function test_meter_frame_uses_catalogue_quote_and_rejects_tampering_before_upload(): void
+    public function test_calculator_uses_catalogue_quotes_for_all_frame_choices(): void
     {
         Storage::fake('uploads');
         $fixtures = [
@@ -27,7 +27,7 @@ class CanvasFrameBasketQuoteTest extends TestCase
             Schema::create($table, function (Blueprint $schema) use ($row): void {
                 $schema->id();
                 foreach ($row as $column => $value) {
-                    is_string($value) ? $schema->string($column) : $schema->decimal($column, 10, 2);
+                    is_string($value) ? $schema->string($column) : $schema->decimal($column, 10, 2)->nullable();
                 }
             });
             DB::table($table)->insert($row);
@@ -58,5 +58,19 @@ class CanvasFrameBasketQuoteTest extends TestCase
         $this->assertSame(27.0, $item['canvas_frame_quote']['price']);
         $this->assertSame(52.0, $item['price']);
         $this->assertSame('s', $item['price_label']);
+
+        DB::table('canvas_rams')->insert(['id' => 2, 'price' => 25, 'price_per_meter' => null, 'calculator_enabled' => 0]);
+        foreach ([[null, 30, 0.0], [2, 55, 25.0]] as [$frameId, $price, $framePrice]) {
+            $options = ['canvas_calculator' => 'v2', 'ram_id' => $frameId];
+            $this->postJson('/basket/add', array_replace($request($price - 1), $options))->assertUnprocessable();
+            $this->postJson('/basket/add', array_replace($request($price), $options))->assertOk();
+            $items = session('basket');
+            $this->assertSame($framePrice, end($items)['canvas_frame_quote']['price']);
+            $this->assertNull(end($items)['canvas_frame_quote']['rate']);
+        }
+        $this->postJson('/basket/add', array_replace($request(55), [
+            'canvas_calculator' => 'v2',
+            'ram_id' => 999,
+        ]))->assertUnprocessable();
     }
 }
