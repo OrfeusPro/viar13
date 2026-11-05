@@ -222,8 +222,7 @@
       form_data.append('terms', terms);
       form_data.append('pack', packagingInput.data('name'));
       form_data.append('dost_time', $('.delivery-inputs').find('.kviz-radio_active').find('span').text());
-      const selectedTermPrice = Number($('.delivery-inputs input:checked').val());
-      form_data.append('terms_price', Number.isFinite(selectedTermPrice) ? selectedTermPrice : 0);
+      form_data.append('terms_price', $('.delivery-inputs .jcf-label-active input').val());
 
       /*$('.delivery-inputs .kviz-radio_active').find('input').val()*/
 
