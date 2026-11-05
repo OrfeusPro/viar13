@@ -1,5 +1,6 @@
 <?php
 return [
+    'paid_notice' => 'Usługa płatna. Cena zostanie pokazana po wygenerowaniu i dodana do zamówienia dopiero po zatwierdzeniu wyniku.',
     'upload_invalid' => 'Nie można odczytać obrazu. Wybierz poprawny plik do 30 MB.',
     'quota' => 'Osiągnięto dzienny limit AI. Spróbuj jutro.',
     'rate' => 'Generator jest zajęty lub osiągnięto limit zapytań. Spróbuj później.',
@@ -7,7 +8,7 @@ return [
     'title' => 'Rozszerzenie obrazu — AI',
     'moderation' => 'Usługa AI odrzuciła obraz. Dostępne są lustrzane lub jednokolorowe boki.',
     'login' => 'Zaloguj się lub zarejestruj',
-    'notice' => 'Obraz jest wysyłany do OpenAI w celu rozszerzenia każdego brzegu o 3,5 cm. Oryginalny przód pozostaje bez zmian. Do 5 prób dziennie; podglądy dostępne przez 24 godziny. Opłata jest widoczna przed zatwierdzeniem i dodawana do koszyka testowego tylko za zatwierdzony wynik. Integracja z drukiem nie jest jeszcze dostępna.',
+    'notice' => 'Obraz jest wysyłany do OpenAI w celu rozszerzenia każdego brzegu o 3 cm. Oryginalny przód pozostaje bez zmian. Do 5 prób dziennie; podglądy dostępne przez 24 godziny. Opłata jest widoczna przed zatwierdzeniem i dodawana do koszyka testowego tylko za zatwierdzony wynik. Integracja z drukiem nie jest jeszcze dostępna.',
     'generate' => 'Generuj / inny wariant',
     'apply' => 'Zastosuj do boków',
     'preview' => 'Podgląd rozszerzonego obrazu',
@@ -20,6 +21,6 @@ return [
     'ready' => 'Boki AI nie zostały zastosowane. Wygeneruj i zatwierdź wynik. W międzyczasie widoczne są jednokolorowe boki.',
     'fee' => 'Opłata za zatwierdzony wariant w koszyku testowym: :fee EUR (koszt API zaokrąglony w górę).',
     'cart_fee' => 'Zatwierdzone rozszerzenie boków AI',
-    'review' => 'Sprawdź i zatwierdź brzeg 3,5 cm. Oryginalny przód jest zachowany. W międzyczasie widoczne są jednokolorowe boki.',
+    'review' => 'Sprawdź i zatwierdź brzeg 3 cm. Oryginalny przód jest zachowany. W międzyczasie widoczne są jednokolorowe boki.',
     'applied' => 'Rozszerzenie zastosowano do boków. Sprawdź podgląd płótna.',
 ];

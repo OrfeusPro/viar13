@@ -1769,10 +1769,119 @@ dialog.calculator-expanded-preview[open]{display:flex;align-items:center;justify
 /* Bottom disclosure action matches the preparation card's text link. */
 #generate.calculator-v2 .calculator-option-collapse{display:block;width:auto;margin:16px 0 0;padding:0;border:0;border-radius:0;background:transparent;color:#bb4b28;font-size:15px;font-weight:400;line-height:1.5;text-align:left;cursor:pointer;box-shadow:none}
 
-/* Keep the floating top link clear of the calculator navigation. */
-body.calculator-working .scroll-button.anchor{visibility:hidden!important;pointer-events:none!important}
+@media(min-width:1000px){html[lang^=ru] #generate.calculator-v2 .calculator-desktop-brand{flex-direction:column;align-items:flex-start;gap:4px}html[lang^=ru] #generate.calculator-v2 .calculator-desktop-header h2{white-space:normal;font-size:clamp(20px,1.5vw,28px)}html[lang^=ru] #generate.calculator-v2 .calculator-desktop-product{border-left:0;padding-left:17px;font-size:15px;white-space:normal}}
+
+@media(min-width:1000px){#generate.calculator-v2 .calculator-desktop-quality{min-height:0;max-height:100%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}#generate.calculator-v2 .calculator-quality-thumbs{flex-shrink:0}#generate.calculator-v2 .calculator-quality-viewer img{object-fit:contain}}
+
+/* JS height is already corrected for calculator zoom and the visual viewport. */
+@media(max-width:999px){
+ #generate.calculator-v2.mobile-frame-pinned{max-height:none!important;overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:max(8px,env(safe-area-inset-bottom))!important}
+ #generate.calculator-v2.mobile-frame-pinned .photo-content{min-height:0!important}
+ #generate.calculator-v2.mobile-frame-pinned .formalizaton__submit{position:relative!important;bottom:auto!important;flex-shrink:0!important}
+}
+
+/* Mobile pin is a complete viewport workspace, above the surrounding page. */
+@media(max-width:999px){
+ body:has(#generate.mobile-frame-pinned){overflow:hidden!important}
+ .retouch__screen:has(#generate.mobile-frame-pinned){position:relative;z-index:1000;overflow:visible!important}
+ .retouch__screen:has(#generate.mobile-frame-pinned)::before,.retouch__screen:has(#generate.mobile-frame-pinned)::after{display:none!important}
+ #generate.calculator-v2.mobile-frame-pinned{z-index:1001!important;background:#fffaf6!important;isolation:isolate;box-shadow:0 0 0 100vmax #fffaf6;overscroll-behavior:contain}
+ #generate.calculator-v2.mobile-frame-pinned .calculator-frame-preview{height:var(--mobile-frame-preview-height,160px)!important;min-height:0!important;max-height:390px!important;padding:6px!important;box-sizing:border-box}
+ #generate.calculator-v2.mobile-frame-pinned .calculator-frame-preview .calculator-frame-canvas{max-height:calc(100% - 30px)!important;object-fit:contain}
+ #generate.calculator-v2.mobile-frame-pinned .formalizaton__submit{display:flex!important;flex-wrap:wrap!important;gap:8px!important;width:100%!important;box-sizing:border-box;background:#fffaf6!important}
+ #generate.calculator-v2.mobile-frame-pinned .calculator-frame-confirmation{width:100%!important;min-width:0!important;box-sizing:border-box}
+ #generate.calculator-v2.mobile-frame-pinned .calculator-frame-confirmation button{width:100%!important;white-space:normal!important}
+}
+
+@media(min-width:1000px){#generate.calculator-v2 .quality-visual-1 img{transform:none;transform-origin:center}}
+
+@media(max-width:999px){
+ #generate.calculator-v2.mobile-frame-pinned .slider-tabs{position:relative!important;top:auto!important;flex:none!important;margin:0!important;padding:4px!important}
+ #generate.calculator-v2.mobile-frame-pinned[data-preview-mode]:not(.preview-collapsed) #PhotoEditor{height:var(--mobile-frame-preview-height,160px)!important;min-height:0!important;max-height:390px!important}
+ #generate.calculator-v2 .tabs-content>.calculator-room-photo-zoom{display:none;position:absolute;right:66px;top:10px;z-index:15;gap:5px}
+ #generate.calculator-v2[data-preview-mode=room]:not(.is-frame-selection) .tabs-content>.calculator-room-photo-zoom{display:flex}
+ #generate.calculator-v2 .tabs-content>.calculator-room-photo-zoom button{width:38px;height:38px;min-width:38px;padding:0;background:#fffaf6;border:1px solid #dfd8d0;border-radius:9px;font-size:24px}
+ #generate.calculator-v2 .calculator-room-picker{gap:6px!important;margin-bottom:6px!important}
+ #generate.calculator-v2 .calculator-room-note{font-size:10px;line-height:1.25}
+ #generate.calculator-v2.mobile-frame-pinned .formalizaton__submit{position:sticky!important;bottom:0!important;z-index:120;padding:8px!important;margin-top:6px!important;background:#fffaf6!important}
+}
+
+/* Mobile checkout has its own opaque surface; the preview cannot cover its label. */
+@media(max-width:999px){
+ #generate.calculator-v2 .formalizaton__submit{clear:both;position:relative;z-index:125!important;margin-top:12px!important;padding:12px!important;background:#fffaf6!important;border-top:1px solid #e6ddd5;box-sizing:border-box;overflow:visible!important}
+ #generate.calculator-v2 .calculator-footer-checkout{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:12px!important;width:100%!important;min-width:0!important;padding:0!important;margin:0!important}
+ #generate.calculator-v2 .formalization-price{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:6px 10px!important;width:100%!important;min-width:0!important;position:static!important;margin:0!important;padding:0!important;line-height:1.3!important}
+ #generate.calculator-v2 .formalization-price .calculator-total-value{font-size:28px!important;font-weight:700!important;line-height:1.2!important;white-space:nowrap}
+ #generate.calculator-v2 .formalization-price .calculator-price-trigger{flex:0 0 100%!important;width:auto!important;text-align:left!important;margin:2px 0 0!important;padding:3px 0!important;border:0!important;line-height:1.4!important;font-size:14px!important;background:none!important}
+ #generate.calculator-v2.mobile-frame-pinned .formalizaton__submit{margin-top:8px!important;padding-bottom:max(12px,env(safe-area-inset-bottom))!important;box-shadow:0 -4px 12px #3322110a}
+ #generate.calculator-v2.mobile-frame-pinned .calculator-price-dock{display:none!important}
+}
+
+#generate.calculator-v2 .quality-create-canvas{display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(145deg,#fafbfc,#f0f3f6)}#generate.calculator-v2 .quality-create-canvas svg{width:100%;height:100%}#generate.calculator-v2 .quality-create-canvas[hidden],#generate.calculator-v2 .quality-visual-0 img[hidden]{display:none!important}
+/* Mobile size cards: keep the complete price group centered above the bottom edge. */
+@media(max-width:999px){
+ #generate.calculator-v2 .accordion__sizes-block .calcSize{box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;height:auto!important;min-height:116px!important;padding:27px 6px 16px!important}
+ #generate.calculator-v2 .accordion__sizes-block .calcSize label{position:static!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;width:100%;height:auto!important;margin:0!important;padding:0!important;text-align:center!important}
+ #generate.calculator-v2 .accordion__sizes-block .size-card-name{font-size:14px!important;line-height:1.25!important;white-space:normal;text-align:center!important;margin:0 0 4px!important}
+ #generate.calculator-v2 .accordion__sizes-block .size-card-prices{display:flex!important;flex-direction:column;align-items:center!important;justify-content:center!important;gap:2px!important;margin:0!important;line-height:1.2!important}
+ #generate.calculator-v2 .accordion__sizes-block .size-card-prices del{font-size:12px!important;line-height:1.2!important}
+ #generate.calculator-v2 .accordion__sizes-block .size-card-prices b{font-size:16px!important;line-height:1.2!important}
+}
+
+/* Back is absent on the first step on every screen size. */
+#generate.calculator-v2 [data-calculator-back][hidden],#generate.calculator-v2 [data-calculator-back]:disabled{display:none!important}
+@media(max-width:999px){
+ #generate.calculator-v2 .formalizaton__submit,#generate.calculator-v2 .calculator-footer-checkout,#generate.calculator-v2 .calculator-navigation-bottom{height:auto!important;max-height:none!important;overflow:visible!important;flex-shrink:0}
+}
+
+@media(min-width:1000px){
+ #generate.calculator-v2 .calculator-quality-thumbs button:first-child .quality-visual{height:76px!important}
+ #generate.calculator-v2 .calculator-quality-thumbs button:first-child{margin-bottom:5px}
+ #generate.calculator-v2 .calculator-quality-thumbs button:first-child>span{font-weight:600}
+}
+
+#generate .canvas-ai-dialog{box-sizing:border-box;width:min(520px,calc(100vw - 24px));max-height:85dvh;margin:auto;padding:24px;border:1px solid #e4ddd6;border-radius:18px;background:#fffaf6;color:#26313d;overflow-y:auto;text-align:left;box-shadow:0 20px 70px #0003}
+#generate .canvas-ai-dialog:not([open]){display:none!important}
+#generate .canvas-ai-dialog::backdrop{background:#20242a88}
+#generate .canvas-ai-dialog h2{font-size:22px;line-height:1.3;padding-right:32px;margin:0 0 16px}
+#generate .canvas-ai-dialog [data-ai-panel]{width:100%;font-size:16px;line-height:1.5}
+#generate .canvas-ai-dialog [data-ai-status]{font-size:16px;line-height:1.5;overflow-wrap:anywhere;margin:14px 0}
+#generate .canvas-ai-dialog .canvas-ai-close{position:absolute;right:10px;top:10px;width:36px;height:36px;border:0;background:transparent;font-size:28px;cursor:pointer;color:#26313d}
+#generate .canvas-ai-dialog [data-ai-preview]{display:block;max-width:100%!important;margin:12px auto}
+#generate .canvas-ai-dialog [data-ai-preview][hidden]{display:none}
+
+/* Room controls share the actual image surface, including desktop layouts. */
+#generate.calculator-v2 .canvas_container>.calculator-room-photo-zoom{display:none;position:absolute;right:64px;top:12px;z-index:15;gap:6px;margin:0}
+#generate.calculator-v2[data-preview-mode=room]:not(.is-frame-selection) .canvas_container>.calculator-room-photo-zoom{display:flex}
+#generate.calculator-v2 .canvas_container>.calculator-expand-preview{right:12px;top:12px;z-index:15;box-sizing:border-box}
+#generate.calculator-v2 .canvas_container>.calculator-room-photo-zoom button{width:44px;height:44px;min-width:44px;box-sizing:border-box;background:rgba(255,255,255,.94)}
+@media(max-width:999px){
+ #generate.calculator-v2 .canvas_container>.calculator-expand-preview{width:38px;height:38px;right:10px;top:10px;padding:8px}
+ #generate.calculator-v2 .canvas_container>.calculator-room-photo-zoom{right:54px;top:10px}
+ #generate.calculator-v2 .canvas_container>.calculator-room-photo-zoom button{width:38px;height:38px;min-width:38px}
+}
+/* Checkout CTA must not shrink into a narrow two-line tile. */
+#generate.calculator-v2 #t3_submit_btn:not([hidden]){display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 auto!important;width:auto!important;min-width:220px!important;min-height:56px!important;height:auto!important;padding:16px 26px!important;margin-left:auto!important;box-sizing:border-box;border-radius:10px!important;background:#f36332!important;color:#fff!important;font-size:20px!important;font-weight:700!important;line-height:1.25!important;text-align:center;white-space:nowrap!important;cursor:pointer}
+#generate.calculator-v2 #t3_submit_btn:not([hidden]):hover{background:#de5022!important}
+#generate.calculator-v2 #t3_submit_btn:focus-visible{outline:3px solid #a43916;outline-offset:3px}
+#generate.calculator-v2 .calculator-footer-checkout{flex-wrap:wrap;gap:12px}
+@media(max-width:999px){#generate.calculator-v2 #t3_submit_btn:not([hidden]){flex:1 0 100%!important;width:100%!important;min-width:0!important;margin-left:0!important;white-space:normal!important;min-height:54px!important;font-size:18px!important}}
+
+#generate .canvas-ai-dialog{width:min(720px,calc(100vw - 24px));max-height:90dvh;padding:28px}
+#generate .canvas-ai-dialog .canvas-ai-paid{padding:12px 16px;margin:0 0 14px;border:1px solid #ffc9b5;border-radius:10px;background:#fff0e7;color:#9d421f;font-size:16px;line-height:1.5;font-weight:500}
+#generate .canvas-ai-dialog [data-ai-progress]{display:block;width:100%;height:8px;margin:0 0 18px;border:0;border-radius:8px;overflow:hidden;appearance:none;background:#f5dfd5}
+#generate .canvas-ai-dialog [data-ai-progress]::-webkit-progress-bar{background:transparent}
+#generate .canvas-ai-dialog [data-ai-progress]:indeterminate{background:linear-gradient(90deg,#f5dfd5 25%,#f36332 50%,#f5dfd5 75%);background-size:200% 100%;animation:canvas-ai-loading 1.4s linear infinite}
+#generate .canvas-ai-dialog [data-ai-progress]::-moz-progress-bar{background:#f36332}
+#generate .canvas-ai-dialog [data-ai-progress][hidden]{display:none!important}
+@keyframes canvas-ai-loading{from{background-position:100% 0}to{background-position:-100% 0}}
+@media(prefers-reduced-motion:reduce){#generate .canvas-ai-dialog [data-ai-progress]:indeterminate{animation:none}}
+@media(max-width:600px){#generate .canvas-ai-dialog{padding:20px;width:calc(100vw - 20px)}}
 
 /* Hidden notes must not leave the checkout in the old two-column photo grid. */
 @media(min-width:1000px){
  #generate.calculator-v2.calculator-comment-in-step:not(.is-frame-selection) .formalizaton__submit{display:block!important;grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* Keep the floating top link clear of the calculator navigation. */
+body.calculator-working .scroll-button.anchor{visibility:hidden!important;pointer-events:none!important}

@@ -1,5 +1,6 @@
 <?php
 return [
+    'paid_notice' => 'Kostenpflichtiger Service. Der Preis wird nach der Generierung angezeigt und erst nach Bestätigung des Ergebnisses zur Bestellung hinzugefügt.',
     'upload_invalid' => 'Das Bild kann nicht gelesen werden. Wählen Sie eine gültige Bilddatei bis 30 MB.',
     'quota' => 'Tägliches KI-Limit erreicht. Versuchen Sie es morgen erneut.',
     'rate' => 'Generator ausgelastet oder Anfragelimit erreicht. Später erneut versuchen.',
@@ -7,7 +8,7 @@ return [
     'title' => 'Bilderweiterung — KI',
     'moderation' => 'KI-Dienst hat das Bild abgelehnt. Spiegel- und einfarbige Ränder bleiben verfügbar.',
     'login' => 'Anmelden oder registrieren',
-    'notice' => 'Ihr Bild wird an OpenAI gesendet, um jeden Rand um 3,5 cm zu erweitern. Die Originalvorderseite bleibt erhalten. Bis zu 5 Versuche täglich; Vorschauen sind 24 Stunden verfügbar. Die Gebühr wird vor Bestätigung angezeigt und nur für das bestätigte Ergebnis zum Testwarenkorb hinzugefügt. Die Druckanbindung ist noch nicht verfügbar.',
+    'notice' => 'Ihr Bild wird an OpenAI gesendet, um jeden Rand um 3 cm zu erweitern. Die Originalvorderseite bleibt erhalten. Bis zu 5 Versuche täglich; Vorschauen sind 24 Stunden verfügbar. Die Gebühr wird vor Bestätigung angezeigt und nur für das bestätigte Ergebnis zum Testwarenkorb hinzugefügt. Die Druckanbindung ist noch nicht verfügbar.',
     'generate' => 'Generieren / weitere Variante',
     'apply' => 'Auf Ränder anwenden',
     'preview' => 'Vorschau der Bilderweiterung',
@@ -20,6 +21,6 @@ return [
     'ready' => 'KI-Ränder noch nicht angewendet. Ergebnis generieren und bestätigen. Bis dahin werden einfarbige Ränder angezeigt.',
     'fee' => 'Gebühr für bestätigte Variante im Testwarenkorb: :fee EUR (aufgerundete API-Kosten).',
     'cart_fee' => 'Bestätigte KI-Randerweiterung',
-    'review' => '3,5-cm-Rand prüfen und bestätigen. Originalvorderseite bleibt erhalten. Bis dahin werden einfarbige Ränder angezeigt.',
+    'review' => '3-cm-Rand prüfen und bestätigen. Originalvorderseite bleibt erhalten. Bis dahin werden einfarbige Ränder angezeigt.',
     'applied' => 'Erweiterung angewendet. Leinwandvorschau prüfen.',
 ];

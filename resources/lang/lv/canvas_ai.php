@@ -1,5 +1,6 @@
 <?php
 return [
+    'paid_notice' => 'Maksas pakalpojums. Cena tiks parādīta pēc ģenerēšanas un pievienota pasūtījumam tikai pēc rezultāta apstiprināšanas.',
     'upload_invalid' => 'Attēlu nevar nolasīt. Izvēlieties derīgu attēlu līdz 30 MB.',
     'quota' => 'Sasniegts dienas MI limits. Mēģiniet rīt.',
     'rate' => 'Ģenerators aizņemts vai sasniegts pieprasījumu limits. Mēģiniet vēlāk.',
@@ -7,7 +8,7 @@ return [
     'title' => 'Attēla turpinājums — MI',
     'moderation' => 'MI pakalpojums noraidīja attēlu. Pieejamas spoguļotas un vienkrāsainas malas.',
     'login' => 'Ieiet vai reģistrēties',
-    'notice' => 'Jūsu attēls tiek nosūtīts OpenAI, lai katru malu pagarinātu par 3,5 cm. Oriģinālā priekšpuse saglabājas. Līdz 5 mēģinājumiem dienā; priekšskatījumi pieejami 24 stundas. Maksa redzama pirms apstiprināšanas un testa grozam pievienota tikai par apstiprinātu rezultātu. Drukas integrācija vēl nav pieejama.',
+    'notice' => 'Jūsu attēls tiek nosūtīts OpenAI, lai katru malu pagarinātu par 3 cm. Oriģinālā priekšpuse saglabājas. Līdz 5 mēģinājumiem dienā; priekšskatījumi pieejami 24 stundas. Maksa redzama pirms apstiprināšanas un testa grozam pievienota tikai par apstiprinātu rezultātu. Drukas integrācija vēl nav pieejama.',
     'generate' => 'Ģenerēt / cits variants',
     'apply' => 'Lietot malām',
     'preview' => 'Paplašinātā attēla priekšskatījums',
@@ -20,6 +21,6 @@ return [
     'ready' => 'MI malas vēl nav lietotas. Ģenerējiet un apstipriniet rezultātu. Tikmēr redzamas vienkrāsainas malas.',
     'fee' => 'Maksa par apstiprināto variantu testa grozā: :fee EUR (API izmaksas noapaļotas uz augšu).',
     'cart_fee' => 'Apstiprināts MI malu turpinājums',
-    'review' => 'Pārbaudiet un apstipriniet 3,5 cm malu. Oriģinālā priekšpuse saglabājas. Tikmēr redzamas vienkrāsainas malas.',
+    'review' => 'Pārbaudiet un apstipriniet 3 cm malu. Oriģinālā priekšpuse saglabājas. Tikmēr redzamas vienkrāsainas malas.',
     'applied' => 'Turpinājums lietots malām. Pārbaudiet audekla priekšskatījumu.',
 ];

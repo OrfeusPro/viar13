@@ -253,7 +253,7 @@ root.CanvasRoom={install:function(editor){
    var labelContext=labelCanvas.getContext('2d');labelContext.fillStyle='rgba(255,255,255,.94)';labelContext.fillRect(0,0,256,96);labelContext.fillStyle='#263b3b';labelContext.font='600 48px Arial';labelContext.textAlign='center';labelContext.textBaseline='middle';labelContext.fillText('170 cm',128,48);
    var labelMesh=new THREE.Mesh(new THREE.PlaneGeometry(.40,.15),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,depthTest:false}));labelMesh.position.set(.24,.85,.01);guide.add(labelMesh);scene.add(guide);person.userData.heightGuide=guide;
   }
-  person.userData.heightGuide.position.set(person.position.x+.34,0,.6);
+  person.userData.heightGuide.position.set(person.position.x+(window.innerWidth<1000?-.48:.34),0,.6);
   person.userData.heightGuide.visible=withPerson;
 
   var sceneWidth=roomCalibration[roomKind].width+1.05;
@@ -421,7 +421,17 @@ root.CanvasRoom={install:function(editor){
  var zoomButtons=[];
  [-1,1].forEach(function(direction){var button=document.createElement('button');button.type='button';button.textContent=direction<0?'−':'+';button.setAttribute('aria-label',direction<0?ui.zoom_out:ui.zoom_in);button.title=button.getAttribute('aria-label');button.disabled=true;button.addEventListener('click',function(){finishCrop();var cell=editor.getCellByPoint({x:.5,y:.5});if(!cell||!cell.resource)return;cell.photo_zoom(cell.resource.zoom*(direction<0?1/1.2:1.2));editor.render();});photoZoom.appendChild(button);zoomButtons.push(button);});
  function updatePhotoZoomButtons(){if(!zoomButtons)return;var cell=editor.getCellByPoint({x:.5,y:.5}),resource=cell&&cell.resource;zoomButtons[0].disabled=!resource||resource.zoom<=1.000001;zoomButtons[1].disabled=!resource||resource.zoom>=9.999999;}
- roomTools.appendChild(photoZoom);
+ function placeRoomZoom(){
+  var frameMode=host.classList.contains('is-frame-selection');
+  var target=host.querySelector(frameMode?'.slider-tabs>.tabs-content':'#PhotoEditor .canvas_container');
+  if(!target)return;
+  target.style.position='relative';
+  if(photoZoom.parentElement!==target)target.appendChild(photoZoom);
+  var expand=host.querySelector('.calculator-expand-preview');
+  if(expand&&expand.parentElement!==target)target.appendChild(expand);
+ }
+ new MutationObserver(placeRoomZoom).observe(host,{attributes:true,attributeFilter:['class','data-preview-mode']});
+ placeRoomZoom();window.addEventListener('resize',placeRoomZoom);
  var roomNote=document.createElement('small');roomNote.className='calculator-room-note';roomNote.textContent=roomText.note+(' '+ui.drag_note);roomTools.appendChild(roomNote);
  host.querySelector('.slider-tabs>.tabs').after(roomTools);
  roomSelect.addEventListener('change',function(){roomKind=roomSelect.value;if(scene)buildRoom();editor.render3D();});personToggle.addEventListener('change',function(){editor.render3D();});

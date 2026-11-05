@@ -90,7 +90,7 @@ class CanvasAiController extends Controller
                 if (is_file($dir.'/'.$previewId.'.png') && ($existing['expires']??0)>time()) {
                     return response()->json(['status'=>'duplicate','request_id'=>$this->traceId,'id'=>$previewId,
                         'url'=>'/canvas-ai/preview/'.$previewId,'fee_eur'=>$existing['cost']['fee_eur'],
-                        'border_cm'=>3.5,'rect'=>$existing['rect']])->header('Cache-Control','private, no-store');
+                        'border_cm'=>($existing['border_cm'] ?? 3.5),'rect'=>$existing['rect']])->header('Cache-Control','private, no-store');
                 }
             }
             if (($counts['total'] ?? 0)>=config('canvas_ai.daily_limit', 20) || ($counts['users'][$uid] ?? 0)>=config('canvas_ai.user_daily_limit', 5)) {
@@ -126,7 +126,7 @@ class CanvasAiController extends Controller
                 ->attach('mask', $maskBytes, 'mask.png', ['Content-Type'=>'image/png'])
                 ->post('https://api.openai.com/v1/images/edits', [
                     'model'=>config('canvas_ai.model'), 'size'=>'1024x1024', 'quality'=>'medium',
-                    'input_fidelity'=>'high', 'prompt'=>"OUTPAINT THIS FLAT 2D IMAGE. Do not depict a picture, frame, canvas object, wall, vignette, shadow or mockup. The existing image starts at pixel ({$x},{$y}) and is {$w} pixels wide by {$h} pixels tall. Extend its actual pixels continuously into the editable strip of {$b} pixels on each side (3.5 cm in print). Preserve the existing image location, scale, exact scene, colors, subjects, text and all internal details. Every new strip must meet its adjacent original edge with matching color, texture, lighting and contours. Continue any shape or object cut by an edge directly across that boundary, including tails, without replacing it with background or fading it out. No reflection, duplication, stretching or invented subjects. Change ONLY the transparent editable ring. Leave all protected pixels untouched. This is an extension of the same flat artwork, not a newly composed scene.",
+                    'input_fidelity'=>'high', 'prompt'=>\App\Services\CanvasAiLayout::prompt($g),
                 ]);
             $this->trace('provider_response',['provider_latency_ms'=>(int)round((microtime(true)-$providerStart)*1000),'http_status'=>$response->status()]);
             if ($response->status()!==200) {
@@ -152,12 +152,12 @@ class CanvasAiController extends Controller
             $this->trace('file_save_started');
             file_put_contents($dir.'/'.$id.'.png',$bytes,LOCK_EX);
             file_put_contents($dir.'/'.$id.'.json',json_encode(['request_id'=>$this->traceId,'fingerprint'=>$fingerprint,'user'=>$uid,'expires'=>time()+86400,
-                'width_cm'=>(float)$data['width_cm'],'height_cm'=>(float)$data['height_cm'],'rect'=>$rect,'border_cm'=>3.5,'cost'=>$cost]),LOCK_EX);
+                'width_cm'=>(float)$data['width_cm'],'height_cm'=>(float)$data['height_cm'],'rect'=>$rect,'border_cm'=>\App\Services\CanvasAiLayout::BORDER_CM,'cost'=>$cost]),LOCK_EX);
             chmod($dir.'/'.$id.'.png',0600); chmod($dir.'/'.$id.'.json',0600);
             $this->trace('file_saved');
             $this->trace('response_returned');
             return response()->json(['request_id'=>$this->traceId,'id'=>$id,'url'=>'/canvas-ai/preview/'.$id,
-                'fee_eur'=>$cost['fee_eur'],'border_cm'=>3.5,'rect'=>$rect])->header('Cache-Control','private, no-store');
+                'fee_eur'=>$cost['fee_eur'],'border_cm'=>\App\Services\CanvasAiLayout::BORDER_CM,'rect'=>$rect])->header('Cache-Control','private, no-store');
         } catch (\Throwable $e) {
             // Never expose credentials, request contents or provider response bodies.
             \Log::warning('canvas-ai generation failure',['exception'=>get_class($e),'file'=>basename($e->getFile()),'line'=>$e->getLine(),

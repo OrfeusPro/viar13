@@ -12,6 +12,13 @@
         if(!panel || editor.updateAiEdges) return;
         var generate=panel.querySelector('[data-ai-generate]'),apply=panel.querySelector('[data-ai-apply]');
         var status=panel.querySelector('[data-ai-status]'),preview=panel.querySelector('[data-ai-preview]');
+        var dialog=document.createElement('dialog');dialog.className='canvas-ai-dialog';
+        var heading=document.createElement('h2');heading.textContent=ui.querySelector('input[value="ai"]').closest('label').querySelector('.edge-caption').textContent;
+        var close=document.createElement('button');close.type='button';close.className='canvas-ai-close jcf-ignore';close.textContent='×';close.setAttribute('aria-label',(document.getElementById('calculator-catalogue-text')?JSON.parse(document.getElementById('calculator-catalogue-text').textContent).close:heading.textContent));
+        dialog.setAttribute('aria-label',heading.textContent);panel.before(dialog);dialog.append(close,heading,panel);
+        close.onclick=function(){dialog.close();};
+        ui.querySelector('input[value="ai"]').addEventListener('click',function(){panel.hidden=false;if(!dialog.open)dialog.showModal();});
+        var progress=panel.querySelector('[data-ai-progress]');
         var active=null,pending=null,busy=false,serial=0,ids=new WeakMap(),next=1;
         var requestId='',lastError=null,reset=false,traceStart=0,traces=[];
         function trace(stage,extra){
@@ -45,6 +52,9 @@
             generate.disabled=busy||!current;
             if(!current&&!busy)message('upload');
             if(current&&!busy&&!active&&!pending&&status.textContent===panel.dataset.upload)message('ready');
+            var charge=editor.edge_mode==='ai'&&active?active.fee:0;
+            var calculator=ui.closest('#generate');
+            if(calculator.dataset.aiFee!==String(charge)){calculator.dataset.aiFee=String(charge);calculator.dispatchEvent(new Event('canvas-ai-fee-change'));}
             panel.dataset.aiState=busy?'generating':pending?'review':active&&editor.edge_mode==='ai'?'applied':'not-applied';
             panel.dataset.aiLifecycle=busy?'AI_GENERATING':pending?'AI_READY_FOR_REVIEW':active&&editor.edge_mode==='ai'?'AI_APPLIED':reset?'AI_RESET':lastError?(lastError==='AI_LOCAL_QUOTA'||lastError==='AI_RATE_LIMIT'?'AI_RATE_LIMITED':'AI_ERROR'):'AI_NOT_CREATED';
             if(!editor.box)return;
@@ -67,7 +77,7 @@
             trace('generate_clicked');
             editor.render2D();var startKey=key();if(!startKey||busy)return;
             lastError=null;reset=false;panel.dataset.aiError='';trace('frontend_validated');
-            busy=true;generate.disabled=true;message('waiting');var ticket=++serial;
+            busy=true;generate.disabled=true;progress.hidden=false;message('waiting');var ticket=++serial;
             var controller=new AbortController(),timer=setTimeout(function(){controller.abort();},65000);
             try {
                 // A long-open configurator may retain a token from before login.
@@ -94,7 +104,7 @@
                 }
                 var result=await response.json();
                 if(!result || !/^[a-f0-9]{32}$/.test(result.id) ||
-                    !Number.isSafeInteger(result.fee_eur) || result.fee_eur<0 ||
+                    !Number.isFinite(result.fee_eur) || result.fee_eur<0 ||
                     typeof result.url!=='string' || !result.url.includes('/canvas-ai/') ||
                     !result.rect || !['x','y','w','h'].every(function(k){return Number.isFinite(result.rect[k])&&result.rect[k]>0&&result.rect[k]<1;}) ||
                     result.rect.x+result.rect.w>=1 || result.rect.y+result.rect.h>=1)throw new Error('Invalid preview');
@@ -108,10 +118,10 @@
                 });
                 if(ticket!==serial||startKey!==key()){message('changed');return;}
                 pending={key:startKey,image:img,rect:result.rect,id:result.id,fee:result.fee_eur};preview.src=result.url;preview.hidden=false;apply.hidden=false;
-                message('review');status.textContent+=' '+panel.dataset.fee.replace(':fee',result.fee_eur);
+                message('review');status.textContent+=' '+panel.dataset.fee.replace(':fee',result.fee_eur.toFixed(2));
                 trace('preview_shown');
             } catch(e){fail(e.name==='AbortError'?'AI_TIMEOUT':e.message==='image'?'AI_IMAGE_ERROR':e instanceof SyntaxError||e.message==='Invalid preview'?'AI_INVALID_RESPONSE':'AI_INTERNAL_ERROR');}
-            finally{clearTimeout(timer);busy=false;editor.updateAiEdges();}
+            finally{clearTimeout(timer);busy=false;progress.hidden=true;editor.updateAiEdges();}
         });
         apply.addEventListener('click',function(){
             if(!pending||pending.key!==key()){discardPending();message('changed');return;}
@@ -120,7 +130,12 @@
             active.texture.needsUpdate=true;active.texture.minFilter=THREE.LinearFilter;
             discardPending();editor.edge_mode='ai';editor.add_history();editor.updateAiEdges();editor.render3D();
             lastError=null;reset=false;trace('apply');
-            if(active){message('applied');status.textContent+=' '+panel.dataset.fee.replace(':fee',active.fee);}
+            if(active){
+                message('applied');status.textContent+=' '+panel.dataset.fee.replace(':fee',active.fee.toFixed(2));
+                // Confirmation completes the dialog flow; show the applied edges immediately.
+                if(dialog.open)dialog.close();
+                requestAnimationFrame(function(){editor.updateAiEdges();editor.render3D();});
+            }
         });
         if(root.jQuery)root.jQuery.ajaxPrefilter(function(options){
             if(!/\/basket\/add$/.test(options.url)||!(options.data instanceof FormData))return;

@@ -25,7 +25,7 @@ class CanvasAiBasket
         $accepted=config('canvas_ai.storage_path').'/accepted/'.auth()->id();
         if (!is_dir($accepted)) mkdir($accepted,0700,true);
         if (!is_file($accepted.'/'.$id.'.png')) { abort_unless(copy($path.'.png',$accepted.'/'.$id.'.png'),500); chmod($accepted.'/'.$id.'.png',0600); }
-        $item['canvas_ai']=['file'=>'canvas-ai/accepted/'.auth()->id().'/'.$id.'.png','id'=>$id,'fee_eur'=>$meta['cost']['fee_eur'],'border_cm'=>3.5,'rect'=>$meta['rect'],
+        $item['canvas_ai']=['file'=>'canvas-ai/accepted/'.auth()->id().'/'.$id.'.png','id'=>$id,'fee_eur'=>$meta['cost']['fee_eur'],'border_cm'=>($meta['border_cm'] ?? 3.5),'rect'=>$meta['rect'],
             'width_cm'=>$meta['width_cm'],'height_cm'=>$meta['height_cm'],
             'source_image'=>$item['savedImage']??null,'preview_image'=>$item['activeImage']??null];
         return $item;
@@ -44,7 +44,7 @@ class CanvasAiBasket
                 unset($item['canvas_ai'],$item['canvas_ai_fee']);
                 continue;
             }
-            $fee=isset($seen[$id])?0:(int)$ai['fee_eur'];$seen[$id]=true;
+            $fee=isset($seen[$id])?0:(float)$ai['fee_eur'];$seen[$id]=true;
             $item['canvas_ai_fee']=$fee;
             $item['sumPrice']=(float)($item['sumPrice']??0)+$fee;
             $item['sumFormatedPrice']=number_format($item['sumPrice'],2,',',' ').' €';

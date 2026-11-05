@@ -89,7 +89,7 @@ class CanvasAiTest extends TestCase
     {
         $this->user(); $this->fakeProvider();
         $headers=['Accept'=>'application/json','X-Canvas-Request-ID'=>str_repeat('a',32)];
-        $response=$this->post('/canvas-ai/preview',$this->input(),$headers)->assertOk()->assertJsonPath('fee_eur',1);
+        $response=$this->post('/canvas-ai/preview',$this->input(),$headers)->assertOk()->assertJsonPath('fee_eur',0.1)->assertJsonPath('border_cm',3);
         $id=$response->json('id');
         $this->assertFileExists($this->directory.'/'.$id.'.png');
         $this->get('/canvas-ai/preview/'.$id)->assertOk()->assertHeader('Cache-Control','no-store, private');
@@ -159,7 +159,7 @@ class CanvasAiTest extends TestCase
         $this->assertFileExists($this->directory.'/accepted/9/'.$id.'.png');
         $basket=[$item];$total=20;$excluded=0;
         CanvasAiBasket::totals($basket,$total,$excluded);
-        $this->assertSame(22,$total);$this->assertSame(2,$excluded);
+        $this->assertSame(22.0,$total);$this->assertSame(2.0,$excluded);
         $basket['totalPrice']=$total;
         $coupon=app(CheckoutCouponService::class);
         $this->assertSame('20.00',$coupon->calculate($basket,'universal','10%'));
@@ -170,4 +170,36 @@ class CanvasAiTest extends TestCase
         $this->assertArrayNotHasKey('canvas_ai',$basket[0]);
         $this->assertSame(20,$total);
     }
+    public function test_fractional_ai_fee_is_preserved_and_charged_once_per_approved_variant(): void
+    {
+        $variant = ['canvas_ai' => ['id' => 'approved', 'fee_eur' => 0.3], 'sumPrice' => 20, 'count' => 2];
+        $basket = [$variant, $variant];
+        $total = 80;
+        $excluded = 0;
+        CanvasAiBasket::totals($basket, $total, $excluded);
+        $this->assertEqualsWithDelta(80.3, $total, .00001);
+        $this->assertEqualsWithDelta(.3, $excluded, .00001);
+        $this->assertEqualsWithDelta(20.3, $basket[0]['sumPrice'], .00001);
+        $this->assertSame(0, $basket[1]['canvas_ai_fee']);
+        $this->assertSame('20,30 €', $basket[0]['sumFormatedPrice']);
+    }
+
+    public function test_new_geometry_uses_three_centimetres_and_prompt_forbids_mirroring(): void
+    {
+        $g = CanvasAiLayout::geometry(40, 50);
+        $this->assertSame(3.0, CanvasAiLayout::BORDER_CM);
+        $this->assertSame((int) floor(3 * 1024 / 56), $g['border']);
+        $this->assertStringContainsString('DO NOT mirror', CanvasAiLayout::prompt($g));
+        $this->assertStringContainsString('3 cm per side', CanvasAiLayout::prompt($g));
+    }
+
+    public function test_ai_cost_rounds_up_to_tenths_without_overcharging_an_exact_boundary(): void
+    {
+        $usage = ['input_tokens_details' => ['text_tokens' => 21998, 'image_tokens' => 0],
+            'output_tokens' => 1, 'output_tokens_details' => ['text_tokens' => 1, 'image_tokens' => 0]];
+        $this->assertSame(.1, \App\Services\CanvasAiCost::quote($usage, ['usd_per_eur' => 1.1])['fee_eur']);
+        $usage['input_tokens_details']['text_tokens']++;
+        $this->assertSame(.2, \App\Services\CanvasAiCost::quote($usage, ['usd_per_eur' => 1.1])['fee_eur']);
+    }
+
 }

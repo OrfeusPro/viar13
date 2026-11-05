@@ -34,6 +34,6 @@ class CanvasAiCost
         $usd=($details['text_tokens']*5+$details['image_tokens']*8+$output['text_tokens']*10+$output['image_tokens']*32)/1000000;
         $eur=$usd/$fx['usd_per_eur'];
         if(!is_finite($eur)||$eur<0||$eur>PHP_INT_MAX)throw new \RuntimeException('Cost invalid');
-        return ['usage'=>$usage,'model'=>'gpt-image-1.5','usd'=>$usd,'eur'=>$eur,'fee_eur'=>(int)ceil($eur),'fx'=>$fx,'tariff_checked'=>'2026-11-04'];
+        return ['usage'=>$usage,'model'=>'gpt-image-1.5','usd'=>$usd,'eur'=>$eur,'fee_eur'=>round(ceil($eur * 10 - 1e-9) / 10, 2),'fx'=>$fx,'tariff_checked'=>'2026-11-04'];
     }
 }

@@ -20,6 +20,10 @@ class CanvasCalculatorLayoutTest extends TestCase
             $this->assertStringContainsString('id="calculator-frame-rates" type="application/json">[]', $html);
             $this->assertIsArray(trans('calculator.preparation'));
             $this->assertIsArray(trans('calculator.ui'));
+            $this->assertIsArray(trans('canvas_catalogue'));
+            $this->assertCount(7, trans('canvas_catalogue.quality'));
+            $this->assertStringNotContainsString('canvas_ai.', trans('canvas_ai.paid_notice'));
+            $this->assertIsString(trans('calculator.upload_error'));
         }
     }
 
@@ -58,4 +62,35 @@ class CanvasCalculatorLayoutTest extends TestCase
         $this->assertStringNotContainsString('canvas_ai.', $html);
         $this->assertStringNotContainsString('canvas-outpaint.js', $html);
     }
+    public function test_frame_catalogue_requires_schema_and_displays_only_enabled_frames_in_current_language(): void
+    {
+        Schema::create('canvas_rams', function (Blueprint $table): void {
+            $table->increments('id');
+            $table->string('img')->nullable();
+            $table->string('img_bg')->nullable();
+            $table->decimal('price', 10, 2)->default(0);
+            $table->decimal('width', 7, 2)->nullable();
+            $table->decimal('height', 7, 2)->nullable();
+        });
+        config(['canvas_ui.new_calculator' => true]);
+        app()->setLocale('en');
+        $legacy = view('theme.viar.pages.canvas.form.tab2')->render();
+        $this->assertStringNotContainsString('calculator-frame-catalogue', $legacy);
+        (require database_path('migrations/2026_11_05_100000_add_calculator_fields_to_canvas_rams.php'))->up();
+        \Illuminate\Support\Facades\DB::table('canvas_rams')->insert([
+            ['id' => 100, 'img' => 'frames/sample.jpg', 'img_bg' => 'frames/detail.jpg', 'source_article' => 'sample.A',
+             'calculator_enabled' => true, 'price_per_meter' => 15, 'profile_width_mm' => 33, 'profile_depth_mm' => 22,
+             'source_data' => json_encode(['description' => 'Оттенок Белый, выс. 2', 'category' => 'beliy_plastik'])],
+            ['id' => 101, 'img' => null, 'img_bg' => null, 'source_article' => 'hidden.B',
+             'calculator_enabled' => false, 'price_per_meter' => 20, 'profile_width_mm' => 30, 'profile_depth_mm' => 20,
+             'source_data' => null],
+        ]);
+        $html = view('theme.viar.pages.canvas.form.tab2')->render();
+        $this->assertStringContainsString('data-article="sample.A"', $html);
+        $this->assertStringNotContainsString('data-article="hidden.B"', $html);
+        $this->assertStringContainsString('White classic', $html);
+        $this->assertStringContainsString('data-frame-width-mm="33', $html);
+        $this->assertStringContainsString('15', $html);
+    }
+
 }

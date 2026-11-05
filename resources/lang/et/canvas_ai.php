@@ -1,5 +1,6 @@
 <?php
 return [
+    'paid_notice' => 'Tasuline teenus. Hind kuvatakse pärast genereerimist ja lisatakse tellimusele alles pärast tulemuse kinnitamist.',
     'upload_invalid' => 'Pilti ei saa lugeda. Vali sobiv pildifail kuni 30 MB.',
     'quota' => 'Päevane tehisintellekti limiit on täis. Proovi homme.',
     'rate' => 'Generaator on hõivatud või päringulimiit täis. Proovi hiljem.',
@@ -7,7 +8,7 @@ return [
     'title' => 'Pildi laiendamine — tehisintellekt',
     'moderation' => 'Tehisintellekti teenus keeldus pildist. Peegeldatud ja ühevärvilised servad on saadaval.',
     'login' => 'Logi sisse või registreeru',
-    'notice' => 'Pilt saadetakse OpenAI-le, et laiendada iga serva 3,5 cm. Algne esikülg säilib. Kuni 5 katset päevas; eelvaated on saadaval 24 tundi. Tasu näidatakse enne kinnitamist ja lisatakse testostukorvi ainult kinnitatud tulemuse eest. Trükiintegratsioon pole veel saadaval.',
+    'notice' => 'Pilt saadetakse OpenAI-le, et laiendada iga serva 3 cm. Algne esikülg säilib. Kuni 5 katset päevas; eelvaated on saadaval 24 tundi. Tasu näidatakse enne kinnitamist ja lisatakse testostukorvi ainult kinnitatud tulemuse eest. Trükiintegratsioon pole veel saadaval.',
     'generate' => 'Genereeri / teine variant',
     'apply' => 'Rakenda servadele',
     'preview' => 'Laiendatud pildi eelvaade',
@@ -20,6 +21,6 @@ return [
     'ready' => 'Tehisintellekti servi pole veel rakendatud. Genereeri ja kinnita tulemus. Seni näidatakse ühevärvilisi servi.',
     'fee' => 'Kinnitatud variandi tasu testostukorvis: :fee EUR (API kulu ümardatud üles).',
     'cart_fee' => 'Kinnitatud tehisintellekti servalaiendus',
-    'review' => 'Kontrolli ja kinnita 3,5 cm serv. Algne esikülg säilib. Seni näidatakse ühevärvilisi servi.',
+    'review' => 'Kontrolli ja kinnita 3 cm serv. Algne esikülg säilib. Seni näidatakse ühevärvilisi servi.',
     'applied' => 'Laiendus rakendatud servadele. Kontrolli lõuendi eelvaadet.',
 ];

@@ -1,5 +1,6 @@
 <?php
 return [
+    'paid_notice' => 'Mokama paslauga. Kaina bus parodyta po generavimo ir pridėta prie užsakymo tik patvirtinus rezultatą.',
     'upload_invalid' => 'Nepavyko nuskaityti vaizdo. Pasirinkite tinkamą failą iki 30 MB.',
     'quota' => 'Pasiektas dienos DI limitas. Bandykite rytoj.',
     'rate' => 'Generatorius užimtas arba pasiektas užklausų limitas. Bandykite vėliau.',
@@ -7,7 +8,7 @@ return [
     'title' => 'Vaizdo pratęsimas — DI',
     'moderation' => 'DI paslauga atmetė vaizdą. Galimi veidrodiniai ar vienspalviai kraštai.',
     'login' => 'Prisijungti arba registruotis',
-    'notice' => 'Jūsų vaizdas siunčiamas OpenAI, kad kiekvienas kraštas būtų pratęstas 3,5 cm. Originalus priekis išsaugomas. Iki 5 bandymų per dieną; peržiūros prieinamos 24 valandas. Mokestis rodomas prieš patvirtinimą ir į bandomąjį krepšelį pridedamas tik už patvirtintą rezultatą. Spausdinimo integracija dar neprieinama.',
+    'notice' => 'Jūsų vaizdas siunčiamas OpenAI, kad kiekvienas kraštas būtų pratęstas 3 cm. Originalus priekis išsaugomas. Iki 5 bandymų per dieną; peržiūros prieinamos 24 valandas. Mokestis rodomas prieš patvirtinimą ir į bandomąjį krepšelį pridedamas tik už patvirtintą rezultatą. Spausdinimo integracija dar neprieinama.',
     'generate' => 'Generuoti / kitas variantas',
     'apply' => 'Taikyti kraštams',
     'preview' => 'Pratęsto vaizdo peržiūra',
@@ -20,6 +21,6 @@ return [
     'ready' => 'DI kraštai dar nepritaikyti. Generuokite ir patvirtinkite rezultatą. Kol kas rodomi vienspalviai kraštai.',
     'fee' => 'Patvirtinto varianto mokestis bandomajame krepšelyje: :fee EUR (API kaina suapvalinta aukštyn).',
     'cart_fee' => 'Patvirtintas DI kraštų pratęsimas',
-    'review' => 'Patikrinkite ir patvirtinkite 3,5 cm kraštą. Originalus priekis išsaugomas. Kol kas rodomi vienspalviai kraštai.',
+    'review' => 'Patikrinkite ir patvirtinkite 3 cm kraštą. Originalus priekis išsaugomas. Kol kas rodomi vienspalviai kraštai.',
     'applied' => 'Pratęsimas pritaikytas kraštams. Patikrinkite drobės peržiūrą.',
 ];

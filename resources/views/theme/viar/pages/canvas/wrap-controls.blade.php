@@ -42,8 +42,10 @@
                 @endforeach
             >
                 <p>{{ trans('canvas_ai.notice') }}</p>
+                <p class="canvas-ai-paid">{{ trans('canvas_ai.paid_notice') }}</p>
                 <button class="jcf-ignore" type="button" data-ai-generate>{{ trans('canvas_ai.generate') }}</button>
                 <p data-ai-status role="status" aria-live="polite"></p>
+                <progress data-ai-progress hidden aria-label="{{ trans('canvas_ai.waiting') }}"></progress>
                 <img data-ai-preview hidden alt="{{ trans('canvas_ai.preview') }}" style="max-width:240px;width:100%;height:auto">
                 <button class="jcf-ignore" type="button" data-ai-apply hidden>{{ trans('canvas_ai.apply') }}</button>
             </div>

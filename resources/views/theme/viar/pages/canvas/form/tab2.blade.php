@@ -296,7 +296,10 @@
                     </div>
                 </label>
                 <label>
-                    <div data-id="16" data-price="25" class="ramu-item"
+                    @php
+                        $profileFrame = \App\Models\CanvasRam::find(16);
+                    @endphp
+                    <div data-id="16" data-price="25" class="ramu-item" data-frame-width-mm="{{ $profileFrame->profile_width_mm ?? 48 }}" data-frame-depth-mm="{{ $profileFrame->profile_depth_mm ?? 28 }}"
                          data-src="{{ asset('images/canvas/ram1.jpg') }}"
                          data-width="10">
                         <input style="
@@ -328,7 +331,10 @@
                     </div>
                 </label>
                 <label>
-                    <div data-id="15" data-price="25" class="ramu-item"
+                    @php
+                        $profileFrame = \App\Models\CanvasRam::find(15);
+                    @endphp
+                    <div data-id="15" data-price="25" class="ramu-item" data-frame-width-mm="{{ $profileFrame->profile_width_mm ?? 33 }}" data-frame-depth-mm="{{ $profileFrame->profile_depth_mm ?? 22 }}"
                          data-src="{{ asset('images/canvas/ram2.jpg') }}"
                          data-width="10">
                         <input style="
@@ -359,6 +365,50 @@
                         <span class="price"> + 25 &euro; </span>
                     </div>
                 </label>
+                @if(config('canvas_ui.new_calculator') && \Illuminate\Support\Facades\Schema::hasColumns('canvas_rams', ['calculator_enabled', 'source_article', 'source_data', 'price_per_meter', 'profile_width_mm', 'profile_depth_mm']))
+                <template id="calculator-frame-catalogue">
+                @foreach(\App\Models\CanvasRam::where('calculator_enabled', true)->orderBy('id')->get() as $catalogFrame)
+                @php
+                    $source = json_decode($catalogFrame->source_data ?? '{}', true) ?: [];
+                    $description = $source['description'] ?? '';
+                    $profileWidth = $catalogFrame->profile_width_mm ?? $catalogFrame->width * 10;
+                    $profileDepth = $catalogFrame->profile_depth_mm ?? $catalogFrame->height * 10;
+                    $details = ['width'=>$profileWidth / 10, 'height'=>$profileDepth / 10, 'profile'=>$source['profile'] ?? ''];
+                    foreach(['style'=>'/Стиль\s+([^,]+)/u', 'shade'=>'/Оттенок\s+(.*?)(?:,| выс\.)/u', 'rebate'=>'/Ширина без четверти\s+([\d.,]+)/u'] as $key=>$pattern) {
+                        if(preg_match($pattern, $description, $match)) $details[$key] = trim($match[1]);
+                    }
+                    if(isset($details['shade'])) $details['shade'] = preg_replace('/^доп\.цвет:\s*/u', '', $details['shade']);
+                    // Friendly display names; original article remains the stable product identifier.
+                    $tone = mb_strtolower($details['shade'] ?? '', 'UTF-8');
+                    $category = $source['category'] ?? '';
+                    $classic = preg_match('/Классический|Декоративный/u', $description);
+                    $nameKey = 'classic';
+                    foreach(['дуб'=>'oak','орех'=>'walnut','венге'=>'wenge','черн'=>'black','чёрн'=>'black','бел'=>'white','сереб'=>'silver','золот'=>'gold','бронз'=>'bronze','мед'=>'copper','беж'=>'ivory','син'=>'blue','голуб'=>'blue','зелен'=>'green','зелён'=>'green','красн'=>'red','корич'=>'walnut','серый'=>'grey'] as $needle=>$key) {
+                        if(mb_strpos($tone, $needle) !== false) { $nameKey=$key; break; }
+                    }
+                    if($nameKey==='classic') {
+                        $nameKey=['beliy_plastik'=>'white','cherniy_plastik'=>'black','dekorativnoe_zoloto_i_serebro'=>'ornament','gladkoe_zoloto_i_serebro'=>'metal','imitatsiya_moreniya'=>'wood','profil_korobochka'=>'gallery','tsvetnoy_plastik'=>'color'][$category] ?? 'classic';
+                    }
+                    $frameNames = trans('canvas_catalogue.frames');
+                    $friendlyName = $frameNames[$nameKey];
+                    if($catalogFrame->source_article==='i_138.2422.44.IQ') $friendlyName = $frameNames['ivory'];
+                    $collectionName = trans('canvas_collections.'.str_replace('.', '_', $catalogFrame->source_article));
+                    $friendlyName .= ' · '.$collectionName;
+                    if(isset($details['rebate'])) $details['rebate'] = (float)str_replace(',', '.', rtrim($details['rebate'], '.,'));
+                @endphp
+                <label @if($loop->index >= 20) hidden @endif>
+                    <div class="ramu-item" data-frame-details="{{ json_encode($details, JSON_UNESCAPED_UNICODE) }}" data-profile-sample="true" data-article="{{ $catalogFrame->source_article }}" data-id="{{ $catalogFrame->id }}" data-price="{{ $catalogFrame->price }}" data-src="{{ asset('storage/'.$catalogFrame->img) }}" data-zoom-src="{{ asset('storage/'.$catalogFrame->img_bg) }}" data-frame-width-mm="{{ $profileWidth }}" data-frame-depth-mm="{{ $profileDepth }}">
+                        <input type="radio" name="ram_id" value="{{ $catalogFrame->id }}" style="opacity:0;position:absolute;pointer-events:none">
+                        <div class="selected-icon">✓</div>
+                        <span class="code">{{ $friendlyName }}</span>
+                        <div class="img"><img loading="lazy" decoding="async" src="{{ asset('storage/'.$catalogFrame->img) }}" alt="{{ $catalogFrame->source_article }}"></div>
+                        <small class="calculator-profile-dimensions">{{ trans('calculator.ui.plastic_profile') }} · {{ $profileWidth }} × {{ $profileDepth }} {{ trans('calculator.ui.mm') }}</small>
+                        <span class="price">{{ $catalogFrame->price_per_meter }} € / {{ trans('calculator.ui.linear_meter') }}</span>
+                    </div>
+                </label>
+                @endforeach
+                </template>
+                @endif
             </div>
         </div>
     </div>
